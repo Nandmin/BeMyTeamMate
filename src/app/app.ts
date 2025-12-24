@@ -2,10 +2,11 @@ import { Component, signal, inject } from '@angular/core';
 import { RouterOutlet, RouterLink, RouterLinkActive, Router, NavigationEnd } from '@angular/router';
 import { filter } from 'rxjs/operators';
 import { FooterComponent } from './components/footer/footer';
+import { HeaderComponent } from './components/header/header';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, RouterLink, RouterLinkActive, FooterComponent],
+  imports: [RouterOutlet, RouterLink, RouterLinkActive, FooterComponent, HeaderComponent],
   templateUrl: './app.html',
   styleUrl: './app.scss',
 })
@@ -14,6 +15,7 @@ export class App {
   protected readonly title = signal('BeMyTeamMate');
   protected showNav = signal(true);
   protected showFooter = signal(true);
+  protected showHeader = signal(true);
 
   constructor() {
     this.router.events
@@ -29,6 +31,9 @@ export class App {
         this.showFooter.set(
           event.urlAfterRedirects !== '/login' && event.urlAfterRedirects !== '/register'
         );
+
+        // Header visibility logic
+        this.showHeader.set(true); // Always show header as requested, or adjust if needed
       });
   }
 }

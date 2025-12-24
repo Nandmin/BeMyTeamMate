@@ -1,0 +1,67 @@
+<header class="sticky top-0 z-[60] w-full border-b border-white/5 bg-background-dark/60 backdrop-blur-xl">
+    <div class="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
+        <!-- Left: App Name/Logo -->
+        <div class="flex items-center gap-2">
+            <a routerLink="/" class="flex items-center gap-2 group">
+                <div
+                    class="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10 text-primary shadow-inner shadow-primary/20 transition-transform group-hover:scale-110">
+                    <span class="material-symbols-outlined text-[20px]">sports_soccer</span>
+                </div>
+                <span class="text-xl font-black tracking-tight text-white transition-colors group-hover:text-primary">
+                    BeMyTeamMate
+                </span>
+            </a>
+        </div>
+
+        <!-- Center: Navigation Links (Desktop) -->
+        <nav class="hidden md:flex items-center gap-1">
+            <a routerLink="/events" routerLinkActive="text-primary bg-primary/10"
+                class="px-4 py-2 rounded-lg text-sm font-semibold text-text-muted hover:text-white hover:bg-white/5 transition-all">
+                Események
+            </a>
+            <a routerLink="/groups" routerLinkActive="text-primary bg-primary/10"
+                class="px-4 py-2 rounded-lg text-sm font-semibold text-text-muted hover:text-white hover:bg-white/5 transition-all">
+                Csoportok
+            </a>
+            <a routerLink="/results" routerLinkActive="text-primary bg-primary/10"
+                class="px-4 py-2 rounded-lg text-sm font-semibold text-text-muted hover:text-white hover:bg-white/5 transition-all">
+                Eredmények
+            </a>
+        </nav>
+
+        <!-- Right: Auth Section -->
+        <div class="flex items-center gap-3">
+            @if (authService.currentUser(); as user) {
+            <!-- Logged In View -->
+            <div class="flex items-center gap-4">
+                <div class="hidden sm:flex flex-col items-end">
+                    <span class="text-sm font-bold text-white leading-none">
+                        {{ user.displayName || 'Játékos' }}
+                    </span>
+                </div>
+                <div class="h-9 w-9 overflow-hidden rounded-full border border-white/10 p-0.5">
+                    <img [src]="user.photoURL || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + user.uid"
+                        class="h-full w-full rounded-full object-cover" [alt]="user.displayName" />
+                </div>
+                <button (click)="onLogout()"
+                    class="flex h-9 w-9 items-center justify-center rounded-xl bg-dark-accent border border-white/5 text-text-muted hover:text-red-400 hover:border-red-400/30 transition-all active:scale-95"
+                    title="Kijelentkezés">
+                    <span class="material-symbols-outlined text-[20px]">logout</span>
+                </button>
+            </div>
+            } @else {
+            <!-- Logged Out View -->
+            <div class="flex items-center gap-2">
+                <a routerLink="/login"
+                    class="px-4 py-2 text-sm font-bold text-text-muted hover:text-white transition-colors">
+                    Bejelentkezés
+                </a>
+                <a routerLink="/register"
+                    class="px-5 py-2 text-sm font-extrabold text-[#112218] bg-primary rounded-xl hover:bg-primary-hover hover:shadow-[0_0_20px_rgba(34,197,94,0.3)] transition-all active:scale-95">
+                    Regisztráció
+                </a>
+            </div>
+            }
+        </div>
+    </div>
+</header>

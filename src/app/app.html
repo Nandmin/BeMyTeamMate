@@ -1,6 +1,10 @@
 <div class="app-container">
+  @if (showHeader()) {
+  <app-header></app-header>
+  }
+
   <!-- Main Content Area -->
-  <main class="main-content" [class.no-nav]="!showNav()">
+  <main class="main-content" [class.no-nav]="!showNav()" [class.pt-16]="showHeader()">
     <router-outlet />
     @if (showFooter()) {
     <app-footer />

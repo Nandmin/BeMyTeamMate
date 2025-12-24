@@ -1,5 +1,3 @@
-# See https://docs.github.com/get-started/getting-started-with-git/ignoring-files for more about ignoring files.
-
 # Compiled output
 /dist
 /tmp
@@ -10,6 +8,7 @@
 /node_modules
 npm-debug.log
 yarn-error.log
+package-lock.json
 
 # IDEs and editors
 .idea/
@@ -28,8 +27,8 @@ yarn-error.log
 !.vscode/extensions.json
 .history/*
 
-# Miscellaneous
-/.angular/cache
+# Angular
+/.angular
 .sass-cache/
 /connect.lock
 /coverage
@@ -37,6 +36,23 @@ yarn-error.log
 testem.log
 /typings
 __screenshots__/
+
+# Firebase
+.firebase/
+*-debug.log
+firebase-debug.log*
+firestore-debug.log*
+pubsub-debug.log*
+ui-debug.log*
+firebase-export-*
+
+# Secret files
+.env
+.env.*
+! .env.example
+src/environments/environment.ts
+src/environments/environment.*.ts
+!src/environments/environment.example.ts
 
 # System files
 .DS_Store

@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -32,6 +32,7 @@ export class RegisterPage {
   ];
 
   errorMessage = '';
+  isLoading = signal(false);
 
   toggleSport(sportId: string) {
     if (this.selectedSports.has(sportId)) {
@@ -59,6 +60,7 @@ export class RegisterPage {
     }
 
     this.errorMessage = '';
+    this.isLoading.set(true);
 
     try {
       await this.authService.registerWithEmail(email!, password!, username!, {
@@ -66,8 +68,25 @@ export class RegisterPage {
         sports: Array.from(this.selectedSports),
       });
     } catch (error: any) {
-      this.errorMessage = 'Hiba a regisztráció során. ' + (error.message || '');
+      this.errorMessage = this.getErrorMessage(error.code);
       console.error(error);
+    } finally {
+      this.isLoading.set(false);
+    }
+  }
+
+  private getErrorMessage(code: string): string {
+    switch (code) {
+      case 'auth/email-already-in-use':
+        return 'Ez az email cím már használatban van.';
+      case 'auth/invalid-email':
+        return 'Érvénytelen email cím formátum.';
+      case 'auth/operation-not-allowed':
+        return 'Az email/jelszó regisztráció nincs engedélyezve.';
+      case 'auth/weak-password':
+        return 'A jelszó túl gyenge (legalább 6 karakter).';
+      default:
+        return 'Sikertelen regisztráció. Kérlek próbáld újra.';
     }
   }
 }

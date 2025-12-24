@@ -153,11 +153,16 @@
 
                 <!-- Actions -->
                 <div class="pt-4 flex flex-col gap-4">
-                    <button
-                        class="w-full bg-primary hover:bg-primary-hover text-[#112218] text-lg font-bold py-4 rounded-xl shadow-lg hover:shadow-primary/30 hover:translate-y-[-1px] transition-all duration-300 flex items-center justify-center gap-2"
+                    <button [disabled]="isLoading()"
+                        class="w-full bg-primary hover:bg-primary-hover text-[#112218] text-lg font-bold py-4 rounded-xl shadow-lg hover:shadow-primary/30 hover:translate-y-[-1px] transition-all duration-300 flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
                         type="submit">
+                        @if (isLoading()) {
+                        <span class="material-symbols-outlined animate-spin">progress_activity</span>
+                        Folyamatban...
+                        } @else {
                         Regisztráció
                         <span class="material-symbols-outlined font-bold">arrow_forward</span>
+                        }
                     </button>
                     <div class="text-center">
                         <p class="text-text-muted">Már van fiókod?

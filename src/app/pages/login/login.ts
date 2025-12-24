@@ -1,4 +1,4 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -21,6 +21,12 @@ export class LoginPage implements OnInit {
   });
 
   errorMessage = '';
+  isLoading = signal(false);
+  showPassword = signal(false);
+
+  togglePassword() {
+    this.showPassword.update((v) => !v);
+  }
 
   ngOnInit() {
     // Check if we arrived here via a magic link
@@ -35,20 +41,47 @@ export class LoginPage implements OnInit {
       return;
     }
     this.errorMessage = '';
+    this.isLoading.set(true);
+
     const { email, password } = this.loginForm.value;
     try {
       await this.authService.loginWithEmail(email!, password!);
     } catch (error: any) {
-      this.errorMessage = 'Hiba a bejelentkezés során. Ellenőrizd az adataidat.';
+      this.errorMessage = this.getErrorMessage(error.code);
       console.error(error);
+    } finally {
+      this.isLoading.set(false);
     }
   }
 
   async onGoogleLogin() {
+    this.errorMessage = '';
+    this.isLoading.set(true);
     try {
       await this.authService.loginWithGoogle();
-    } catch (error) {
-      this.errorMessage = 'Google bejelentkezés sikertelen.';
+    } catch (error: any) {
+      if (error.code !== 'auth/popup-closed-by-user') {
+        this.errorMessage = 'Google bejelentkezés sikertelen.';
+      }
+    } finally {
+      this.isLoading.set(false);
+    }
+  }
+
+  private getErrorMessage(code: string): string {
+    switch (code) {
+      case 'auth/user-not-found':
+      case 'auth/wrong-password':
+      case 'auth/invalid-credential':
+        return 'Helytelen email cím vagy jelszó.';
+      case 'auth/invalid-email':
+        return 'Érvénytelen email cím formátum.';
+      case 'auth/user-disabled':
+        return 'Ez a felhasználói fiók le van tiltva.';
+      case 'auth/too-many-requests':
+        return 'Túl sok sikertelen próbálkozás. Próbáld meg később.';
+      default:
+        return 'Sikertelen bejelentkezés. Kérlek próbáld újra.';
     }
   }
 }

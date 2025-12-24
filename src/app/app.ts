@@ -20,9 +20,15 @@ export class App {
       .pipe(filter((event) => event instanceof NavigationEnd))
       .subscribe((event: NavigationEnd) => {
         // Hide nav on landing page ('/')
-        this.showNav.set(event.urlAfterRedirects !== '/' && event.urlAfterRedirects !== '/login');
+        this.showNav.set(
+          event.urlAfterRedirects !== '/' &&
+            event.urlAfterRedirects !== '/login' &&
+            event.urlAfterRedirects !== '/register'
+        );
         // Hide footer on login page to prevent scrolling
-        this.showFooter.set(event.urlAfterRedirects !== '/login');
+        this.showFooter.set(
+          event.urlAfterRedirects !== '/login' && event.urlAfterRedirects !== '/register'
+        );
       });
   }
 }

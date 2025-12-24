@@ -1,0 +1,173 @@
+<div
+    class="relative min-h-screen w-full flex items-center justify-center p-4 lg:p-8 bg-background-dark font-display text-white overflow-x-hidden">
+    <!-- Abstract Sport Background -->
+    <div class="fixed inset-0 z-0 overflow-hidden">
+        <div
+            class="absolute inset-0 bg-gradient-to-b from-background-dark/90 via-background-dark/80 to-background-dark/95 z-10">
+        </div>
+        <img alt="Abstract dark blurred stadium lights background"
+            class="w-full h-full object-cover opacity-30 animate-pulse"
+            src="https://lh3.googleusercontent.com/aida-public/AB6AXuClJ6bOmSnA5VkZdduDX16IXkPwHbaqenmAfvXZZ6Z56kWw6Wl-tXQa49mnw6acrkJJgXVGDzcmCVvDmO_tFY9TkYFX9Jsi0whx2JiKCJ1Pn1TLd_k1Fi_-gve_o7LWayDbNV1YyNwnSNKwf9xDoy9y0PplwsFT6beQRnNMQ4DHkcpqgNtryfKyFZ8Gaa9zQ1T4el0-F9wERWYKRKwG2DSrUMUs6YAc_4dLKuroXNurZHGW0ExAOu8P9uHcH0BDefhUX2GanmM7kdU" />
+    </div>
+
+    <!-- Registration Card -->
+    <div
+        class="relative z-20 w-full max-w-5xl bg-card-dark/60 backdrop-blur-md border border-border-dark rounded-3xl shadow-2xl overflow-hidden flex flex-col md:flex-row h-[90vh] md:h-auto transition-all duration-500 hover:border-primary/30">
+
+        <!-- Side Visual (Desktop Only) -->
+        <div
+            class="hidden md:flex md:w-1/3 bg-gradient-to-b from-dark-accent to-background-dark relative flex-col justify-between p-8 border-r border-border-dark">
+            <div>
+                <div class="h-12 w-12 bg-primary/10 rounded-xl flex items-center justify-center mb-6 text-primary">
+                    <span class="material-symbols-outlined text-3xl">sports_soccer</span>
+                </div>
+                <h3 class="text-2xl font-bold leading-tight mb-2">Csatlakozz a játékhoz</h3>
+                <p class="text-text-muted text-sm leading-relaxed">Szervezd meg a csapatokat, kövesd a statisztikákat és
+                    élvezd a sportot barátaiddal egy helyen.</p>
+            </div>
+            <div class="space-y-4">
+                <div class="flex items-center gap-3">
+                    <span class="material-symbols-outlined text-primary">check_circle</span>
+                    <span class="text-sm text-text-muted/80">Gyors csapatosztás</span>
+                </div>
+                <div class="flex items-center gap-3">
+                    <span class="material-symbols-outlined text-primary">check_circle</span>
+                    <span class="text-sm text-text-muted/80">Minden sportág</span>
+                </div>
+                <div class="flex items-center gap-3">
+                    <span class="material-symbols-outlined text-primary">check_circle</span>
+                    <span class="text-sm text-text-muted/80">Ingyenes használat</span>
+                </div>
+            </div>
+            <div class="mt-8 pt-6 border-t border-border-dark">
+                <p class="text-xs text-text-muted/60">© 2025 BeMyTeamMate</p>
+            </div>
+        </div>
+
+        <!-- Form Area -->
+        <div
+            class="flex-1 p-6 md:p-10 lg:p-12 overflow-y-auto max-h-[90vh] scrollbar-thin scrollbar-thumb-primary/20 scrollbar-track-transparent">
+            <!-- Header -->
+            <div class="mb-8">
+                <h1 class="text-3xl md:text-4xl font-black tracking-tight text-white mb-2">Új Játékos</h1>
+                <p class="text-text-muted text-base">Hozd létre a profilod a folytatáshoz.</p>
+            </div>
+
+            <form class="flex flex-col gap-6">
+                <!-- Grid for Inputs -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <!-- Username -->
+                    <div class="flex flex-col gap-2 group">
+                        <label
+                            class="text-sm font-medium text-gray-200 group-focus-within:text-primary transition-colors duration-300">Felhasználónév</label>
+                        <div class="relative">
+                            <span
+                                class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-text-muted group-focus-within:text-primary transition-colors">person</span>
+                            <input
+                                class="w-full bg-dark-accent/50 border border-border-dark rounded-xl py-3.5 pl-12 pr-4 text-white placeholder:text-text-muted/50 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all duration-300"
+                                placeholder="pl. KovácsJános" type="text" />
+                        </div>
+                    </div>
+                    <!-- Email -->
+                    <div class="flex flex-col gap-2 group">
+                        <label
+                            class="text-sm font-medium text-gray-200 group-focus-within:text-primary transition-colors duration-300">E-mail
+                            cím</label>
+                        <div class="relative">
+                            <span
+                                class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-text-muted group-focus-within:text-primary transition-colors">mail</span>
+                            <input
+                                class="w-full bg-dark-accent/50 border border-border-dark rounded-xl py-3.5 pl-12 pr-4 text-white placeholder:text-text-muted/50 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all duration-300"
+                                placeholder="pelda@email.com" type="email" />
+                        </div>
+                    </div>
+                    <!-- Password -->
+                    <div class="flex flex-col gap-2 group">
+                        <label
+                            class="text-sm font-medium text-gray-200 group-focus-within:text-primary transition-colors duration-300">Jelszó</label>
+                        <div class="relative">
+                            <span
+                                class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-text-muted group-focus-within:text-primary transition-colors">lock</span>
+                            <input
+                                class="w-full bg-dark-accent/50 border border-border-dark rounded-xl py-3.5 pl-12 pr-4 text-white placeholder:text-text-muted/50 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all duration-300"
+                                placeholder="******" type="password" />
+                        </div>
+                    </div>
+                    <!-- Confirm Password -->
+                    <div class="flex flex-col gap-2 group">
+                        <label
+                            class="text-sm font-medium text-gray-200 group-focus-within:text-primary transition-colors duration-300">Jelszó
+                            megerősítése</label>
+                        <div class="relative">
+                            <span
+                                class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-text-muted group-focus-within:text-primary transition-colors">lock_reset</span>
+                            <input
+                                class="w-full bg-dark-accent/50 border border-border-dark rounded-xl py-3.5 pl-12 pr-4 text-white placeholder:text-text-muted/50 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all duration-300"
+                                placeholder="******" type="password" />
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sports Interests -->
+                <!-- <div class="space-y-3 pt-2">
+                    <h2 class="text-lg font-bold text-white flex items-center gap-2">
+                        <span class="material-symbols-outlined text-primary text-xl">favorite</span>
+                        Melyik sportágak érdekelnek?
+                    </h2>
+                    <div class="flex flex-wrap gap-3">
+                        <button
+                            class="group flex items-center gap-2 px-4 py-2 rounded-xl bg-primary text-background-dark font-semibold transition-all hover:shadow-[0_0_15px_rgba(43,238,124,0.3)]"
+                            type="button">
+                            <span class="material-symbols-outlined text-[18px]">sports_soccer</span>
+                            Foci
+                        </button>
+                        <button
+                            class="group flex items-center gap-2 px-4 py-2 rounded-xl bg-dark-accent border border-border-dark text-text-muted hover:bg-dark-accent/80 hover:border-primary hover:text-primary transition-all"
+                            type="button">
+                            <span class="material-symbols-outlined text-[18px]">sports_basketball</span>
+                            Kosárlabda
+                        </button>
+                        <button
+                            class="group flex items-center gap-2 px-4 py-2 rounded-xl bg-dark-accent border border-border-dark text-text-muted hover:bg-dark-accent/80 hover:border-primary hover:text-primary transition-all"
+                            type="button">
+                            <span class="material-symbols-outlined text-[18px]">sports_volleyball</span>
+                            Röplabda
+                        </button>
+                        <button
+                            class="group flex items-center gap-2 px-4 py-2 rounded-xl bg-dark-accent border border-border-dark text-text-muted hover:bg-dark-accent/80 hover:border-primary hover:text-primary transition-all"
+                            type="button">
+                            <span class="material-symbols-outlined text-[18px]">sports_tennis</span>
+                            Tenisz
+                        </button>
+                    </div>
+                </div> -->
+
+                <!-- Bio -->
+                <div class="flex flex-col gap-2 group pt-2">
+                    <label
+                        class="text-sm font-medium text-gray-200 group-focus-within:text-primary transition-colors duration-300">Rövid
+                        bemutatkozás <span class="text-text-muted/50 font-normal">(opcionális)</span></label>
+                    <textarea
+                        class="w-full bg-dark-accent/50 border border-border-dark rounded-xl p-4 text-white placeholder:text-text-muted/50 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all duration-300 min-h-[100px] resize-y"
+                        placeholder="Írj magadról pár mondatot... pl. milyen szinten játszol?"></textarea>
+                </div>
+
+                <!-- Actions -->
+                <div class="pt-4 flex flex-col gap-4">
+                    <button
+                        class="w-full bg-primary hover:bg-primary-hover text-[#112218] text-lg font-bold py-4 rounded-xl shadow-lg hover:shadow-primary/30 hover:translate-y-[-1px] transition-all duration-300 flex items-center justify-center gap-2"
+                        type="submit">
+                        Regisztráció
+                        <span class="material-symbols-outlined font-bold">arrow_forward</span>
+                    </button>
+                    <div class="text-center">
+                        <p class="text-text-muted">Már van fiókod?
+                            <a class="text-primary font-bold hover:underline decoration-2 underline-offset-4 decoration-primary/50 hover:text-primary-hover transition-colors"
+                                routerLink="/login">Jelentkezz be</a>
+                        </p>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,77 @@
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Global Styles */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+  overflow: hidden; /* Prevent double scrollbars */
+  font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+  background-color: #0f1419;
+  color: #ffffff;
+}
+
+/* Scrollbar Styling for Dark Theme */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #1a1f3a;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #5b7ce6;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #4a6bcf;
+}
+
+/* Custom Utilities */
+@layer components {
+  .card {
+    @apply bg-white dark:bg-dark-card rounded-xl shadow-card transition-shadow duration-300;
+  }
+
+  .card:hover {
+    @apply shadow-card-hover;
+  }
+
+  .btn-primary {
+    @apply bg-gradient-to-r from-accent-gradient-start to-accent-gradient-end text-white font-semibold py-3 px-6 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 active:scale-95;
+  }
+
+  .btn-secondary {
+    @apply bg-dark-accent text-white font-semibold py-3 px-6 rounded-lg shadow-md hover:bg-opacity-80 transition-all duration-300 active:scale-95;
+  }
+
+  .chip {
+    @apply inline-flex items-center px-3 py-1 rounded-full text-sm font-medium;
+  }
+
+  .chip-primary {
+    @apply chip bg-primary bg-opacity-20 text-primary border border-primary border-opacity-30;
+  }
+
+  .chip-secondary {
+    @apply chip bg-secondary bg-opacity-20 text-secondary border border-secondary border-opacity-30;
+  }
+
+  .input-field {
+    @apply w-full bg-dark-accent text-white border border-gray-600 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200;
+  }
+}

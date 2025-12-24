@@ -1,0 +1,68 @@
+<div class="events-container">
+    <!-- Header -->
+    <header class="page-header">
+        <div class="header-content">
+            <h1 class="header-title">Események</h1>
+            <p class="header-subtitle">Hamarosan induló sportesemények</p>
+        </div>
+    </header>
+
+    <!-- Events List -->
+    <div class="events-list">
+        @for (event of events(); track event.id) {
+        <div class="event-card animate-slide-up">
+            <div class="event-icon">
+                <span class="icon-emoji">{{ event.icon }}</span>
+            </div>
+
+            <div class="event-details">
+                <h3 class="event-title">{{ event.title }}</h3>
+
+                <div class="event-meta">
+                    <div class="meta-item">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2">
+                            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                            <circle cx="12" cy="10" r="3"></circle>
+                        </svg>
+                        <span>{{ event.location }}</span>
+                    </div>
+
+                    <div class="meta-item">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <polyline points="12 6 12 12 16 14"></polyline>
+                        </svg>
+                        <span>{{ formatDate(event.dateTime) }} · {{ formatTime(event.dateTime) }}</span>
+                    </div>
+                </div>
+
+                <div class="event-footer">
+                    <div class="attendees">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2">
+                            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="9" cy="7" r="4"></circle>
+                            <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                            <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                        </svg>
+                        <span>{{ event.attendees }} résztvevő</span>
+                    </div>
+
+                    <span class="chip chip-primary">{{ event.sport }}</span>
+                </div>
+            </div>
+        </div>
+        }
+    </div>
+
+    <!-- Floating Action Button -->
+    <button class="fab" aria-label="Új esemény létrehozása">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+        </svg>
+    </button>
+</div>

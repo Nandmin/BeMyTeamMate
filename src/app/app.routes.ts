@@ -19,8 +19,8 @@ export const routes: Routes = [
   },
   {
     path: 'groups',
-    loadComponent: () => import('./pages/events-list/events-list').then((m) => m.EventsList),
-  }, // TODO
+    loadComponent: () => import('./pages/groups/groups').then((m) => m.GroupsPage),
+  },
   {
     path: 'results',
     loadComponent: () => import('./pages/events-list/events-list').then((m) => m.EventsList),

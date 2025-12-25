@@ -25,6 +25,7 @@ module.exports = {
         'text-muted': '#a492c9',
         // Login Page Specific
         'surface-dark': '#193324',
+        'surface-card': '#1a2e22',
         'border-green': '#326748',
       },
       fontFamily: {

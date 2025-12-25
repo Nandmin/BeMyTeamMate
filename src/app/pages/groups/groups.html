@@ -1,0 +1,129 @@
+<div class="layout-content-container flex flex-col max-w-[1024px] flex-1 w-full mx-auto px-4 md:px-10 lg:px-40 py-5">
+    <!-- Title Section -->
+    <div class="flex flex-col md:flex-row md:items-end justify-between gap-4 pb-6 pt-6">
+        <div>
+            <h1 class="text-white tracking-tight text-[32px] md:text-[40px] font-extrabold leading-tight">Saját
+                társaságok
+            </h1>
+            <p class="text-gray-400 mt-2 text-sm md:text-base">Kezeld a csoportjaidat, vagy csatlakozz újakhoz.</p>
+        </div>
+    </div>
+    <!-- Action Panel -->
+    <div class="mb-6">
+        <div
+            class="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 rounded-2xl border border-border-green bg-surface-card p-6 shadow-lg shadow-green-900/5 transition-all hover:border-primary/30">
+            <div class="flex flex-col gap-2">
+                <div class="flex items-center gap-2">
+                    <span class="material-symbols-outlined text-primary">group_add</span>
+                    <p class="text-white text-lg font-bold leading-tight">Új kaland keresése?</p>
+                </div>
+                <p class="text-[#92c9a9] text-sm md:text-base font-normal leading-normal max-w-lg">
+                    Hozz létre egy új baráti kört a sportoláshoz, vagy csatlakozz egy meglévőhöz a kapott meghívó
+                    kóddal.
+                </p>
+            </div>
+            <div class="flex flex-wrap gap-3 w-full md:w-auto">
+                <button
+                    class="flex-1 md:flex-none flex min-w-[140px] cursor-pointer items-center justify-center rounded-xl h-10 px-5 bg-primary hover:bg-[#1fd46c] text-surface-dark text-sm font-bold leading-normal transition-transform active:scale-95 shadow-[0_0_15px_rgba(43,238,124,0.3)]">
+                    <span class="mr-2 material-symbols-outlined text-[20px]">add</span>
+                    Új csoport
+                </button>
+                <button
+                    class="flex-1 md:flex-none flex min-w-[140px] cursor-pointer items-center justify-center rounded-xl h-10 px-5 bg-transparent border border-border-green hover:border-white text-white text-sm font-bold leading-normal transition-colors active:scale-95">
+                    <span class="mr-2 material-symbols-outlined text-[20px]">key</span>
+                    Csatlakozás
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filter & Search Toolbar -->
+    <div
+        class="py-4 sticky top-[72px] z-30 bg-background-dark/95 backdrop-blur-md mb-4 -mx-4 md:mx-0 md:static md:bg-transparent">
+        <div class="flex flex-col md:flex-row gap-4 justify-between items-center">
+            <!-- Search -->
+            <div class="relative w-full md:max-w-[320px]">
+                <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-gray-400">
+                    <span class="material-symbols-outlined">search</span>
+                </div>
+                <input
+                    class="block w-full p-2.5 pl-10 text-sm text-white bg-surface-card border border-border-green rounded-xl focus:ring-primary focus:border-primary placeholder-gray-500"
+                    placeholder="Keresés név alapján..." type="text" />
+            </div>
+            <!-- View Toggles -->
+            <div class="flex items-center gap-2 self-end md:self-auto">
+                <span class="text-sm text-gray-400 mr-2 hidden sm:block">Nézet:</span>
+                <button class="p-2 rounded-lg bg-border-green text-primary hover:bg-[#2f5a42] transition-colors">
+                    <span class="material-symbols-outlined">grid_view</span>
+                </button>
+                <button
+                    class="p-2 rounded-lg bg-transparent border border-border-green text-gray-400 hover:text-white hover:border-gray-500 transition-colors">
+                    <span class="material-symbols-outlined">list</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Grid Content -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 pb-12">
+        @for (group of groups; track group.id) {
+        <div
+            class="group relative flex flex-col overflow-hidden rounded-2xl bg-surface-card border border-border-green hover:border-primary/50 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-primary/10">
+            <!-- Cover Image -->
+            <div class="h-40 w-full overflow-hidden relative">
+                <img [src]="group.image" [alt]="group.name"
+                    class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110" />
+                @if (group.isAdmin) {
+                <div
+                    class="absolute top-3 right-3 bg-black/60 backdrop-blur-md px-2 py-1 rounded-lg flex items-center gap-1">
+                    <span class="material-symbols-outlined text-primary text-[16px]">verified_user</span>
+                    <span class="text-[10px] font-bold text-white uppercase tracking-wider">Admin</span>
+                </div>
+                }
+            </div>
+            <!-- Content -->
+            <div class="flex flex-1 flex-col p-5">
+                <div class="flex justify-between items-start mb-2">
+                    <h3 class="text-xl font-bold text-white group-hover:text-primary transition-colors">{{ group.name }}
+                    </h3>
+                    <button class="text-gray-400 hover:text-white transition-colors">
+                        <span class="material-symbols-outlined">more_vert</span>
+                    </button>
+                </div>
+                <p class="text-sm text-gray-400 mb-4 line-clamp-2">{{ group.description }}</p>
+                <div class="mt-auto flex items-center justify-between pt-4 border-t border-white/10">
+                    <div class="flex -space-x-2 overflow-hidden">
+                        @for (member of group.members; track member.name) {
+                        <img [src]="member.avatar" [alt]="member.name"
+                            class="inline-block h-8 w-8 rounded-full ring-2 ring-surface-card object-cover" />
+                        }
+                        @if (group.memberCount > group.members.length) {
+                        <div
+                            class="flex h-8 w-8 items-center justify-center rounded-full bg-border-green ring-2 ring-surface-card text-xs font-medium text-white">
+                            +{{ group.memberCount - group.members.length }}</div>
+                        }
+                    </div>
+                    <div class="flex items-center gap-1 text-xs text-gray-400">
+                        <span class="material-symbols-outlined text-[16px]">schedule</span>
+                        <span>{{ group.lastActive }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        }
+
+        <!-- Card 4 (Join New Suggestion) -->
+        <div
+            class="group relative flex flex-col items-center justify-center overflow-hidden rounded-2xl border-2 border-dashed border-border-green bg-transparent p-5 hover:border-primary/50 hover:bg-surface-card/50 transition-all duration-300 cursor-pointer min-h-[340px]">
+            <div
+                class="size-16 rounded-full bg-surface-card group-hover:bg-primary/20 flex items-center justify-center mb-4 transition-colors">
+                <span
+                    class="material-symbols-outlined text-4xl text-gray-400 group-hover:text-primary transition-colors">add</span>
+            </div>
+            <h3 class="text-lg font-bold text-gray-300 group-hover:text-white mb-2">Új csoport</h3>
+            <p class="text-sm text-center text-gray-500 max-w-[200px]">Hozz létre egy új társaságot és hívd meg a
+                barátaidat!
+            </p>
+        </div>
+    </div>
+</div>

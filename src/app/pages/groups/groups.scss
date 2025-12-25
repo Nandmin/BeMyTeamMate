@@ -1,0 +1,19 @@
+:host {
+  display: block;
+  min-height: 100vh;
+
+  /* Custom scrollbar for webkit */
+  &::-webkit-scrollbar {
+    width: 8px;
+  }
+  &::-webkit-scrollbar-track {
+    background: #112218;
+  }
+  &::-webkit-scrollbar-thumb {
+    background: #234833;
+    border-radius: 4px;
+  }
+  &::-webkit-scrollbar-thumb:hover {
+    background: #2bee7c;
+  }
+}

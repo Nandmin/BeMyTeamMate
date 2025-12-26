@@ -23,7 +23,8 @@ export const routes: Routes = [
   },
   {
     path: 'groups/:id',
-    loadComponent: () => import('./pages/group-detail/group-detail').then((m) => m.GroupDetailPage),
+    loadComponent: () =>
+      import('./pages/group-detail/group-detail.page').then((m) => m.GroupDetailPage),
   },
   {
     path: 'results',

@@ -30,8 +30,8 @@ interface MockEvent {
   selector: 'app-group-detail',
   standalone: true,
   imports: [CommonModule, RouterModule],
-  templateUrl: './group-detail.html',
-  styleUrl: './group-detail.scss',
+  templateUrl: './group-detail.page.html',
+  styleUrl: './group-detail.page.scss',
 })
 export class GroupDetailPage {
   private route = inject(ActivatedRoute);

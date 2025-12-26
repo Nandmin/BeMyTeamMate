@@ -70,8 +70,8 @@
     <!-- Grid Content -->
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 pb-12">
         @for (group of groups(); track group.id) {
-        <div
-            class="group relative flex flex-col overflow-hidden rounded-2xl bg-surface-card border border-border-green hover:border-primary/50 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-primary/10">
+        <div (click)="navigateToGroup(group.id!)"
+            class="group relative flex flex-col overflow-hidden rounded-2xl bg-surface-card border border-border-green hover:border-primary/50 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-primary/10 cursor-pointer">
             <!-- Cover Image -->
             <div class="h-40 w-full overflow-hidden relative">
                 <img [src]="group.image" [alt]="group.name"

@@ -1,5 +1,6 @@
 import { Component, inject, Signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { GroupService, Group } from '../../services/group.service';
 import { AuthService } from '../../services/auth.service';
@@ -15,6 +16,7 @@ import { catchError, of } from 'rxjs';
 export class GroupsPage {
   private groupService = inject(GroupService);
   private fb = inject(FormBuilder);
+  private router = inject(Router);
   protected authService = inject(AuthService);
 
   groups: Signal<Group[] | undefined> = toSignal(
@@ -43,6 +45,10 @@ export class GroupsPage {
     if (!this.showCreateModal) {
       this.groupForm.reset({ type: 'closed' });
     }
+  }
+
+  navigateToGroup(id: string) {
+    this.router.navigate(['/groups', id]);
   }
 
   async onCreateGroup() {

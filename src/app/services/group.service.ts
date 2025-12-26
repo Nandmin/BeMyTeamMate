@@ -9,6 +9,8 @@ import {
   serverTimestamp,
   orderBy,
   collectionData,
+  doc,
+  docData,
 } from '@angular/fire/firestore';
 import { AuthService } from './auth.service';
 import { Observable, switchMap, of } from 'rxjs';
@@ -73,5 +75,10 @@ export class GroupService {
         return collectionData(q, { idField: 'id' }) as Observable<Group[]>;
       })
     );
+  }
+
+  getGroup(id: string): Observable<Group | undefined> {
+    const docRef = doc(this.firestore, `groups/${id}`);
+    return docData(docRef, { idField: 'id' }) as Observable<Group | undefined>;
   }
 }

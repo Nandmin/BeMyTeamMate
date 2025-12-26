@@ -1,7 +1,8 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterModule } from '@angular/router';
-import { GroupService, Group } from '../../services/group.service';
+import { GroupService, Group, GroupMember } from '../../services/group.service';
+import { AuthService } from '../../services/auth.service';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { switchMap, map } from 'rxjs';
 
@@ -36,52 +37,39 @@ interface MockEvent {
 export class GroupDetailPage {
   private route = inject(ActivatedRoute);
   private groupService = inject(GroupService);
+  protected authService = inject(AuthService);
 
   group = toSignal(
     this.route.params.pipe(switchMap((params) => this.groupService.getGroup(params['id'])))
   );
 
-  members = signal<MockMember[]>([
-    {
-      name: 'Nagy Dávid',
-      role: 'Csapatkapitány',
-      photo: 'https://api.dicebear.com/7.x/avataaars/svg?seed=David',
-      matches: 42,
-      isAdmin: true,
-      status: 'online',
-      skillLevel: 85,
-    },
-    {
-      name: 'Kiss Péter',
-      role: 'Csatár',
-      photo: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Peter',
-      matches: 28,
-      status: 'online',
-      skillLevel: 75,
-    },
-    {
-      name: 'Kovács Anna',
-      role: 'Védő',
-      photo: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Anna',
-      matches: 15,
-      skillLevel: 45,
-    },
-    {
-      name: 'Tóth Gábor',
-      role: 'Kapus',
-      photo: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Gabor',
-      matches: 34,
-      status: 'offline',
-      skillLevel: 90,
-    },
-    {
-      name: 'Szabó Éva',
-      role: 'Középpályás',
-      photo: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Eva',
-      matches: 12,
-      skillLevel: 20,
-    },
-  ]);
+  members = toSignal(
+    this.route.params.pipe(switchMap((params) => this.groupService.getGroupMembers(params['id'])))
+  );
+
+  isMember = computed(() => {
+    const user = this.authService.currentUser();
+    const members = this.members();
+    if (!user || !members) return false;
+    return members.some((m) => m.userId === user.uid);
+  });
+
+  isSubmitting = signal(false);
+
+  async onJoinGroup() {
+    const groupId = this.route.snapshot.params['id'];
+    if (!groupId) return;
+
+    this.isSubmitting.set(true);
+    try {
+      await this.groupService.joinGroup(groupId);
+    } catch (error) {
+      console.error('Error joining group:', error);
+      alert('Hiba történt a csatlakozáskor.');
+    } finally {
+      this.isSubmitting.set(false);
+    }
+  }
 
   events = signal<MockEvent[]>([
     {

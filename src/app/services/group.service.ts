@@ -11,9 +11,11 @@ import {
   collectionData,
   doc,
   docData,
+  updateDoc,
+  increment,
 } from '@angular/fire/firestore';
 import { AuthService } from './auth.service';
-import { Observable, switchMap, of } from 'rxjs';
+import { Observable, switchMap, of, combineLatest, map } from 'rxjs';
 
 export interface Group {
   id?: string;
@@ -26,6 +28,17 @@ export interface Group {
   memberCount: number;
   description?: string;
   image?: string;
+}
+
+export interface GroupMember {
+  id?: string;
+  userId: string;
+  name: string;
+  photo?: string | null;
+  role: string;
+  isAdmin: boolean;
+  joinedAt: any;
+  skillLevel?: number;
 }
 
 @Injectable({
@@ -80,5 +93,61 @@ export class GroupService {
   getGroup(id: string): Observable<Group | undefined> {
     const docRef = doc(this.firestore, `groups/${id}`);
     return docData(docRef, { idField: 'id' }) as Observable<Group | undefined>;
+  }
+
+  getGroupMembers(groupId: string): Observable<GroupMember[]> {
+    const group$ = this.getGroup(groupId);
+    const membersCollection = collection(this.firestore, `groups/${groupId}/members`);
+    const q = query(membersCollection, orderBy('joinedAt', 'asc'));
+    const members$ = collectionData(q, { idField: 'id' }) as Observable<GroupMember[]>;
+
+    return combineLatest([group$, members$]).pipe(
+      map(([group, members]) => {
+        if (!group) return members;
+
+        // Ensure the owner is in the list (fallback for older groups)
+        const hasOwner = members.some((m) => m.userId === group.ownerId);
+        if (!hasOwner) {
+          const ownerMember: GroupMember = {
+            id: 'owner-fallback',
+            userId: group.ownerId,
+            name: group.ownerName,
+            photo: group.ownerPhoto,
+            role: 'Csapatkapitány',
+            isAdmin: true,
+            joinedAt: group.createdAt,
+            skillLevel: 100,
+          };
+          return [ownerMember, ...members];
+        }
+        return members;
+      })
+    );
+  }
+
+  async joinGroup(groupId: string) {
+    const user = this.authService.currentUser();
+    if (!user) throw new Error('User logged in required');
+
+    const membersCollection = collection(this.firestore, `groups/${groupId}/members`);
+    const q = query(membersCollection, where('userId', '==', user.uid));
+    const snap = await getDocs(q);
+
+    if (snap.empty) {
+      await addDoc(membersCollection, {
+        userId: user.uid,
+        name: user.displayName || 'Ismeretlen',
+        photo: user.photoURL || null,
+        role: 'Tag',
+        isAdmin: false,
+        joinedAt: serverTimestamp(),
+        skillLevel: 50,
+      });
+
+      const groupRef = doc(this.firestore, `groups/${groupId}`);
+      await updateDoc(groupRef, {
+        memberCount: increment(1),
+      });
+    }
   }
 }

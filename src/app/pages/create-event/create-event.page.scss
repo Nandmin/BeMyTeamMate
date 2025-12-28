@@ -28,3 +28,22 @@ input[type="date"]::-webkit-clear-button,
 input[type="time"]::-webkit-clear-button {
   display: none;
 }
+
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+  scroll-behavior: smooth;
+  scroll-snap-type: x proximity;
+  -webkit-overflow-scrolling: touch;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+.snap-center {
+  scroll-snap-align: center;
+}
+
+.sport-card-transition {
+  transition: all 0.2s ease-out;
+}

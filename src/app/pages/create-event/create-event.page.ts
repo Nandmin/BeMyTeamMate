@@ -20,6 +20,18 @@ export class CreateEventPage implements OnInit {
   groupId = this.route.snapshot.params['id'];
   today = '';
 
+  sports = [
+    { id: 'soccer', name: 'Foci', icon: 'sports_soccer' },
+    { id: 'basketball', name: 'Kosárlabda', icon: 'sports_basketball' },
+    { id: 'handball', name: 'Kézilabda', icon: 'sports_handball' },
+    { id: 'tennis', name: 'Tenisz', icon: 'sports_tennis' },
+    { id: 'volleyball', name: 'Röplabda', icon: 'sports_volleyball' },
+    { id: 'hockey', name: 'Jégkorong', icon: 'sports_hockey' },
+    { id: 'squash', name: 'Squash', icon: 'sports_tennis' },
+    { id: 'bowling', name: 'Bowling', icon: 'sports_baseball' },
+    { id: 'other', name: 'Egyéb', icon: 'more_horiz' },
+  ];
+
   ngOnInit() {
     window.scrollTo({ top: 0, behavior: 'instant' });
     this.today = new Date().toISOString().split('T')[0];
@@ -89,5 +101,13 @@ export class CreateEventPage implements OnInit {
 
   setSport(sport: string) {
     this.eventData.sport = sport;
+  }
+
+  scrollCarousel(container: HTMLElement, direction: 'left' | 'right') {
+    const scrollAmount = 400; // Increased fixed scroll amount for faster navigation
+    container.scrollBy({
+      left: direction === 'left' ? -scrollAmount : scrollAmount,
+      behavior: 'smooth',
+    });
   }
 }

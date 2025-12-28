@@ -15,57 +15,34 @@
                     <span class="material-symbols-outlined text-primary">sports_handball</span>
                     <h3 class="text-xl font-bold text-white">Mit játszunk?</h3>
                 </div>
-                <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
-                    <!-- Soccer -->
-                    <label class="cursor-pointer group relative">
-                        <input type="radio" name="sport" value="soccer" [(ngModel)]="eventData.sport"
-                            class="peer sr-only" />
-                        <div
-                            class="flex flex-col items-center justify-center gap-3 rounded-xl bg-white/5 p-4 transition-all duration-300 hover:bg-white/10 peer-checked:bg-primary peer-checked:text-background-dark peer-checked:shadow-[0_0_20px_rgba(43,238,124,0.4)] peer-checked:scale-105">
-                            <span class="material-symbols-outlined text-4xl">sports_soccer</span>
-                            <span class="text-sm font-bold">Foci</span>
-                        </div>
-                    </label>
-                    <!-- Basketball -->
-                    <label class="cursor-pointer group relative">
-                        <input type="radio" name="sport" value="basketball" [(ngModel)]="eventData.sport"
-                            class="peer sr-only" />
-                        <div
-                            class="flex flex-col items-center justify-center gap-3 rounded-xl bg-white/5 p-4 transition-all duration-300 hover:bg-white/10 peer-checked:bg-primary peer-checked:text-background-dark text-gray-300 peer-checked:shadow-[0_0_20px_rgba(43,238,124,0.4)] peer-checked:scale-105">
-                            <span class="material-symbols-outlined text-4xl">sports_basketball</span>
-                            <span class="text-sm font-bold">Kosárlabda</span>
-                        </div>
-                    </label>
-                    <!-- Tennis -->
-                    <label class="cursor-pointer group relative">
-                        <input type="radio" name="sport" value="tennis" [(ngModel)]="eventData.sport"
-                            class="peer sr-only" />
-                        <div
-                            class="flex flex-col items-center justify-center gap-3 rounded-xl bg-white/5 p-4 transition-all duration-300 hover:bg-white/10 peer-checked:bg-primary peer-checked:text-background-dark text-gray-300 peer-checked:shadow-[0_0_20px_rgba(43,238,124,0.4)] peer-checked:scale-105">
-                            <span class="material-symbols-outlined text-4xl">sports_tennis</span>
-                            <span class="text-sm font-bold">Tenisz</span>
-                        </div>
-                    </label>
-                    <!-- Volleyball -->
-                    <label class="cursor-pointer group relative">
-                        <input type="radio" name="sport" value="volleyball" [(ngModel)]="eventData.sport"
-                            class="peer sr-only" />
-                        <div
-                            class="flex flex-col items-center justify-center gap-3 rounded-xl bg-white/5 p-4 transition-all duration-300 hover:bg-white/10 peer-checked:bg-primary peer-checked:text-background-dark text-gray-300 peer-checked:shadow-[0_0_20px_rgba(43,238,124,0.4)] peer-checked:scale-105">
-                            <span class="material-symbols-outlined text-4xl">sports_volleyball</span>
-                            <span class="text-sm font-bold">Röplabda</span>
-                        </div>
-                    </label>
-                    <!-- Other -->
-                    <label class="cursor-pointer group relative">
-                        <input type="radio" name="sport" value="other" [(ngModel)]="eventData.sport"
-                            class="peer sr-only" />
-                        <div
-                            class="flex flex-col items-center justify-center gap-3 rounded-xl bg-white/5 p-4 transition-all duration-300 hover:bg-white/10 peer-checked:bg-primary peer-checked:text-background-dark text-gray-300 peer-checked:shadow-[0_0_20px_rgba(43,238,124,0.4)] peer-checked:scale-105">
-                            <span class="material-symbols-outlined text-4xl">more_horiz</span>
-                            <span class="text-sm font-bold">Egyéb</span>
-                        </div>
-                    </label>
+                <div class="relative group/carousel">
+                    <!-- Left Arrow -->
+                    <button type="button" (click)="scrollCarousel(sportContainer, 'left')"
+                        class="absolute -left-2 md:-left-6 top-1/2 -translate-y-1/2 z-30 p-3 rounded-full bg-background-dark/95 text-white border border-white/10 hover:text-primary hover:border-primary/50 transition-all opacity-0 group-hover/carousel:opacity-100 hidden md:flex shadow-2xl backdrop-blur-md">
+                        <span class="material-symbols-outlined font-bold">chevron_left</span>
+                    </button>
+
+                    <!-- Sports Container -->
+                    <div #sportContainer
+                        class="flex gap-4 overflow-x-auto pb-4 pt-2 px-2 no-scrollbar snap-x scroll-smooth">
+                        @for (sport of sports; track sport.id) {
+                        <label class="cursor-pointer group flex-shrink-0 snap-center">
+                            <input type="radio" name="sport" [value]="sport.id" [(ngModel)]="eventData.sport"
+                                class="peer sr-only" />
+                            <div
+                                class="flex flex-col items-center justify-center gap-3 rounded-2xl bg-white/5 p-4 min-w-[120px] sport-card-transition hover:bg-white/10 peer-checked:bg-primary peer-checked:text-background-dark text-gray-300 peer-checked:shadow-[0_0_25px_rgba(43,238,124,0.4)] peer-checked:scale-105 border border-white/5 peer-checked:border-transparent">
+                                <span class="material-symbols-outlined text-4xl leading-none">{{ sport.icon }}</span>
+                                <span class="text-sm font-bold tracking-wide">{{ sport.name }}</span>
+                            </div>
+                        </label>
+                        }
+                    </div>
+
+                    <!-- Right Arrow -->
+                    <button type="button" (click)="scrollCarousel(sportContainer, 'right')"
+                        class="absolute -right-2 md:-right-6 top-1/2 -translate-y-1/2 z-30 p-3 rounded-full bg-background-dark/95 text-white border border-white/10 hover:text-primary hover:border-primary/50 transition-all opacity-0 group-hover/carousel:opacity-100 hidden md:flex shadow-2xl backdrop-blur-md">
+                        <span class="material-symbols-outlined font-bold">chevron_right</span>
+                    </button>
                 </div>
             </div>
 

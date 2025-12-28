@@ -27,6 +27,11 @@ export const routes: Routes = [
       import('./pages/group-detail/group-detail.page').then((m) => m.GroupDetailPage),
   },
   {
+    path: 'groups/:id/create-event',
+    loadComponent: () =>
+      import('./pages/create-event/create-event.page').then((m) => m.CreateEventPage),
+  },
+  {
     path: 'results',
     loadComponent: () => import('./pages/events-list/events-list').then((m) => m.EventsList),
   }, // TODO

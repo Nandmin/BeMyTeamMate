@@ -1,42 +1,25 @@
 import { Component, inject, signal, computed } from '@angular/core';
+import { Timestamp } from '@angular/fire/firestore';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterModule } from '@angular/router';
+import { FormsModule } from '@angular/forms';
 import { GroupService, Group, GroupMember } from '../../services/group.service';
 import { AuthService } from '../../services/auth.service';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { switchMap, map } from 'rxjs';
-
-interface MockMember {
-  name: string;
-  role: string;
-  photo: string;
-  matches: number;
-  isAdmin?: boolean;
-  status?: 'online' | 'offline';
-  skillLevel?: number; // 0-100
-}
-
-interface MockEvent {
-  title: string;
-  month: string;
-  day: string;
-  time: string;
-  location: string;
-  attendees: string[];
-  maxAttendees: number;
-  currentAttendees: number;
-}
+import { switchMap, map, tap } from 'rxjs';
+import { EventService, SportEvent } from '../../services/event.service';
 
 @Component({
   selector: 'app-group-detail',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, FormsModule],
   templateUrl: './group-detail.page.html',
   styleUrl: './group-detail.page.scss',
 })
 export class GroupDetailPage {
   private route = inject(ActivatedRoute);
   private groupService = inject(GroupService);
+  private eventService = inject(EventService);
   protected authService = inject(AuthService);
 
   group = toSignal(
@@ -47,6 +30,10 @@ export class GroupDetailPage {
     this.route.params.pipe(switchMap((params) => this.groupService.getGroupMembers(params['id'])))
   );
 
+  events = toSignal(
+    this.route.params.pipe(switchMap((params) => this.eventService.getEvents(params['id'])))
+  );
+
   isMember = computed(() => {
     const user = this.authService.currentUser();
     const members = this.members();
@@ -55,6 +42,66 @@ export class GroupDetailPage {
   });
 
   isSubmitting = signal(false);
+
+  // Recurrence for existing event
+  selectedEventForRecurrence = signal<SportEvent | null>(null);
+  recurrenceOptions = {
+    frequency: 'weekly' as 'daily' | 'weekly' | 'monthly',
+    until: '',
+  };
+
+  openRecurrenceModal(event: SportEvent) {
+    this.selectedEventForRecurrence.set(event);
+  }
+
+  async convertToRecurring() {
+    const event = this.selectedEventForRecurrence();
+    const groupId = this.route.snapshot.params['id'];
+    if (!event || !groupId || !this.recurrenceOptions.until) return;
+
+    this.isSubmitting.set(true);
+    try {
+      const [year, month, day] = this.recurrenceOptions.until.split('-').map(Number);
+      const untilDate = new Date(year, month - 1, day);
+      const recurrenceId = crypto.randomUUID();
+
+      // 1. Update existing event with recurrenceId
+      await this.eventService.updateEvent(groupId, event.id!, { recurrenceId });
+
+      // 2. Create future instances
+      const nextDate = new Date(event.date.toDate());
+      if (this.recurrenceOptions.frequency === 'daily') nextDate.setDate(nextDate.getDate() + 1);
+      else if (this.recurrenceOptions.frequency === 'weekly')
+        nextDate.setDate(nextDate.getDate() + 7);
+      else if (this.recurrenceOptions.frequency === 'monthly')
+        nextDate.setMonth(nextDate.getMonth() + 1);
+
+      if (nextDate <= untilDate) {
+        await this.eventService.createRecurringEvents(
+          groupId,
+          {
+            title: event.title,
+            sport: event.sport,
+            date: Timestamp.fromDate(nextDate),
+            time: event.time,
+            duration: event.duration,
+            location: event.location,
+            maxAttendees: event.maxAttendees,
+            recurrenceId, // Pass the same ID
+          },
+          this.recurrenceOptions.frequency,
+          Timestamp.fromDate(untilDate)
+        );
+      }
+
+      this.selectedEventForRecurrence.set(null);
+    } catch (error) {
+      console.error('Error making recurring:', error);
+      alert('Hiba történt.');
+    } finally {
+      this.isSubmitting.set(false);
+    }
+  }
 
   async onJoinGroup() {
     const groupId = this.route.snapshot.params['id'];
@@ -71,26 +118,26 @@ export class GroupDetailPage {
     }
   }
 
-  events = signal<MockEvent[]>([
-    {
-      title: 'Kedd Esti Levezető',
-      month: 'OKT',
-      day: '24',
-      time: '19:00 - 20:30',
-      location: 'Margitsziget AC',
-      attendees: ['A', 'B', 'C'],
-      maxAttendees: 10,
-      currentAttendees: 8,
-    },
-    {
-      title: 'Halloween Kupa',
-      month: 'OKT',
-      day: '31',
-      time: '18:00 - 22:00',
-      location: 'BME Sportközpont',
-      attendees: ['D', 'E'],
-      maxAttendees: 10,
-      currentAttendees: 4,
-    },
-  ]);
+  formatEventDate(timestamp: any) {
+    if (!timestamp) return { month: '', day: '' };
+    const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+    const months = [
+      'JAN',
+      'FEB',
+      'MÁR',
+      'ÁPR',
+      'MÁJ',
+      'JÚN',
+      'JÚL',
+      'AUG',
+      'SZEP',
+      'OKT',
+      'NOV',
+      'DEC',
+    ];
+    return {
+      month: months[date.getMonth()],
+      day: date.getDate().toString(),
+    };
+  }
 }

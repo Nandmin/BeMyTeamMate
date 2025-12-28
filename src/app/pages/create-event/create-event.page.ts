@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { EventService } from '../../services/event.service';
+import { AuthService } from '../../services/auth.service';
 import { Timestamp } from '@angular/fire/firestore';
 
 @Component({
@@ -16,8 +17,11 @@ export class CreateEventPage implements OnInit {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private eventService = inject(EventService);
+  private authService = inject(AuthService);
 
   groupId = this.route.snapshot.params['id'];
+  eventId = this.route.snapshot.params['eventId'];
+  isEditMode = !!this.eventId;
   today = '';
 
   sports = [
@@ -32,8 +36,7 @@ export class CreateEventPage implements OnInit {
     { id: 'other', name: 'Egyéb', icon: 'more_horiz' },
   ];
 
-  ngOnInit() {
-    window.scrollTo({ top: 0, behavior: 'instant' });
+  async ngOnInit() {
     this.today = new Date().toISOString().split('T')[0];
     this.eventData.date = this.today;
 
@@ -41,6 +44,46 @@ export class CreateEventPage implements OnInit {
     const nextMonth = new Date();
     nextMonth.setMonth(nextMonth.getMonth() + 1);
     this.eventData.recurringUntil = nextMonth.toISOString().split('T')[0];
+
+    if (this.isEditMode) {
+      await this.loadEventData();
+    }
+
+    // Ensure we are at the top, timeout helps with internal navigation/rendering lag
+    setTimeout(() => {
+      window.scrollTo({ top: 0, behavior: 'instant' });
+    }, 0);
+  }
+
+  async loadEventData() {
+    try {
+      const event = await this.eventService.getEvent(this.groupId, this.eventId);
+
+      // Security check: only creator can edit
+      const user = this.authService.currentUser();
+      if (event.creatorId !== user?.uid) {
+        alert('Nincs jogosultságod az esemény szerkesztéséhez.');
+        this.router.navigate(['/groups', this.groupId]);
+        return;
+      }
+
+      this.eventData = {
+        title: event.title,
+        sport: event.sport,
+        date: event.date.toDate().toISOString().split('T')[0],
+        time: event.time,
+        duration: event.duration,
+        location: event.location,
+        maxAttendees: event.maxAttendees,
+        isRecurring: false, // We don't support converting existing to recurring here yet
+        frequency: 'weekly',
+        recurringUntil: '',
+      };
+    } catch (error) {
+      console.error('Error loading event:', error);
+      alert('Hiba történt az esemény betöltésekor.');
+      this.router.navigate(['/groups', this.groupId]);
+    }
   }
 
   eventData = {
@@ -66,7 +109,7 @@ export class CreateEventPage implements OnInit {
       const [year, month, day] = this.eventData.date.split('-').map(Number);
       const startDate = new Date(year, month - 1, day);
 
-      const commonData = {
+      const commonData: any = {
         title: this.eventData.title,
         sport: this.eventData.sport,
         date: Timestamp.fromDate(startDate),
@@ -76,24 +119,28 @@ export class CreateEventPage implements OnInit {
         maxAttendees: this.eventData.maxAttendees,
       };
 
-      if (this.eventData.isRecurring && this.eventData.recurringUntil) {
-        const [uYear, uMonth, uDay] = this.eventData.recurringUntil.split('-').map(Number);
-        const untilDate = new Date(uYear, uMonth - 1, uDay);
-
-        await this.eventService.createRecurringEvents(
-          this.groupId,
-          commonData,
-          this.eventData.frequency,
-          Timestamp.fromDate(untilDate)
-        );
+      if (this.isEditMode) {
+        await this.eventService.updateEvent(this.groupId, this.eventId, commonData);
       } else {
-        await this.eventService.createEvent(this.groupId, commonData);
+        if (this.eventData.isRecurring && this.eventData.recurringUntil) {
+          const [uYear, uMonth, uDay] = this.eventData.recurringUntil.split('-').map(Number);
+          const untilDate = new Date(uYear, uMonth - 1, uDay);
+
+          await this.eventService.createRecurringEvents(
+            this.groupId,
+            commonData,
+            this.eventData.frequency,
+            Timestamp.fromDate(untilDate)
+          );
+        } else {
+          await this.eventService.createEvent(this.groupId, commonData);
+        }
       }
 
       this.router.navigate(['/groups', this.groupId]);
     } catch (error) {
-      console.error('Error creating event:', error);
-      alert('Hiba történt az esemény létrehozásakor.');
+      console.error('Error saving event:', error);
+      alert('Hiba történt az esemény mentésekor.');
     } finally {
       this.isSubmitting.set(false);
     }

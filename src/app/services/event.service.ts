@@ -11,6 +11,7 @@ import {
   Timestamp,
   doc,
   updateDoc,
+  getDoc,
 } from '@angular/fire/firestore';
 import { AuthService } from './auth.service';
 import { Observable } from 'rxjs';
@@ -116,6 +117,13 @@ export class EventService {
   async updateEvent(groupId: string, eventId: string, data: Partial<SportEvent>) {
     const docRef = doc(this.firestore, `groups/${groupId}/events/${eventId}`);
     return updateDoc(docRef, data);
+  }
+
+  async getEvent(groupId: string, eventId: string): Promise<SportEvent> {
+    const docRef = doc(this.firestore, `groups/${groupId}/events/${eventId}`);
+    const docSnap = await getDoc(docRef);
+    if (!docSnap.exists()) throw new Error('Event not found');
+    return { id: docSnap.id, ...docSnap.data() } as SportEvent;
   }
 
   getEvents(groupId: string): Observable<SportEvent[]> {

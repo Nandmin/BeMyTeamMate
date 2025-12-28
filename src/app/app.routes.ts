@@ -32,6 +32,11 @@ export const routes: Routes = [
       import('./pages/create-event/create-event.page').then((m) => m.CreateEventPage),
   },
   {
+    path: 'groups/:id/edit-event/:eventId',
+    loadComponent: () =>
+      import('./pages/create-event/create-event.page').then((m) => m.CreateEventPage),
+  },
+  {
     path: 'results',
     loadComponent: () => import('./pages/events-list/events-list').then((m) => m.EventsList),
   }, // TODO

@@ -136,15 +136,22 @@
                     @for (event of events() || []; track event.id) {
                     <div
                         class="group relative overflow-hidden rounded-2xl bg-white/5 border border-white/10 p-5 hover:border-primary/50 transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
-                        <div class="absolute top-0 right-0 p-3 flex gap-2">
+                        <div class="absolute top-0 right-0 p-0 flex gap-2">
                             @if (event.creatorId === authService.currentUser()?.uid && !event.recurrenceId) {
                             <button (click)="openRecurrenceModal(event)" title="Ismétlődővé tétel"
                                 class="p-1 rounded-lg bg-background-dark/50 text-gray-400 hover:text-primary transition-colors">
                                 <span class="material-symbols-outlined text-sm">update</span>
                             </button>
                             }
-                            <span
-                                class="material-symbols-outlined text-gray-400 hover:text-white cursor-pointer">more_horiz</span>
+                            @if (event.creatorId === authService.currentUser()?.uid) {
+                            <a [routerLink]="['/groups', group()?.id, 'edit-event', event.id]"
+                                class="p-1 rounded-lg bg-background-dark/50 text-gray-400 hover:text-primary transition-colors"
+                                title="Szerkesztés">
+                                <span class="material-symbols-outlined text-sm">edit</span>
+                            </a>
+                            }
+                            <!-- <span
+                                class="material-symbols-outlined text-gray-400 hover:text-white cursor-pointer">more_horiz</span> -->
                         </div>
                         <div class="flex flex-col sm:flex-row gap-5 items-start sm:items-center">
                             <!-- Date Box -->
@@ -172,10 +179,10 @@
                             <div class="flex flex-col items-end gap-2">
                                 <div class="flex -space-x-2">
                                     @for (attendeeId of (event.attendees || []).slice(0, 3); track attendeeId) {
-                                    <div
+                                    <!-- <div
                                         class="w-8 h-8 rounded-full border-2 border-background-dark bg-gray-600 flex items-center justify-center text-[10px] font-bold">
                                         {{ attendeeId.substring(0, 1) }}
-                                    </div>
+                                    </div> -->
                                     }
                                     @if ((event.attendees || []).length > 3) {
                                     <div

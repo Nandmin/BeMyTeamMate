@@ -14,17 +14,21 @@
         </div>
 
         <!-- Center: Navigation Links (Desktop) -->
-        <nav class="hidden md:flex items-center gap-1">
-            <a routerLink="/events" routerLinkActive="text-primary bg-primary/10"
-                class="px-4 py-2 rounded-lg text-sm font-semibold text-text-muted hover:text-white hover:bg-white/5 transition-all">
+        <nav class="hidden md:flex items-center gap-1 h-full">
+            <a routerLink="/" [routerLinkActiveOptions]="{exact: true}" routerLinkActive="active-link"
+                class="relative flex h-8 items-center px-4 text-sm font-semibold text-gray-400 hover:text-white transition-all">
+                Kezdőlap
+            </a>
+            <a routerLink="/events" routerLinkActive="active-link"
+                class="relative flex h-8 items-center px-4 text-sm font-semibold text-gray-400 hover:text-white transition-all">
                 Események
             </a>
-            <a routerLink="/groups" routerLinkActive="text-primary bg-primary/10"
-                class="px-4 py-2 rounded-lg text-sm font-semibold text-text-muted hover:text-white hover:bg-white/5 transition-all">
+            <a routerLink="/groups" routerLinkActive="active-link"
+                class="relative flex h-8 items-center px-4 text-sm font-semibold text-gray-400 hover:text-white transition-all">
                 Csoportjaim
             </a>
-            <a routerLink="/results" routerLinkActive="text-primary bg-primary/10"
-                class="px-4 py-2 rounded-lg text-sm font-semibold text-text-muted hover:text-white hover:bg-white/5 transition-all">
+            <a routerLink="/results" routerLinkActive="active-link"
+                class="relative flex h-8 items-center px-4 text-sm font-semibold text-gray-400 hover:text-white transition-all">
                 Eredmények
             </a>
         </nav>

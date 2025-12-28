@@ -9,7 +9,7 @@
 .main-content {
   flex: 1;
   overflow-y: auto;
-  padding-bottom: 80px; // Space for bottom nav
+  padding-bottom: 0;
 
   &.no-nav {
     padding-bottom: 0;
@@ -17,18 +17,21 @@
 }
 
 .bottom-nav {
+  display: none;
   position: fixed;
   bottom: 0;
   left: 0;
   right: 0;
   height: 70px;
+  padding-bottom: env(safe-area-inset-bottom);
   background: linear-gradient(180deg, rgba(26, 31, 58, 0.95) 0%, rgba(26, 31, 58, 1) 100%);
   backdrop-filter: blur(10px);
   border-top: 1px solid rgba(91, 124, 230, 0.2);
-  display: flex;
   justify-content: space-around;
   align-items: center;
-  padding: 0 1rem;
+  padding-left: 1rem;
+  padding-right: 1rem;
+  padding-top: 0;
   z-index: 1000;
   box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.3);
 }
@@ -43,12 +46,11 @@
   border-radius: 12px;
   color: rgba(255, 255, 255, 0.6);
   text-decoration: none;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0 2, 1);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0, 1.2); // Fixed typo in cubic-bezier
   min-width: 70px;
 
-  svg {
-    width: 24px;
-    height: 24px;
+  .material-symbols-outlined {
+    font-size: 24px;
     transition: all 0.3s ease;
   }
 
@@ -65,12 +67,13 @@
   }
 
   &.active {
-    color: #5b7ce6;
-    background: linear-gradient(135deg, rgba(91, 124, 230, 0.15) 0%, rgba(139, 92, 246, 0.15) 100%);
+    color: #22c55e; // Use primary color
+    background: linear-gradient(135deg, rgba(34, 197, 94, 0.15) 0%, rgba(139, 92, 246, 0.15) 100%);
     
-    svg {
+    .material-symbols-outlined {
       transform: scale(1.1);
-      filter: drop-shadow(0 0 8px rgba(91, 124, 230, 0.5));
+      font-variation-settings: 'FILL' 1; // Fill the icon when active
+      filter: drop-shadow(0 0 8px rgba(34, 197, 94, 0.5));
     }
 
     span {
@@ -81,7 +84,12 @@
 
 // Mobile responsiveness
 @media (max-width: 768px) {
+  .main-content:not(.no-nav) {
+    padding-bottom: 80px;
+  }
+
   .bottom-nav {
+    display: flex;
     padding: 0 0.5rem;
   }
 
@@ -89,9 +97,8 @@
     min-width: 60px;
     padding: 6px 8px;
 
-    svg {
-      width: 22px;
-      height: 22px;
+    .material-symbols-outlined {
+      font-size: 24px;
     }
 
     span {

@@ -21,11 +21,9 @@ export class App {
     this.router.events
       .pipe(filter((event) => event instanceof NavigationEnd))
       .subscribe((event: NavigationEnd) => {
-        // Hide nav on landing page ('/')
+        // Show nav on all pages except login and register
         this.showNav.set(
-          event.urlAfterRedirects !== '/' &&
-            event.urlAfterRedirects !== '/login' &&
-            event.urlAfterRedirects !== '/register'
+          event.urlAfterRedirects !== '/login' && event.urlAfterRedirects !== '/register'
         );
         // Hide footer on login page to prevent scrolling
         this.showFooter.set(

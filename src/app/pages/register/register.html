@@ -58,6 +58,10 @@
                 class="mb-4 p-3 bg-red-600 border border-red-700 rounded-lg text-white font-medium text-sm text-center shadow-lg animate-shake">
                 {{ errorMessage }}
             </div>
+            <div *ngIf="successMessage()"
+                class="mb-4 p-3 bg-green-600 border border-green-700 rounded-lg text-white font-medium text-sm text-center shadow-lg">
+                {{ successMessage() }}
+            </div>
 
             <form class="flex flex-col gap-3" [formGroup]="registerForm" (ngSubmit)="onRegister()">
                 <!-- Grid for Inputs -->
@@ -71,8 +75,12 @@
                                 class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2  group-focus-within:text-primary transition-colors">person</span>
                             <input
                                 class="w-full bg-dark-accent/50 border border-border-dark rounded-xl py-3.5 pl-12 pr-4 text-white placeholder:/50 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all duration-300"
+                                [class.border-red-500]="registerForm.get('username')?.invalid && registerForm.get('username')?.touched"
                                 placeholder="pl. KovácsJános" type="text" formControlName="username" />
                         </div>
+                        @if (registerForm.get('username')?.invalid && registerForm.get('username')?.touched) {
+                        <span class="text-red-400 text-xs mt-1">A felhasználónév megadása kötelező.</span>
+                        }
                     </div>
                     <!-- Email -->
                     <div class="flex flex-col gap-2 group">
@@ -84,8 +92,18 @@
                                 class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2  group-focus-within:text-primary transition-colors">mail</span>
                             <input
                                 class="w-full bg-dark-accent/50 border border-border-dark rounded-xl py-3.5 pl-12 pr-4 text-white placeholder:/50 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all duration-300"
+                                [class.border-red-500]="registerForm.get('email')?.invalid && registerForm.get('email')?.touched"
                                 placeholder="pelda@email.com" type="email" formControlName="email" />
                         </div>
+                        @if (registerForm.get('email')?.invalid && registerForm.get('email')?.touched) {
+                        <span class="text-red-400 text-xs mt-1">
+                            @if (registerForm.get('email')?.errors?.['required']) {
+                            Az email cím megadása kötelező.
+                            } @else if (registerForm.get('email')?.errors?.['email']) {
+                            Érvénytelen email formátum.
+                            }
+                        </span>
+                        }
                     </div>
                     <!-- Password -->
                     <div class="flex flex-col gap-2 group">
@@ -96,8 +114,18 @@
                                 class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2  group-focus-within:text-primary transition-colors">lock</span>
                             <input
                                 class="w-full bg-dark-accent/50 border border-border-dark rounded-xl py-3.5 pl-12 pr-4 text-white placeholder:/50 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all duration-300"
+                                [class.border-red-500]="registerForm.get('password')?.invalid && registerForm.get('password')?.touched"
                                 placeholder="******" type="password" formControlName="password" />
                         </div>
+                        @if (registerForm.get('password')?.invalid && registerForm.get('password')?.touched) {
+                        <span class="text-red-400 text-xs mt-1">
+                            @if (registerForm.get('password')?.errors?.['required']) {
+                            A jelszó megadása kötelező.
+                            } @else if (registerForm.get('password')?.errors?.['minlength']) {
+                            A jelszónak legalább 6 karakter hosszúnak kell lennie.
+                            }
+                        </span>
+                        }
                     </div>
                     <!-- Confirm Password -->
                     <div class="flex flex-col gap-2 group">
@@ -109,8 +137,13 @@
                                 class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2  group-focus-within:text-primary transition-colors">lock_reset</span>
                             <input
                                 class="w-full bg-dark-accent/50 border border-border-dark rounded-xl py-3.5 pl-12 pr-4 text-white placeholder:/50 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all duration-300"
+                                [class.border-red-500]="registerForm.get('confirmPassword')?.invalid && registerForm.get('confirmPassword')?.touched"
                                 placeholder="******" type="password" formControlName="confirmPassword" />
                         </div>
+                        @if (registerForm.get('confirmPassword')?.invalid &&
+                        registerForm.get('confirmPassword')?.touched) {
+                        <span class="text-red-400 text-xs mt-1">A jelszó megerősítése kötelező.</span>
+                        }
                     </div>
                 </div>
 

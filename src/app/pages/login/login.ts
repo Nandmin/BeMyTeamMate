@@ -21,6 +21,7 @@ export class LoginPage implements OnInit {
   });
 
   errorMessage = '';
+  successMessage = signal('');
   isLoading = signal(false);
   showPassword = signal(false);
 
@@ -63,6 +64,29 @@ export class LoginPage implements OnInit {
       if (error.code !== 'auth/popup-closed-by-user') {
         this.errorMessage = 'Google bejelentkezés sikertelen.';
       }
+    } finally {
+      this.isLoading.set(false);
+    }
+  }
+
+  async onForgotPassword() {
+    const email = this.loginForm.get('email')?.value;
+    if (!email || this.loginForm.get('email')?.invalid) {
+      this.errorMessage = 'Kérlek add meg az email címedet az elfelejtett jelszóhoz.';
+      this.successMessage.set('');
+      return;
+    }
+
+    this.errorMessage = '';
+    this.successMessage.set('');
+    this.isLoading.set(true);
+
+    try {
+      await this.authService.sendPasswordReset(email);
+      this.successMessage.set('Jelszó-visszaállító email elküldve! Ellenőrizd a postaládád.');
+    } catch (error: any) {
+      this.errorMessage = 'Sikertelen jelszó-visszaállítás. Kérlek próbáld újra.';
+      console.error(error);
     } finally {
       this.isLoading.set(false);
     }

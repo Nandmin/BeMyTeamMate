@@ -32,6 +32,7 @@ export class RegisterPage {
   ];
 
   errorMessage = '';
+  successMessage = signal('');
   isLoading = signal(false);
 
   toggleSport(sportId: string) {
@@ -67,6 +68,8 @@ export class RegisterPage {
         bio,
         sports: Array.from(this.selectedSports),
       });
+      this.successMessage.set('Sikeres regisztráció! Az aktiváló emailt elküldtük.');
+      // Wait a moment so user can see it before redirect (AuthService already redirects, but adding here for clarity if we change redirect logic)
     } catch (error: any) {
       this.errorMessage = this.getErrorMessage(error.code);
       console.error(error);

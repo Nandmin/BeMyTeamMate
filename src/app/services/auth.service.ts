@@ -12,6 +12,8 @@ import {
   user,
   User,
   updateProfile,
+  sendEmailVerification,
+  sendPasswordResetEmail,
 } from '@angular/fire/auth';
 import { Firestore, doc, setDoc, getDoc, serverTimestamp } from '@angular/fire/firestore';
 import { Router } from '@angular/router';
@@ -57,6 +59,15 @@ export class AuthService {
         await updateProfile(credential.user, { displayName: username });
       }
       await this.updateUserData(credential.user, { username, ...additionalData }); // Save extra data
+
+      // --- Send Email Verification ---
+      try {
+        await sendEmailVerification(credential.user);
+        console.log('Verification email sent');
+      } catch (emailError) {
+        console.error('Error sending verification email:', emailError);
+      }
+
       this.router.navigate(['/']);
       return credential.user;
     } catch (error) {
@@ -114,6 +125,17 @@ export class AuthService {
       }
     }
     return null;
+  }
+
+  // --- Password Reset ---
+  async sendPasswordReset(email: string) {
+    try {
+      await sendPasswordResetEmail(this.auth, email);
+      return true;
+    } catch (error) {
+      console.error('Password reset error:', error);
+      throw error;
+    }
   }
 
   // --- Logout ---

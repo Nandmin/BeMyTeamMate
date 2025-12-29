@@ -2,6 +2,7 @@ import { Component, inject, signal, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { EventService } from '../../services/event.service';
 import { AuthService } from '../../services/auth.service';
 import { Timestamp } from '@angular/fire/firestore';
@@ -16,6 +17,7 @@ import { Timestamp } from '@angular/fire/firestore';
 export class CreateEventPage implements OnInit {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
+  private sanitizer = inject(DomSanitizer);
   private eventService = inject(EventService);
   private authService = inject(AuthService);
 
@@ -100,6 +102,7 @@ export class CreateEventPage implements OnInit {
   };
 
   isSubmitting = signal(false);
+  isMapExpanded = false;
 
   async onSubmit() {
     if (!this.groupId) return;
@@ -160,5 +163,45 @@ export class CreateEventPage implements OnInit {
       left: direction === 'left' ? -scrollAmount : scrollAmount,
       behavior: 'smooth',
     });
+  }
+
+  // Map zoom level
+  mapZoom = 15;
+  private cachedMapUrl: SafeResourceUrl | null = null;
+  private cachedLocation: string = '';
+  private cachedZoom: number = 15;
+
+  getMapUrl(): SafeResourceUrl {
+    // Cache the URL to avoid regenerating on every change detection cycle
+    if (
+      this.cachedLocation === this.eventData.location &&
+      this.cachedZoom === this.mapZoom &&
+      this.cachedMapUrl
+    ) {
+      return this.cachedMapUrl;
+    }
+
+    const encodedLocation = encodeURIComponent(this.eventData.location);
+    // Google Maps embed with parameters for better interactivity
+    const url = `https://maps.google.com/maps?q=${encodedLocation}&z=${this.mapZoom}&hl=hu&output=embed`;
+
+    this.cachedLocation = this.eventData.location;
+    this.cachedZoom = this.mapZoom;
+    this.cachedMapUrl = this.sanitizer.bypassSecurityTrustResourceUrl(url);
+    return this.cachedMapUrl;
+  }
+
+  zoomIn() {
+    if (this.mapZoom < 18) {
+      this.mapZoom += 1;
+      this.cachedMapUrl = null;
+    }
+  }
+
+  zoomOut() {
+    if (this.mapZoom > 3) {
+      this.mapZoom -= 1;
+      this.cachedMapUrl = null;
+    }
   }
 }

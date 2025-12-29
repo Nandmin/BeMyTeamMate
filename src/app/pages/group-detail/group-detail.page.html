@@ -211,9 +211,12 @@
                                     }} fő</span>
                             </div>
                             <!-- Action -->
-                            <button (click)="$event.stopPropagation()"
+                            <button (click)="$event.stopPropagation(); onToggleRSVP(event)"
+                                [class.bg-red-600]="isUserAttending(event)" [class.text-white]="isUserAttending(event)"
+                                [class.border-red-600]="isUserAttending(event)"
+                                [class.hover:bg-red-700]="isUserAttending(event)"
                                 class="sm:self-center px-4 py-2 rounded-lg bg-primary/10 text-primary font-bold text-sm hover:bg-primary hover:text-white transition-colors border border-primary/20">
-                                Jelentkezés
+                                {{ isUserAttending(event) ? 'Lemondás' : 'Jelentkezés' }}
                             </button>
                         </div>
                     </div>

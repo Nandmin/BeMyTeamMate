@@ -136,4 +136,32 @@ export class EventService {
     const docRef = doc(this.firestore, `groups/${groupId}/events/${eventId}`);
     return deleteDoc(docRef);
   }
+
+  async toggleRSVP(groupId: string, eventId: string) {
+    const user = this.authService.currentUser();
+    if (!user) throw new Error('User must be logged in');
+
+    const eventRef = doc(this.firestore, `groups/${groupId}/events/${eventId}`);
+    const eventSnap = await getDoc(eventRef);
+    if (!eventSnap.exists()) throw new Error('Event not found');
+
+    const event = eventSnap.data() as SportEvent;
+    const attendees = event.attendees || [];
+    const isJoining = !attendees.includes(user.uid);
+
+    if (isJoining) {
+      if (event.currentAttendees >= event.maxAttendees) {
+        throw new Error('Sajnáljuk, az esemény betelt.');
+      }
+      attendees.push(user.uid);
+    } else {
+      const index = attendees.indexOf(user.uid);
+      if (index > -1) attendees.splice(index, 1);
+    }
+
+    return updateDoc(eventRef, {
+      attendees,
+      currentAttendees: attendees.length,
+    });
+  }
 }

@@ -170,6 +170,33 @@ export class GroupDetailPage {
     };
   }
 
+  isUserAttending(event: SportEvent): boolean {
+    const user = this.authService.currentUser();
+    if (!user || !event.attendees) return false;
+    return event.attendees.includes(user.uid);
+  }
+
+  async onToggleRSVP(event: SportEvent) {
+    const groupId = this.route.snapshot.params['id'];
+    if (!groupId || !event.id) return;
+
+    // Check if user is a member first
+    if (!this.isMember()) {
+      alert('Csak csoporttagok jelentkezhetnek az eseményekre.');
+      return;
+    }
+
+    this.isSubmitting.set(true);
+    try {
+      await this.eventService.toggleRSVP(groupId, event.id);
+    } catch (error: any) {
+      console.error('Error toggling RSVP:', error);
+      alert(error.message || 'Hiba történt a jelentkezés során.');
+    } finally {
+      this.isSubmitting.set(false);
+    }
+  }
+
   // Event Attendees Modal
   selectedEventForAttendees = signal<SportEvent | null>(null);
 

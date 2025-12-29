@@ -153,6 +153,23 @@ export class CreateEventPage implements OnInit {
     this.router.navigate(['/groups', this.groupId]);
   }
 
+  async onDeleteEvent() {
+    if (!this.groupId || !this.eventId) return;
+
+    if (confirm('Biztosan törölni szeretnéd ezt az eseményt?')) {
+      this.isSubmitting.set(true);
+      try {
+        await this.eventService.deleteEvent(this.groupId, this.eventId);
+        this.router.navigate(['/groups', this.groupId]);
+      } catch (error) {
+        console.error('Error deleting event:', error);
+        alert('Hiba történt az esemény törlésekor.');
+      } finally {
+        this.isSubmitting.set(false);
+      }
+    }
+  }
+
   setSport(sport: string) {
     this.eventData.sport = sport;
   }

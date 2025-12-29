@@ -136,24 +136,24 @@
 
                     <!-- Upcoming Event Cards -->
                     @for (event of events() || []; track event.id) {
-                    <div
-                        class="group relative overflow-hidden rounded-2xl bg-white/5 border border-white/10 p-5 hover:border-primary/50 transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
+                    <div (click)="openAttendeesModal(event)"
+                        class="group relative overflow-hidden rounded-2xl bg-white/5 border border-white/10 p-5 hover:border-primary/50 transition-all duration-300 hover:shadow-lg hover:-translate-y-1 cursor-pointer">
                         <div class="absolute top-0 right-0 p-0 flex gap-2">
                             @if (event.creatorId === authService.currentUser()?.uid && !event.recurrenceId) {
-                            <button (click)="openRecurrenceModal(event)" title="Ismétlődővé tétel"
+                            <button (click)="openRecurrenceModal(event); $event.stopPropagation()"
+                                title="Ismétlődővé tétel"
                                 class="p-1 rounded-lg bg-background-dark/50 text-gray-400 hover:text-primary transition-colors">
                                 <span class="material-symbols-outlined text-sm">update</span>
                             </button>
                             }
                             @if (event.creatorId === authService.currentUser()?.uid) {
                             <a [routerLink]="['/groups', group()?.id, 'edit-event', event.id]"
+                                (click)="$event.stopPropagation()"
                                 class="p-1 rounded-lg bg-background-dark/50 text-gray-400 hover:text-primary transition-colors"
                                 title="Szerkesztés">
                                 <span class="material-symbols-outlined text-sm">edit</span>
                             </a>
                             }
-                            <!-- <span
-                                class="material-symbols-outlined text-gray-400 hover:text-white cursor-pointer">more_horiz</span> -->
                         </div>
                         <div class="flex flex-col sm:flex-row gap-5 items-start sm:items-center">
                             <!-- Date Box -->
@@ -180,16 +180,25 @@
                             <!-- Attendees -->
                             <div class="flex flex-col items-end gap-2">
                                 <div class="flex -space-x-2">
-                                    @for (attendeeId of (event.attendees || []).slice(0, 3); track attendeeId) {
-                                    <!-- <div
-                                        class="w-8 h-8 rounded-full border-2 border-background-dark bg-gray-600 flex items-center justify-center text-[10px] font-bold">
-                                        {{ attendeeId.substring(0, 1) }}
-                                    </div> -->
+                                    @for (member of getAttendingMembersForEvent(event).slice(0, 4); track member.userId)
+                                    {
+                                    <div class="w-8 h-8 rounded-full border-2 border-background-dark bg-white/10 overflow-hidden"
+                                        [title]="member.name">
+                                        @if (member.photo) {
+                                        <img [src]="member.photo" [alt]="member.name"
+                                            class="w-full h-full object-cover">
+                                        } @else {
+                                        <div
+                                            class="w-full h-full flex items-center justify-center text-[10px] font-bold text-primary bg-primary/10">
+                                            {{ member.name.substring(0, 1) }}
+                                        </div>
+                                        }
+                                    </div>
                                     }
-                                    @if ((event.attendees || []).length > 3) {
+                                    @if (getAttendingMembersForEvent(event).length > 4) {
                                     <div
                                         class="flex items-center justify-center w-8 h-8 rounded-full border-2 border-background-dark bg-white/5 text-[10px] font-bold text-white">
-                                        +{{ (event.attendees || []).length - 3 }}
+                                        +{{ getAttendingMembersForEvent(event).length - 4 }}
                                     </div>
                                     }
                                 </div>
@@ -202,7 +211,7 @@
                                     }} fő</span>
                             </div>
                             <!-- Action -->
-                            <button
+                            <button (click)="$event.stopPropagation()"
                                 class="sm:self-center px-4 py-2 rounded-lg bg-primary/10 text-primary font-bold text-sm hover:bg-primary hover:text-white transition-colors border border-primary/20">
                                 Jelentkezés
                             </button>
@@ -296,7 +305,7 @@
     <!-- Recurrence Modal -->
     @if (selectedEventForRecurrence()) {
     <div
-        class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-background-dark/90 backdrop-blur-sm animate-fade-in">
+        class="fixed inset-0 z-[100] flex items-start justify-center p-4 bg-background-dark/90 backdrop-blur-sm animate-fade-in pt-[114px]">
         <div class="w-full max-w-md bg-card-dark border border-white/10 rounded-2xl p-6 shadow-2xl animate-slide-up">
             <h3 class="text-xl font-bold text-white mb-2">Esemény ismétlődővé tétele</h3>
             <p class="text-sm text-gray-400 mb-6">"{{ selectedEventForRecurrence()?.title }}" automatikus másolása.</p>
@@ -328,6 +337,127 @@
                         Úgy legyen
                     </button>
                 </div>
+            </div>
+        </div>
+    </div>
+    }
+    <!-- Attendees Modal -->
+    @if (selectedEventForAttendees()) {
+    <div
+        class="fixed inset-0 z-[100] flex items-start justify-center p-4 bg-background-dark/95 backdrop-blur-sm animate-modal-overlay pt-[40px]">
+        <div (click)="$event.stopPropagation()"
+            class="w-full max-w-lg bg-card-dark border border-white/10 rounded-3xl overflow-hidden shadow-2xl animate-modal-content flex flex-col max-h-[85vh]">
+
+            <!-- Modal Header -->
+            <div
+                class="p-6 border-b border-white/5 flex items-center justify-between bg-gradient-to-r from-primary/5 to-transparent">
+                <div class="flex items-center gap-4">
+                    <div class="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
+                        <span class="material-symbols-outlined text-primary text-2xl font-bold">groups</span>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-bold text-white tracking-tight">{{ selectedEventForAttendees()?.title }}
+                        </h3>
+                        <p class="text-sm text-gray-400">Résztvevők</p>
+                    </div>
+                </div>
+                <button (click)="closeAttendeesModal()"
+                    class="p-2 rounded-xl bg-white/5 text-gray-400 hover:text-white hover:bg-white/10 transition-all">
+                    <span class="material-symbols-outlined">close</span>
+                </button>
+            </div>
+
+            <!-- Modal Content -->
+            <div class="flex-1 overflow-y-auto p-6 space-y-8 no-scrollbar">
+
+                <!-- Attending Section -->
+                <div>
+                    <div class="flex items-center justify-between mb-4">
+                        <h4 class="text-sm font-bold text-primary uppercase tracking-widest flex items-center gap-2">
+                            <span class="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
+                            Ott lesznek
+                        </h4>
+                        <span class="px-2 py-0.5 rounded-full bg-primary/10 text-primary text-xs font-bold">
+                            {{ getAttendingMembers().length }} fő
+                        </span>
+                    </div>
+                    <div class="grid grid-cols-1 gap-3">
+                        @for (member of getAttendingMembers(); track member.userId) {
+                        <div
+                            class="flex items-center gap-3 p-3 rounded-2xl bg-white/5 border border-white/5 hover:border-primary/30 transition-all group/member">
+                            <div class="w-10 h-10 rounded-xl bg-white/10 overflow-hidden border border-white/10">
+                                @if (member.photo) {
+                                <img [src]="member.photo" class="w-full h-full object-cover" alt="">
+                                } @else {
+                                <div
+                                    class="w-full h-full flex items-center justify-center text-sm font-bold text-gray-400 italic">
+                                    {{ member.name.substring(0, 1) }}
+                                </div>
+                                }
+                            </div>
+                            <div class="flex-1">
+                                <p
+                                    class="text-sm font-bold text-white group-hover/member:text-primary transition-colors">
+                                    {{ member.name }}</p>
+                                <p class="text-[10px] text-gray-500 font-medium">{{ member.role }}</p>
+                            </div>
+                            <div class="px-2 py-1 rounded-lg bg-primary/10">
+                                <span class="material-symbols-outlined text-primary text-sm">check_circle</span>
+                            </div>
+                        </div>
+                        } @empty {
+                        <div class="text-center py-6 px-4 rounded-2xl border-2 border-dashed border-white/5">
+                            <p class="text-sm text-gray-500">Még senki nem jelentkezett erre az eseményre.</p>
+                        </div>
+                        }
+                    </div>
+                </div>
+
+                <!-- Not Attending / Pending Section -->
+                <div>
+                    <div class="flex items-center justify-between mb-4">
+                        <h4 class="text-sm font-bold text-gray-400 uppercase tracking-widest flex items-center gap-2">
+                            <span class="w-2 h-2 rounded-full bg-gray-600"></span>
+                            Nem jelzett vissza / Nem lesz ott
+                        </h4>
+                        <span class="px-2 py-0.5 rounded-full bg-white/5 text-gray-500 text-xs font-bold">
+                            {{ getNotAttendingMembers().length }} fő
+                        </span>
+                    </div>
+                    <div class="grid grid-cols-1 gap-3 opacity-60">
+                        @for (member of getNotAttendingMembers(); track member.userId) {
+                        <div
+                            class="flex items-center gap-3 p-3 rounded-2xl bg-white/5 border border-white/5 hover:bg-white/10 transition-all">
+                            <div
+                                class="w-10 h-10 rounded-xl bg-white/5 overflow-hidden border border-white/5 flex items-center justify-center grayscale">
+                                @if (member.photo) {
+                                <img [src]="member.photo" class="w-full h-full object-cover opacity-50" alt="">
+                                } @else {
+                                <div
+                                    class="w-full h-full flex items-center justify-center text-sm font-bold text-gray-600">
+                                    {{ member.name.substring(0, 1) }}
+                                </div>
+                                }
+                            </div>
+                            <div class="flex-1">
+                                <p class="text-sm font-bold text-gray-400">{{ member.name }}</p>
+                                <p class="text-[10px] text-gray-600 font-medium">{{ member.role }}</p>
+                            </div>
+                        </div>
+                        } @empty {
+                        <p class="text-center text-xs text-gray-600 italic">Minden csapattag részt vesz az eseményen! 🔥
+                        </p>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="p-6 border-t border-white/5 bg-background-dark/50">
+                <button (click)="closeAttendeesModal()"
+                    class="w-full py-3 bg-white/5 hover:bg-white/10 text-white font-bold rounded-2xl transition-all border border-white/10">
+                    Bezárás
+                </button>
             </div>
         </div>
     </div>

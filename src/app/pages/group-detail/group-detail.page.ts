@@ -1,6 +1,6 @@
-import { Component, inject, signal, computed } from '@angular/core';
+import { Component, inject, signal, computed, effect, Renderer2 } from '@angular/core';
 import { Timestamp } from '@angular/fire/firestore';
-import { CommonModule } from '@angular/common';
+import { CommonModule, DOCUMENT } from '@angular/common'; // Added DOCUMENT
 import { ActivatedRoute, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { GroupService, Group, GroupMember } from '../../services/group.service';
@@ -21,6 +21,23 @@ export class GroupDetailPage {
   private groupService = inject(GroupService);
   private eventService = inject(EventService);
   protected authService = inject(AuthService);
+  private renderer = inject(Renderer2);
+  private document = inject(DOCUMENT);
+
+  constructor() {
+    effect(() => {
+      const isModalOpen = !!this.selectedEventForAttendees() || !!this.selectedEventForRecurrence();
+      const mainContent = this.document.querySelector('.main-content');
+
+      if (mainContent) {
+        if (isModalOpen) {
+          this.renderer.addClass(mainContent, 'no-scroll');
+        } else {
+          this.renderer.removeClass(mainContent, 'no-scroll');
+        }
+      }
+    });
+  }
 
   group = toSignal(
     this.route.params.pipe(switchMap((params) => this.groupService.getGroup(params['id'])))
@@ -151,5 +168,44 @@ export class GroupDetailPage {
       month: months[date.getMonth()],
       day: date.getDate().toString(),
     };
+  }
+
+  // Event Attendees Modal
+  selectedEventForAttendees = signal<SportEvent | null>(null);
+
+  openAttendeesModal(event: SportEvent) {
+    this.selectedEventForAttendees.set(event);
+  }
+
+  closeAttendeesModal() {
+    this.selectedEventForAttendees.set(null);
+  }
+
+  // Get attending members for a specific event card
+  getAttendingMembersForEvent(event: SportEvent): GroupMember[] {
+    const members = this.members();
+    if (!members) return [];
+    const attendeeIds = event.attendees || [];
+    return members.filter((m) => attendeeIds.includes(m.userId));
+  }
+
+  // Get members who are attending the event
+  getAttendingMembers(): GroupMember[] {
+    const event = this.selectedEventForAttendees();
+    const members = this.members();
+    if (!event || !members) return [];
+
+    const attendeeIds = event.attendees || [];
+    return members.filter((m) => attendeeIds.includes(m.userId));
+  }
+
+  // Get members who are NOT attending or haven't responded
+  getNotAttendingMembers(): GroupMember[] {
+    const event = this.selectedEventForAttendees();
+    const members = this.members();
+    if (!event || !members) return [];
+
+    const attendeeIds = event.attendees || [];
+    return members.filter((m) => !attendeeIds.includes(m.userId));
   }
 }

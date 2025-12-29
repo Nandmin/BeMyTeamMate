@@ -12,6 +12,7 @@ import {
   doc,
   updateDoc,
   getDoc,
+  deleteDoc,
 } from '@angular/fire/firestore';
 import { AuthService } from './auth.service';
 import { Observable } from 'rxjs';
@@ -129,5 +130,10 @@ export class EventService {
   getEvents(groupId: string): Observable<SportEvent[]> {
     const q = query(this.getEventsCollection(groupId), orderBy('date', 'asc'));
     return collectionData(q, { idField: 'id' }) as Observable<SportEvent[]>;
+  }
+
+  async deleteEvent(groupId: string, eventId: string) {
+    const docRef = doc(this.firestore, `groups/${groupId}/events/${eventId}`);
+    return deleteDoc(docRef);
   }
 }

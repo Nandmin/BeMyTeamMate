@@ -1,12 +1,12 @@
 import { Component, inject, signal, computed, effect, Renderer2 } from '@angular/core';
 import { Timestamp } from '@angular/fire/firestore';
-import { CommonModule, DOCUMENT } from '@angular/common'; // Added DOCUMENT
-import { ActivatedRoute, RouterModule } from '@angular/router';
+import { CommonModule, DOCUMENT } from '@angular/common';
+import { ActivatedRoute, RouterModule, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { GroupService, Group, GroupMember } from '../../services/group.service';
 import { AuthService } from '../../services/auth.service';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { switchMap, map, tap } from 'rxjs';
+import { switchMap } from 'rxjs';
 import { EventService, SportEvent } from '../../services/event.service';
 
 @Component({
@@ -18,6 +18,7 @@ import { EventService, SportEvent } from '../../services/event.service';
 })
 export class GroupDetailPage {
   private route = inject(ActivatedRoute);
+  private router = inject(Router);
   private groupService = inject(GroupService);
   private eventService = inject(EventService);
   protected authService = inject(AuthService);
@@ -26,7 +27,7 @@ export class GroupDetailPage {
 
   constructor() {
     effect(() => {
-      const isModalOpen = !!this.selectedEventForAttendees() || !!this.selectedEventForRecurrence();
+      const isModalOpen = !!this.selectedEventForRecurrence();
       const mainContent = this.document.querySelector('.main-content');
 
       if (mainContent) {
@@ -197,15 +198,10 @@ export class GroupDetailPage {
     }
   }
 
-  // Event Attendees Modal
-  selectedEventForAttendees = signal<SportEvent | null>(null);
-
   openAttendeesModal(event: SportEvent) {
-    this.selectedEventForAttendees.set(event);
-  }
-
-  closeAttendeesModal() {
-    this.selectedEventForAttendees.set(null);
+    const groupId = this.route.snapshot.params['id'];
+    if (!groupId || !event.id) return;
+    this.router.navigate(['/groups', groupId, 'events', event.id]);
   }
 
   // Get attending members for a specific event card
@@ -214,25 +210,5 @@ export class GroupDetailPage {
     if (!members) return [];
     const attendeeIds = event.attendees || [];
     return members.filter((m) => attendeeIds.includes(m.userId));
-  }
-
-  // Get members who are attending the event
-  getAttendingMembers(): GroupMember[] {
-    const event = this.selectedEventForAttendees();
-    const members = this.members();
-    if (!event || !members) return [];
-
-    const attendeeIds = event.attendees || [];
-    return members.filter((m) => attendeeIds.includes(m.userId));
-  }
-
-  // Get members who are NOT attending or haven't responded
-  getNotAttendingMembers(): GroupMember[] {
-    const event = this.selectedEventForAttendees();
-    const members = this.members();
-    if (!event || !members) return [];
-
-    const attendeeIds = event.attendees || [];
-    return members.filter((m) => !attendeeIds.includes(m.userId));
   }
 }

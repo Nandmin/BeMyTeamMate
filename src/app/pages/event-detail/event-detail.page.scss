@@ -1,0 +1,61 @@
+.animate-fade-in {
+    animation: fadeIn 0.6s ease-out forwards;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.perspective-1000 {
+    perspective: 1000px;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+    background: #0f1419; 
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background: #1a1f3a; 
+    border-radius: 10px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: #2d3561; 
+}
+
+.drag-handle:hover {
+    cursor: grab;
+    color: #2bee7c;
+}
+
+:host {
+    display: block;
+    background-color: #0f1419; 
+}
+
+/* CDK Drag & Drop Styles */
+.cdk-drag-preview {
+  box-sizing: border-box;
+  border-radius: 1rem;
+  box-shadow: 0 5px 5px -3px rgba(0, 0, 0, 0.2),
+              0 8px 10px 1px rgba(0, 0, 0, 0.14),
+              0 3px 14px 2px rgba(0, 0, 0, 0.12);
+  background: #1a1f3a;
+  opacity: 0.9;
+  border: 1px solid #2bee7c;
+}
+
+.cdk-drag-placeholder {
+  opacity: 0.1;
+  transition: transform 250ms cubic-bezier(0, 0, 0.2, 1);
+}
+
+.cdk-drag-animating {
+  transition: transform 250ms cubic-bezier(0, 0, 0.2, 1);
+}
+
+.flex-col.cdk-drop-list-dragging .group:not(.cdk-drag-placeholder) {
+  transition: transform 250ms cubic-bezier(0, 0, 0.2, 1);
+}

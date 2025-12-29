@@ -24,9 +24,12 @@ module.exports = {
         'border-dark': '#443267',
         'text-muted': '#a492c9',
         // Login Page Specific
-        'surface-dark': '#193324',
-        'surface-card': '#1a2e22',
-        'border-green': '#326748',
+        'surface-dark': '#0f1419',
+        'surface-card': '#1a1f3a',
+        'border-green': '#2d3561',
+        'card-border': '#333b5c',
+        'text-secondary': '#a492c9',
+        'sport-background': '#0f1419',
       },
       fontFamily: {
         display: ['"Plus Jakarta Sans"', 'sans-serif'],

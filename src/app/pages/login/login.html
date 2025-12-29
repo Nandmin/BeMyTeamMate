@@ -1,5 +1,5 @@
-<div
-    class="font-lexend bg-background-light dark:bg-background-dark text-white min-h-screen relative overflow-hidden flex flex-col">
+<div class="font-lexend bg-background-light dark:bg-background-dark text-white relative overflow-hidden flex flex-col"
+    style="margin-top: -45px;">
     <!-- Ambient Background Animation & Image -->
     <div class="fixed inset-0 z-0">
         <!-- Abstract Sporty Background -->
@@ -17,25 +17,27 @@
     </div>
 
     <!-- Main Layout Container -->
-    <div class="relative z-10 flex grow flex-col items-center justify-center px-4 py-4 sm:px-6 lg:px-8 h-screen">
+    <div
+        class="relative z-10 flex grow flex-col items-center justify-start px-4 py-4 sm:px-6 lg:px-8 min-h-[calc(100vh-8rem)] pt-8 md:pt-12">
         <!-- Glassmorphism Login Card - More neutral, less green border -->
         <div
-            class="w-full max-w-[480px] flex flex-col rounded-xl border border-border-dark bg-card-dark/60 p-6 sm:p-8 shadow-2xl backdrop-blur-md transition-all duration-500 hover:border-primary/30">
+            class="w-full max-w-[480px] flex flex-col rounded-xl border border-border-dark bg-card-dark/60 p-5 sm:p-6 shadow-2xl backdrop-blur-md transition-all duration-500 hover:border-primary/30">
             <!-- Headline Section -->
             <div class="flex flex-col items-center text-center mb-6">
                 <div
                     class="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-primary/10 text-primary shadow-inner shadow-primary/20">
                     <span class="material-symbols-outlined text-[28px]">sports_soccer</span>
                 </div>
-                <h1 class="text-white tracking-tight text-[28px] font-bold leading-tight mb-2">Üdv újra a pályán!</h1>
-                <p class=" text-sm font-normal leading-normal max-w-xs mx-auto">Jelentkezz be, és
+                <h1 class="text-white tracking-tight text-[24px] md:text-[28px] font-bold leading-tight mb-1">Üdv újra a
+                    pályán!</h1>
+                <p class=" text-sm font-normal leading-normal mx-auto" style="width: 22rem;">Jelentkezz be, és
                     állítsd össze a győztes csapatot.</p>
             </div>
 
             <!-- Login Form -->
             <!-- Login Form -->
             <div *ngIf="errorMessage"
-                class="mb-4 p-3 bg-red-500/10 border border-red-500/20 rounded-lg text-red-200 text-sm text-center">
+                class="mb-4 p-3 bg-red-600 border border-red-700 rounded-lg text-white font-medium text-sm text-center shadow-lg animate-shake">
                 {{ errorMessage }}
             </div>
             <form class="flex flex-col gap-4" [formGroup]="loginForm" (ngSubmit)="onLogin()">
@@ -101,7 +103,7 @@
             </form>
 
             <!-- Registration Footer -->
-            <div class="mt-6 pt-4 border-t border-border-dark/50 text-center">
+            <div class="mt-4 pt-4 border-t border-border-dark/50 text-center">
                 <p class="text-gray-400 text-xs">
                     Még nincs fiókod?
                     <a class="text-white font-bold hover:text-primary transition-colors ml-1 inline-flex items-center gap-1 group/link"
@@ -128,7 +130,7 @@
 
         <!-- Simple Copyright Footer -->
         <div class="mt-4 text-center text-[10px] /40 font-light">
-            © 2024 SportCsapat App. Minden jog fenntartva.
+            ©2025 BeMyTeamMate. Minden jog fenntartva.
         </div>
     </div>
 </div>

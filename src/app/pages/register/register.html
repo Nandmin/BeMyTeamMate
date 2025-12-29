@@ -1,5 +1,5 @@
 <div
-    class="relative min-h-screen w-full flex items-center justify-center p-4 lg:p-8 bg-background-dark font-display text-white overflow-x-hidden">
+    class="relative w-full flex items-start justify-center p-3 lg:p-4 bg-background-dark font-display text-white overflow-x-hidden pt-2 md:pt-4">
     <!-- Abstract Sport Background -->
     <div class="fixed inset-0 z-0 overflow-hidden">
         <div
@@ -46,22 +46,22 @@
 
         <!-- Form Area -->
         <div
-            class="flex-1 p-6 md:p-10 lg:p-12 overflow-y-auto max-h-[90vh] scrollbar-thin scrollbar-thumb-primary/20 scrollbar-track-transparent">
+            class="flex-1 p-5 md:p-6 lg:p-8 overflow-y-auto max-h-[90vh] scrollbar-thin scrollbar-thumb-primary/20 scrollbar-track-transparent">
             <!-- Header -->
-            <div class="mb-8">
-                <h1 class="text-3xl md:text-4xl font-black tracking-tight text-white mb-2">Új Játékos</h1>
+            <div class="mb-4">
+                <h1 class="text-xl md:text-2xl font-black tracking-tight text-white mb-0.5">Új játékos</h1>
                 <p class=" text-base">Hozd létre a profilod a folytatáshoz.</p>
             </div>
 
             <!-- Error Message -->
             <div *ngIf="errorMessage"
-                class="mb-4 p-3 bg-red-500/10 border border-red-500/20 rounded-lg text-red-200 text-sm text-center">
+                class="mb-4 p-3 bg-red-600 border border-red-700 rounded-lg text-white font-medium text-sm text-center shadow-lg animate-shake">
                 {{ errorMessage }}
             </div>
 
-            <form class="flex flex-col gap-6" [formGroup]="registerForm" (ngSubmit)="onRegister()">
+            <form class="flex flex-col gap-3" [formGroup]="registerForm" (ngSubmit)="onRegister()">
                 <!-- Grid for Inputs -->
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                     <!-- Username -->
                     <div class="flex flex-col gap-2 group">
                         <label
@@ -146,13 +146,13 @@
                         class="text-sm font-medium text-gray-200 group-focus-within:text-primary transition-colors duration-300">Rövid
                         bemutatkozás <span class="/50 font-normal">(opcionális)</span></label>
                     <textarea
-                        class="w-full bg-dark-accent/50 border border-border-dark rounded-xl p-4 text-white placeholder:/50 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all duration-300 min-h-[100px] resize-y"
+                        class="w-full bg-dark-accent/50 border border-border-dark rounded-xl p-3 text-white placeholder:/50 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all duration-300 min-h-[70px] resize-y"
                         placeholder="Írj magadról pár mondatot... pl. milyen szinten játszol?"
                         formControlName="bio"></textarea>
                 </div>
 
                 <!-- Actions -->
-                <div class="pt-4 flex flex-col gap-4">
+                <div class="pt-1 flex flex-col gap-2">
                     <button [disabled]="isLoading()"
                         class="w-full bg-primary hover:bg-primary-hover text-white text-lg font-bold py-4 rounded-xl shadow-lg hover:shadow-primary/30 hover:translate-y-[-1px] transition-all duration-300 flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
                         type="submit">

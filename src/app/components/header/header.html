@@ -48,7 +48,7 @@
                         class="h-full w-full rounded-full object-cover" [alt]="user.displayName" />
                 </div>
                 <button (click)="onLogout()"
-                    class="flex h-9 w-9 items-center justify-center rounded-xl bg-dark-accent border border-white/5 text-text-muted hover:text-red-400 hover:border-red-400/30 transition-all active:scale-95"
+                    class="flex h-9 w-9 items-center justify-center rounded-xl bg-dark-accent border border-white/5  hover:text-red-400 hover:border-red-400/30 transition-all active:scale-95"
                     title="Kijelentkezés">
                     <span class="material-symbols-outlined text-[20px]">logout</span>
                 </button>
@@ -56,8 +56,7 @@
             } @else {
             <!-- Logged Out View -->
             <div class="flex items-center gap-2">
-                <a routerLink="/login"
-                    class="px-4 py-2 text-sm font-bold text-text-muted hover:text-white transition-colors">
+                <a routerLink="/login" class="px-4 py-2 text-sm font-bold  hover:text-white transition-colors">
                     Bejelentkezés
                 </a>
                 <a routerLink="/register"

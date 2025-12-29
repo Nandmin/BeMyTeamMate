@@ -146,6 +146,10 @@ export class CreateEventPage implements OnInit {
     }
   }
 
+  onCancel() {
+    this.router.navigate(['/groups', this.groupId]);
+  }
+
   setSport(sport: string) {
     this.eventData.sport = sport;
   }

@@ -32,6 +32,12 @@ export class App {
 
         // Header visibility logic
         this.showHeader.set(true); // Always show header as requested, or adjust if needed
+
+        // Scroll to top on navigation
+        const mainContent = document.querySelector('.main-content');
+        if (mainContent) {
+          mainContent.scrollTop = 0;
+        }
       });
   }
 }

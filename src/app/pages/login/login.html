@@ -28,7 +28,7 @@
                     <span class="material-symbols-outlined text-[28px]">sports_soccer</span>
                 </div>
                 <h1 class="text-white tracking-tight text-[28px] font-bold leading-tight mb-2">Üdv újra a pályán!</h1>
-                <p class="text-text-muted text-sm font-normal leading-normal max-w-xs mx-auto">Jelentkezz be, és
+                <p class=" text-sm font-normal leading-normal max-w-xs mx-auto">Jelentkezz be, és
                     állítsd össze a győztes csapatot.</p>
             </div>
 
@@ -44,9 +44,9 @@
                     <label class="block text-xs font-medium text-gray-200 mb-1.5 ml-1" for="email">Email cím</label>
                     <div class="relative flex items-center">
                         <span
-                            class="material-symbols-outlined absolute left-4 text-text-muted transition-colors group-focus-within:text-primary z-10 text-[20px]">mail</span>
+                            class="material-symbols-outlined absolute left-4  transition-colors group-focus-within:text-primary z-10 text-[20px]">mail</span>
                         <input
-                            class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-xl text-white focus:outline-0 focus:ring-2 focus:ring-primary border border-border-dark bg-dark-accent/50 focus:border-transparent h-12 placeholder:text-text-muted/50 pl-[44px] pr-[15px] text-sm font-normal leading-normal transition-all shadow-sm"
+                            class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-xl text-white focus:outline-0 focus:ring-2 focus:ring-primary border border-border-dark bg-dark-accent/50 focus:border-transparent h-12 placeholder:/50 pl-[44px] pr-[15px] text-sm font-normal leading-normal transition-all shadow-sm"
                             id="email" placeholder="pelda@email.hu" type="email" formControlName="email" />
                     </div>
                 </div>
@@ -58,14 +58,14 @@
                     </div>
                     <div class="relative flex items-center">
                         <span
-                            class="material-symbols-outlined absolute left-4 text-text-muted transition-colors group-focus-within:text-primary z-10 text-[20px]">lock</span>
+                            class="material-symbols-outlined absolute left-4  transition-colors group-focus-within:text-primary z-10 text-[20px]">lock</span>
                         <input
-                            class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-xl text-white focus:outline-0 focus:ring-2 focus:ring-primary border border-border-dark bg-dark-accent/50 focus:border-transparent h-12 placeholder:text-text-muted/50 pl-[44px] pr-[44px] text-sm font-normal leading-normal transition-all shadow-sm"
+                            class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-xl text-white focus:outline-0 focus:ring-2 focus:ring-primary border border-border-dark bg-dark-accent/50 focus:border-transparent h-12 placeholder:/50 pl-[44px] pr-[44px] text-sm font-normal leading-normal transition-all shadow-sm"
                             [class.border-red-500]="loginForm.get('password')?.touched && loginForm.get('password')?.invalid"
                             id="password" placeholder="Jelszavad megadása" [type]="showPassword() ? 'text' : 'password'"
                             formControlName="password" />
                         <button (click)="togglePassword()"
-                            class="absolute right-0 top-0 bottom-0 px-3 flex items-center justify-center text-text-muted hover:text-white transition-colors cursor-pointer outline-none focus:text-primary"
+                            class="absolute right-0 top-0 bottom-0 px-3 flex items-center justify-center  hover:text-white transition-colors cursor-pointer outline-none focus:text-primary"
                             type="button">
                             <span class="material-symbols-outlined text-[20px]">{{ showPassword() ? 'visibility_off' :
                                 'visibility' }}</span>
@@ -116,18 +116,18 @@
             <!-- Social Login Options -->
             <div class="mt-4 flex justify-center gap-4">
                 <button [disabled]="isLoading()" aria-label="Login with Google" (click)="onGoogleLogin()" type="button"
-                    class="h-9 w-9 flex items-center justify-center rounded-full bg-dark-accent border border-border-dark text-text-muted hover:text-white hover:border-primary/50 hover:bg-dark-accent/80 transition-all duration-300 disabled:opacity-50">
+                    class="h-9 w-9 flex items-center justify-center rounded-full bg-dark-accent border border-border-dark  hover:text-white hover:border-primary/50 hover:bg-dark-accent/80 transition-all duration-300 disabled:opacity-50">
                     <span class="font-bold text-base">G</span>
                 </button>
                 <button aria-label="Login with Facebook"
-                    class="h-9 w-9 flex items-center justify-center rounded-full bg-dark-accent border border-border-dark text-text-muted hover:text-white hover:border-primary/50 hover:bg-dark-accent/80 transition-all duration-300">
+                    class="h-9 w-9 flex items-center justify-center rounded-full bg-dark-accent border border-border-dark  hover:text-white hover:border-primary/50 hover:bg-dark-accent/80 transition-all duration-300">
                     <span class="font-bold text-base">f</span>
                 </button>
             </div>
         </div>
 
         <!-- Simple Copyright Footer -->
-        <div class="mt-4 text-center text-[10px] text-text-muted/40 font-light">
+        <div class="mt-4 text-center text-[10px] /40 font-light">
             © 2024 SportCsapat App. Minden jog fenntartva.
         </div>
     </div>

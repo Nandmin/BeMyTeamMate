@@ -41,6 +41,18 @@ export class GroupDetailPage {
     return members.some((m) => m.userId === user.uid);
   });
 
+  isAdmin = computed(() => {
+    const user = this.authService.currentUser();
+    const group = this.group();
+    const members = this.members();
+    if (!user || !group) return false;
+    // Owner is always admin
+    if (group.ownerId === user.uid) return true;
+    // Check if user has admin role in members
+    if (!members) return false;
+    return members.some((m) => m.userId === user.uid && m.isAdmin);
+  });
+
   isSubmitting = signal(false);
 
   // Recurrence for existing event

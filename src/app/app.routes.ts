@@ -37,6 +37,11 @@ export const routes: Routes = [
       import('./pages/create-event/create-event.page').then((m) => m.CreateEventPage),
   },
   {
+    path: 'groups/:id/settings',
+    loadComponent: () =>
+      import('./pages/group-settings/group-settings.page').then((m) => m.GroupSettingsPage),
+  },
+  {
     path: 'results',
     loadComponent: () => import('./pages/events-list/events-list').then((m) => m.EventsList),
   }, // TODO

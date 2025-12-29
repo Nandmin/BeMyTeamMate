@@ -13,6 +13,7 @@ import {
   docData,
   updateDoc,
   increment,
+  deleteDoc,
 } from '@angular/fire/firestore';
 import { AuthService } from './auth.service';
 import { Observable, switchMap, of, combineLatest, map } from 'rxjs';
@@ -149,5 +150,36 @@ export class GroupService {
         memberCount: increment(1),
       });
     }
+  }
+
+  // --- Group Management ---
+  async updateGroup(groupId: string, data: Partial<Omit<Group, 'id' | 'ownerId' | 'createdAt'>>) {
+    const groupRef = doc(this.firestore, `groups/${groupId}`);
+    return updateDoc(groupRef, data);
+  }
+
+  // --- Member Management ---
+  async removeMember(groupId: string, memberId: string) {
+    const user = this.authService.currentUser();
+    if (!user) throw new Error('User must be logged in');
+
+    // Delete the member document
+    const memberRef = doc(this.firestore, `groups/${groupId}/members/${memberId}`);
+    await deleteDoc(memberRef);
+
+    // Decrement member count
+    const groupRef = doc(this.firestore, `groups/${groupId}`);
+    await updateDoc(groupRef, {
+      memberCount: increment(-1),
+    });
+  }
+
+  async updateMemberRole(
+    groupId: string,
+    memberId: string,
+    data: { isAdmin: boolean; role: string }
+  ) {
+    const memberRef = doc(this.firestore, `groups/${groupId}/members/${memberId}`);
+    return updateDoc(memberRef, data);
   }
 }

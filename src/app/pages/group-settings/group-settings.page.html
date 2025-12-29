@@ -1,0 +1,358 @@
+<main class="flex-grow min-h-screen bg-background-dark text-white">
+    <div class="relative w-full">
+        <!-- Hero Background -->
+        <div class="absolute inset-0 h-[300px] overflow-hidden pointer-events-none">
+            <div class="absolute inset-0 bg-gradient-to-b from-white/5 to-background-dark"></div>
+            <div
+                class="h-full w-full bg-[url('https://images.unsplash.com/photo-1522778119026-d647f0565c6a?q=80&w=2070&auto=format&fit=crop')] bg-cover bg-center opacity-5">
+            </div>
+        </div>
+
+        <div class="relative mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 py-8">
+            <!-- Breadcrumbs -->
+            <div class="flex items-center gap-2 text-sm text-gray-400 mb-6">
+                <a class="hover:text-primary transition-colors" routerLink="/">Kezdőlap</a>
+                <span class="material-symbols-outlined text-xs">chevron_right</span>
+                <a class="hover:text-primary transition-colors" routerLink="/groups">Csoportok</a>
+                <span class="material-symbols-outlined text-xs">chevron_right</span>
+                <a class="hover:text-primary transition-colors" [routerLink]="['/groups', groupId]">{{ group()?.name
+                    }}</a>
+                <span class="material-symbols-outlined text-xs">chevron_right</span>
+                <span class="text-white">Beállítások</span>
+            </div>
+
+            <!-- Header -->
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+                <div>
+                    <h1 class="text-2xl md:text-3xl font-extrabold text-white tracking-tight flex items-center gap-3">
+                        <span class="material-symbols-outlined text-primary text-3xl">settings</span>
+                        Csoport beállítások
+                    </h1>
+                    <p class="text-gray-400 mt-1">{{ group()?.name }} - tagok és beállítások kezelése</p>
+                </div>
+                <button (click)="goBack()"
+                    class="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-white font-medium text-sm hover:bg-white/10 transition-all">
+                    <span class="material-symbols-outlined text-lg">arrow_back</span>
+                    Vissza a csoporthoz
+                </button>
+            </div>
+
+            <!-- Messages -->
+            @if (successMessage()) {
+            <div
+                class="mb-6 p-4 bg-green-600/20 border border-green-500/30 rounded-xl text-green-400 font-medium text-sm flex items-center gap-2">
+                <span class="material-symbols-outlined">check_circle</span>
+                {{ successMessage() }}
+            </div>
+            }
+            @if (errorMessage()) {
+            <div
+                class="mb-6 p-4 bg-red-600/20 border border-red-500/30 rounded-xl text-red-400 font-medium text-sm flex items-center gap-2">
+                <span class="material-symbols-outlined">error</span>
+                {{ errorMessage() }}
+            </div>
+            }
+
+            <!-- Access Denied -->
+            @if (!canManageMembers()) {
+            <div class="p-8 bg-white/5 border border-white/10 rounded-2xl text-center">
+                <span class="material-symbols-outlined text-6xl text-gray-500 mb-4">lock</span>
+                <h2 class="text-xl font-bold text-white mb-2">Nincs jogosultságod</h2>
+                <p class="text-gray-400">Csak a csoport tulajdonosa vagy adminisztrátorai férhetnek hozzá ehhez az
+                    oldalhoz.</p>
+            </div>
+            } @else {
+            <!-- Tabs -->
+            <div class="flex bg-white/5 p-1 rounded-xl border border-white/10 mb-8 w-fit">
+                <button (click)="activeTab.set('members')"
+                    class="px-6 py-2.5 rounded-lg text-sm font-medium transition-all flex items-center gap-2"
+                    [class.bg-white/10]="activeTab() === 'members'" [class.text-white]="activeTab() === 'members'"
+                    [class.shadow-sm]="activeTab() === 'members'" [class.text-gray-400]="activeTab() !== 'members'">
+                    <span class="material-symbols-outlined text-lg">groups</span>
+                    Tagok kezelése
+                </button>
+                <button (click)="activeTab.set('settings')"
+                    class="px-6 py-2.5 rounded-lg text-sm font-medium transition-all flex items-center gap-2"
+                    [class.bg-white/10]="activeTab() === 'settings'" [class.text-white]="activeTab() === 'settings'"
+                    [class.shadow-sm]="activeTab() === 'settings'" [class.text-gray-400]="activeTab() !== 'settings'">
+                    <span class="material-symbols-outlined text-lg">tune</span>
+                    Csoport adatok
+                </button>
+            </div>
+
+            <!-- Members Tab -->
+            @if (activeTab() === 'members') {
+            <div class="bg-white/5 border border-white/10 rounded-2xl overflow-hidden">
+                <div class="p-5 border-b border-white/10 flex items-center justify-between">
+                    <h2 class="text-lg font-bold text-white flex items-center gap-2">
+                        <span class="material-symbols-outlined text-primary">people</span>
+                        Csoporttagok ({{ (members() || []).length }})
+                    </h2>
+                </div>
+
+                <div class="divide-y divide-white/5">
+                    @for (member of members(); track member.id) {
+                    <div class="p-4 flex items-center gap-4 hover:bg-white/5 transition-colors">
+                        <!-- Avatar -->
+                        <div class="relative">
+                            <img [src]="member.photo || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + member.userId"
+                                [alt]="member.name"
+                                class="w-12 h-12 rounded-full object-cover border-2 border-white/10">
+                            @if (member.userId === group()?.ownerId) {
+                            <div class="absolute -bottom-1 -right-1 bg-background-dark rounded-full p-0.5">
+                                <span class="material-symbols-outlined text-yellow-400 text-[14px]">star</span>
+                            </div>
+                            } @else if (member.isAdmin) {
+                            <div class="absolute -bottom-1 -right-1 bg-background-dark rounded-full p-0.5">
+                                <span class="material-symbols-outlined text-primary text-[14px]">verified_user</span>
+                            </div>
+                            }
+                        </div>
+
+                        <!-- Info -->
+                        <div class="flex-1 min-w-0">
+                            <p class="text-white font-bold truncate">{{ member.name }}</p>
+                            <p class="text-sm text-gray-400">{{ member.role }}</p>
+                        </div>
+
+                        <!-- Role Badge -->
+                        <span class="px-3 py-1 text-xs font-bold rounded-full border"
+                            [ngClass]="getRoleBadgeClass(member)">
+                            {{ getRoleBadge(member) }}
+                        </span>
+
+                        <!-- Actions -->
+                        @if (member.userId !== group()?.ownerId) {
+                        <div class="flex items-center gap-2">
+                            <button (click)="openRoleModal(member)" title="Szerep módosítása"
+                                class="p-2 rounded-lg bg-white/5 text-gray-400 hover:text-primary hover:bg-primary/10 transition-all">
+                                <span class="material-symbols-outlined text-lg">manage_accounts</span>
+                            </button>
+                            <button (click)="openDeleteModal(member)" title="Tag eltávolítása"
+                                class="p-2 rounded-lg bg-white/5 text-gray-400 hover:text-red-400 hover:bg-red-500/10 transition-all">
+                                <span class="material-symbols-outlined text-lg">person_remove</span>
+                            </button>
+                        </div>
+                        } @else {
+                        <div class="w-20"></div>
+                        }
+                    </div>
+                    } @empty {
+                    <div class="p-8 text-center text-gray-500">
+                        Nincsenek tagok a csoportban.
+                    </div>
+                    }
+                </div>
+            </div>
+            }
+
+            <!-- Settings Tab -->
+            @if (activeTab() === 'settings') {
+            <div class="bg-white/5 border border-white/10 rounded-2xl p-6">
+                <h2 class="text-lg font-bold text-white flex items-center gap-2 mb-6">
+                    <span class="material-symbols-outlined text-primary">edit</span>
+                    Csoport adatainak szerkesztése
+                </h2>
+
+                <div class="space-y-5 max-w-2xl">
+                    <!-- Name -->
+                    <div class="flex flex-col gap-2">
+                        <label class="text-sm font-medium text-gray-300">Csoport neve *</label>
+                        <input type="text" [value]="editGroupForm().name"
+                            (input)="updateFormField('name', $any($event.target).value)"
+                            class="w-full bg-white/5 border border-white/10 rounded-xl py-3 px-4 text-white placeholder:text-gray-500 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all"
+                            placeholder="Add meg a csoport nevét">
+                    </div>
+
+                    <!-- Description -->
+                    <div class="flex flex-col gap-2">
+                        <label class="text-sm font-medium text-gray-300">Leírás</label>
+                        <textarea [value]="editGroupForm().description"
+                            (input)="updateFormField('description', $any($event.target).value)" rows="4"
+                            class="w-full bg-white/5 border border-white/10 rounded-xl py-3 px-4 text-white placeholder:text-gray-500 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all resize-none"
+                            placeholder="Rövid leírás a csoportról..."></textarea>
+                    </div>
+
+                    <!-- Type -->
+                    <div class="flex flex-col gap-2">
+                        <label class="text-sm font-medium text-gray-300">Csoport típusa</label>
+                        <div class="flex gap-4">
+                            <button (click)="updateFormField('type', 'open')"
+                                class="flex-1 p-4 rounded-xl border transition-all flex items-center gap-3"
+                                [class.border-primary]="editGroupForm().type === 'open'"
+                                [class.bg-primary/10]="editGroupForm().type === 'open'"
+                                [class.border-white/10]="editGroupForm().type !== 'open'"
+                                [class.bg-white/5]="editGroupForm().type !== 'open'">
+                                <span class="material-symbols-outlined text-2xl"
+                                    [class.text-primary]="editGroupForm().type === 'open'">public</span>
+                                <div class="text-left">
+                                    <p class="font-bold text-white">Nyílt</p>
+                                    <p class="text-xs text-gray-400">Bárki csatlakozhat</p>
+                                </div>
+                            </button>
+                            <button (click)="updateFormField('type', 'closed')"
+                                class="flex-1 p-4 rounded-xl border transition-all flex items-center gap-3"
+                                [class.border-primary]="editGroupForm().type === 'closed'"
+                                [class.bg-primary/10]="editGroupForm().type === 'closed'"
+                                [class.border-white/10]="editGroupForm().type !== 'closed'"
+                                [class.bg-white/5]="editGroupForm().type !== 'closed'">
+                                <span class="material-symbols-outlined text-2xl"
+                                    [class.text-primary]="editGroupForm().type === 'closed'">lock</span>
+                                <div class="text-left">
+                                    <p class="font-bold text-white">Zárt</p>
+                                    <p class="text-xs text-gray-400">Csak meghívóval</p>
+                                </div>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Image URL -->
+                    <div class="flex flex-col gap-2">
+                        <label class="text-sm font-medium text-gray-300">Borítókép URL</label>
+                        <input type="url" [value]="editGroupForm().image"
+                            (input)="updateFormField('image', $any($event.target).value)"
+                            class="w-full bg-white/5 border border-white/10 rounded-xl py-3 px-4 text-white placeholder:text-gray-500 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all"
+                            placeholder="https://example.com/image.jpg">
+                    </div>
+
+                    <!-- Save Button -->
+                    <div class="pt-4">
+                        <button (click)="saveGroupSettings()" [disabled]="isSubmitting()"
+                            class="px-6 py-3 bg-primary text-white font-bold rounded-xl hover:bg-primary-hover transition-all shadow-[0_0_15px_rgba(43,238,124,0.3)] disabled:opacity-50 flex items-center gap-2">
+                            @if (isSubmitting()) {
+                            <span class="material-symbols-outlined animate-spin">progress_activity</span>
+                            Mentés...
+                            } @else {
+                            <span class="material-symbols-outlined">save</span>
+                            Változtatások mentése
+                            }
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Danger Zone -->
+            @if (isOwner()) {
+            <div class="mt-8 border-t border-white/10 pt-8">
+                <h3 class="text-lg font-bold text-white mb-4 flex items-center gap-2">
+                    <span class="material-symbols-outlined text-red-500">warning</span>
+                    Veszélyes műveletek
+                </h3>
+                <div
+                    class="flex flex-col sm:flex-row items-center justify-between gap-4 p-4 rounded-xl bg-red-900/10 border border-red-900/30">
+                    <div>
+                        <p class="text-white font-medium">Csoport törlése</p>
+                        <p class="text-sm text-gray-400">A csoport és minden hozzá tartozó adat véglegesen törlődik.</p>
+                    </div>
+                    <button
+                        class="shrink-0 px-4 py-2 rounded-lg bg-transparent border border-red-500/50 text-red-500 font-bold text-sm hover:bg-red-500 hover:text-white transition-colors">
+                        Csoport törlése
+                    </button>
+                </div>
+            </div>
+            }
+            }
+            }
+        </div>
+    </div>
+
+    <!-- Delete Member Modal -->
+    @if (memberToDelete()) {
+    <div
+        class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-background-dark/90 backdrop-blur-sm animate-fade-in">
+        <div class="w-full max-w-md bg-card-dark border border-white/10 rounded-2xl p-6 shadow-2xl animate-slide-up">
+            <div class="flex items-center gap-3 mb-4">
+                <div class="p-3 bg-red-500/20 rounded-full">
+                    <span class="material-symbols-outlined text-red-500 text-2xl">person_remove</span>
+                </div>
+                <div>
+                    <h3 class="text-xl font-bold text-white">Tag eltávolítása</h3>
+                    <p class="text-sm text-gray-400">Ez a művelet nem vonható vissza.</p>
+                </div>
+            </div>
+
+            <p class="text-gray-300 mb-6">
+                Biztosan el szeretnéd távolítani <strong class="text-white">{{ memberToDelete()?.name }}</strong> tagot
+                a csoportból?
+            </p>
+
+            <div class="flex gap-4">
+                <button (click)="closeDeleteModal()"
+                    class="flex-1 px-4 py-2.5 border border-white/10 rounded-xl text-white font-bold hover:bg-white/5 transition-all">
+                    Mégse
+                </button>
+                <button (click)="confirmDeleteMember()" [disabled]="isSubmitting()"
+                    class="flex-1 px-4 py-2.5 bg-red-500 text-white font-bold rounded-xl hover:bg-red-600 disabled:opacity-50 transition-all">
+                    @if (isSubmitting()) {
+                    <span class="material-symbols-outlined animate-spin text-sm">progress_activity</span>
+                    } @else {
+                    Eltávolítás
+                    }
+                </button>
+            </div>
+        </div>
+    </div>
+    }
+
+    <!-- Edit Role Modal -->
+    @if (memberToEditRole()) {
+    <div
+        class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-background-dark/90 backdrop-blur-sm animate-fade-in">
+        <div class="w-full max-w-md bg-card-dark border border-white/10 rounded-2xl p-6 shadow-2xl animate-slide-up">
+            <div class="flex items-center gap-3 mb-4">
+                <div class="p-3 bg-primary/20 rounded-full">
+                    <span class="material-symbols-outlined text-primary text-2xl">manage_accounts</span>
+                </div>
+                <div>
+                    <h3 class="text-xl font-bold text-white">Szerep módosítása</h3>
+                    <p class="text-sm text-gray-400">{{ memberToEditRole()?.name }}</p>
+                </div>
+            </div>
+
+            <div class="space-y-3 mb-6">
+                <button (click)="selectedRole.set('admin')"
+                    class="w-full p-4 rounded-xl border transition-all flex items-center gap-3 text-left"
+                    [class.border-primary]="selectedRole() === 'admin'"
+                    [class.bg-primary/10]="selectedRole() === 'admin'"
+                    [class.border-white/10]="selectedRole() !== 'admin'"
+                    [class.bg-white/5]="selectedRole() !== 'admin'">
+                    <span class="material-symbols-outlined text-2xl"
+                        [class.text-primary]="selectedRole() === 'admin'">verified_user</span>
+                    <div>
+                        <p class="font-bold text-white">Adminisztrátor</p>
+                        <p class="text-xs text-gray-400">Tagokat kezelhet, eseményeket hozhat létre</p>
+                    </div>
+                </button>
+                <button (click)="selectedRole.set('member')"
+                    class="w-full p-4 rounded-xl border transition-all flex items-center gap-3 text-left"
+                    [class.border-primary]="selectedRole() === 'member'"
+                    [class.bg-primary/10]="selectedRole() === 'member'"
+                    [class.border-white/10]="selectedRole() !== 'member'"
+                    [class.bg-white/5]="selectedRole() !== 'member'">
+                    <span class="material-symbols-outlined text-2xl"
+                        [class.text-primary]="selectedRole() === 'member'">person</span>
+                    <div>
+                        <p class="font-bold text-white">Tag</p>
+                        <p class="text-xs text-gray-400">Részt vehet eseményeken</p>
+                    </div>
+                </button>
+            </div>
+
+            <div class="flex gap-4">
+                <button (click)="closeRoleModal()"
+                    class="flex-1 px-4 py-2.5 border border-white/10 rounded-xl text-white font-bold hover:bg-white/5 transition-all">
+                    Mégse
+                </button>
+                <button (click)="confirmUpdateRole()" [disabled]="isSubmitting()"
+                    class="flex-1 px-4 py-2.5 bg-primary text-white font-bold rounded-xl hover:bg-primary-hover disabled:opacity-50 shadow-[0_0_15px_rgba(43,238,124,0.3)] transition-all">
+                    @if (isSubmitting()) {
+                    <span class="material-symbols-outlined animate-spin text-sm">progress_activity</span>
+                    } @else {
+                    Mentés
+                    }
+                </button>
+            </div>
+        </div>
+    </div>
+    }
+</main>

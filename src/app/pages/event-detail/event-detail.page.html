@@ -1,9 +1,9 @@
-<main class="flex-grow min-h-screen bg-sport-background text-white pb-32">
+<main class="flex-grow min-h-screen bg-sport-background text-white pb-16">
     <!-- Hero / Breadcrumbs Area -->
     <div class="w-full border-b border-card-border bg-sport-background/50 backdrop-blur">
         <div class="mx-auto max-w-6xl px-4 py-6">
             <div
-                class="flex items-center gap-2 text-[10px] md:text-xs text-text-secondary mb-4 uppercase font-bold tracking-widest overflow-x-auto whitespace-nowrap custom-scrollbar pb-1">
+                class="flex items-center gap-2 text-[10px] md:text-xs text-gray-400 mb-4 uppercase font-bold tracking-widest overflow-x-auto whitespace-nowrap custom-scrollbar pb-1">
                 <a class="hover:text-primary transition-colors" routerLink="/">Kezdőlap</a>
                 <span class="material-symbols-outlined text-[14px]">chevron_right</span>
                 <a class="hover:text-primary transition-colors" routerLink="/groups">Csoportok</a>
@@ -18,7 +18,7 @@
                 <div class="space-y-1">
                     <h1 class="text-white text-3xl md:text-5xl font-black tracking-tight leading-none">{{ event()?.title
                         }}</h1>
-                    <p class="text-text-secondary text-base font-medium">Csapatok összeállítása és jelentkezők kezelése
+                    <p class="text-gray-400 text-base font-medium">Csapatok összeállítása és jelentkezők kezelése
                     </p>
                 </div>
 
@@ -195,6 +195,36 @@
             </div>
         </div>
 
+
+        <!-- Management Actions Section -->
+        <div
+            class="bg-card-dark/60 backdrop-blur-xl border border-card-border rounded-3xl p-6 shadow-2xl flex flex-col sm:flex-row justify-between items-center gap-6 ring-1 ring-white/10 border-t-white/10">
+            <div class="flex items-center gap-4">
+                <div class="size-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary">
+                    <span class="material-symbols-outlined text-3xl font-bold">casino</span>
+                </div>
+                <div>
+                    <h2 class="text-white font-black text-xl tracking-tight">Kezelés</h2>
+                    <p class="text-text-secondary text-xs font-medium uppercase tracking-widest">Csapatok és sorsolás
+                        vezérlése</p>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-4 w-full sm:w-auto">
+                <button (click)="generateTeams()" [disabled]="attendingMembers().length < 2"
+                    class="flex-1 sm:flex-none h-14 px-8 rounded-2xl border border-card-border text-white font-black hover:bg-card-border hover:text-primary transition-all flex items-center justify-center gap-3 group active:scale-95 disabled:opacity-50">
+                    <span
+                        class="material-symbols-outlined group-hover:rotate-180 transition-transform duration-700 font-black">refresh</span>
+                    Sorsolás
+                </button>
+                <button
+                    class="flex-1 sm:flex-none h-14 px-10 rounded-2xl bg-primary hover:bg-primary-dark text-background-dark font-black shadow-xl shadow-primary/30 transition-all flex items-center justify-center gap-3 active:scale-95">
+                    <span class="material-symbols-outlined font-black text-2xl">sports_soccer</span>
+                    Kezdés
+                </button>
+            </div>
+        </div>
+
         <!-- RSVP Status / User List Section (as requested) -->
         <div class="space-y-8 pt-10 border-t border-card-border/50">
             <h2 class="text-2xl font-black text-white uppercase tracking-tighter italic">Résztvevők és Visszajelzések
@@ -289,34 +319,5 @@
 
     </div>
 
-    <!-- Floating Action Bar at the bottom -->
-    <div class="fixed bottom-8 left-0 right-0 z-40 px-4">
-        <div
-            class="bg-card-dark/90 backdrop-blur-2xl border border-card-border rounded-3xl p-5 shadow-[0_20px_50px_rgba(0,0,0,0.5)] flex flex-col sm:flex-row justify-between items-center gap-6 max-w-4xl mx-auto ring-1 ring-white/10 border-t-white/10">
-            <div class="flex items-center gap-4">
-                <div
-                    class="size-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
-                    <span class="material-symbols-outlined text-3xl font-bold">casino</span>
-                </div>
-                <div>
-                    <p class="text-white font-black text-lg tracking-tight">Kezelés</p>
-                    <p class="text-text-secondary text-xs font-medium">Húzd a kártyákat a csapataid összeállításához</p>
-                </div>
-            </div>
 
-            <div class="flex items-center gap-4 w-full sm:w-auto">
-                <button (click)="generateTeams()" [disabled]="attendingMembers().length < 2"
-                    class="flex-1 sm:flex-none h-14 px-8 rounded-2xl border border-card-border text-white font-black hover:bg-card-border hover:text-primary transition-all flex items-center justify-center gap-3 group active:scale-95 disabled:opacity-50">
-                    <span
-                        class="material-symbols-outlined group-hover:rotate-180 transition-transform duration-700 font-black">refresh</span>
-                    Újrakeverés
-                </button>
-                <button
-                    class="flex-1 sm:flex-none h-14 px-10 rounded-2xl bg-primary hover:bg-primary-dark text-background-dark font-black shadow-xl shadow-primary/30 transition-all flex items-center justify-center gap-3 active:scale-95">
-                    <span class="material-symbols-outlined font-black text-2xl">sports_soccer</span>
-                    Játék indítása
-                </button>
-            </div>
-        </div>
-    </div>
 </main>

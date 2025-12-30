@@ -33,6 +33,12 @@ export interface SportEvent {
   creatorId: string;
   createdAt: any;
   recurrenceId?: string;
+  status?: 'planned' | 'active' | 'finished';
+  teamA?: string[];
+  teamB?: string[];
+  goalsA?: number;
+  goalsB?: number;
+  startedAt?: any;
 }
 
 @Injectable({
@@ -162,6 +168,18 @@ export class EventService {
     return updateDoc(eventRef, {
       attendees,
       currentAttendees: attendees.length,
+    });
+  }
+
+  async startEvent(groupId: string, eventId: string, teamA: string[], teamB: string[]) {
+    const docRef = doc(this.firestore, `groups/${groupId}/events/${eventId}`);
+    return updateDoc(docRef, {
+      status: 'active',
+      teamA,
+      teamB,
+      startedAt: serverTimestamp(),
+      goalsA: 0,
+      goalsB: 0,
     });
   }
 }

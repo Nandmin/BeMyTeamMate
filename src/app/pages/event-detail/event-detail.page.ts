@@ -1,4 +1,4 @@
-import { Component, inject, signal, computed } from '@angular/core';
+import { Component, inject, signal, computed, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterModule } from '@angular/router';
 import { GroupService, Group, GroupMember } from '../../services/group.service';
@@ -43,6 +43,22 @@ export class EventDetailPage {
 
   teamA = signal<GroupMember[]>([]);
   teamB = signal<GroupMember[]>([]);
+
+  constructor() {
+    effect(() => {
+      const event = this.event();
+      const members = this.members();
+
+      if (event && members && (event.status === 'active' || event.status === 'finished')) {
+        if (event.teamA) {
+          this.teamA.set(members.filter((m) => event.teamA?.includes(m.userId)));
+        }
+        if (event.teamB) {
+          this.teamB.set(members.filter((m) => event.teamB?.includes(m.userId)));
+        }
+      }
+    });
+  }
 
   attendingMembers = computed(() => {
     const event = this.event();
@@ -139,6 +155,42 @@ export class EventDetailPage {
 
     this.teamA.set(a);
     this.teamB.set(b);
+  }
+
+  async onStartGame() {
+    const event = this.event();
+    if (!event || !this.groupId || !this.isMember()) return;
+
+    if (this.teamA().length === 0 && this.teamB().length === 0) {
+      // Ha nincs csapat generálva, de van elég ember, generáljunk
+      if (this.attendingMembers().length >= 2) {
+        this.generateTeams();
+      } else {
+        alert('Nincs elég jelentkező a játék indításához.');
+        return;
+      }
+    }
+
+    // Megerősítés kérése
+    if (
+      !confirm(
+        'Biztosan elindítod a játékot? Ezután a csapatok rögzítésre kerülnek és nem módosíthatóak.'
+      )
+    ) {
+      return;
+    }
+
+    this.isSubmitting.set(true);
+    try {
+      const teamAIds = this.teamA().map((m) => m.userId);
+      const teamBIds = this.teamB().map((m) => m.userId);
+      await this.eventService.startEvent(this.groupId, event.id!, teamAIds, teamBIds);
+    } catch (error: any) {
+      console.error('Error starting game:', error);
+      alert(error.message || 'Hiba történt a játék indításakor.');
+    } finally {
+      this.isSubmitting.set(false);
+    }
   }
 
   drop(event: CdkDragDrop<GroupMember[]>) {

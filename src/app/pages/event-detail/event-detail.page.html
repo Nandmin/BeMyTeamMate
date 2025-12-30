@@ -75,7 +75,8 @@
                 cdkDropListGroup>
                 <!-- Team A Container -->
                 <div class="flex-1 flex flex-col gap-6 bg-card-dark/40 border border-card-border rounded-[2rem] p-6 backdrop-blur-sm shadow-2xl relative"
-                    id="teamA" cdkDropList [cdkDropListData]="teamA()" (cdkDropListDropped)="drop($event)">
+                    id="teamA" cdkDropList [cdkDropListData]="teamA()" (cdkDropListDropped)="drop($event)"
+                    [cdkDropListDisabled]="event()?.status === 'active' || event()?.status === 'finished'">
 
                     <div class="flex justify-between items-center pt-2">
                         <div class="flex items-center gap-3">
@@ -145,7 +146,8 @@
 
                 <!-- Team B Container -->
                 <div class="flex-1 flex flex-col gap-6 bg-card-dark/40 border border-card-border rounded-[2rem] p-6 backdrop-blur-sm shadow-2xl relative"
-                    id="teamB" cdkDropList [cdkDropListData]="teamB()" (cdkDropListDropped)="drop($event)">
+                    id="teamB" cdkDropList [cdkDropListData]="teamB()" (cdkDropListDropped)="drop($event)"
+                    [cdkDropListDisabled]="event()?.status === 'active' || event()?.status === 'finished'">
 
                     <div class="flex justify-between items-center pt-2">
                         <div class="flex items-center gap-3">
@@ -211,17 +213,32 @@
             </div>
 
             <div class="flex items-center gap-4 w-full sm:w-auto">
-                <button (click)="generateTeams()" [disabled]="attendingMembers().length < 2"
+                <button (click)="generateTeams()"
+                    [disabled]="attendingMembers().length < 2 || event()?.status === 'active' || event()?.status === 'finished'"
                     class="flex-1 sm:flex-none h-14 px-8 rounded-2xl border border-card-border text-white font-black hover:bg-card-border hover:text-primary transition-all flex items-center justify-center gap-3 group active:scale-95 disabled:opacity-50">
                     <span
                         class="material-symbols-outlined group-hover:rotate-180 transition-transform duration-700 font-black">refresh</span>
                     Sorsolás
                 </button>
-                <button
-                    class="flex-1 sm:flex-none h-14 px-10 rounded-2xl bg-primary hover:bg-primary-dark text-background-dark font-black shadow-xl shadow-primary/30 transition-all flex items-center justify-center gap-3 active:scale-95">
+
+                @if (!event()?.status || event()?.status === 'planned') {
+                <button (click)="onStartGame()"
+                    [disabled]="isSubmitting() || (teamA().length === 0 && teamB().length === 0)"
+                    class="flex-1 sm:flex-none h-14 px-10 rounded-2xl bg-primary hover:bg-primary-dark text-background-dark font-black shadow-xl shadow-primary/30 transition-all flex items-center justify-center gap-3 active:scale-95 disabled:opacity-50">
+                    @if (isSubmitting()) {
+                    <span class="material-symbols-outlined animate-spin">sync</span>
+                    } @else {
                     <span class="material-symbols-outlined font-black text-2xl">sports_soccer</span>
+                    }
                     Kezdés
                 </button>
+                } @else {
+                <button disabled
+                    class="flex-1 sm:flex-none h-14 px-10 rounded-2xl bg-white/5 border border-white/10 text-gray-400 font-black transition-all flex items-center justify-center gap-3 cursor-not-allowed">
+                    <span class="material-symbols-outlined font-black text-2xl">sports_score</span>
+                    {{ event()?.status === 'finished' ? 'Véget ért' : 'Folyamatban' }}
+                </button>
+                }
             </div>
         </div>
 

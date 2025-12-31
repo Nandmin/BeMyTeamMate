@@ -219,14 +219,36 @@ export class EventDetailPage {
     }
   }
 
-  formatDate(timestamp: any) {
+  formatEventDate(timestamp: any) {
+    if (!timestamp) return { month: '', day: '' };
+    const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+    const months = [
+      'JAN',
+      'FEB',
+      'MÁR',
+      'ÁPR',
+      'MÁJ',
+      'JÚN',
+      'JÚL',
+      'AUG',
+      'SZEP',
+      'OKT',
+      'NOV',
+      'DEC',
+    ];
+    return {
+      month: months[date.getMonth()],
+      day: date.getDate().toString(),
+    };
+  }
+
+  formatFullDate(timestamp: any) {
     if (!timestamp) return '';
     const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
     return date.toLocaleDateString('hu-HU', {
       year: 'numeric',
       month: 'long',
       day: 'numeric',
-      weekday: 'long',
     });
   }
 }

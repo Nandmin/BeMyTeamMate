@@ -4,6 +4,7 @@ import { ActivatedRoute, RouterModule } from '@angular/router';
 import { GroupService, Group, GroupMember } from '../../services/group.service';
 import { EventService, SportEvent } from '../../services/event.service';
 import { AuthService } from '../../services/auth.service';
+import { ModalService } from '../../services/modal.service';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { switchMap, map } from 'rxjs';
 import {
@@ -25,6 +26,7 @@ export class EventDetailPage {
   private groupService = inject(GroupService);
   private eventService = inject(EventService);
   protected authService = inject(AuthService);
+  private modalService = inject(ModalService);
 
   groupId = this.route.snapshot.params['id'];
   eventId = this.route.snapshot.params['eventId'];
@@ -97,7 +99,7 @@ export class EventDetailPage {
     if (!this.groupId || !event?.id) return;
 
     if (!this.isMember()) {
-      alert('Csak csoporttagok jelentkezhetnek az eseményekre.');
+      await this.modalService.alert('Csak csoporttagok jelentkezhetnek az eseményekre.', 'Figyelem');
       return;
     }
 
@@ -106,7 +108,7 @@ export class EventDetailPage {
       await this.eventService.toggleRSVP(this.groupId, event.id);
     } catch (error: any) {
       console.error('Error toggling RSVP:', error);
-      alert(error.message || 'Hiba történt.');
+      await this.modalService.alert(error.message || 'Hiba történt.', 'Hiba', 'error');
     } finally {
       this.isSubmitting.set(false);
     }
@@ -166,17 +168,18 @@ export class EventDetailPage {
       if (this.attendingMembers().length >= 2) {
         this.generateTeams();
       } else {
-        alert('Nincs elég jelentkező a játék indításához.');
+        await this.modalService.alert('Nincs elég jelentkező a játék indításához.');
         return;
       }
     }
 
     // Megerősítés kérése
-    if (
-      !confirm(
-        'Biztosan elindítod a játékot? Ezután a csapatok rögzítésre kerülnek és nem módosíthatóak.'
-      )
-    ) {
+    const confirmed = await this.modalService.confirm(
+      'Biztosan elindítod a játékot? Ezután a csapatok rögzítésre kerülnek és nem módosíthatóak.',
+      'Játék indítása'
+    );
+
+    if (!confirmed) {
       return;
     }
 
@@ -187,7 +190,7 @@ export class EventDetailPage {
       await this.eventService.startEvent(this.groupId, event.id!, teamAIds, teamBIds);
     } catch (error: any) {
       console.error('Error starting game:', error);
-      alert(error.message || 'Hiba történt a játék indításakor.');
+      await this.modalService.alert(error.message || 'Hiba történt a játék indításakor.', 'Hiba', 'error');
     } finally {
       this.isSubmitting.set(false);
     }

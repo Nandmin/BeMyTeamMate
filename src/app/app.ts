@@ -3,10 +3,18 @@ import { RouterOutlet, RouterLink, RouterLinkActive, Router, NavigationEnd } fro
 import { filter } from 'rxjs/operators';
 import { FooterComponent } from './components/footer/footer';
 import { HeaderComponent } from './components/header/header';
+import { ModalComponent } from './components/modal/modal.component';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, RouterLink, RouterLinkActive, FooterComponent, HeaderComponent],
+  imports: [
+    RouterOutlet,
+    RouterLink,
+    RouterLinkActive,
+    FooterComponent,
+    HeaderComponent,
+    ModalComponent,
+  ],
   templateUrl: './app.html',
   styleUrl: './app.scss',
 })

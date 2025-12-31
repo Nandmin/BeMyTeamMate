@@ -1,0 +1,43 @@
+<div *ngIf="modalService.modalState().isOpen" class="fixed inset-0 z-[9999] flex items-center justify-center p-4">
+    <!-- Backdrop -->
+    <div class="absolute inset-0 bg-background-dark/80 backdrop-blur-[2px] animate-fade-in" (click)="onBackdropClick()">
+    </div>
+
+    <!-- Modal Content -->
+    <div class="relative w-full max-w-md bg-card-dark border border-white/10 rounded-3xl shadow-2xl overflow-hidden animate-scale-in"
+        role="dialog" aria-modal="true">
+
+        <!-- Decoration/Icon Header -->
+        <div class="pt-8 pb-4 flex justify-center">
+            <div class="relative">
+                <div class="absolute inset-0 rounded-full blur-xl opacity-50" [ngClass]="getIconColorClass()"></div>
+                <div
+                    class="relative w-16 h-16 rounded-2xl flex items-center justify-center bg-white/5 border border-white/10 text-3xl">
+                    <span class="material-symbols-outlined" [ngClass]="getTextColorClass()">{{ getIcon() }}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Text Content -->
+        <div class="px-8 pb-6 text-center">
+            <h3 class="text-xl font-black text-white mb-2 tracking-tight" *ngIf="config()?.title">{{ config()?.title }}
+            </h3>
+            <p class="text-gray-400 leading-relaxed">{{ config()?.message }}</p>
+        </div>
+
+        <!-- Actions -->
+        <div class="flex gap-3 p-6 pt-2">
+            @if (config()?.type === 'confirm') {
+            <button (click)="cancel()"
+                class="flex-1 py-3 px-4 rounded-xl font-bold text-gray-400 hover:text-white hover:bg-white/5 transition-all text-sm uppercase tracking-wide">
+                {{ config()?.cancelText || 'Mégse' }}
+            </button>
+            }
+            <button (click)="confirm()"
+                class="flex-1 py-3 px-4 rounded-xl font-bold text-background-dark shadow-lg transition-all hover:scale-105 active:scale-95 text-sm uppercase tracking-wide"
+                [ngClass]="getButtonClass()">
+                {{ config()?.confirmText || 'Rendben' }}
+            </button>
+        </div>
+    </div>
+</div>

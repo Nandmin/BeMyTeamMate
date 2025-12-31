@@ -40,6 +40,7 @@ export interface GroupMember {
   isAdmin: boolean;
   joinedAt: any;
   skillLevel?: number;
+  elo?: number;
 }
 
 @Injectable({

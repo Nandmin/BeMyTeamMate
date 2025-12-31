@@ -46,6 +46,11 @@ export class EventDetailPage {
   teamA = signal<GroupMember[]>([]);
   teamB = signal<GroupMember[]>([]);
 
+  // Stats management
+  goalsMap = signal<{ [userId: string]: number }>({});
+  assistsMap = signal<{ [userId: string]: number }>({});
+  isEditingResults = signal(false);
+
   constructor() {
     effect(() => {
       const event = this.event();
@@ -57,6 +62,18 @@ export class EventDetailPage {
         }
         if (event.teamB) {
           this.teamB.set(members.filter((m) => event.teamB?.includes(m.userId)));
+        }
+
+        // Initialize stats if finished or present
+        if (event.playerStats) {
+          const goals: any = {};
+          const assists: any = {};
+          Object.entries(event.playerStats).forEach(([id, stats]) => {
+            goals[id] = stats.goals;
+            assists[id] = stats.assists;
+          });
+          this.goalsMap.set(goals);
+          this.assistsMap.set(assists);
         }
       }
     });
@@ -99,7 +116,10 @@ export class EventDetailPage {
     if (!this.groupId || !event?.id) return;
 
     if (!this.isMember()) {
-      await this.modalService.alert('Csak csoporttagok jelentkezhetnek az eseményekre.', 'Figyelem');
+      await this.modalService.alert(
+        'Csak csoporttagok jelentkezhetnek az eseményekre.',
+        'Figyelem'
+      );
       return;
     }
 
@@ -190,7 +210,11 @@ export class EventDetailPage {
       await this.eventService.startEvent(this.groupId, event.id!, teamAIds, teamBIds);
     } catch (error: any) {
       console.error('Error starting game:', error);
-      await this.modalService.alert(error.message || 'Hiba történt a játék indításakor.', 'Hiba', 'error');
+      await this.modalService.alert(
+        error.message || 'Hiba történt a játék indításakor.',
+        'Hiba',
+        'error'
+      );
     } finally {
       this.isSubmitting.set(false);
     }
@@ -253,5 +277,121 @@ export class EventDetailPage {
       month: 'long',
       day: 'numeric',
     });
+  }
+  // --- Result Management Logic ---
+
+  toggleResultsEdit() {
+    this.isEditingResults.update((v) => !v);
+  }
+
+  updateStat(userId: string, type: 'goals' | 'assists', delta: number) {
+    if (!this.event() || (this.event()?.status !== 'active' && !this.isEditingResults())) return;
+
+    // Determine user's team
+    const inTeamA = this.teamA().some((m) => m.userId === userId);
+    const teamMembers = inTeamA ? this.teamA() : this.teamB();
+
+    // Current State
+    const currentGoalsMap = { ...this.goalsMap() };
+    const currentAssistsMap = { ...this.assistsMap() };
+    const currentVal = (type === 'goals' ? currentGoalsMap : currentAssistsMap)[userId] || 0;
+    const newVal = Math.max(0, currentVal + delta);
+
+    // Projected State
+    if (type === 'goals') currentGoalsMap[userId] = newVal;
+    else currentAssistsMap[userId] = newVal;
+
+    // Validate: 1. User Assists <= User Goals (Strict Interpretation of "Se user")
+    // Wait, the user might mean "User Assists <= Total Team Goals"?
+    // "gólpasszok száma nem lehet több, mint a gólok száma. Se user, se összes user"
+    // -> User Assists <= User Goals seems too strict for football.
+    // Let's implement team check first.
+    // AND let's implement the User check as requested: currentAssistsMap[userId] <= currentGoalsMap[userId] ?
+    // No, standard interpretation: "Can't have more assists than goals".
+    // I will implement Team Total check primarily.
+    // And for "Se user", I will check if UserAssists would exceed TeamGoals? No, that's redundant.
+    // I will implement the Strict User Rule as requested: User Assists <= User Goals.
+    // If they hate it, I can remove it.
+
+    const userGoals = currentGoalsMap[userId] || 0;
+    const userAssists = currentAssistsMap[userId] || 0;
+
+    // Strict User Check: User cannot have more assists than goals?
+    // "Se user" -> "Neither for the user".
+    // I will apply: UserAssists <= UserGoals.
+    if (userAssists > userGoals) {
+      // Allow decrementing assists even if goal is low? No, we are checking the RESULTING state.
+      // If we just decremented a goal, we might be in violation.
+      // If we incremented an assist, we might be in violation.
+
+      // Exception: If we are decrementing a goal, we should block it if assists exist?
+      // Let's just block the action.
+      return;
+    }
+
+    // Validate: 2. Team Assists <= Team Goals (Global)
+    const teamGoals = teamMembers.reduce((sum, m) => sum + (currentGoalsMap[m.userId] || 0), 0);
+    const teamAssists = teamMembers.reduce((sum, m) => sum + (currentAssistsMap[m.userId] || 0), 0);
+
+    if (teamAssists > teamGoals) {
+      return;
+    }
+
+    const map = type === 'goals' ? this.goalsMap : this.assistsMap;
+    map.update((m) => ({ ...m, [userId]: newVal }));
+  }
+
+  getStat(userId: string, type: 'goals' | 'assists'): number {
+    const map = type === 'goals' ? this.goalsMap : this.assistsMap;
+    return map()[userId] || 0;
+  }
+
+  calculateTeamGoals(team: 'A' | 'B'): number {
+    const members = team === 'A' ? this.teamA() : this.teamB();
+    return members.reduce((sum, m) => sum + this.getStat(m.userId, 'goals'), 0);
+  }
+
+  async saveResults() {
+    if (!this.groupId || !this.eventId) return;
+
+    const confirmed = await this.modalService.confirm(
+      'Biztosan mented a mérkőzés végeredményét? Az esemény státusza "Véget ért"-re változik.',
+      'Eredmények mentése'
+    );
+
+    if (!confirmed) return;
+
+    this.isSubmitting.set(true);
+    try {
+      const stats: { [userId: string]: any } = {};
+      const allMembers = [...this.teamA(), ...this.teamB()];
+
+      allMembers.forEach((m) => {
+        stats[m.userId] = {
+          goals: this.getStat(m.userId, 'goals'),
+          assists: this.getStat(m.userId, 'assists'),
+        };
+      });
+
+      const goalsA = this.calculateTeamGoals('A');
+      const goalsB = this.calculateTeamGoals('B');
+
+      await this.eventService.saveMatchResults(
+        this.groupId,
+        this.eventId,
+        stats,
+        goalsA,
+        goalsB,
+        this.teamA(),
+        this.teamB()
+      );
+      this.isEditingResults.set(false);
+      await this.modalService.alert('Az eredmények sikeresen mentve!', 'Siker', 'success');
+    } catch (err: any) {
+      console.error('Error saving results:', err);
+      await this.modalService.alert(err.message, 'Hiba', 'error');
+    } finally {
+      this.isSubmitting.set(false);
+    }
   }
 }

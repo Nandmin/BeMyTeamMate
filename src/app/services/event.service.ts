@@ -13,9 +13,26 @@ import {
   updateDoc,
   getDoc,
   deleteDoc,
+  writeBatch,
 } from '@angular/fire/firestore';
 import { AuthService } from './auth.service';
+import { EloService } from './elo.service';
+import { GroupMember } from './group.service';
 import { Observable } from 'rxjs';
+import { arrayUnion, increment } from '@angular/fire/firestore';
+
+export interface PlayerStats {
+  goals: number;
+  assists: number;
+}
+
+export interface MatchEvent {
+  type: 'goal';
+  team: 'A' | 'B';
+  scorerId: string;
+  assistId?: string;
+  timestamp: any;
+}
 
 export interface SportEvent {
   id?: string;
@@ -39,6 +56,8 @@ export interface SportEvent {
   goalsA?: number;
   goalsB?: number;
   startedAt?: any;
+  matchEvents?: MatchEvent[];
+  playerStats?: { [userId: string]: PlayerStats };
 }
 
 @Injectable({
@@ -47,6 +66,7 @@ export interface SportEvent {
 export class EventService {
   private firestore = inject(Firestore);
   private authService = inject(AuthService);
+  private eloService = inject(EloService);
 
   private getEventsCollection(groupId: string) {
     return collection(this.firestore, `groups/${groupId}/events`);
@@ -180,6 +200,49 @@ export class EventService {
       startedAt: serverTimestamp(),
       goalsA: 0,
       goalsB: 0,
+      matchEvents: [],
     });
+  }
+
+  async saveMatchResults(
+    groupId: string,
+    eventId: string,
+    stats: { [userId: string]: PlayerStats },
+    goalsA: number,
+    goalsB: number,
+    teamAData: GroupMember[],
+    teamBData: GroupMember[]
+  ) {
+    const batch = writeBatch(this.firestore);
+
+    // 1. Update Event
+    const eventRef = doc(this.firestore, `groups/${groupId}/events/${eventId}`);
+    batch.update(eventRef, {
+      playerStats: stats,
+      goalsA,
+      goalsB,
+      status: 'finished',
+    });
+
+    // 2. Calculate and Update Elo
+    // We map GroupMember to the structure expected by EloService
+    const eloTeamA = teamAData.map((m) => ({ userId: m.userId, elo: m.elo }));
+    const eloTeamB = teamBData.map((m) => ({ userId: m.userId, elo: m.elo }));
+
+    const newRatings = this.eloService.calculateRatingChanges(eloTeamA, eloTeamB, goalsA, goalsB);
+
+    // 3. Update Member Docs
+    // We need to match userId back to the member doc ID (m.id)
+    const allPlayers = [...teamAData, ...teamBData];
+    allPlayers.forEach((player) => {
+      if (player.id && newRatings.has(player.userId)) {
+        const memberRef = doc(this.firestore, `groups/${groupId}/members/${player.id}`);
+        batch.update(memberRef, {
+          elo: newRatings.get(player.userId),
+        });
+      }
+    });
+
+    return batch.commit();
   }
 }

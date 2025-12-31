@@ -160,12 +160,62 @@
                                 <div class="flex items-center gap-1">
                                     <span class="text-primary material-symbols-outlined text-[14px]">star</span>
                                     <p class="text-text-secondary text-[10px] font-black uppercase tracking-widest">
-                                        {{ player.role }} ({{ (player.skillLevel || 50) / 10 | number:'1.1-1' }})</p>
+                                        {{ player.role }} ({{ (player.skillLevel || 50) / 10 | number:'1.1-1' }}) • Elo:
+                                        {{ player.elo || 1200 }}
+                                    </p>
                                 </div>
                             </div>
+
+                            <!-- Stats Controls -->
+                            @if ((event()?.status === 'active' || event()?.status === 'finished') &&
+                            isEditingResults()) {
+                            <div class="flex flex-col gap-1 items-end">
+                                <!-- Goals -->
+                                <div class="flex items-center gap-1 bg-background-dark/50 rounded-lg p-1">
+                                    <button (click)="updateStat(player.userId, 'goals', -1)"
+                                        class="size-5 rounded bg-white/5 hover:bg-white/10 flex items-center justify-center text-white font-bold text-xs">-</button>
+                                    <span class="text-primary font-black text-xs w-3 text-center">{{
+                                        getStat(player.userId, 'goals') }}</span>
+                                    <span
+                                        class="material-symbols-outlined text-[10px] text-primary">sports_soccer</span>
+                                    <button (click)="updateStat(player.userId, 'goals', 1)"
+                                        class="size-5 rounded bg-white/5 hover:bg-white/10 flex items-center justify-center text-white font-bold text-xs">+</button>
+                                </div>
+                                <!-- Assists -->
+                                <div class="flex items-center gap-1 bg-background-dark/50 rounded-lg p-1">
+                                    <button (click)="updateStat(player.userId, 'assists', -1)"
+                                        class="size-5 rounded bg-white/5 hover:bg-white/10 flex items-center justify-center text-white font-bold text-xs">-</button>
+                                    <span class="text-blue-400 font-black text-xs w-3 text-center">{{
+                                        getStat(player.userId, 'assists') }}</span>
+                                    <span class="material-symbols-outlined text-[10px] text-blue-400">handshake</span>
+                                    <button (click)="updateStat(player.userId, 'assists', 1)"
+                                        class="size-5 rounded bg-white/5 hover:bg-white/10 flex items-center justify-center text-white font-bold text-xs">+</button>
+                                </div>
+                            </div>
+                            } @else if (event()?.status === 'active' || event()?.status === 'finished') {
+                            <!-- Stats Display -->
+                            <div class="flex flex-col gap-1 items-end">
+                                @if (getStat(player.userId, 'goals') > 0) {
+                                <div class="flex items-center gap-1">
+                                    <span class="text-primary font-black text-xs">{{ getStat(player.userId, 'goals')
+                                        }}</span>
+                                    <span
+                                        class="material-symbols-outlined text-[10px] text-primary">sports_soccer</span>
+                                </div>
+                                }
+                                @if (getStat(player.userId, 'assists') > 0) {
+                                <div class="flex items-center gap-1">
+                                    <span class="text-blue-400 font-black text-xs">{{ getStat(player.userId,
+                                        'assists') }}</span>
+                                    <span class="material-symbols-outlined text-[10px] text-blue-400">handshake</span>
+                                </div>
+                                }
+                            </div>
+                            } @else {
                             <div class="text-text-secondary opacity-0 group-hover:opacity-100 transition-opacity">
                                 <span class="material-symbols-outlined">more_vert</span>
                             </div>
+                            }
                         </div>
                         } @empty {
                         <div
@@ -177,23 +227,44 @@
                     </div>
                 </div>
 
-                <!-- Central VS Badge -->
+                <!-- Central VS Badge / Scoreboard -->
                 <div class="hidden lg:flex flex-col items-center justify-center relative z-10 w-0">
                     <div
                         class="absolute bg-sport-background border-[8px] border-sport-background rounded-full p-0 shadow-[0_0_30px_rgba(0,0,0,0.5)]">
                         <div
-                            class="size-20 rounded-full bg-gradient-to-br from-primary to-primary-dark flex items-center justify-center shadow-inner">
+                            class="size-20 rounded-full bg-gradient-to-br from-primary to-primary-dark flex items-center justify-center shadow-inner overflow-hidden">
+                            @if (event()?.status === 'active' || event()?.status === 'finished') {
+                            <div
+                                class="flex flex-col items-center justify-center w-full h-full bg-card-dark text-white">
+                                <div class="flex items-center gap-1 font-black text-2xl leading-none">
+                                    <span class="text-primary">{{ calculateTeamGoals('A') }}</span>
+                                    <span class="text-white/20">-</span>
+                                    <span class="text-blue-400">{{ calculateTeamGoals('B') }}</span>
+                                </div>
+                            </div>
+                            } @else {
                             <span
                                 class="text-background-dark font-black text-3xl italic pr-1 tracking-tighter">VS</span>
+                            }
                         </div>
                     </div>
                 </div>
 
-                <!-- Mobile VS Badge -->
+                <!-- Mobile VS Badge / Scoreboard -->
                 <div class="lg:hidden flex justify-center -my-6">
                     <div
-                        class="size-14 rounded-full bg-gradient-to-br from-primary to-primary-dark flex items-center justify-center shadow-lg border-[6px] border-sport-background relative z-10">
+                        class="size-14 rounded-full bg-gradient-to-br from-primary to-primary-dark flex items-center justify-center shadow-lg border-[6px] border-sport-background relative z-10 overflow-hidden">
+                        @if (event()?.status === 'active' || event()?.status === 'finished') {
+                        <div class="flex flex-col items-center justify-center w-full h-full bg-card-dark text-white">
+                            <div class="flex items-center gap-1 font-black text-lg leading-none">
+                                <span class="text-primary">{{ calculateTeamGoals('A') }}</span>
+                                <span class="text-white/20">-</span>
+                                <span class="text-blue-400">{{ calculateTeamGoals('B') }}</span>
+                            </div>
+                        </div>
+                        } @else {
                         <span class="text-background-dark font-black text-xl italic pr-1">VS</span>
+                        }
                     </div>
                 </div>
 
@@ -228,14 +299,64 @@
                             <div class="flex-1 min-w-0">
                                 <p class="font-bold text-base truncate">{{ player.name }}</p>
                                 <div class="flex items-center gap-1">
-                                    <span class="text-primary material-symbols-outlined text-[14px]">star</span>
+                                    <span class="text-blue-400 material-symbols-outlined text-[14px]">star</span>
                                     <p class="text-text-secondary text-[10px] font-black uppercase tracking-widest">
-                                        {{ player.role }} ({{ (player.skillLevel || 50) / 10 | number:'1.1-1' }})</p>
+                                        {{ player.role }} ({{ (player.skillLevel || 50) / 10 | number:'1.1-1' }}) • Elo:
+                                        {{ player.elo || 1200 }}
+                                    </p>
                                 </div>
                             </div>
+
+                            <!-- Stats Controls -->
+                            @if ((event()?.status === 'active' || event()?.status === 'finished') &&
+                            isEditingResults()) {
+                            <div class="flex flex-col gap-1 items-end">
+                                <!-- Goals -->
+                                <div class="flex items-center gap-1 bg-background-dark/50 rounded-lg p-1">
+                                    <button (click)="updateStat(player.userId, 'goals', -1)"
+                                        class="size-5 rounded bg-white/5 hover:bg-white/10 flex items-center justify-center text-white font-bold text-xs">-</button>
+                                    <span class="text-primary font-black text-xs w-3 text-center">{{
+                                        getStat(player.userId, 'goals') }}</span>
+                                    <span
+                                        class="material-symbols-outlined text-[10px] text-primary">sports_soccer</span>
+                                    <button (click)="updateStat(player.userId, 'goals', 1)"
+                                        class="size-5 rounded bg-white/5 hover:bg-white/10 flex items-center justify-center text-white font-bold text-xs">+</button>
+                                </div>
+                                <!-- Assists -->
+                                <div class="flex items-center gap-1 bg-background-dark/50 rounded-lg p-1">
+                                    <button (click)="updateStat(player.userId, 'assists', -1)"
+                                        class="size-5 rounded bg-white/5 hover:bg-white/10 flex items-center justify-center text-white font-bold text-xs">-</button>
+                                    <span class="text-blue-400 font-black text-xs w-3 text-center">{{
+                                        getStat(player.userId, 'assists') }}</span>
+                                    <span class="material-symbols-outlined text-[10px] text-blue-400">handshake</span>
+                                    <button (click)="updateStat(player.userId, 'assists', 1)"
+                                        class="size-5 rounded bg-white/5 hover:bg-white/10 flex items-center justify-center text-white font-bold text-xs">+</button>
+                                </div>
+                            </div>
+                            } @else if (event()?.status === 'active' || event()?.status === 'finished') {
+                            <!-- Stats Display -->
+                            <div class="flex flex-col gap-1 items-end">
+                                @if (getStat(player.userId, 'goals') > 0) {
+                                <div class="flex items-center gap-1">
+                                    <span class="text-primary font-black text-xs">{{ getStat(player.userId, 'goals')
+                                        }}</span>
+                                    <span
+                                        class="material-symbols-outlined text-[10px] text-primary">sports_soccer</span>
+                                </div>
+                                }
+                                @if (getStat(player.userId, 'assists') > 0) {
+                                <div class="flex items-center gap-1">
+                                    <span class="text-blue-400 font-black text-xs">{{ getStat(player.userId,
+                                        'assists') }}</span>
+                                    <span class="material-symbols-outlined text-[10px] text-blue-400">handshake</span>
+                                </div>
+                                }
+                            </div>
+                            } @else {
                             <div class="text-text-secondary opacity-0 group-hover:opacity-100 transition-opacity">
                                 <span class="material-symbols-outlined">more_vert</span>
                             </div>
+                            }
                         </div>
                         }
                         @empty {
@@ -260,7 +381,8 @@
                 </div>
                 <div>
                     <h2 class="text-white font-black text-xl tracking-tight">Kezelés</h2>
-                    <p class="text-text-secondary text-xs font-medium uppercase tracking-widest">Csapatok és sorsolás
+                    <p class="text-text-secondary text-xs font-medium uppercase tracking-widest">Csapatok és
+                        sorsolás
                         vezérlése</p>
                 </div>
             </div>
@@ -286,18 +408,38 @@
                     Kezdés
                 </button>
                 } @else {
-                <button disabled
-                    class="flex-1 sm:flex-none h-14 px-10 rounded-2xl bg-white/5 border border-white/10 text-gray-400 font-black transition-all flex items-center justify-center gap-3 cursor-not-allowed">
-                    <span class="material-symbols-outlined font-black text-2xl">sports_score</span>
-                    {{ event()?.status === 'finished' ? 'Véget ért' : 'Folyamatban' }}
+                @if (!isEditingResults()) {
+                <button (click)="toggleResultsEdit()"
+                    class="flex-1 sm:flex-none h-14 px-10 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/20 text-white font-black transition-all flex items-center justify-center gap-3">
+                    <span class="material-symbols-outlined font-black text-2xl">edit_note</span>
+                    {{ event()?.status === 'finished' ? 'Eredmény módosítása' : 'Eredmények rögzítése' }}
                 </button>
+                } @else {
+                <div class="flex items-center gap-2">
+                    <button (click)="toggleResultsEdit()"
+                        class="h-14 px-6 rounded-2xl bg-red-500/10 border border-red-500/20 text-red-500 font-black hover:bg-red-500/20 transition-all">
+                        Mégse
+                    </button>
+
+                    <button (click)="saveResults()" [disabled]="isSubmitting()"
+                        class="h-14 px-8 rounded-2xl bg-primary text-background-dark font-black hover:bg-primary-dark transition-all flex items-center justify-center gap-2 shadow-lg shadow-primary/20">
+                        @if (isSubmitting()) {
+                        <span class="material-symbols-outlined animate-spin">sync</span>
+                        } @else {
+                        <span class="material-symbols-outlined">save</span>
+                        }
+                        Mentés
+                    </button>
+                </div>
+                }
                 }
             </div>
         </div>
 
         <!-- RSVP Status / User List Section (as requested) -->
         <div class="space-y-8 pt-10 border-t border-card-border/50">
-            <h2 class="text-2xl font-black text-white uppercase tracking-tighter italic">Résztvevők és Visszajelzések
+            <h2 class="text-2xl font-black text-white uppercase tracking-tighter italic">Résztvevők és
+                Visszajelzések
             </h2>
 
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-10">
@@ -327,7 +469,8 @@
                                 <p
                                     class="font-bold text-white group-hover/member:text-primary transition-colors text-lg tracking-tight">
                                     {{ member.name }}</p>
-                                <p class="text-[10px] text-text-secondary font-black uppercase tracking-[0.15em]">{{
+                                <p class="text-[10px] text-text-secondary font-black uppercase tracking-[0.15em]">
+                                    {{
                                     member.role }}</p>
                             </div>
                             <div

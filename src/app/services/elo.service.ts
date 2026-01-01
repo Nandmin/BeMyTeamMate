@@ -22,7 +22,8 @@ export class EloService {
     teamA: { userId: string; elo?: number }[],
     teamB: { userId: string; elo?: number }[],
     goalsA: number,
-    goalsB: number
+    goalsB: number,
+    stats?: { [userId: string]: { goals: number; assists: number } }
   ): Map<string, number> {
     const changes = new Map<string, number>();
 
@@ -51,15 +52,28 @@ export class EloService {
     const deltaA = Math.round(this.K_FACTOR * (actualA - expectedA));
     const deltaB = Math.round(this.K_FACTOR * (actualB - expectedB));
 
-    // 5. Apply to players (return the new absolute Elo)
+    // 5. Apply to players (return the new absolute Elo) + Individual Performance Bonus
+    const GOAL_BONUS = 3;
+    const ASSIST_BONUS = 2;
+
     teamA.forEach((player) => {
       const currentElo = player.elo || this.DEFAULT_RATING;
-      changes.set(player.userId, currentElo + deltaA);
+      let bonus = 0;
+      if (stats && stats[player.userId]) {
+        bonus += (stats[player.userId].goals || 0) * GOAL_BONUS;
+        bonus += (stats[player.userId].assists || 0) * ASSIST_BONUS;
+      }
+      changes.set(player.userId, Math.round(currentElo + deltaA + bonus));
     });
 
     teamB.forEach((player) => {
       const currentElo = player.elo || this.DEFAULT_RATING;
-      changes.set(player.userId, currentElo + deltaB);
+      let bonus = 0;
+      if (stats && stats[player.userId]) {
+        bonus += (stats[player.userId].goals || 0) * GOAL_BONUS;
+        bonus += (stats[player.userId].assists || 0) * ASSIST_BONUS;
+      }
+      changes.set(player.userId, Math.round(currentElo + deltaB + bonus));
     });
 
     return changes;

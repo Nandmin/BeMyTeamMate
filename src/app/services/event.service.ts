@@ -229,7 +229,13 @@ export class EventService {
     const eloTeamA = teamAData.map((m) => ({ userId: m.userId, elo: m.elo }));
     const eloTeamB = teamBData.map((m) => ({ userId: m.userId, elo: m.elo }));
 
-    const newRatings = this.eloService.calculateRatingChanges(eloTeamA, eloTeamB, goalsA, goalsB);
+    const newRatings = this.eloService.calculateRatingChanges(
+      eloTeamA,
+      eloTeamB,
+      goalsA,
+      goalsB,
+      stats
+    );
 
     // 3. Update Member Docs
     // We need to match userId back to the member doc ID (m.id)

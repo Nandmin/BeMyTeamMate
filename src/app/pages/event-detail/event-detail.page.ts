@@ -123,6 +123,15 @@ export class EventDetailPage {
       return;
     }
 
+    // Check if event is already active/finished
+    if (this.isUserAttending() && (event.status === 'active' || event.status === 'finished')) {
+      await this.modalService.alert(
+        'Már nem mondhatod le a részvételt, mivel a csapatok már véglegesítve lettek.',
+        'Nem lehetséges'
+      );
+      return;
+    }
+
     this.isSubmitting.set(true);
     try {
       await this.eventService.toggleRSVP(this.groupId, event.id);

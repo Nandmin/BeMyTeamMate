@@ -134,28 +134,36 @@ export class EventDetailPage {
     }
   }
 
+  // Helper to determine player rating (Elo > Skill)
+  private getPlayerRating(member: GroupMember): number {
+    if (member.elo !== undefined && member.elo !== null) return member.elo;
+    // Map skill (0-100) to Elo (approx 0-2400?)
+    // Default 50 -> 1200
+    return (member.skillLevel || 50) * 24;
+  }
+
   teamABalance = computed(() => {
-    const a = this.teamA().reduce((acc, m) => acc + (m.skillLevel || 50), 0);
-    const b = this.teamB().reduce((acc, m) => acc + (m.skillLevel || 50), 0);
+    const a = this.teamA().reduce((acc, m) => acc + this.getPlayerRating(m), 0);
+    const b = this.teamB().reduce((acc, m) => acc + this.getPlayerRating(m), 0);
     if (a + b === 0) return 50;
     return Math.round((a / (a + b)) * 100);
   });
 
   teamBAverge = computed(() => {
     const b = this.teamB();
-    if (b.length === 0) return 0;
-    return (b.reduce((acc, m) => acc + (m.skillLevel || 50), 0) / b.length / 10).toFixed(1);
+    if (b.length === 0) return '0';
+    return Math.round(b.reduce((acc, m) => acc + this.getPlayerRating(m), 0) / b.length).toString();
   });
 
   teamAAverge = computed(() => {
     const a = this.teamA();
-    if (a.length === 0) return 0;
-    return (a.reduce((acc, m) => acc + (m.skillLevel || 50), 0) / a.length / 10).toFixed(1);
+    if (a.length === 0) return '0';
+    return Math.round(a.reduce((acc, m) => acc + this.getPlayerRating(m), 0) / a.length).toString();
   });
 
   generateTeams() {
     const attendees = [...this.attendingMembers()].sort(
-      (a, b) => (b.skillLevel || 50) - (a.skillLevel || 50)
+      (a, b) => this.getPlayerRating(b) - this.getPlayerRating(a)
     );
     if (attendees.length < 2) return;
 
@@ -166,12 +174,13 @@ export class EventDetailPage {
 
     // Greedy balancing
     attendees.forEach((player) => {
+      const rating = this.getPlayerRating(player);
       if (sumA <= sumB) {
         a.push(player);
-        sumA += player.skillLevel || 50;
+        sumA += rating;
       } else {
         b.push(player);
-        sumB += player.skillLevel || 50;
+        sumB += rating;
       }
     });
 

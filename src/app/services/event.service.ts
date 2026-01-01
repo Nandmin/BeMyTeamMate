@@ -235,11 +235,28 @@ export class EventService {
     // We need to match userId back to the member doc ID (m.id)
     const allPlayers = [...teamAData, ...teamBData];
     allPlayers.forEach((player) => {
-      if (player.id && newRatings.has(player.userId)) {
-        const memberRef = doc(this.firestore, `groups/${groupId}/members/${player.id}`);
-        batch.update(memberRef, {
-          elo: newRatings.get(player.userId),
-        });
+      if (newRatings.has(player.userId)) {
+        if (player.id === 'owner-fallback') {
+          // If it's the fallback owner, create a real member document
+          const membersCollection = collection(this.firestore, `groups/${groupId}/members`);
+          const newMemberRef = doc(membersCollection);
+
+          batch.set(newMemberRef, {
+            userId: player.userId,
+            name: player.name,
+            photo: player.photo || null,
+            role: 'Csapatkapitány',
+            isAdmin: true,
+            joinedAt: player.joinedAt,
+            skillLevel: player.skillLevel || 50, // Should be 100 from fallback but fallback to 50
+            elo: newRatings.get(player.userId),
+          });
+        } else if (player.id) {
+          const memberRef = doc(this.firestore, `groups/${groupId}/members/${player.id}`);
+          batch.update(memberRef, {
+            elo: newRatings.get(player.userId),
+          });
+        }
       }
     });
 

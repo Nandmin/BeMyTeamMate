@@ -77,7 +77,12 @@ export class GroupDetailPage {
   });
 
   protected isEventPast(event: SportEvent): boolean {
+    // If the event was explicitly finished (or results were recorded), treat it as past
+    if (event.status === 'finished') return true;
+    if (event.goalsA !== undefined || event.goalsB !== undefined) return true;
+    if (event.playerStats && Object.keys(event.playerStats).length > 0) return true;
     if (!event.date) return false;
+
     const eventDate = event.date.toDate();
     // Reset to start of day to ensure clean combination with time, though date field should be correct
     eventDate.setHours(0, 0, 0, 0);
@@ -85,9 +90,6 @@ export class GroupDetailPage {
     if (event.time) {
       const [hours, minutes] = event.time.split(':').map(Number);
       eventDate.setHours(hours, minutes);
-    } else {
-      // If no time, assume end of day? Or start? Let's assume start.
-      // If simply date comparison, usually we want to include today in upcoming if time hasn't passed.
     }
 
     return eventDate < new Date();

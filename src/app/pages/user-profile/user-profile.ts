@@ -51,6 +51,8 @@ export class UserProfilePage {
             map((events: SportEvent[]) => {
               const nextEvent = events
                 .filter((e) => {
+                  if (e.status === 'finished' || e.status === 'active') return false;
+
                   const eventDate = e.date.toDate();
                   if (e.time) {
                     const [h, m] = e.time.split(':').map(Number);
@@ -60,8 +62,7 @@ export class UserProfilePage {
                 })
                 .sort((a, b) => a.date.toMillis() - b.date.toMillis())[0];
               return { ...group, nextEvent };
-            }),
-            take(1)
+            })
           )
         );
 

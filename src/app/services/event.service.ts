@@ -53,6 +53,8 @@ export interface SportEvent {
   status?: 'planned' | 'active' | 'finished';
   teamA?: string[];
   teamB?: string[];
+  teamAEloAvg?: number;
+  teamBEloAvg?: number;
   goalsA?: number;
   goalsB?: number;
   startedAt?: any;
@@ -191,12 +193,21 @@ export class EventService {
     });
   }
 
-  async startEvent(groupId: string, eventId: string, teamA: string[], teamB: string[]) {
+  async startEvent(
+    groupId: string,
+    eventId: string,
+    teamA: string[],
+    teamB: string[],
+    teamAEloAvg: number,
+    teamBEloAvg: number
+  ) {
     const docRef = doc(this.firestore, `groups/${groupId}/events/${eventId}`);
     return updateDoc(docRef, {
       status: 'active',
       teamA,
       teamB,
+      teamAEloAvg,
+      teamBEloAvg,
       startedAt: serverTimestamp(),
       goalsA: 0,
       goalsB: 0,

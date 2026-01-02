@@ -159,18 +159,29 @@ export class EventDetailPage {
   });
 
   teamBAverge = computed(() => {
+    // If event has stored Elo averages, use them
+    const event = this.event();
+    if (event?.teamBEloAvg) return Math.round(event.teamBEloAvg).toString();
+
     const b = this.teamB();
     if (b.length === 0) return '0';
     return Math.round(b.reduce((acc, m) => acc + this.getPlayerRating(m), 0) / b.length).toString();
   });
 
   teamAAverge = computed(() => {
+    // If event has stored Elo averages, use them
+    const event = this.event();
+    if (event?.teamAEloAvg) return Math.round(event.teamAEloAvg).toString();
+
     const a = this.teamA();
     if (a.length === 0) return '0';
     return Math.round(a.reduce((acc, m) => acc + this.getPlayerRating(m), 0) / a.length).toString();
   });
 
   generateTeams() {
+    // Don't regenerate if event is already active/finished (although button should be disabled)
+    // Actually, if we are in view mode, we don't want to re-shuffle based on live data if teams are fixed.
+    // But teamA/teamB signals are populated in effect() based on event data if active/finished, so this fn is for "planning" phase.
     const attendees = [...this.attendingMembers()].sort(
       (a, b) => this.getPlayerRating(b) - this.getPlayerRating(a)
     );
@@ -225,7 +236,19 @@ export class EventDetailPage {
     try {
       const teamAIds = this.teamA().map((m) => m.userId);
       const teamBIds = this.teamB().map((m) => m.userId);
-      await this.eventService.startEvent(this.groupId, event.id!, teamAIds, teamBIds);
+
+      // Save current averages
+      const teamAAvg = parseFloat(this.teamAAverge());
+      const teamBAvg = parseFloat(this.teamBAverge());
+
+      await this.eventService.startEvent(
+        this.groupId,
+        event.id!,
+        teamAIds,
+        teamBIds,
+        teamAAvg,
+        teamBAvg
+      );
     } catch (error: any) {
       console.error('Error starting game:', error);
       await this.modalService.alert(

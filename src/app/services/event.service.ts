@@ -248,16 +248,19 @@ export class EventService {
       stats
     );
 
-    // 3. Update Member Docs
-    // We need to match userId back to the member doc ID (m.id)
+    // 3. Update Member Docs and Global User Docs
     const allPlayers = [...teamAData, ...teamBData];
     allPlayers.forEach((player) => {
-      if (newRatings.has(player.userId)) {
+      const newElo = newRatings.get(player.userId);
+      if (newElo !== undefined) {
+        // A. Update Global User Document (Requires the Firestore Rule change mentioned above)
+        const userRef = doc(this.firestore, `users/${player.userId}`);
+        batch.update(userRef, { elo: newElo });
+
+        // B. Update Group Member Document
         if (player.id === 'owner-fallback') {
-          // If it's the fallback owner, create a real member document
           const membersCollection = collection(this.firestore, `groups/${groupId}/members`);
           const newMemberRef = doc(membersCollection);
-
           batch.set(newMemberRef, {
             userId: player.userId,
             name: player.name,
@@ -265,14 +268,12 @@ export class EventService {
             role: 'Csapatkapitány',
             isAdmin: true,
             joinedAt: player.joinedAt,
-            skillLevel: player.skillLevel || 50, // Should be 100 from fallback but fallback to 50
-            elo: newRatings.get(player.userId),
+            skillLevel: player.skillLevel || 50,
+            elo: newElo,
           });
         } else if (player.id) {
           const memberRef = doc(this.firestore, `groups/${groupId}/members/${player.id}`);
-          batch.update(memberRef, {
-            elo: newRatings.get(player.userId),
-          });
+          batch.update(memberRef, { elo: newElo });
         }
       }
     });

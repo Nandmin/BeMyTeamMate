@@ -175,17 +175,30 @@ export class AuthService {
   // --- Firestore User Data Logic ---
   private async updateUserData(firebaseUser: any, additionalData: any = {}) {
     const userRef = doc(this.firestore, `users/${firebaseUser.uid}`);
-    const data = {
+    const userSnap = await getDoc(userRef);
+    const existingData = userSnap.exists() ? userSnap.data() : {};
+
+    const data: any = {
       uid: firebaseUser.uid,
       email: firebaseUser.email,
-      displayName: firebaseUser.displayName || additionalData.username || null,
-      photoURL: firebaseUser.photoURL,
+      displayName:
+        firebaseUser.displayName ||
+        existingData['displayName'] ||
+        additionalData.username ||
+        'Névtelen',
+      photoURL: firebaseUser.photoURL || existingData['photoURL'] || null,
       lastLogin: serverTimestamp(),
+      // Alapértelmezett értékek, ha még nem léteznek:
+      elo: existingData['elo'] ?? 1200,
+      formFactor: existingData['formFactor'] ?? 1.0,
+      createdAt: existingData['createdAt'] || serverTimestamp(),
       ...additionalData,
     };
 
-    // Use setDoc with merge: true to avoid overwriting existing data completely
-    // but update lastLogin
+    if (additionalData.bio) {
+      data.bio = additionalData.bio;
+    }
+
     return setDoc(userRef, data, { merge: true });
   }
 }

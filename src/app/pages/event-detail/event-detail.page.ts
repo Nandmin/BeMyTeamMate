@@ -104,6 +104,16 @@ export class EventDetailPage {
     return members.some((m) => m.userId === user.uid);
   });
 
+  isAdmin = computed(() => {
+    const user = this.authService.currentUser();
+    const members = this.members();
+    if (!user || !members) return false;
+    const member = members.find((m) => m.userId === user.uid);
+    return (
+      member?.isAdmin || member?.role === 'Csapatkapitány' || this.group()?.ownerId === user.uid
+    );
+  });
+
   isUserAttending = computed(() => {
     const user = this.authService.currentUser();
     const event = this.event();

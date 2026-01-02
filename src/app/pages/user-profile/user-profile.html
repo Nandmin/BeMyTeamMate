@@ -90,11 +90,19 @@
                             <p class="text-white text-2xl font-bold leading-tight">
                                 {{ profileUser()?.displayName || 'Felhasználó' }}
                             </p>
-                            @if (profileUser()?.email && isOwnProfile()) {
-                            <p class="text-text-secondary text-base font-normal">
-                                {{ profileUser()?.email }}
-                            </p>
-                            }
+                            <div
+                                class="flex flex-wrap items-center justify-center md:justify-start gap-x-4 gap-y-1 mt-1">
+                                @if (profileUser()?.email && isOwnProfile()) {
+                                <p class="text-text-secondary text-sm font-normal flex items-center gap-1">
+                                    <span class="material-symbols-outlined text-[16px]">mail</span>
+                                    {{ profileUser()?.email }}
+                                </p>
+                                }
+                                <p class="text-primary text-sm font-bold flex items-center gap-1">
+                                    <span class="material-symbols-outlined text-[18px]">military_tech</span>
+                                    {{ profileUser()?.elo ?? '---' }} ELO
+                                </p>
+                            </div>
                         </div>
                         @if (isOwnProfile()) {
                         <div class="flex gap-4 mt-2 justify-center md:justify-start">
@@ -110,6 +118,22 @@
                         }
                     </div>
                 </div>
+
+                <!-- Global Stats Row -->
+                <!-- backdrop-blur -->
+                <!-- <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-10">
+                    <div
+                        class="bg-surface-darker/50 p-4 rounded-2xl border border-[#326748]/50 text-center backdrop-blur-sm">
+                        <p class="text-primary text-2xl font-bold">{{ (userGroups() || []).length }}</p>
+                        <p class="text-text-secondary text-[10px] uppercase font-bold tracking-wider">Csoportok</p>
+                    </div>
+                    <div
+                        class="bg-surface-darker/50 p-4 rounded-2xl border border-[#326748]/50 text-center backdrop-blur-sm">
+                        <p class="text-primary text-2xl font-bold">{{ profileUser()?.elo || 1200 }}</p>
+                        <p class="text-text-secondary text-[10px] uppercase font-bold tracking-wider">Elo pont</p>
+                    </div>
+                </div> -->
+
                 <!-- Form Fields -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
                     @if (isOwnProfile()) {
@@ -140,16 +164,10 @@
                             rows="3" [(ngModel)]="profileData.bio" placeholder="Mesélj magadról..."></textarea>
                     </label>
                     } @else {
-                    <!-- Stats for other users -->
-                    <div class="md:col-span-2 grid grid-cols-2 sm:grid-cols-4 gap-4">
-                        <div class="bg-surface-darker p-4 rounded-xl border border-[#326748] text-center">
-                            <p class="text-primary text-2xl font-bold">{{ (userGroups() || []).length }}</p>
-                            <p class="text-text-secondary text-xs uppercase">Csoportok</p>
-                        </div>
-                        <div class="bg-surface-darker p-4 rounded-xl border border-[#326748] text-center">
-                            <p class="text-primary text-2xl font-bold">{{ profileUser()?.elo || 1200 }}</p>
-                            <p class="text-text-secondary text-xs uppercase">Elo pont</p>
-                        </div>
+                    <div class="md:col-span-2">
+                        <p class="text-text-secondary italic text-center py-4 bg-surface-darker/30 rounded-xl">
+                            "{{ profileUser()?.bio || 'Ez a felhasználó még nem írt bemutatkozást.' }}"
+                        </p>
                     </div>
                     }
                 </div>

@@ -28,7 +28,7 @@ export class UserProfilePage {
       switchMap((params) => {
         const id = params['id'];
         if (id && id !== this.authService.currentUser()?.uid) {
-          return from(this.authService.getUserProfile(id));
+          return this.authService.getUserProfile(id);
         }
         return this.authService.userData$;
       })
@@ -63,8 +63,7 @@ export class UserProfilePage {
                 .sort((a, b) => a.date.toMillis() - b.date.toMillis())[0];
               return { ...group, nextEvent };
             })
-          )
-        );
+          ));
 
         return combineLatest(enrichedGroups$);
       })

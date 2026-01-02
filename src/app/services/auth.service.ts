@@ -15,9 +15,9 @@ import {
   sendEmailVerification,
   sendPasswordResetEmail,
 } from '@angular/fire/auth';
-import { Firestore, doc, setDoc, getDoc, serverTimestamp } from '@angular/fire/firestore';
+import { Firestore, doc, setDoc, serverTimestamp, docData } from '@angular/fire/firestore';
 import { Router } from '@angular/router';
-import { from, Observable, of } from 'rxjs';
+import { from, Observable, of, firstValueFrom } from 'rxjs';
 import { map, switchMap, tap } from 'rxjs/operators';
 import { AppUser } from '../models/user.model';
 
@@ -37,7 +37,8 @@ export class AuthService {
   userData$: Observable<AppUser | null> = this.user$.pipe(
     switchMap((u) => {
       if (u) {
-        return from(this.getUserProfile(u.uid));
+        const ref = doc(this.firestore, `users/${u.uid}`);
+        return docData(ref, { idField: 'uid' }) as Observable<AppUser>;
       } else {
         return of(null);
       }
@@ -166,17 +167,15 @@ export class AuthService {
     }
   }
 
-  async getUserProfile(uid: string): Promise<AppUser | null> {
+  getUserProfile(uid: string): Observable<AppUser | null> {
     const userRef = doc(this.firestore, `users/${uid}`);
-    const userSnap = await getDoc(userRef);
-    return userSnap.exists() ? (userSnap.data() as AppUser) : null;
+    return docData(userRef, { idField: 'uid' }) as Observable<AppUser>;
   }
 
   // --- Firestore User Data Logic ---
   private async updateUserData(firebaseUser: any, additionalData: any = {}) {
     const userRef = doc(this.firestore, `users/${firebaseUser.uid}`);
-    const userSnap = await getDoc(userRef);
-    const existingData = userSnap.exists() ? userSnap.data() : {};
+    const existingData = (await firstValueFrom(docData(userRef))) || {};
 
     const data: any = {
       uid: firebaseUser.uid,

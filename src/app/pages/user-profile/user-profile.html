@@ -12,7 +12,11 @@
                         <h1 class="text-white text-base font-bold leading-normal truncate">
                             {{ profileUser()?.displayName || 'Felhasználó' }}
                         </h1>
+                        @if ((userGroups() || []).length > 0) {
                         <p class="text-primary text-xs font-normal leading-normal">Aktív Tag</p>
+                        } @else {
+                        <p class="text-text-secondary text-xs font-normal leading-normal">Nem tag</p>
+                        }
                     </div>
                 </div>
                 <nav class="flex flex-col gap-1">
@@ -67,8 +71,13 @@
                     <h2 class="text-2xl font-bold text-white tracking-tight">
                         {{ isOwnProfile() ? 'Profil szerkesztése' : 'Felhasználói profil' }}
                     </h2>
+                    @if ((userGroups() || []).length > 0) {
                     <span
                         class="px-3 py-1 rounded-full bg-primary/20 text-primary text-xs font-bold uppercase tracking-wider">Aktív</span>
+                    } @else {
+                    <span
+                        class="px-3 py-1 rounded-full bg-white/5 text-text-secondary text-xs font-bold uppercase tracking-wider">Inaktív</span>
+                    }
                 </div>
                 <!-- Profile Header Component -->
                 <div

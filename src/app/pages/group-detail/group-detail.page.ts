@@ -77,7 +77,6 @@ export class GroupDetailPage {
   });
 
   protected isEventPast(event: SportEvent): boolean {
-    // If the event was explicitly finished (or results were recorded), treat it as past
     if (event.status === 'finished') return true;
     if (event.goalsA !== undefined || event.goalsB !== undefined) return true;
     if (event.playerStats && Object.keys(event.playerStats).length > 0) return true;

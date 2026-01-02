@@ -11,14 +11,14 @@ import {
   Timestamp,
   doc,
   updateDoc,
-  getDoc,
   deleteDoc,
   writeBatch,
+  docData,
 } from '@angular/fire/firestore';
 import { AuthService } from './auth.service';
 import { EloService } from './elo.service';
 import { GroupMember } from './group.service';
-import { Observable } from 'rxjs';
+import { Observable, firstValueFrom } from 'rxjs';
 import { arrayUnion, increment } from '@angular/fire/firestore';
 
 export interface PlayerStats {
@@ -58,6 +58,7 @@ export interface SportEvent {
   goalsA?: number;
   goalsB?: number;
   startedAt?: any;
+  endedAt?: any;
   matchEvents?: MatchEvent[];
   playerStats?: { [userId: string]: PlayerStats };
 }
@@ -150,9 +151,9 @@ export class EventService {
 
   async getEvent(groupId: string, eventId: string): Promise<SportEvent> {
     const docRef = doc(this.firestore, `groups/${groupId}/events/${eventId}`);
-    const docSnap = await getDoc(docRef);
-    if (!docSnap.exists()) throw new Error('Event not found');
-    return { id: docSnap.id, ...docSnap.data() } as SportEvent;
+    const data = await firstValueFrom(docData(docRef, { idField: 'id' }));
+    if (!data || Object.keys(data).length === 0) throw new Error('Event not found');
+    return data as SportEvent;
   }
 
   getEvents(groupId: string): Observable<SportEvent[]> {
@@ -170,10 +171,8 @@ export class EventService {
     if (!user) throw new Error('User must be logged in');
 
     const eventRef = doc(this.firestore, `groups/${groupId}/events/${eventId}`);
-    const eventSnap = await getDoc(eventRef);
-    if (!eventSnap.exists()) throw new Error('Event not found');
-
-    const event = eventSnap.data() as SportEvent;
+    const event = (await firstValueFrom(docData(eventRef, { idField: 'id' }))) as SportEvent | null;
+    if (!event) throw new Error('Event not found');
     const attendees = event.attendees || [];
     const isJoining = !attendees.includes(user.uid);
 
@@ -233,6 +232,7 @@ export class EventService {
       goalsA,
       goalsB,
       status: 'finished',
+      endedAt: serverTimestamp(),
     });
 
     // 2. Calculate and Update Elo
@@ -279,5 +279,25 @@ export class EventService {
     });
 
     return batch.commit();
+  }
+
+  // Server-side filtered queries to reduce client data transfer
+  getUpcomingEvents(groupId: string): Observable<SportEvent[]> {
+    // Fetch events that are planned or active (exclude finished)
+    const q = query(
+      this.getEventsCollection(groupId),
+      where('status', 'in', ['planned', 'active']),
+      orderBy('date', 'asc')
+    );
+    return collectionData(q, { idField: 'id' }) as Observable<SportEvent[]>;
+  }
+
+  getPastEvents(groupId: string): Observable<SportEvent[]> {
+    const q = query(
+      this.getEventsCollection(groupId),
+      where('status', '==', 'finished'),
+      orderBy('date', 'desc')
+    );
+    return collectionData(q, { idField: 'id' }) as Observable<SportEvent[]>;
   }
 }

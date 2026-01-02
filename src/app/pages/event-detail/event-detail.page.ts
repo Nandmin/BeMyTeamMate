@@ -111,6 +111,22 @@ export class EventDetailPage {
     return event.attendees.includes(user.uid);
   });
 
+  isEventPast = computed(() => {
+    const event = this.event();
+    if (!event) return false;
+    if (!event.date) return false;
+
+    const eventDate = event.date.toDate();
+    eventDate.setHours(0, 0, 0, 0);
+
+    if (event.time) {
+      const [hours, minutes] = event.time.split(':').map(Number);
+      eventDate.setHours(hours, minutes);
+    }
+
+    return eventDate < new Date();
+  });
+
   async onToggleRSVP() {
     const event = this.event();
     if (!this.groupId || !event?.id) return;
@@ -119,6 +135,15 @@ export class EventDetailPage {
       await this.modalService.alert(
         'Csak csoporttagok jelentkezhetnek az eseményekre.',
         'Figyelem'
+      );
+      return;
+    }
+
+    // Prevent RSVP if event is in the past
+    if (this.isEventPast()) {
+      await this.modalService.alert(
+        'Már nem jelentkezhetsz erre az eseményre, vagy nem mondhatod le a részvételt, mivel az időpontja elmúlt.',
+        'Esemény lejárt'
       );
       return;
     }

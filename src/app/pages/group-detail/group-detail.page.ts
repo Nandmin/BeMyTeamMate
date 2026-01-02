@@ -25,6 +25,8 @@ export class GroupDetailPage {
   private renderer = inject(Renderer2);
   private document = inject(DOCUMENT);
 
+  selectedView = signal<'upcoming' | 'previous'>('upcoming');
+
   constructor() {
     effect(() => {
       const isModalOpen = !!this.selectedEventForRecurrence();
@@ -51,6 +53,45 @@ export class GroupDetailPage {
   events = toSignal(
     this.route.params.pipe(switchMap((params) => this.eventService.getEvents(params['id'])))
   );
+
+  filteredEvents = computed(() => {
+    const allEvents = this.events();
+    if (!allEvents) return [];
+
+    const now = new Date();
+    const view = this.selectedView();
+
+    return allEvents
+      .filter((event) => {
+        const isPast = this.isEventPast(event);
+        return view === 'upcoming' ? !isPast : isPast;
+      })
+      .sort((a, b) => {
+        // Sort upcoming ascending (nearest first), previous descending (newest first)
+        const dateA = a.date.toDate();
+        const dateB = b.date.toDate();
+        return view === 'upcoming'
+          ? dateA.getTime() - dateB.getTime()
+          : dateB.getTime() - dateA.getTime();
+      });
+  });
+
+  protected isEventPast(event: SportEvent): boolean {
+    if (!event.date) return false;
+    const eventDate = event.date.toDate();
+    // Reset to start of day to ensure clean combination with time, though date field should be correct
+    eventDate.setHours(0, 0, 0, 0);
+
+    if (event.time) {
+      const [hours, minutes] = event.time.split(':').map(Number);
+      eventDate.setHours(hours, minutes);
+    } else {
+      // If no time, assume end of day? Or start? Let's assume start.
+      // If simply date comparison, usually we want to include today in upcoming if time hasn't passed.
+    }
+
+    return eventDate < new Date();
+  }
 
   isMember = computed(() => {
     const user = this.authService.currentUser();

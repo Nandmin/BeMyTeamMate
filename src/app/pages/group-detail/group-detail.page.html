@@ -127,26 +127,32 @@
                             Események
                         </h3>
                         <div class="flex bg-white/5 p-1 rounded-lg border border-white/10">
-                            <button
-                                class="px-4 py-1.5 rounded-md text-sm font-medium bg-white/10 text-white shadow-sm transition-all">Közelgő</button>
-                            <button
-                                class="px-4 py-1.5 rounded-md text-sm font-medium text-gray-400 hover:text-white transition-all">Korábbi</button>
+                            <button (click)="selectedView.set('upcoming')"
+                                [class.bg-white/10]="selectedView() === 'upcoming'"
+                                [class.text-white]="selectedView() === 'upcoming'"
+                                [class.text-gray-400]="selectedView() !== 'upcoming'"
+                                class="px-4 py-1.5 rounded-md text-sm font-medium shadow-sm transition-all">Közelgő</button>
+                            <button (click)="selectedView.set('previous')"
+                                [class.bg-white/10]="selectedView() === 'previous'"
+                                [class.text-white]="selectedView() === 'previous'"
+                                [class.text-gray-400]="selectedView() !== 'previous'"
+                                class="px-4 py-1.5 rounded-md text-sm font-medium transition-all">Korábbi</button>
                         </div>
                     </div>
 
-                    <!-- Upcoming Event Cards -->
-                    @for (event of events() || []; track event.id) {
+                    <!-- Event Cards -->
+                    @for (event of filteredEvents(); track event.id) {
                     <div (click)="openAttendeesModal(event)"
                         class="group relative overflow-hidden rounded-2xl bg-white/5 border border-white/10 p-5 hover:border-primary/50 transition-all duration-300 hover:shadow-lg hover:-translate-y-1 cursor-pointer">
                         <div class="absolute top-0 right-0 p-0 flex gap-2">
-                            @if (event.creatorId === authService.currentUser()?.uid && !event.recurrenceId) {
+                            @if (event.creatorId === authService.currentUser()?.uid && !isEventPast(event)) {
+                            @if(!event.recurrenceId) {
                             <button (click)="openRecurrenceModal(event); $event.stopPropagation()"
                                 title="Ismétlődővé tétel"
                                 class="p-1 rounded-lg bg-background-dark/50 text-gray-400 hover:text-primary transition-colors">
                                 <span class="material-symbols-outlined text-sm">update</span>
                             </button>
                             }
-                            @if (event.creatorId === authService.currentUser()?.uid) {
                             <a [routerLink]="['/groups', group()?.id, 'edit-event', event.id]"
                                 (click)="$event.stopPropagation()"
                                 class="p-1 rounded-lg bg-background-dark/50 text-gray-400 hover:text-primary transition-colors"
@@ -211,6 +217,7 @@
                                     }} fő</span>
                             </div>
                             <!-- Action -->
+                            @if (selectedView() === 'upcoming') {
                             <button (click)="$event.stopPropagation(); onToggleRSVP(event)"
                                 [class.bg-red-600]="isUserAttending(event)" [class.text-white]="isUserAttending(event)"
                                 [class.border-red-600]="isUserAttending(event)"
@@ -218,10 +225,14 @@
                                 class="sm:self-center px-4 py-2 rounded-lg bg-primary/10 text-primary font-bold text-sm hover:bg-primary hover:text-white transition-colors border border-primary/20">
                                 {{ isUserAttending(event) ? 'Lemondás' : 'Jelentkezés' }}
                             </button>
+                            }
                         </div>
                     </div>
                     } @empty {
-                    <p class="text-gray-500 text-center py-8">Még nincsenek események ebben a csoportban.</p>
+                    <p class="text-gray-500 text-center py-8">
+                        {{ selectedView() === 'upcoming' ? 'Nincsenek közelgő események ebben a csoportban.' :
+                        'Nincsenek korábbi események ebben a csoportban.' }}
+                    </p>
                     }
 
                     <!-- Create New Event CTA -->

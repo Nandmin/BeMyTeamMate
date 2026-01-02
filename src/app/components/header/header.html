@@ -38,14 +38,18 @@
             @if (authService.currentUser(); as user) {
             <!-- Logged In View -->
             <div class="flex items-center gap-4">
-                <div class="hidden sm:flex flex-col items-end">
-                    <span class="text-sm font-bold text-white leading-none">
-                        {{ user.displayName || 'Játékos' }}
-                    </span>
-                </div>
-                <div class="h-9 w-9 overflow-hidden rounded-full border border-white/10 p-0.5">
-                    <img [src]="user.photoURL || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + user.uid"
-                        class="h-full w-full rounded-full object-cover" [alt]="user.displayName" />
+                <div class="flex items-center gap-3 cursor-pointer group/user" routerLink="/profile">
+                    <div class="hidden sm:flex flex-col items-end">
+                        <span
+                            class="text-sm font-bold text-white leading-none group-hover/user:text-primary transition-colors">
+                            {{ user.displayName || 'Játékos' }}
+                        </span>
+                    </div>
+                    <div
+                        class="h-9 w-9 overflow-hidden rounded-full border border-white/10 p-0.5 group-hover/user:border-primary transition-colors">
+                        <img [src]="user.photoURL || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + user.uid"
+                            class="h-full w-full rounded-full object-cover" [alt]="user.displayName" />
+                    </div>
                 </div>
                 <button (click)="onLogout()"
                     class="flex h-9 w-9 items-center justify-center rounded-xl bg-dark-accent border border-white/5 hover:bg-red-600 hover:text-white hover:border-red-600 transition-all active:scale-95 shadow-sm"

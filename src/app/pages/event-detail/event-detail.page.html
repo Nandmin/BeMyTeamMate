@@ -153,13 +153,14 @@
                             class="group flex items-center gap-3 bg-card-dark border border-card-border hover:border-primary/50 text-white rounded-2xl p-4 shadow-sm transition-all hover:translate-y-[-2px] hover:shadow-lg hover:shadow-primary/5">
                             <span cdkDragHandle
                                 class="material-symbols-outlined text-gray-500 drag-handle">drag_indicator</span>
-                            <div
-                                class="size-11 rounded-full bg-cover bg-center shrink-0 border-2 border-primary/20 overflow-hidden shadow-inner">
+                            <div [routerLink]="['/profile', player.userId]"
+                                class="size-11 rounded-full bg-cover bg-center shrink-0 border-2 border-primary/20 overflow-hidden shadow-inner cursor-pointer hover:border-primary transition-all">
                                 <img [src]="player.photo || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + player.userId"
                                     class="w-full h-full object-cover">
                             </div>
                             <div class="flex-1 min-w-0">
-                                <p class="font-bold text-base truncate">{{ player.name }}</p>
+                                <p class="font-bold text-base truncate hover:text-primary cursor-pointer transition-colors"
+                                    [routerLink]="['/profile', player.userId]">{{ player.name }}</p>
                                 <div class="flex items-center gap-1">
                                     <span class="text-primary material-symbols-outlined text-[14px]">star</span>
                                     <p class="text-text-secondary text-[10px] font-black uppercase tracking-widest">
@@ -294,13 +295,14 @@
                             class="group flex items-center gap-3 bg-card-dark border border-card-border hover:border-primary/50 text-white rounded-2xl p-4 shadow-sm transition-all hover:translate-y-[-2px] hover:shadow-lg hover:shadow-primary/5">
                             <span cdkDragHandle
                                 class="material-symbols-outlined text-gray-500 drag-handle">drag_indicator</span>
-                            <div
-                                class="size-11 rounded-full bg-cover bg-center shrink-0 border-2 border-blue-500/20 overflow-hidden shadow-inner">
+                            <div [routerLink]="['/profile', player.userId]"
+                                class="size-11 rounded-full bg-cover bg-center shrink-0 border-2 border-blue-500/20 overflow-hidden shadow-inner cursor-pointer hover:border-blue-400 transition-all">
                                 <img [src]="player.photo || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + player.userId"
                                     class="w-full h-full object-cover">
                             </div>
                             <div class="flex-1 min-w-0">
-                                <p class="font-bold text-base truncate">{{ player.name }}</p>
+                                <p class="font-bold text-base truncate hover:text-blue-400 cursor-pointer transition-colors"
+                                    [routerLink]="['/profile', player.userId]">{{ player.name }}</p>
                                 <div class="flex items-center gap-1">
                                     <span class="text-blue-400 material-symbols-outlined text-[14px]">star</span>
                                     <p class="text-text-secondary text-[10px] font-black uppercase tracking-widest">
@@ -461,10 +463,10 @@
 
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-4">
                         @for (member of attendingMembers(); track member.userId) {
-                        <div
-                            class="flex items-center gap-4 p-4 rounded-3xl bg-card-dark/40 border border-card-border hover:border-primary/40 transition-all group/member backdrop-blur-sm">
+                        <div [routerLink]="['/profile', member.userId]"
+                            class="flex items-center gap-4 p-4 rounded-3xl bg-card-dark/40 border border-card-border hover:border-primary/40 transition-all group/member backdrop-blur-sm cursor-pointer">
                             <div
-                                class="w-14 h-14 rounded-[1.25rem] bg-background-dark/50 overflow-hidden border border-white/5 shadow-xl">
+                                class="w-14 h-14 rounded-[1.25rem] bg-background-dark/50 overflow-hidden border border-white/5 shadow-xl group-hover/member:border-primary/50 transition-all">
                                 <img [src]="member.photo || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + member.userId"
                                     class="w-full h-full object-cover">
                             </div>
@@ -507,15 +509,17 @@
 
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-4 opacity-50">
                         @for (member of notRespondingMembers(); track member.userId) {
-                        <div
-                            class="flex items-center gap-4 p-4 rounded-3xl bg-background-dark/30 border border-card-border hover:bg-card-dark/40 transition-all grayscale opacity-70 group">
+                        <div [routerLink]="['/profile', member.userId]"
+                            class="flex items-center gap-4 p-4 rounded-3xl bg-background-dark/30 border border-card-border hover:bg-card-dark/40 transition-all grayscale opacity-70 group cursor-pointer hover:grayscale-0 hover:opacity-100">
                             <div
                                 class="w-14 h-14 rounded-[1.25rem] bg-background-dark overflow-hidden border border-white/5">
                                 <img [src]="member.photo || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + member.userId"
-                                    class="w-full h-full object-cover opacity-30">
+                                    class="w-full h-full object-cover opacity-30 group-hover:opacity-100 transition-all">
                             </div>
                             <div class="flex-1">
-                                <p class="font-bold text-white/80 text-lg tracking-tight">{{ member.name }}</p>
+                                <p
+                                    class="font-bold text-white/80 text-lg tracking-tight group-hover:text-primary transition-colors">
+                                    {{ member.name }}</p>
                                 <p class="text-[10px] text-gray-600 font-black uppercase tracking-[0.15em]">{{
                                     member.role }}</p>
                             </div>

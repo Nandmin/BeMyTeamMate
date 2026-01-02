@@ -79,22 +79,23 @@ export class GroupService {
     }) as Observable<Group[]>;
   }
 
-  getUserGroups(): Observable<Group[]> {
-    return this.authService.user$.pipe(
-      switchMap((user) => {
-        if (!user) return of([]);
+  getUserGroups(userId?: string): Observable<Group[]> {
+    const uid$ = userId ? of(userId) : this.authService.user$.pipe(map((u) => u?.uid));
 
-        // 1. Owned groups - this usually works without extra indexes
-        const ownedQuery = query(this.groupsCollection, where('ownerId', '==', user.uid));
+    return uid$.pipe(
+      switchMap((uid) => {
+        if (!uid) return of([]);
+
+        // 1. Owned groups
+        const ownedQuery = query(this.groupsCollection, where('ownerId', '==', uid));
         const ownedGroups$ = (
           collectionData(ownedQuery, { idField: 'id' }) as Observable<Group[]>
         ).pipe(startWith([]));
 
-        // 2. Groups where user is a member (via collectionGroup)
-        // This might require a manual index in Firebase Console
+        // 2. Groups where user is a member
         const memberQuery = query(
           collectionGroup(this.firestore, 'members'),
-          where('userId', '==', user.uid)
+          where('userId', '==', uid)
         );
 
         const joinedIds$ = from(getDocs(memberQuery)).pipe(

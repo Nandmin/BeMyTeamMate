@@ -1,6 +1,6 @@
 import { Timestamp } from '@angular/fire/firestore';
 
-export interface User {
+export interface AppUser {
   uid: string;
   email: string;
   displayName: string;
@@ -8,6 +8,7 @@ export interface User {
   fcmTokens: string[]; // Multiple devices support
   elo: number;
   formFactor: number; // 0.0 - 2.0 multiplier based on recent performance
+  bio?: string;
   createdAt: Timestamp;
   lastActive: Timestamp;
 }

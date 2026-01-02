@@ -94,10 +94,10 @@
                     @for (member of members(); track member.id) {
                     <div class="p-4 flex items-center gap-4 hover:bg-white/5 transition-colors">
                         <!-- Avatar -->
-                        <div class="relative">
+                        <div class="relative cursor-pointer" [routerLink]="['/profile', member.userId]">
                             <img [src]="member.photo || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + member.userId"
                                 [alt]="member.name"
-                                class="w-12 h-12 rounded-full object-cover border-2 border-white/10">
+                                class="w-12 h-12 rounded-full object-cover border-2 border-white/10 hover:border-primary transition-all">
                             @if (member.userId === group()?.ownerId) {
                             <div class="absolute -bottom-1 -right-1 bg-background-dark rounded-full p-0.5">
                                 <span class="material-symbols-outlined text-yellow-400 text-[14px]">star</span>
@@ -111,7 +111,8 @@
 
                         <!-- Info -->
                         <div class="flex-1 min-w-0">
-                            <p class="text-white font-bold truncate">{{ member.name }}</p>
+                            <p class="text-white font-bold truncate hover:text-primary cursor-pointer transition-colors"
+                                [routerLink]="['/profile', member.userId]">{{ member.name }}</p>
                             <p class="text-sm text-gray-400">{{ member.role }}</p>
                         </div>
 

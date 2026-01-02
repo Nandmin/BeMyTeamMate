@@ -6,11 +6,11 @@
                 class="sticky top-24 flex flex-col gap-4 bg-surface-dark/50 backdrop-blur-sm p-4 rounded-xl border border-[#234833]">
                 <div class="flex items-center gap-3 p-2 mb-2">
                     <div class="bg-center bg-no-repeat bg-cover rounded-full size-12 border-2 border-primary"
-                        [style.backgroundImage]="'url(' + (authService.currentUser()?.photoURL || 'https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y') + ')'">
+                        [style.backgroundImage]="'url(' + (profileUser()?.photoURL || 'https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y') + ')'">
                     </div>
                     <div class="flex flex-col overflow-hidden">
                         <h1 class="text-white text-base font-bold leading-normal truncate">
-                            {{ authService.currentUser()?.displayName || 'Felhasználó' }}
+                            {{ profileUser()?.displayName || 'Felhasználó' }}
                         </h1>
                         <p class="text-primary text-xs font-normal leading-normal">Aktív Tag</p>
                     </div>
@@ -46,12 +46,14 @@
                             Adatvédelem
                         </p>
                     </a>
+                    @if (isOwnProfile()) {
                     <div class="h-px bg-[#234833] my-2 mx-4"></div>
                     <button (click)="onLogout()"
                         class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-red-500/10 text-red-400 hover:text-red-300 transition-colors">
                         <span class="material-symbols-outlined">logout</span>
                         <p class="text-sm font-medium leading-normal">Kijelentkezés</p>
                     </button>
+                    }
                 </nav>
             </div>
         </aside>
@@ -62,45 +64,55 @@
             <section class="bg-surface-dark rounded-2xl border border-[#234833] p-6 md:p-8 animate-fade-in-up"
                 id="personal">
                 <div class="flex items-center justify-between mb-8">
-                    <h2 class="text-2xl font-bold text-white tracking-tight">Profil szerkesztése</h2>
+                    <h2 class="text-2xl font-bold text-white tracking-tight">
+                        {{ isOwnProfile() ? 'Profil szerkesztése' : 'Felhasználói profil' }}
+                    </h2>
                     <span
                         class="px-3 py-1 rounded-full bg-primary/20 text-primary text-xs font-bold uppercase tracking-wider">Aktív</span>
                 </div>
                 <!-- Profile Header Component -->
                 <div
                     class="flex flex-col md:flex-row items-center md:items-start gap-6 mb-10 pb-10 border-b border-[#234833]">
-                    <div class="relative group cursor-pointer">
+                    <div class="relative group cursor-pointer" (click)="isOwnProfile() && fileInput.click()">
                         <div class="bg-center bg-no-repeat bg-cover rounded-full size-32 border-4 border-[#234833] group-hover:border-primary transition-colors duration-300"
-                            [style.backgroundImage]="'url(' + (authService.currentUser()?.photoURL || 'https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y') + ')'">
+                            [style.backgroundImage]="'url(' + (profileUser()?.photoURL || 'https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y') + ')'">
                         </div>
+                        <input #fileInput type="file" class="hidden" accept="image/*" (change)="onFileSelected($event)">
+                        @if (isOwnProfile()) {
                         <div
                             class="absolute inset-0 bg-black/40 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                             <span class="material-symbols-outlined text-white text-3xl">edit</span>
                         </div>
+                        }
                     </div>
                     <div class="flex flex-col flex-1 gap-4 text-center md:text-left w-full">
                         <div>
                             <p class="text-white text-2xl font-bold leading-tight">
-                                {{ authService.currentUser()?.displayName || 'Felhasználó' }}
+                                {{ profileUser()?.displayName || 'Felhasználó' }}
                             </p>
+                            @if (profileUser()?.email && isOwnProfile()) {
                             <p class="text-text-secondary text-base font-normal">
-                                {{ authService.currentUser()?.email }}
+                                {{ profileUser()?.email }}
                             </p>
+                            }
                         </div>
+                        @if (isOwnProfile()) {
                         <div class="flex gap-4 mt-2 justify-center md:justify-start">
-                            <button
+                            <button (click)="fileInput.click()"
                                 class="flex items-center justify-center rounded-xl h-10 px-6 bg-primary text-background-dark text-sm font-bold hover:bg-primary-hover transition-colors shadow-[0_0_15px_rgba(43,238,124,0.3)]">
                                 Kép feltöltése
                             </button>
-                            <button
+                            <button (click)="onDeletePhoto()"
                                 class="flex items-center justify-center rounded-xl h-10 px-6 bg-transparent border border-[#326748] text-white text-sm font-bold hover:bg-[#234833] transition-colors">
                                 Törlés
                             </button>
                         </div>
+                        }
                     </div>
                 </div>
                 <!-- Form Fields -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                    @if (isOwnProfile()) {
                     <label class="flex flex-col gap-2">
                         <span class="text-white text-sm font-medium">Megjelenített név</span>
                         <div class="relative">
@@ -127,7 +139,21 @@
                             class="w-full rounded-xl bg-surface-darker border border-[#326748] text-white placeholder-text-secondary/50 focus:border-primary focus:ring-1 focus:ring-primary px-4 py-3.5 outline-none transition-all resize-none"
                             rows="3" [(ngModel)]="profileData.bio" placeholder="Mesélj magadról..."></textarea>
                     </label>
+                    } @else {
+                    <!-- Stats for other users -->
+                    <div class="md:col-span-2 grid grid-cols-2 sm:grid-cols-4 gap-4">
+                        <div class="bg-surface-darker p-4 rounded-xl border border-[#326748] text-center">
+                            <p class="text-primary text-2xl font-bold">{{ (userGroups() || []).length }}</p>
+                            <p class="text-text-secondary text-xs uppercase">Csoportok</p>
+                        </div>
+                        <div class="bg-surface-darker p-4 rounded-xl border border-[#326748] text-center">
+                            <p class="text-primary text-2xl font-bold">{{ profileUser()?.elo || 1200 }}</p>
+                            <p class="text-text-secondary text-xs uppercase">Elo pont</p>
+                        </div>
+                    </div>
+                    }
                 </div>
+                @if (isOwnProfile()) {
                 <div class="flex justify-end pt-4 border-t border-[#234833]">
                     <button (click)="onSaveProfile()"
                         class="flex items-center gap-2 rounded-xl h-12 px-8 bg-primary text-background-dark text-base font-bold hover:bg-primary-hover hover:scale-105 transition-all shadow-[0_4px_14px_rgba(43,238,124,0.4)]">
@@ -135,15 +161,21 @@
                         Mentés
                     </button>
                 </div>
+                }
             </section>
 
             <!-- Section: Groups -->
             <section class="bg-surface-dark rounded-2xl border border-[#234833] p-6 md:p-8" id="groups">
                 <div class="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
                     <div>
-                        <h2 class="text-2xl font-bold text-white tracking-tight">Társaságaim</h2>
-                        <p class="text-text-secondary text-sm mt-1">Kezeld a csapataidat vagy csatlakozz újhoz.</p>
+                        <h2 class="text-2xl font-bold text-white tracking-tight">Tagságaim</h2>
+                        <p class="text-text-secondary text-sm mt-1">
+                            {{ isOwnProfile() ? 'Tekintsd át a csapataidat.' :
+                            (profileUser()?.displayName ||
+                            'A felhasználó') + ' csapatai.' }}
+                        </p>
                     </div>
+                    <!-- @if (isOwnProfile()) {
                     <div class="flex gap-3">
                         <button
                             class="flex items-center gap-2 rounded-xl h-10 px-4 bg-[#234833] text-white text-sm font-bold hover:bg-[#2c5840] transition-colors">
@@ -155,51 +187,78 @@
                             <span class="material-symbols-outlined text-[18px]">add</span>
                             Új társaság
                         </button>
-                    </div>
+                    </div> 
+                    }-->
                 </div>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     @for (group of userGroups(); track group.id) {
                     <div
-                        class="group relative overflow-hidden rounded-xl border border-[#326748] bg-surface-darker hover:border-primary transition-all duration-300">
-                        <div
-                            class="absolute top-0 left-0 w-full h-24 bg-gradient-to-b from-black/60 to-transparent z-10">
-                        </div>
-                        <div class="h-24 w-full bg-cover bg-center"
+                        class="group relative overflow-hidden rounded-xl border border-[#326748] bg-surface-darker hover:border-primary transition-all duration-300 max-w-[380px] w-full mx-auto md:mx-0">
+                        <!-- Image section -->
+                        <div class="h-32 w-full bg-cover bg-center relative"
                             [style.backgroundImage]="'url(' + (group.image || 'https://images.unsplash.com/photo-1517486808906-6ca8b3f04846?auto=format&fit=crop&q=80&w=800') + ')'">
+                            <div class="absolute inset-0 bg-gradient-to-t from-surface-darker to-transparent"></div>
+
+                            <!-- Sport Icon overlapping the bottom edge -->
+                            <div
+                                class="absolute bottom-0 translate-y-1/2 left-6 size-12 rounded-xl border-2 border-white/20 bg-surface-dark backdrop-blur-md flex items-center justify-center text-primary shadow-xl z-30">
+                                <span class="material-symbols-outlined text-2xl">
+                                    {{ getSportIcon(group.nextEvent?.sport) }}
+                                </span>
+                            </div>
                         </div>
-                        <div class="p-4 relative z-20 -mt-10">
-                            <div class="flex justify-between items-end">
-                                <div class="size-16 rounded-xl border-4 border-surface-darker bg-cover bg-center shadow-lg"
-                                    [style.backgroundImage]="'url(' + (group.image || 'https://images.unsplash.com/photo-1517486808906-6ca8b3f04846?auto=format&fit=crop&q=80&w=800') + ')'">
-                                </div>
-                                <div class="flex gap-2 mb-1">
-                                    @if (group.ownerId === authService.currentUser()?.uid) {
-                                    <span
-                                        class="px-2 py-1 rounded-md bg-[#234833] text-white text-xs font-medium">Admin</span>
-                                    } @else {
-                                    <span
-                                        class="px-2 py-1 rounded-md bg-surface-dark border border-[#326748] text-text-secondary text-xs font-medium">Tag</span>
-                                    }
-                                </div>
+
+                        <div class="p-5 pt-5 relative">
+                            <!-- Role tag aligned right -->
+                            <div class="flex justify-end mb-1">
+                                @if (group.ownerId === profileUser()?.uid) {
+                                <span
+                                    class="px-2 py-0.5 rounded text-[10px] uppercase tracking-wider bg-primary/20 text-primary font-bold border border-primary/20 shadow-sm">Kapitány</span>
+                                } @else {
+                                <span
+                                    class="px-2 py-0.5 rounded text-[10px] uppercase tracking-wider bg-white/5 border border-white/10 text-text-secondary font-bold">Tag</span>
+                                }
                             </div>
-                            <h3 class="text-lg font-bold text-white mt-3">{{ group.name }}</h3>
-                            <p class="text-text-secondary text-sm mb-4">{{ group.memberCount }} tag</p>
-                            <div class="flex gap-2">
-                                <button [routerLink]="['/groups', group.id]"
-                                    class="flex-1 py-2 rounded-lg bg-[#234833] hover:bg-[#2c5840] text-white text-sm font-medium transition-colors">
-                                    Megtekintés
-                                </button>
+
+                            <h3
+                                class="text-xl font-bold text-white mb-2 truncate group-hover:text-primary transition-colors">
+                                {{ group.name }}</h3>
+
+                            <!-- Group stats and Next Event info -->
+                            <div
+                                class="flex items-center flex-wrap gap-x-3 gap-y-1 mb-5 text-[12px] text-text-secondary">
+                                <span class="flex items-center gap-1">
+                                    <span class="material-symbols-outlined text-[14px] opacity-70">person</span>
+                                    {{ group.memberCount }} tag
+                                </span>
+                                @if (group.nextEvent) {
+                                <span class="opacity-30">•</span>
+                                <div class="flex items-center gap-1.5 min-w-0">
+                                    <span class="material-symbols-outlined text-[14px] text-primary">schedule</span>
+                                    <span class="truncate">Következő esemény: {{ formatFullDate(group.nextEvent.date,
+                                        group.nextEvent.time) }}</span>
+                                </div>
+                                }
                             </div>
+
+                            <button [routerLink]="['/groups', group.id]"
+                                class="w-full py-2.5 rounded-lg bg-[#234833] hover:bg-primary hover:text-background-dark text-white text-xs font-bold transition-all uppercase tracking-widest shadow-lg">
+                                Megtekintés
+                            </button>
                         </div>
                     </div>
                     } @empty {
                     <div class="col-span-1 md:col-span-2 py-10 text-center">
-                        <p class="text-text-secondary">Még nem tartozol egyetlen társasághoz sem.</p>
+                        <p class="text-text-secondary">
+                            {{ isOwnProfile() ? 'Még nem tartozol egyetlen társasághoz sem.' : 'Ez a felhasználó még nem
+                            tartozik egyetlen társasághoz sem.' }}
+                        </p>
                     </div>
                     }
                 </div>
             </section>
 
+            @if (isOwnProfile()) {
             <!-- Section: Notifications -->
             <section class="bg-surface-dark rounded-2xl border border-[#234833] p-6 md:p-8 mb-8" id="notifications">
                 <div class="mb-6">
@@ -274,6 +333,7 @@
                     </div>
                 </div>
             </section>
+            }
         </div>
     </div>
 </div>

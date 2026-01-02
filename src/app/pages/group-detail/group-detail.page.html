@@ -188,7 +188,8 @@
                                 <div class="flex -space-x-2">
                                     @for (member of getAttendingMembersForEvent(event).slice(0, 4); track member.userId)
                                     {
-                                    <div class="w-8 h-8 rounded-full border-2 border-background-dark bg-white/10 overflow-hidden"
+                                    <div [routerLink]="['/profile', member.userId]" (click)="$event.stopPropagation()"
+                                        class="w-8 h-8 rounded-full border-2 border-background-dark bg-white/10 overflow-hidden cursor-pointer hover:border-primary transition-all"
                                         [title]="member.name">
                                         @if (member.photo) {
                                         <img [src]="member.photo" [alt]="member.name"
@@ -261,9 +262,10 @@
                         @for (member of members(); track member.id) {
                         <div class="flex items-center gap-3 p-3 rounded-xl bg-white/5 border transition-all group"
                             [ngClass]="member.isAdmin ? 'border-primary/30 hover:bg-primary/5' : 'border-white/5 hover:border-white/20'">
-                            <div class="relative">
+                            <div class="relative cursor-pointer" [routerLink]="['/profile', member.userId]">
                                 <img [src]="member.photo || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + member.userId"
-                                    [alt]="member.name" class="w-12 h-12 rounded-full object-cover">
+                                    [alt]="member.name"
+                                    class="w-12 h-12 rounded-full object-cover border-2 border-transparent group-hover:border-primary transition-all">
                                 @if (member.isAdmin) {
                                 <div class="absolute -bottom-1 -right-1 bg-background-dark rounded-full p-0.5">
                                     <span
@@ -272,7 +274,8 @@
                                 }
                             </div>
                             <div class="flex-1 min-w-0">
-                                <p class="text-white font-bold text-sm truncate">{{ member.name }}</p>
+                                <p class="text-white font-bold text-sm truncate hover:text-primary cursor-pointer transition-colors"
+                                    [routerLink]="['/profile', member.userId]">{{ member.name }}</p>
                                 <p class="text-xs font-medium"
                                     [ngClass]="member.isAdmin ? 'text-primary' : 'text-gray-400'">{{
                                     member.role }}</p>

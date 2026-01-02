@@ -19,6 +19,7 @@ import { Firestore, doc, setDoc, getDoc, serverTimestamp } from '@angular/fire/f
 import { Router } from '@angular/router';
 import { from, Observable, of } from 'rxjs';
 import { map, switchMap, tap } from 'rxjs/operators';
+import { AppUser } from '../models/user.model';
 
 @Injectable({
   providedIn: 'root',
@@ -32,9 +33,22 @@ export class AuthService {
   user$ = user(this.auth);
   currentUser = signal<User | null>(null);
 
+  // Expose the full user profile data from Firestore
+  userData$: Observable<AppUser | null> = this.user$.pipe(
+    switchMap((u) => {
+      if (u) {
+        return from(this.getUserProfile(u.uid));
+      } else {
+        return of(null);
+      }
+    })
+  );
+  fullCurrentUser = signal<AppUser | null>(null);
+
   constructor() {
     // Sync signal with auth state (optional, for easier template usage)
     this.user$.subscribe((u) => this.currentUser.set(u));
+    this.userData$.subscribe((u) => this.fullCurrentUser.set(u));
   }
 
   // --- Google Sign-In ---
@@ -144,22 +158,28 @@ export class AuthService {
     this.router.navigate(['/login']);
   }
 
-  async updateProfile(displayName: string, photoURL?: string) {
+  async updateProfile(displayName: string, photoURL?: string, bio?: string) {
     const u = this.auth.currentUser;
     if (u) {
       await updateProfile(u, { displayName, photoURL });
-      await this.updateUserData(u); // Sync to Firestore
+      await this.updateUserData(u, { bio, photoURL }); // Sync to Firestore
     }
   }
 
+  async getUserProfile(uid: string): Promise<AppUser | null> {
+    const userRef = doc(this.firestore, `users/${uid}`);
+    const userSnap = await getDoc(userRef);
+    return userSnap.exists() ? (userSnap.data() as AppUser) : null;
+  }
+
   // --- Firestore User Data Logic ---
-  private async updateUserData(user: User, additionalData: any = {}) {
-    const userRef = doc(this.firestore, `users/${user.uid}`);
+  private async updateUserData(firebaseUser: any, additionalData: any = {}) {
+    const userRef = doc(this.firestore, `users/${firebaseUser.uid}`);
     const data = {
-      uid: user.uid,
-      email: user.email,
-      displayName: user.displayName || additionalData.username || null,
-      photoURL: user.photoURL,
+      uid: firebaseUser.uid,
+      email: firebaseUser.email,
+      displayName: firebaseUser.displayName || additionalData.username || null,
+      photoURL: firebaseUser.photoURL,
       lastLogin: serverTimestamp(),
       ...additionalData,
     };

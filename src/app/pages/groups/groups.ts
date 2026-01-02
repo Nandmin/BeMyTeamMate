@@ -1,6 +1,6 @@
 import { Component, inject, Signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { GroupService, Group } from '../../services/group.service';
 import { AuthService } from '../../services/auth.service';
@@ -9,7 +9,8 @@ import { catchError, of } from 'rxjs';
 
 @Component({
   selector: 'app-groups',
-  imports: [CommonModule, ReactiveFormsModule],
+  standalone: true,
+  imports: [CommonModule, ReactiveFormsModule, RouterLink],
   templateUrl: './groups.html',
   styleUrl: './groups.scss',
 })

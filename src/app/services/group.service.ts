@@ -14,9 +14,10 @@ import {
   updateDoc,
   increment,
   deleteDoc,
+  collectionGroup,
 } from '@angular/fire/firestore';
 import { AuthService } from './auth.service';
-import { Observable, switchMap, of, combineLatest, map } from 'rxjs';
+import { Observable, switchMap, of, combineLatest, map, from, startWith, catchError } from 'rxjs';
 
 export interface Group {
   id?: string;
@@ -82,12 +83,49 @@ export class GroupService {
     return this.authService.user$.pipe(
       switchMap((user) => {
         if (!user) return of([]);
-        const q = query(
-          this.groupsCollection,
-          where('ownerId', '==', user.uid),
-          orderBy('createdAt', 'desc')
+
+        // 1. Owned groups - this usually works without extra indexes
+        const ownedQuery = query(this.groupsCollection, where('ownerId', '==', user.uid));
+        const ownedGroups$ = (
+          collectionData(ownedQuery, { idField: 'id' }) as Observable<Group[]>
+        ).pipe(startWith([]));
+
+        // 2. Groups where user is a member (via collectionGroup)
+        // This might require a manual index in Firebase Console
+        const memberQuery = query(
+          collectionGroup(this.firestore, 'members'),
+          where('userId', '==', user.uid)
         );
-        return collectionData(q, { idField: 'id' }) as Observable<Group[]>;
+
+        const joinedIds$ = from(getDocs(memberQuery)).pipe(
+          map((snap) => snap.docs.map((d) => d.ref.parent.parent?.id).filter(Boolean) as string[]),
+          catchError((err) => {
+            console.warn('Member collectionGroup query failed (index might be missing):', err);
+            return of([]);
+          }),
+          startWith([])
+        );
+
+        return combineLatest([ownedGroups$, joinedIds$]).pipe(
+          switchMap(([ownedGroups, joinedIds]) => {
+            const ownedIds = new Set(ownedGroups.map((g) => g.id));
+            const missingIds = joinedIds.filter((id) => !ownedIds.has(id));
+
+            if (missingIds.length === 0) return of(ownedGroups);
+
+            // Fetch the details for joined groups
+            const joinedObservables = missingIds.map((id) => this.getGroup(id));
+            return combineLatest(joinedObservables).pipe(
+              map((joinedGroups) => {
+                const validJoined = joinedGroups.filter((g): g is Group => !!g);
+                const allGroups = [...ownedGroups, ...validJoined];
+                // Sort by name or date if needed
+                return allGroups.sort((a, b) => a.name.localeCompare(b.name));
+              }),
+              startWith(ownedGroups) // Show owned groups immediately
+            );
+          })
+        );
       })
     );
   }

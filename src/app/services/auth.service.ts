@@ -144,6 +144,14 @@ export class AuthService {
     this.router.navigate(['/login']);
   }
 
+  async updateProfile(displayName: string, photoURL?: string) {
+    const u = this.auth.currentUser;
+    if (u) {
+      await updateProfile(u, { displayName, photoURL });
+      await this.updateUserData(u); // Sync to Firestore
+    }
+  }
+
   // --- Firestore User Data Logic ---
   private async updateUserData(user: User, additionalData: any = {}) {
     const userRef = doc(this.firestore, `users/${user.uid}`);

@@ -1,0 +1,279 @@
+<div class="flex flex-1 justify-center py-5 md:py-10 px-4 md:px-10">
+    <div class="layout-content-container flex flex-col lg:flex-row max-w-[1200px] flex-1 gap-6">
+        <!-- Sidebar Menu -->
+        <aside class="w-full lg:w-72 flex-shrink-0">
+            <div
+                class="sticky top-24 flex flex-col gap-4 bg-surface-dark/50 backdrop-blur-sm p-4 rounded-xl border border-[#234833]">
+                <div class="flex items-center gap-3 p-2 mb-2">
+                    <div class="bg-center bg-no-repeat bg-cover rounded-full size-12 border-2 border-primary"
+                        [style.backgroundImage]="'url(' + (authService.currentUser()?.photoURL || 'https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y') + ')'">
+                    </div>
+                    <div class="flex flex-col overflow-hidden">
+                        <h1 class="text-white text-base font-bold leading-normal truncate">
+                            {{ authService.currentUser()?.displayName || 'Felhasználó' }}
+                        </h1>
+                        <p class="text-primary text-xs font-normal leading-normal">Aktív Tag</p>
+                    </div>
+                </div>
+                <nav class="flex flex-col gap-1">
+                    <a class="group flex items-center gap-3 px-4 py-3 rounded-xl bg-primary/10 border-l-4 border-primary transition-all duration-200"
+                        href="#personal">
+                        <span
+                            class="material-symbols-outlined text-primary group-hover:scale-110 transition-transform">person</span>
+                        <p class="text-white text-sm font-medium leading-normal">Személyes adatok</p>
+                    </a>
+                    <a class="group flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-[#234833]/50 border-l-4 border-transparent hover:border-text-secondary transition-all duration-200"
+                        href="#groups">
+                        <span
+                            class="material-symbols-outlined text-text-secondary group-hover:text-white transition-colors">groups</span>
+                        <p class="text-text-secondary group-hover:text-white text-sm font-medium leading-normal">
+                            Társaságaim
+                        </p>
+                    </a>
+                    <a class="group flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-[#234833]/50 border-l-4 border-transparent hover:border-text-secondary transition-all duration-200"
+                        href="#notifications">
+                        <span
+                            class="material-symbols-outlined text-text-secondary group-hover:text-white transition-colors">notifications</span>
+                        <p class="text-text-secondary group-hover:text-white text-sm font-medium leading-normal">
+                            Értesítések
+                        </p>
+                    </a>
+                    <a class="group flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-[#234833]/50 border-l-4 border-transparent hover:border-text-secondary transition-all duration-200"
+                        href="#privacy">
+                        <span
+                            class="material-symbols-outlined text-text-secondary group-hover:text-white transition-colors">security</span>
+                        <p class="text-text-secondary group-hover:text-white text-sm font-medium leading-normal">
+                            Adatvédelem
+                        </p>
+                    </a>
+                    <div class="h-px bg-[#234833] my-2 mx-4"></div>
+                    <button (click)="onLogout()"
+                        class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-red-500/10 text-red-400 hover:text-red-300 transition-colors">
+                        <span class="material-symbols-outlined">logout</span>
+                        <p class="text-sm font-medium leading-normal">Kijelentkezés</p>
+                    </button>
+                </nav>
+            </div>
+        </aside>
+
+        <!-- Content Area -->
+        <div class="flex-1 flex flex-col gap-8 min-w-0">
+            <!-- Section: Personal Info -->
+            <section class="bg-surface-dark rounded-2xl border border-[#234833] p-6 md:p-8 animate-fade-in-up"
+                id="personal">
+                <div class="flex items-center justify-between mb-8">
+                    <h2 class="text-2xl font-bold text-white tracking-tight">Profil szerkesztése</h2>
+                    <span
+                        class="px-3 py-1 rounded-full bg-primary/20 text-primary text-xs font-bold uppercase tracking-wider">Aktív</span>
+                </div>
+                <!-- Profile Header Component -->
+                <div
+                    class="flex flex-col md:flex-row items-center md:items-start gap-6 mb-10 pb-10 border-b border-[#234833]">
+                    <div class="relative group cursor-pointer">
+                        <div class="bg-center bg-no-repeat bg-cover rounded-full size-32 border-4 border-[#234833] group-hover:border-primary transition-colors duration-300"
+                            [style.backgroundImage]="'url(' + (authService.currentUser()?.photoURL || 'https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y') + ')'">
+                        </div>
+                        <div
+                            class="absolute inset-0 bg-black/40 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                            <span class="material-symbols-outlined text-white text-3xl">edit</span>
+                        </div>
+                    </div>
+                    <div class="flex flex-col flex-1 gap-4 text-center md:text-left w-full">
+                        <div>
+                            <p class="text-white text-2xl font-bold leading-tight">
+                                {{ authService.currentUser()?.displayName || 'Felhasználó' }}
+                            </p>
+                            <p class="text-text-secondary text-base font-normal">
+                                {{ authService.currentUser()?.email }}
+                            </p>
+                        </div>
+                        <div class="flex gap-4 mt-2 justify-center md:justify-start">
+                            <button
+                                class="flex items-center justify-center rounded-xl h-10 px-6 bg-primary text-background-dark text-sm font-bold hover:bg-primary-hover transition-colors shadow-[0_0_15px_rgba(43,238,124,0.3)]">
+                                Kép feltöltése
+                            </button>
+                            <button
+                                class="flex items-center justify-center rounded-xl h-10 px-6 bg-transparent border border-[#326748] text-white text-sm font-bold hover:bg-[#234833] transition-colors">
+                                Törlés
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <!-- Form Fields -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                    <label class="flex flex-col gap-2">
+                        <span class="text-white text-sm font-medium">Megjelenített név</span>
+                        <div class="relative">
+                            <span
+                                class="absolute left-4 top-1/2 -translate-y-1/2 material-symbols-outlined text-text-secondary">badge</span>
+                            <input
+                                class="w-full rounded-xl bg-surface-darker border border-[#326748] text-white placeholder-text-secondary/50 focus:border-primary focus:ring-1 focus:ring-primary pl-12 pr-4 py-3.5 outline-none transition-all"
+                                type="text" [(ngModel)]="profileData.displayName" />
+                        </div>
+                    </label>
+                    <label class="flex flex-col gap-2">
+                        <span class="text-white text-sm font-medium">Email cím</span>
+                        <div class="relative">
+                            <span
+                                class="absolute left-4 top-1/2 -translate-y-1/2 material-symbols-outlined text-text-secondary">mail</span>
+                            <input
+                                class="w-full rounded-xl bg-surface-darker border border-[#326748] text-white placeholder-text-secondary/50 focus:border-primary focus:ring-1 focus:ring-primary pl-12 pr-4 py-3.5 outline-none transition-all"
+                                type="email" [(ngModel)]="profileData.email" disabled />
+                        </div>
+                    </label>
+                    <label class="flex flex-col gap-2 md:col-span-2">
+                        <span class="text-white text-sm font-medium">Bemutatkozás</span>
+                        <textarea
+                            class="w-full rounded-xl bg-surface-darker border border-[#326748] text-white placeholder-text-secondary/50 focus:border-primary focus:ring-1 focus:ring-primary px-4 py-3.5 outline-none transition-all resize-none"
+                            rows="3" [(ngModel)]="profileData.bio" placeholder="Mesélj magadról..."></textarea>
+                    </label>
+                </div>
+                <div class="flex justify-end pt-4 border-t border-[#234833]">
+                    <button (click)="onSaveProfile()"
+                        class="flex items-center gap-2 rounded-xl h-12 px-8 bg-primary text-background-dark text-base font-bold hover:bg-primary-hover hover:scale-105 transition-all shadow-[0_4px_14px_rgba(43,238,124,0.4)]">
+                        <span class="material-symbols-outlined text-[20px]">save</span>
+                        Mentés
+                    </button>
+                </div>
+            </section>
+
+            <!-- Section: Groups -->
+            <section class="bg-surface-dark rounded-2xl border border-[#234833] p-6 md:p-8" id="groups">
+                <div class="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
+                    <div>
+                        <h2 class="text-2xl font-bold text-white tracking-tight">Társaságaim</h2>
+                        <p class="text-text-secondary text-sm mt-1">Kezeld a csapataidat vagy csatlakozz újhoz.</p>
+                    </div>
+                    <div class="flex gap-3">
+                        <button
+                            class="flex items-center gap-2 rounded-xl h-10 px-4 bg-[#234833] text-white text-sm font-bold hover:bg-[#2c5840] transition-colors">
+                            <span class="material-symbols-outlined text-[18px]">add_link</span>
+                            Csatlakozás
+                        </button>
+                        <button routerLink="/groups"
+                            class="flex items-center gap-2 rounded-xl h-10 px-4 bg-primary text-background-dark text-sm font-bold hover:bg-primary-hover transition-colors shadow-lg shadow-primary/20">
+                            <span class="material-symbols-outlined text-[18px]">add</span>
+                            Új társaság
+                        </button>
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    @for (group of userGroups(); track group.id) {
+                    <div
+                        class="group relative overflow-hidden rounded-xl border border-[#326748] bg-surface-darker hover:border-primary transition-all duration-300">
+                        <div
+                            class="absolute top-0 left-0 w-full h-24 bg-gradient-to-b from-black/60 to-transparent z-10">
+                        </div>
+                        <div class="h-24 w-full bg-cover bg-center"
+                            [style.backgroundImage]="'url(' + (group.image || 'https://images.unsplash.com/photo-1517486808906-6ca8b3f04846?auto=format&fit=crop&q=80&w=800') + ')'">
+                        </div>
+                        <div class="p-4 relative z-20 -mt-10">
+                            <div class="flex justify-between items-end">
+                                <div class="size-16 rounded-xl border-4 border-surface-darker bg-cover bg-center shadow-lg"
+                                    [style.backgroundImage]="'url(' + (group.image || 'https://images.unsplash.com/photo-1517486808906-6ca8b3f04846?auto=format&fit=crop&q=80&w=800') + ')'">
+                                </div>
+                                <div class="flex gap-2 mb-1">
+                                    @if (group.ownerId === authService.currentUser()?.uid) {
+                                    <span
+                                        class="px-2 py-1 rounded-md bg-[#234833] text-white text-xs font-medium">Admin</span>
+                                    } @else {
+                                    <span
+                                        class="px-2 py-1 rounded-md bg-surface-dark border border-[#326748] text-text-secondary text-xs font-medium">Tag</span>
+                                    }
+                                </div>
+                            </div>
+                            <h3 class="text-lg font-bold text-white mt-3">{{ group.name }}</h3>
+                            <p class="text-text-secondary text-sm mb-4">{{ group.memberCount }} tag</p>
+                            <div class="flex gap-2">
+                                <button [routerLink]="['/groups', group.id]"
+                                    class="flex-1 py-2 rounded-lg bg-[#234833] hover:bg-[#2c5840] text-white text-sm font-medium transition-colors">
+                                    Megtekintés
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    } @empty {
+                    <div class="col-span-1 md:col-span-2 py-10 text-center">
+                        <p class="text-text-secondary">Még nem tartozol egyetlen társasághoz sem.</p>
+                    </div>
+                    }
+                </div>
+            </section>
+
+            <!-- Section: Notifications -->
+            <section class="bg-surface-dark rounded-2xl border border-[#234833] p-6 md:p-8 mb-8" id="notifications">
+                <div class="mb-6">
+                    <h2 class="text-2xl font-bold text-white tracking-tight">Értesítések</h2>
+                </div>
+                <div class="space-y-6">
+                    <!-- Toggle Item 1 -->
+                    <div class="flex items-center justify-between pb-4 border-b border-[#234833]">
+                        <div class="flex gap-4">
+                            <div
+                                class="size-10 rounded-full bg-[#112218] flex items-center justify-center text-primary">
+                                <span class="material-symbols-outlined">sports_soccer</span>
+                            </div>
+                            <div>
+                                <p class="text-white font-medium">Meccs emlékeztető</p>
+                                <p class="text-text-secondary text-sm">Értesítés 24 órával az esemény előtt.</p>
+                            </div>
+                        </div>
+                        <div
+                            class="relative inline-block w-12 mr-2 align-middle select-none transition duration-200 ease-in">
+                            <input checked
+                                class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer border-[#234833] checked:border-primary transition-all duration-300"
+                                id="toggle1" name="toggle" type="checkbox" />
+                            <label
+                                class="toggle-label block overflow-hidden h-6 rounded-full bg-[#234833] cursor-pointer transition-colors duration-300"
+                                for="toggle1"></label>
+                        </div>
+                    </div>
+                    <!-- Toggle Item 2 -->
+                    <div class="flex items-center justify-between pb-4 border-b border-[#234833]">
+                        <div class="flex gap-4">
+                            <div
+                                class="size-10 rounded-full bg-[#112218] flex items-center justify-center text-primary">
+                                <span class="material-symbols-outlined">mark_email_unread</span>
+                            </div>
+                            <div>
+                                <p class="text-white font-medium">E-mail összefoglaló</p>
+                                <p class="text-text-secondary text-sm">Heti összefoglaló a statisztikákról.</p>
+                            </div>
+                        </div>
+                        <div
+                            class="relative inline-block w-12 mr-2 align-middle select-none transition duration-200 ease-in">
+                            <input
+                                class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer border-[#234833] checked:border-primary transition-all duration-300"
+                                id="toggle2" name="toggle" type="checkbox" />
+                            <label
+                                class="toggle-label block overflow-hidden h-6 rounded-full bg-[#234833] cursor-pointer transition-colors duration-300"
+                                for="toggle2"></label>
+                        </div>
+                    </div>
+                    <!-- Toggle Item 3 -->
+                    <div class="flex items-center justify-between">
+                        <div class="flex gap-4">
+                            <div
+                                class="size-10 rounded-full bg-[#112218] flex items-center justify-center text-primary">
+                                <span class="material-symbols-outlined">group_add</span>
+                            </div>
+                            <div>
+                                <p class="text-white font-medium">Meghívások</p>
+                                <p class="text-text-secondary text-sm">Értesítés új társaság meghívásról.</p>
+                            </div>
+                        </div>
+                        <div
+                            class="relative inline-block w-12 mr-2 align-middle select-none transition duration-200 ease-in">
+                            <input checked
+                                class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer border-[#234833] checked:border-primary transition-all duration-300"
+                                id="toggle3" name="toggle" type="checkbox" />
+                            <label
+                                class="toggle-label block overflow-hidden h-6 rounded-full bg-[#234833] cursor-pointer transition-colors duration-300"
+                                for="toggle3"></label>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+</div>

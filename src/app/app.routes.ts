@@ -52,6 +52,6 @@ export const routes: Routes = [
   }, // TODO
   {
     path: 'profile',
-    loadComponent: () => import('./pages/events-list/events-list').then((m) => m.EventsList),
-  }, // TODO
+    loadComponent: () => import('./pages/user-profile/user-profile').then((m) => m.UserProfilePage),
+  },
 ];

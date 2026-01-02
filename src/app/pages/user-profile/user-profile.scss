@@ -1,0 +1,53 @@
+:host {
+  display: block;
+  min-height: 100%;
+}
+
+// Custom toggle styles from design
+.toggle-checkbox:checked {
+  right: 0;
+  border-color: #2bee7c;
+}
+.toggle-checkbox:checked + .toggle-label {
+  background-color: #2bee7c;
+}
+
+// Ensure smooth transitions for sidebar border
+aside a {
+    transition: all 0.2s ease-in-out;
+}
+
+// Animation for fade in
+.animate-fade-in-up {
+  animation: fadeInUp 0.5s ease-out;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// Colors from tailwind config in design (if not already in global tailwind)
+// Note: We use existing primary colors if possible, but adding specific ones from design
+.text-text-secondary {
+    color: #92c9a9;
+}
+
+.bg-surface-dark {
+    background-color: #162e21;
+}
+
+.bg-surface-darker {
+    background-color: #0d1b13;
+}
+
+// Reset some styles that might conflict with global ones
+section {
+    scroll-margin-top: 100px;
+}

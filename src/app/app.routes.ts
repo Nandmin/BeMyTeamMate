@@ -1,4 +1,5 @@
 import { Routes } from '@angular/router';
+import { siteAdminGuard } from './guards/site-admin.guard';
 
 export const routes: Routes = [
   {
@@ -45,6 +46,12 @@ export const routes: Routes = [
     path: 'groups/:id/events/:eventId',
     loadComponent: () =>
       import('./pages/event-detail/event-detail.page').then((m) => m.EventDetailPage),
+  },
+  {
+    path: 'admin',
+    canActivate: [siteAdminGuard],
+    loadComponent: () =>
+      import('./pages/admin-dashboard/admin-dashboard.page').then((m) => m.AdminDashboardPage),
   },
   {
     path: 'results',

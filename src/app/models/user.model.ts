@@ -9,6 +9,7 @@ export interface AppUser {
   elo: number;
   formFactor: number; // 0.0 - 2.0 multiplier based on recent performance
   bio?: string;
+  role?: 'user' | 'siteadmin';
   createdAt: Timestamp;
   lastActive: Timestamp;
 }

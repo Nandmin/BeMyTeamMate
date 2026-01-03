@@ -31,6 +31,12 @@
                 class="relative flex h-8 items-center px-4 text-sm font-semibold text-gray-400 hover:text-white transition-all">
                 Eredmények
             </a>
+            @if (authService.fullCurrentUser()?.role === 'siteadmin') {
+            <a routerLink="/admin" routerLinkActive="active-link"
+                class="relative flex h-8 items-center px-4 text-sm font-semibold text-gray-400 hover:text-white transition-all">
+                Dashboard
+            </a>
+            }
         </nav>
 
         <!-- Right: Auth Section -->
@@ -38,6 +44,13 @@
             @if (authService.currentUser(); as user) {
             <!-- Logged In View -->
             <div class="flex items-center gap-4">
+                @if (authService.fullCurrentUser()?.role === 'siteadmin') {
+                <a routerLink="/admin"
+                    class="flex h-9 w-9 items-center justify-center rounded-xl bg-dark-accent border border-white/5 hover:border-primary hover:text-white transition-all active:scale-95 shadow-sm"
+                    title="Admin Dashboard">
+                    <span class="material-symbols-outlined text-[20px]">admin_panel_settings</span>
+                </a>
+                }
                 <div class="flex items-center gap-3 cursor-pointer group/user" routerLink="/profile">
                     <div class="hidden sm:flex flex-col items-end">
                         <span

@@ -187,6 +187,7 @@ export class AuthService {
         'Névtelen',
       photoURL: firebaseUser.photoURL || existingData['photoURL'] || null,
       lastLogin: serverTimestamp(),
+      role: existingData['role'] || 'user',
       // Alapértelmezett értékek, ha még nem léteznek:
       elo: existingData['elo'] ?? 1200,
       formFactor: existingData['formFactor'] ?? 1.0,

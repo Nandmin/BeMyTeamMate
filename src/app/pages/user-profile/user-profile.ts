@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { RouterModule, ActivatedRoute } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { GroupService } from '../../services/group.service';
+import { ModalService } from '../../services/modal.service';
 import { EventService, SportEvent } from '../../services/event.service';
 import { AppUser } from '../../models/user.model';
 import { toSignal } from '@angular/core/rxjs-interop';
@@ -18,6 +19,7 @@ import { switchMap, map, of, from, take, combineLatest } from 'rxjs';
 })
 export class UserProfilePage {
   protected authService = inject(AuthService);
+  protected modalService = inject(ModalService);
   private groupService = inject(GroupService);
   private eventService = inject(EventService);
   private route = inject(ActivatedRoute);
@@ -78,6 +80,15 @@ export class UserProfilePage {
     displayName: '',
     email: '',
     bio: '',
+  };
+
+  // Password change form state
+  passwordData = {
+    currentPassword: '',
+    newPassword: '',
+    confirmNewPassword: '',
+    loading: false,
+    error: '',
   };
 
   constructor() {
@@ -142,9 +153,10 @@ export class UserProfilePage {
         photoUrl || undefined,
         this.profileData.bio
       );
+      await this.modalService.alert('Profilkép frissítve.', 'Siker', 'success');
     } catch (error) {
       console.error('Error updating photo:', error);
-      alert('Hiba történt a kép frissítésekor.');
+      await this.modalService.alert('Hiba történt a kép frissítésekor.', 'Hiba', 'error');
     }
   }
 
@@ -155,23 +167,99 @@ export class UserProfilePage {
   }
 
   async onSaveProfile() {
-    if (this.profileData.displayName) {
-      try {
+    const results: string[] = [];
+    try {
+      if (this.profileData.displayName) {
         await this.authService.updateProfile(
           this.profileData.displayName,
           this.profileUser()?.photoURL,
           this.profileData.bio
         );
-        alert('Profil sikeresen mentve!');
-      } catch (error) {
-        console.error('Error saving profile:', error);
-        alert('Hiba történt a mentés során.');
+        results.push('Profil mentve');
       }
+
+      // If any password field filled, attempt password change
+      const pw = this.passwordData;
+      if (pw.currentPassword || pw.newPassword || pw.confirmNewPassword) {
+        // validate
+        if (!pw.currentPassword) throw new Error('Add meg a jelenlegi jelszavadat.');
+        if (!pw.newPassword || pw.newPassword.length < 6)
+          throw new Error('Az új jelszónak legalább 6 karakter hosszúnak kell lennie.');
+        if (pw.newPassword !== pw.confirmNewPassword) throw new Error('Az új jelszavak nem egyeznek.');
+
+        await this.authService.changePassword(pw.currentPassword, pw.newPassword);
+        results.push('Jelszó megváltoztatva');
+
+        // clear password fields
+        pw.currentPassword = '';
+        pw.newPassword = '';
+        pw.confirmNewPassword = '';
+      }
+
+      const message = results.length > 0 ? results.join(', ') + ' sikeresen.' : 'Nincs változtatás.';
+      await this.modalService.alert(message, 'Siker', 'success');
+    } catch (error: any) {
+      console.error('Error saving profile or changing password:', error);
+      const msg = error?.message || error?.code || String(error);
+      await this.modalService.alert(msg, 'Hiba', 'error');
     }
   }
 
+  
+
   async onLogout() {
     await this.authService.logout();
+  }
+
+  // Smooth-scroll to a section on this page (with small offset for sticky headers)
+  scrollTo(id: string, event?: Event) {
+    if (event) event.preventDefault();
+    try {
+      const el = document.getElementById(id);
+      if (!el) return;
+
+      // Find nearest scrollable ancestor
+      const getScrollParent = (node: HTMLElement | null): HTMLElement | (Element & { scrollTo?: any }) => {
+        let parent = node?.parentElement;
+        while (parent) {
+          const style = window.getComputedStyle(parent);
+          const overflowY = style.overflowY;
+          if ((overflowY === 'auto' || overflowY === 'scroll') && parent.scrollHeight > parent.clientHeight) {
+            return parent;
+          }
+          parent = parent.parentElement;
+        }
+        return document.scrollingElement || document.documentElement;
+      };
+
+      const scrollParent = getScrollParent(el as HTMLElement) as HTMLElement;
+
+      // header height to keep sticky header visible
+      const header = document.querySelector('header');
+      const headerHeight = header ? (header as HTMLElement).getBoundingClientRect().height : 80;
+
+      // Compute target scrollTop relative to scrollParent
+      const parentRect = scrollParent.getBoundingClientRect();
+      const elRect = el.getBoundingClientRect();
+      const currentScroll = (scrollParent as any).scrollTop || window.pageYOffset || 0;
+
+      // position of element relative to scrollParent's content top
+      const relativeTop = elRect.top - parentRect.top + currentScroll;
+      let targetScrollTop = Math.round(relativeTop - headerHeight - 8);
+
+      // Clamp to scrollable bounds
+      const maxScroll = scrollParent.scrollHeight - scrollParent.clientHeight;
+      if (targetScrollTop > maxScroll) targetScrollTop = maxScroll;
+      if (targetScrollTop < 0) targetScrollTop = 0;
+
+      if (typeof (scrollParent as any).scrollTo === 'function') {
+        (scrollParent as any).scrollTo({ top: targetScrollTop, behavior: 'smooth' });
+      } else {
+        window.scrollTo({ top: targetScrollTop, behavior: 'smooth' });
+      }
+    } catch (err) {
+      console.error('Scroll failed', err);
+    }
   }
 
   getSportIcon(sport?: string): string {

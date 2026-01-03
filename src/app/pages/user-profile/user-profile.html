@@ -3,7 +3,7 @@
         <!-- Sidebar Menu -->
         <aside class="w-full lg:w-72 flex-shrink-0">
             <div
-                class="sticky top-24 flex flex-col gap-4 bg-surface-dark/50 backdrop-blur-sm p-4 rounded-xl border border-[#234833]">
+                class="sticky flex flex-col gap-4 bg-surface-dark/50 backdrop-blur-sm p-4 rounded-xl border border-[#234833]" style="top: 2rem;">
                 <div class="flex items-center gap-3 p-2 mb-2">
                     <div class="bg-center bg-no-repeat bg-cover rounded-full size-12 border-2 border-primary"
                         [style.backgroundImage]="'url(' + (profileUser()?.photoURL || 'https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y') + ')'">
@@ -21,13 +21,13 @@
                 </div>
                 <nav class="flex flex-col gap-1">
                     <a class="group flex items-center gap-3 px-4 py-3 rounded-xl bg-primary/10 border-l-4 border-primary transition-all duration-200"
-                        href="#personal">
+                        href="#personal" (click)="scrollTo('personal', $event)">
                         <span
                             class="material-symbols-outlined text-primary group-hover:scale-110 transition-transform">person</span>
                         <p class="text-white text-sm font-medium leading-normal">Személyes adatok</p>
                     </a>
                     <a class="group flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-[#234833]/50 border-l-4 border-transparent hover:border-text-secondary transition-all duration-200"
-                        href="#groups">
+                        href="#groups" (click)="scrollTo('groups', $event)">
                         <span
                             class="material-symbols-outlined text-text-secondary group-hover:text-white transition-colors">groups</span>
                         <p class="text-text-secondary group-hover:text-white text-sm font-medium leading-normal">
@@ -181,7 +181,44 @@
                     }
                 </div>
                 @if (isOwnProfile()) {
-                <div class="flex justify-end pt-4 border-t border-[#234833]">
+
+                <!-- Accordion: Jelszó megváltoztatása (zárt alapértelmezés szerint) -->
+                <div class="mt-6">
+                    <details class="rounded-xl border border-[#326748] bg-surface-darker p-4">
+                        <summary class="cursor-pointer flex items-center justify-between text-white font-medium py-2 px-2 select-none">
+                            <div class="flex items-center gap-3">
+                                <span class="material-symbols-outlined text-primary">key</span>
+                                Jelszó megváltoztatása
+                            </div>
+                            <span class="material-symbols-outlined text-text-secondary">expand_more</span>
+                        </summary>
+
+                        <div class="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <label class="flex flex-col gap-2 md:col-span-3">
+                                <span class="text-white text-sm font-medium">Jelenlegi jelszó</span>
+                                <input type="password" [(ngModel)]="passwordData.currentPassword"
+                                    class="w-full rounded-xl bg-surface-darker border border-[#326748] text-white px-4 py-3.5 outline-none" />
+                            </label>
+
+                            <label class="flex flex-col gap-2 md:col-span-1">
+                                <span class="text-white text-sm font-medium">Új jelszó</span>
+                                <input type="password" [(ngModel)]="passwordData.newPassword"
+                                    class="w-full rounded-xl bg-surface-darker border border-[#326748] text-white px-4 py-3.5 outline-none" />
+                            </label>
+
+                            <label class="flex flex-col gap-2 md:col-span-2">
+                                <span class="text-white text-sm font-medium">Új jelszó ismét</span>
+                                <input type="password" [(ngModel)]="passwordData.confirmNewPassword"
+                                    class="w-full rounded-xl bg-surface-darker border border-[#326748] text-white px-4 py-3.5 outline-none" />
+                            </label>
+
+                            <div class="md:col-span-3 flex items-center justify-end gap-4 mt-2">
+                            </div>
+                        </div>
+                    </details>
+                </div>
+
+                <div class="flex justify-end pt-8 border-t border-[#234833]">
                     <button (click)="onSaveProfile()"
                         class="flex items-center gap-2 rounded-xl h-12 px-8 bg-primary text-background-dark text-base font-bold hover:bg-primary-hover hover:scale-105 transition-all shadow-[0_4px_14px_rgba(43,238,124,0.4)]">
                         <span class="material-symbols-outlined text-[20px]">save</span>

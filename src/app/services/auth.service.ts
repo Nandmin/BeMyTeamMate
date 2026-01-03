@@ -15,6 +15,7 @@ import {
   sendEmailVerification,
   sendPasswordResetEmail,
 } from '@angular/fire/auth';
+import { EmailAuthProvider, reauthenticateWithCredential, updatePassword } from '@angular/fire/auth';
 import { Firestore, doc, setDoc, serverTimestamp, docData } from '@angular/fire/firestore';
 import { Router } from '@angular/router';
 import { from, Observable, of, firstValueFrom } from 'rxjs';
@@ -50,6 +51,23 @@ export class AuthService {
     // Sync signal with auth state (optional, for easier template usage)
     this.user$.subscribe((u) => this.currentUser.set(u));
     this.userData$.subscribe((u) => this.fullCurrentUser.set(u));
+  }
+
+  // --- Change Password (reauthenticate + update) ---
+  async changePassword(currentPassword: string, newPassword: string) {
+    const u = this.auth.currentUser as any;
+    if (!u) throw new Error('Nincs bejelentkezett felhasználó.');
+    if (!u.email) throw new Error('A felhasználónak nincs regisztrált e-mail címe.');
+
+    try {
+      const credential = EmailAuthProvider.credential(u.email, currentPassword);
+      await reauthenticateWithCredential(u, credential);
+      await updatePassword(u, newPassword);
+      return true;
+    } catch (error) {
+      console.error('Password change error:', error);
+      throw error;
+    }
   }
 
   // --- Google Sign-In ---

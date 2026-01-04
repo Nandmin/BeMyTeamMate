@@ -154,11 +154,13 @@ export class Results {
       const date = new Date(anchorDate.getFullYear(), anchorDate.getMonth() - i, 1);
       const month = date.getMonth();
       const year = date.getFullYear();
+      const rawLabel = date.toLocaleDateString('hu-HU', { month: 'short' });
+      const label = rawLabel ? rawLabel[0].toUpperCase() + rawLabel.slice(1) : rawLabel;
       months.push({
         key: `${year}-${String(month + 1).padStart(2, '0')}`,
         year,
         month,
-        label: date.toLocaleDateString('hu-HU', { month: 'short' }),
+        label,
       });
     }
 
@@ -182,6 +184,80 @@ export class Results {
       winHeight: Math.round((entry.wins / max) * 100),
       lossHeight: Math.round((entry.losses / max) * 100),
     }));
+  });
+
+  eloChart = computed(() => {
+    const matches = this.filteredMatches();
+    const anchorDate = matches.length > 0 ? new Date(matches[0].sortTime) : new Date();
+    const months: { key: string; year: number; month: number; label: string }[] = [];
+
+    for (let i = 5; i >= 0; i--) {
+      const date = new Date(anchorDate.getFullYear(), anchorDate.getMonth() - i, 1);
+      const month = date.getMonth();
+      const year = date.getFullYear();
+      const rawLabel = date.toLocaleDateString('hu-HU', { month: 'short' });
+      const label = rawLabel ? rawLabel[0].toUpperCase() + rawLabel.slice(1) : rawLabel;
+      months.push({
+        key: `${year}-${String(month + 1).padStart(2, '0')}`,
+        year,
+        month,
+        label,
+      });
+    }
+
+    const monthValues = months.map((entry) => {
+      const monthMatches = matches.filter((m) => {
+        const date = new Date(m.sortTime);
+        return date.getMonth() === entry.month && date.getFullYear() === entry.year;
+      });
+      const value = monthMatches.reduce((sum, match) => sum + match.eloDelta, 0);
+      return { ...entry, value };
+    });
+
+    const maxAbs = Math.max(1, ...monthValues.map((entry) => Math.abs(entry.value)));
+    const width = 100;
+    const height = 50;
+    const padding = 6;
+    const midY = height / 2;
+    const scale = (height / 2 - padding) / maxAbs;
+    const xPadding = 4;
+
+    const points = monthValues.map((entry, index) => {
+      const xSpan = width - xPadding * 2;
+      const x = xPadding + (xSpan / (monthValues.length - 1)) * index;
+      const y = midY - entry.value * scale;
+      return { ...entry, x, y };
+    });
+
+    const path = (() => {
+      if (points.length === 0) return '';
+      if (points.length === 1) {
+        return `M${points[0].x.toFixed(2)},${points[0].y.toFixed(2)}`;
+      }
+
+      const d: string[] = [
+        `M${points[0].x.toFixed(2)},${points[0].y.toFixed(2)}`,
+      ];
+
+      for (let i = 0; i < points.length - 1; i++) {
+        const p0 = points[i - 1] ?? points[i];
+        const p1 = points[i];
+        const p2 = points[i + 1];
+        const p3 = points[i + 2] ?? p2;
+        const cp1x = p1.x + (p2.x - p0.x) / 6;
+        const cp1y = p1.y + (p2.y - p0.y) / 6;
+        const cp2x = p2.x - (p3.x - p1.x) / 6;
+        const cp2y = p2.y - (p3.y - p1.y) / 6;
+
+        d.push(
+          `C${cp1x.toFixed(2)},${cp1y.toFixed(2)} ${cp2x.toFixed(2)},${cp2y.toFixed(2)} ${p2.x.toFixed(2)},${p2.y.toFixed(2)}`
+        );
+      }
+
+      return d.join(' ');
+    })();
+
+    return { points, path, midY };
   });
 
   private getSportLabel(sport?: string): string {

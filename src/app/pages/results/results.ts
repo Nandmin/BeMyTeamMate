@@ -20,6 +20,8 @@ export class Results {
   private groupService = inject(GroupService);
   private router = inject(Router);
 
+  userGroups = toSignal(this.groupService.getUserGroups(), { initialValue: [] });
+
   periodOptions = [
     { id: 'all', label: 'Teljes időszak', days: null },
     { id: '1w', label: 'Elmúlt 1 hét', days: 7 },
@@ -43,6 +45,7 @@ export class Results {
 
   selectedPeriod = signal('1m');
   selectedSport = signal('all');
+  selectedTeam = signal('all');
 
   recentMatches = toSignal(
     combineLatest([this.authService.user$, this.groupService.getUserGroups()]).pipe(
@@ -82,6 +85,10 @@ export class Results {
       matches = matches.filter((m) => m.sport === selectedSport);
     }
 
+    if (this.selectedTeam() !== 'all') {
+      matches = matches.filter((m) => m.groupId === this.selectedTeam());
+    }
+
     return matches;
   });
 
@@ -93,6 +100,10 @@ export class Results {
     this.selectedSport.set(sportId);
   }
 
+  setTeam(teamId: string) {
+    this.selectedTeam.set(teamId);
+  }
+
   selectedPeriodLabel(): string {
     const id = this.selectedPeriod();
     return this.periodOptions.find((p) => p.id === id)?.label || 'Időszak';
@@ -102,6 +113,12 @@ export class Results {
     const id = this.selectedSport();
     if (id === 'all') return 'Minden sportág';
     return this.sportOptions.find((s) => s.id === id)?.name || 'Sportág';
+  }
+
+  selectedTeamLabel(): string {
+    const id = this.selectedTeam();
+    if (id === 'all') return 'Minden csapatom';
+    return this.userGroups().find((g) => g.id === id)?.name || 'A csapat';
   }
 
   openMatch(match: RecentMatchRow) {

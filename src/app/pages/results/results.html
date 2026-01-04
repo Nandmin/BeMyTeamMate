@@ -70,17 +70,39 @@
             >expand_more</span
           >
         </div>
-        <button
-          class="flex h-10 items-center gap-2 rounded-xl bg-[#234833] hover:bg-[#2c5a40] px-4 border border-[#346b4c] transition-colors group"
-        >
-          <span class="material-symbols-outlined text-[#92c9a9] group-hover:text-white text-lg"
+        <div class="relative flex h-10 items-center gap-2 rounded-xl bg-[#234833] px-3 border border-[#346b4c]">
+          <span class="material-symbols-outlined text-[#92c9a9] text-lg pointer-events-none"
             >group</span
           >
-          <span class="text-white text-sm font-medium">A Csapat</span>
-          <span class="material-symbols-outlined text-[#92c9a9] group-hover:text-white"
+          <span class="text-white text-sm font-medium pr-6 pointer-events-none">{{
+            selectedTeamLabel()
+          }}</span>
+          <select
+            class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10 bg-[#234833] text-white"
+            (change)="setTeam($any($event.target).value)"
+            style="color-scheme: dark"
+          >
+            <option
+              class="bg-[#234833] text-white"
+              value="all"
+              [selected]="selectedTeam() === 'all'"
+            >
+              Minden csapatom
+            </option>
+            @for (group of userGroups(); track group.id) {
+            <option
+              class="bg-[#234833] text-white"
+              [value]="group.id"
+              [selected]="selectedTeam() === group.id"
+            >
+              {{ group.name }}
+            </option>
+            }
+          </select>
+          <span class="material-symbols-outlined text-[#92c9a9] absolute right-2 pointer-events-none"
             >expand_more</span
           >
-        </button>
+        </div>
       </div>
     </div>
     <!-- KPI Cards -->

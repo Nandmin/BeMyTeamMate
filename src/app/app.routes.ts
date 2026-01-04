@@ -55,7 +55,7 @@ export const routes: Routes = [
   },
   {
     path: 'results',
-    loadComponent: () => import('./pages/events-list/events-list').then((m) => m.EventsList),
+    loadComponent: () => import('./pages/results/results').then((m) => m.Results),
   }, // TODO
   {
     path: 'profile',

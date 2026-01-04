@@ -1,0 +1,393 @@
+<!-- <main class="flex-grow w-full px-6 lg:px-40 py-8"> -->
+  <div class="max-w-[1200px] mx-auto flex flex-col gap-8">
+    <!-- Page Heading & Filters -->
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
+      <div class="flex flex-col gap-2">
+        <h1 class="text-white text-4xl md:text-5xl font-black tracking-tight">
+          Eredmények és Elemzés
+        </h1>
+        <p class="text-[#92c9a9] text-lg">
+          Részletes statisztikák, teljesítmény áttekintés és meccstörténet.
+        </p>
+      </div>
+      <div class="flex flex-wrap gap-3">
+        <button
+          class="flex h-10 items-center gap-2 rounded-xl bg-[#234833] hover:bg-[#2c5a40] px-4 border border-[#346b4c] transition-colors group"
+        >
+          <span class="material-symbols-outlined text-[#92c9a9] group-hover:text-white text-lg"
+            >calendar_month</span
+          >
+          <span class="text-white text-sm font-medium">Elmúlt 30 nap</span>
+          <span class="material-symbols-outlined text-[#92c9a9] group-hover:text-white"
+            >expand_more</span
+          >
+        </button>
+        <button
+          class="flex h-10 items-center gap-2 rounded-xl bg-[#234833] hover:bg-[#2c5a40] px-4 border border-[#346b4c] transition-colors group"
+        >
+          <span class="material-symbols-outlined text-[#92c9a9] group-hover:text-white text-lg"
+            >sports_basketball</span
+          >
+          <span class="text-white text-sm font-medium">Minden sportág</span>
+          <span class="material-symbols-outlined text-[#92c9a9] group-hover:text-white"
+            >expand_more</span
+          >
+        </button>
+        <button
+          class="flex h-10 items-center gap-2 rounded-xl bg-[#234833] hover:bg-[#2c5a40] px-4 border border-[#346b4c] transition-colors group"
+        >
+          <span class="material-symbols-outlined text-[#92c9a9] group-hover:text-white text-lg"
+            >group</span
+          >
+          <span class="text-white text-sm font-medium">A Csapat</span>
+          <span class="material-symbols-outlined text-[#92c9a9] group-hover:text-white"
+            >expand_more</span
+          >
+        </button>
+      </div>
+    </div>
+    <!-- KPI Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <!-- Card 1 -->
+      <div
+        class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-[#234833] to-[#1a3626] p-6 border border-[#346b4c] group hover:border-primary/50 transition-colors"
+      >
+        <div class="flex justify-between items-start mb-4">
+          <div class="p-2 bg-[#2bee7c]/10 rounded-lg text-primary">
+            <span class="material-symbols-outlined">stadium</span>
+          </div>
+          <span
+            class="flex items-center gap-1 text-primary text-xs font-bold bg-[#2bee7c]/10 px-2 py-1 rounded-full"
+          >
+            <span class="material-symbols-outlined text-sm">trending_up</span> +2
+          </span>
+        </div>
+        <p class="text-[#92c9a9] text-sm font-medium uppercase tracking-wider">
+          Lejátszott meccsek
+        </p>
+        <p class="text-white text-4xl font-bold mt-1">24</p>
+      </div>
+      <!-- Card 2 -->
+      <div
+        class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-[#234833] to-[#1a3626] p-6 border border-[#346b4c] group hover:border-primary/50 transition-colors"
+      >
+        <div class="flex justify-between items-start mb-4">
+          <div class="p-2 bg-[#2bee7c]/10 rounded-lg text-primary">
+            <span class="material-symbols-outlined">emoji_events</span>
+          </div>
+          <span
+            class="flex items-center gap-1 text-primary text-xs font-bold bg-[#2bee7c]/10 px-2 py-1 rounded-full"
+          >
+            <span class="material-symbols-outlined text-sm">trending_up</span> +5%
+          </span>
+        </div>
+        <p class="text-[#92c9a9] text-sm font-medium uppercase tracking-wider">Győzelmi arány</p>
+        <p class="text-white text-4xl font-bold mt-1">68%</p>
+      </div>
+      <!-- Card 3 -->
+      <div
+        class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-[#234833] to-[#1a3626] p-6 border border-[#346b4c] group hover:border-primary/50 transition-colors"
+      >
+        <div class="flex justify-between items-start mb-4">
+          <div class="p-2 bg-[#2bee7c]/10 rounded-lg text-primary">
+            <span class="material-symbols-outlined">scoreboard</span>
+          </div>
+          <span
+            class="flex items-center gap-1 text-primary text-xs font-bold bg-[#2bee7c]/10 px-2 py-1 rounded-full"
+          >
+            <span class="material-symbols-outlined text-sm">trending_up</span> +12
+          </span>
+        </div>
+        <p class="text-[#92c9a9] text-sm font-medium uppercase tracking-wider">Összes pont</p>
+        <p class="text-white text-4xl font-bold mt-1">142</p>
+      </div>
+    </div>
+    <!-- Charts Section -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <!-- Score Evolution Chart -->
+      <div class="rounded-2xl bg-[#1a2e24] border border-[#234833] p-6 flex flex-col">
+        <div class="flex justify-between items-start mb-6">
+          <div>
+            <h3 class="text-white text-lg font-bold">Pontszám alakulása</h3>
+            <p class="text-[#92c9a9] text-sm">Utolsó 6 hónap teljesítménye</p>
+          </div>
+          <div class="text-right">
+            <p class="text-white text-2xl font-bold">142 pont</p>
+            <p class="text-primary text-sm font-medium">+12% vs előző</p>
+          </div>
+        </div>
+        <div class="relative flex-1 w-full h-48 mt-4">
+          <!-- Simplified SVG Chart Representation -->
+          <svg
+            class="w-full h-full overflow-visible"
+            preserveaspectratio="none"
+            viewbox="0 0 100 50"
+          >
+            <!-- Gradient Defs -->
+            <defs>
+              <lineargradient id="chartGradient" x1="0" x2="0" y1="0" y2="1">
+                <stop offset="0%" stop-color="#2bee7c" stop-opacity="0.2"></stop>
+                <stop offset="100%" stop-color="#2bee7c" stop-opacity="0"></stop>
+              </lineargradient>
+            </defs>
+            <!-- Fill Area -->
+            <path
+              d="M0,40 Q10,35 20,38 T40,25 T60,30 T80,10 T100,5 V50 H0 Z"
+              fill="url(#chartGradient)"
+            ></path>
+            <!-- Stroke Line -->
+            <path
+              d="M0,40 Q10,35 20,38 T40,25 T60,30 T80,10 T100,5"
+              fill="none"
+              stroke="#2bee7c"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+            ></path>
+            <!-- Points -->
+            <circle
+              cx="20"
+              cy="38"
+              fill="#112218"
+              r="1.5"
+              stroke="#2bee7c"
+              stroke-width="1"
+            ></circle>
+            <circle
+              cx="40"
+              cy="25"
+              fill="#112218"
+              r="1.5"
+              stroke="#2bee7c"
+              stroke-width="1"
+            ></circle>
+            <circle
+              cx="60"
+              cy="30"
+              fill="#112218"
+              r="1.5"
+              stroke="#2bee7c"
+              stroke-width="1"
+            ></circle>
+            <circle
+              cx="80"
+              cy="10"
+              fill="#112218"
+              r="1.5"
+              stroke="#2bee7c"
+              stroke-width="1"
+            ></circle>
+          </svg>
+          <!-- X-Axis Labels -->
+          <div
+            class="flex justify-between text-[#5c856e] text-xs font-bold mt-2 pt-2 border-t border-[#234833]"
+          >
+            <span>Jan</span><span>Feb</span><span>Már</span><span>Ápr</span><span>Máj</span
+            ><span>Jún</span>
+          </div>
+        </div>
+      </div>
+      <!-- Win/Loss Ratio -->
+      <div class="rounded-2xl bg-[#1a2e24] border border-[#234833] p-6 flex flex-col">
+        <div class="flex justify-between items-start mb-6">
+          <div>
+            <h3 class="text-white text-lg font-bold">Győzelem / Vereség</h3>
+            <p class="text-[#92c9a9] text-sm">Meccs kimenetelek aránya</p>
+          </div>
+          <div class="text-right">
+            <p class="text-white text-2xl font-bold">16 Győzelem</p>
+            <p class="text-primary text-sm font-medium">Domináns forma</p>
+          </div>
+        </div>
+        <div class="flex-1 flex gap-6 items-end h-48 mt-4 px-2">
+          <!-- Bar Items -->
+          <div class="flex-1 flex flex-col justify-end gap-2 group cursor-pointer">
+            <div class="w-full bg-[#234833] rounded-t-sm relative h-full">
+              <div
+                class="absolute bottom-0 w-full bg-[#92c9a9] rounded-t-sm group-hover:bg-primary transition-colors"
+                style="height: 40%"
+              ></div>
+            </div>
+            <span class="text-center text-[#5c856e] text-xs font-bold">Jan</span>
+          </div>
+          <div class="flex-1 flex flex-col justify-end gap-2 group cursor-pointer">
+            <div class="w-full bg-[#234833] rounded-t-sm relative h-full">
+              <div
+                class="absolute bottom-0 w-full bg-[#92c9a9] rounded-t-sm group-hover:bg-primary transition-colors"
+                style="height: 65%"
+              ></div>
+            </div>
+            <span class="text-center text-[#5c856e] text-xs font-bold">Feb</span>
+          </div>
+          <div class="flex-1 flex flex-col justify-end gap-2 group cursor-pointer">
+            <div class="w-full bg-[#234833] rounded-t-sm relative h-full">
+              <div
+                class="absolute bottom-0 w-full bg-[#92c9a9] rounded-t-sm group-hover:bg-primary transition-colors"
+                style="height: 55%"
+              ></div>
+            </div>
+            <span class="text-center text-[#5c856e] text-xs font-bold">Már</span>
+          </div>
+          <div class="flex-1 flex flex-col justify-end gap-2 group cursor-pointer">
+            <div class="w-full bg-[#234833] rounded-t-sm relative h-full">
+              <div
+                class="absolute bottom-0 w-full bg-[#92c9a9] rounded-t-sm group-hover:bg-primary transition-colors"
+                style="height: 80%"
+              ></div>
+            </div>
+            <span class="text-center text-[#5c856e] text-xs font-bold">Ápr</span>
+          </div>
+          <div class="flex-1 flex flex-col justify-end gap-2 group cursor-pointer">
+            <div class="w-full bg-[#234833] rounded-t-sm relative h-full">
+              <div
+                class="absolute bottom-0 w-full bg-[#92c9a9] rounded-t-sm group-hover:bg-primary transition-colors"
+                style="height: 30%"
+              ></div>
+            </div>
+            <span class="text-center text-[#5c856e] text-xs font-bold">Máj</span>
+          </div>
+          <div class="flex-1 flex flex-col justify-end gap-2 group cursor-pointer">
+            <div class="w-full bg-[#234833] rounded-t-sm relative h-full">
+              <div
+                class="absolute bottom-0 w-full bg-[#92c9a9] rounded-t-sm group-hover:bg-primary transition-colors"
+                style="height: 90%"
+              ></div>
+            </div>
+            <span class="text-center text-[#5c856e] text-xs font-bold text-primary">Jún</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- Detailed Stats Grid -->
+    <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+
+      <!-- Recent Matches Table -->
+      <div class="xl:col-span-3 w-full rounded-2xl bg-[#1a2e24] border border-[#234833] p-6 flex flex-col">
+        <div class="flex items-center justify-between mb-6">
+          <h3 class="text-white text-lg font-bold">Legutóbbi Eredmények</h3>
+          <div class="flex gap-2">
+            <button class="p-2 rounded-lg bg-[#234833] text-white hover:bg-[#2c5a40]">
+              <span class="material-symbols-outlined text-lg">filter_list</span>
+            </button>
+            <button class="p-2 rounded-lg bg-[#234833] text-white hover:bg-[#2c5a40]">
+              <span class="material-symbols-outlined text-lg">download</span>
+            </button>
+          </div>
+        </div>
+        <div class="flex-1 overflow-x-auto">
+          <table class="w-full text-left border-collapse">
+            <thead>
+              <tr class="text-[#5c856e] text-xs uppercase border-b border-[#234833]">
+                <th class="pb-3 pl-2 font-medium">Dátum</th>
+                <th class="pb-3 font-medium">Sportág</th>
+                <th class="pb-3 font-medium">Ellenfél</th>
+                <th class="pb-3 font-medium text-center">Eredmény</th>
+                <th class="pb-3 font-medium text-right pr-2">Részletek</th>
+              </tr>
+            </thead>
+            <tbody class="text-sm">
+              <!-- Row 1 -->
+              <tr
+                class="group hover:bg-[#234833]/50 transition-colors border-b border-[#234833]/50"
+              >
+                <td class="py-4 pl-2 text-white font-medium">Jún 12.</td>
+                <td class="py-4">
+                  <div class="flex items-center gap-2 text-[#92c9a9]">
+                    <span class="material-symbols-outlined text-lg">sports_soccer</span>
+                    <span>Foci</span>
+                  </div>
+                </td>
+                <td class="py-4 text-white">Városi Farkasok</td>
+                <td class="py-4 text-center">
+                  <span
+                    class="inline-flex items-center justify-center px-2.5 py-0.5 rounded bg-primary/20 text-primary font-bold"
+                  >
+                    5 - 3
+                  </span>
+                </td>
+                <td class="py-4 text-right pr-2">
+                  <button class="text-[#92c9a9] group-hover:text-white transition-colors">
+                    <span class="material-symbols-outlined">chevron_right</span>
+                  </button>
+                </td>
+              </tr>
+              <!-- Row 2 -->
+              <tr
+                class="group hover:bg-[#234833]/50 transition-colors border-b border-[#234833]/50"
+              >
+                <td class="py-4 pl-2 text-white font-medium">Jún 08.</td>
+                <td class="py-4">
+                  <div class="flex items-center gap-2 text-[#92c9a9]">
+                    <span class="material-symbols-outlined text-lg">sports_basketball</span>
+                    <span>Kosár</span>
+                  </div>
+                </td>
+                <td class="py-4 text-white">Déli Sasok</td>
+                <td class="py-4 text-center">
+                  <span
+                    class="inline-flex items-center justify-center px-2.5 py-0.5 rounded bg-red-500/20 text-red-400 font-bold"
+                  >
+                    82 - 95
+                  </span>
+                </td>
+                <td class="py-4 text-right pr-2">
+                  <button class="text-[#92c9a9] group-hover:text-white transition-colors">
+                    <span class="material-symbols-outlined">chevron_right</span>
+                  </button>
+                </td>
+              </tr>
+              <!-- Row 3 -->
+              <tr
+                class="group hover:bg-[#234833]/50 transition-colors border-b border-[#234833]/50"
+              >
+                <td class="py-4 pl-2 text-white font-medium">Máj 29.</td>
+                <td class="py-4">
+                  <div class="flex items-center gap-2 text-[#92c9a9]">
+                    <span class="material-symbols-outlined text-lg">sports_soccer</span>
+                    <span>Foci</span>
+                  </div>
+                </td>
+                <td class="py-4 text-white">Kék Villámok</td>
+                <td class="py-4 text-center">
+                  <span
+                    class="inline-flex items-center justify-center px-2.5 py-0.5 rounded bg-primary/20 text-primary font-bold"
+                  >
+                    2 - 0
+                  </span>
+                </td>
+                <td class="py-4 text-right pr-2">
+                  <button class="text-[#92c9a9] group-hover:text-white transition-colors">
+                    <span class="material-symbols-outlined">chevron_right</span>
+                  </button>
+                </td>
+              </tr>
+              <!-- Row 4 -->
+              <tr class="group hover:bg-[#234833]/50 transition-colors border-b borderless">
+                <td class="py-4 pl-2 text-white font-medium">Máj 15.</td>
+                <td class="py-4">
+                  <div class="flex items-center gap-2 text-[#92c9a9]">
+                    <span class="material-symbols-outlined text-lg">sports_tennis</span>
+                    <span>Tenisz</span>
+                  </div>
+                </td>
+                <td class="py-4 text-white">Szomszédok</td>
+                <td class="py-4 text-center">
+                  <span
+                    class="inline-flex items-center justify-center px-2.5 py-0.5 rounded bg-primary/20 text-primary font-bold"
+                  >
+                    3 - 1
+                  </span>
+                </td>
+                <td class="py-4 text-right pr-2">
+                  <button class="text-[#92c9a9] group-hover:text-white transition-colors">
+                    <span class="material-symbols-outlined">chevron_right</span>
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+<!-- </main> -->

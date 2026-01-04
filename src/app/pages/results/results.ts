@@ -20,8 +20,6 @@ export class Results {
   private groupService = inject(GroupService);
   private router = inject(Router);
 
-  currentUser = this.authService.fullCurrentUser;
-
   recentMatches = toSignal(
     combineLatest([this.authService.user$, this.groupService.getUserGroups()]).pipe(
       switchMap(([user, groups]) => {
@@ -70,9 +68,7 @@ export class Results {
   }
 
   earnedEloTotal(): number {
-    const baseElo = 1200;
-    const currentElo = this.currentUser()?.elo ?? baseElo;
-    return Math.max(0, Math.round(currentElo - baseElo));
+    return this.recentMatches().reduce((sum, match) => sum + match.eloDelta, 0);
   }
 
   private getSportLabel(sport?: string): string {
@@ -142,6 +138,7 @@ export class Results {
       month: '2-digit',
       day: '2-digit',
     });
+    const eloDelta = event.playerStats?.[userId]?.eloDelta ?? 0;
 
     return {
       eventId: event.id || '',
@@ -152,6 +149,7 @@ export class Results {
       opponent,
       resultLabel,
       isWin,
+      eloDelta,
       sortTime: date.getTime(),
     };
   }
@@ -166,5 +164,6 @@ interface RecentMatchRow {
   opponent: string;
   resultLabel: string;
   isWin: boolean | null;
+  eloDelta: number;
   sortTime: number;
 }

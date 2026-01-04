@@ -24,6 +24,7 @@ import { arrayUnion, increment } from '@angular/fire/firestore';
 export interface PlayerStats {
   goals: number;
   assists: number;
+  eloDelta?: number;
 }
 
 export interface MatchEvent {
@@ -224,18 +225,9 @@ export class EventService {
     teamBData: GroupMember[]
   ) {
     const batch = writeBatch(this.firestore);
+    const DEFAULT_ELO = 1200;
 
-    // 1. Update Event
-    const eventRef = doc(this.firestore, `groups/${groupId}/events/${eventId}`);
-    batch.update(eventRef, {
-      playerStats: stats,
-      goalsA,
-      goalsB,
-      status: 'finished',
-      endedAt: serverTimestamp(),
-    });
-
-    // 2. Calculate and Update Elo
+    // 1. Calculate and Update Elo
     // We map GroupMember to the structure expected by EloService
     const eloTeamA = teamAData.map((m) => ({ userId: m.userId, elo: m.elo }));
     const eloTeamB = teamBData.map((m) => ({ userId: m.userId, elo: m.elo }));
@@ -248,8 +240,32 @@ export class EventService {
       stats
     );
 
-    // 3. Update Member Docs and Global User Docs
     const allPlayers = [...teamAData, ...teamBData];
+    const statsWithElo: { [userId: string]: PlayerStats } = {};
+
+    allPlayers.forEach((player) => {
+      const currentElo = player.elo ?? DEFAULT_ELO;
+      const newElo = newRatings.get(player.userId) ?? currentElo;
+      const delta = Math.round(newElo - currentElo);
+      const playerStats = stats[player.userId] || { goals: 0, assists: 0 };
+      statsWithElo[player.userId] = {
+        goals: playerStats.goals || 0,
+        assists: playerStats.assists || 0,
+        eloDelta: delta,
+      };
+    });
+
+    // 2. Update Event
+    const eventRef = doc(this.firestore, `groups/${groupId}/events/${eventId}`);
+    batch.update(eventRef, {
+      playerStats: statsWithElo,
+      goalsA,
+      goalsB,
+      status: 'finished',
+      endedAt: serverTimestamp(),
+    });
+
+    // 3. Update Member Docs and Global User Docs
     allPlayers.forEach((player) => {
       const newElo = newRatings.get(player.userId);
       if (newElo !== undefined) {

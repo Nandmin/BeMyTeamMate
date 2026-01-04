@@ -11,28 +11,65 @@
         </p>
       </div>
       <div class="flex flex-wrap gap-3">
-        <button
-          class="flex h-10 items-center gap-2 rounded-xl bg-[#234833] hover:bg-[#2c5a40] px-4 border border-[#346b4c] transition-colors group"
-        >
-          <span class="material-symbols-outlined text-[#92c9a9] group-hover:text-white text-lg"
+        <div class="relative flex h-10 items-center gap-2 rounded-xl bg-[#234833] px-3 border border-[#346b4c]">
+          <span class="material-symbols-outlined text-[#92c9a9] text-lg pointer-events-none"
             >calendar_month</span
           >
-          <span class="text-white text-sm font-medium">Elmúlt 30 nap</span>
-          <span class="material-symbols-outlined text-[#92c9a9] group-hover:text-white"
+          <span class="text-white text-sm font-medium pr-6 pointer-events-none">{{
+            selectedPeriodLabel()
+          }}</span>
+          <select
+            class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10 bg-[#234833] text-white"
+            (change)="setPeriod($any($event.target).value)"
+            style="color-scheme: dark"
+          >
+            @for (period of periodOptions; track period.id) {
+            <option
+              class="bg-[#234833] text-white"
+              [value]="period.id"
+              [selected]="selectedPeriod() === period.id"
+            >
+              {{ period.label }}
+            </option>
+            }
+          </select>
+          <span class="material-symbols-outlined text-[#92c9a9] absolute right-2 pointer-events-none"
             >expand_more</span
           >
-        </button>
-        <button
-          class="flex h-10 items-center gap-2 rounded-xl bg-[#234833] hover:bg-[#2c5a40] px-4 border border-[#346b4c] transition-colors group"
-        >
-          <span class="material-symbols-outlined text-[#92c9a9] group-hover:text-white text-lg"
-            >sports_basketball</span
+        </div>
+        <div class="relative flex h-10 items-center gap-2 rounded-xl bg-[#234833] px-3 border border-[#346b4c]">
+          <span class="material-symbols-outlined text-[#92c9a9] text-lg pointer-events-none"
+            >sports</span
           >
-          <span class="text-white text-sm font-medium">Minden sportág</span>
-          <span class="material-symbols-outlined text-[#92c9a9] group-hover:text-white"
+          <span class="text-white text-sm font-medium pr-6 pointer-events-none">{{
+            selectedSportLabel()
+          }}</span>
+          <select
+            class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10 bg-[#234833] text-white"
+            (change)="setSport($any($event.target).value)"
+            style="color-scheme: dark"
+          >
+            <option
+              class="bg-[#234833] text-white"
+              value="all"
+              [selected]="selectedSport() === 'all'"
+            >
+              Minden sportág
+            </option>
+            @for (sport of sportOptions; track sport.id) {
+            <option
+              class="bg-[#234833] text-white"
+              [value]="sport.id"
+              [selected]="selectedSport() === sport.id"
+            >
+              {{ sport.name }}
+            </option>
+            }
+          </select>
+          <span class="material-symbols-outlined text-[#92c9a9] absolute right-2 pointer-events-none"
             >expand_more</span
           >
-        </button>
+        </div>
         <button
           class="flex h-10 items-center gap-2 rounded-xl bg-[#234833] hover:bg-[#2c5a40] px-4 border border-[#346b4c] transition-colors group"
         >
@@ -65,7 +102,7 @@
         <p class="text-[#92c9a9] text-sm font-medium uppercase tracking-wider">
           Lejátszott meccsek
         </p>
-        <p class="text-white text-4xl font-bold mt-1">{{ recentMatches().length }}</p>
+        <p class="text-white text-4xl font-bold mt-1">{{ filteredMatches().length }}</p>
       </div>
       <!-- Card 2 -->
       <div
@@ -286,14 +323,14 @@
               </tr>
             </thead>
             <tbody class="text-sm">
-              @if (recentMatches().length === 0) {
+              @if (filteredMatches().length === 0) {
               <tr>
                 <td class="py-6 text-center text-[#5c856e]" colspan="5">
                   Nincs lej?tszott meccs.
                 </td>
               </tr>
               } @else {
-              @for (match of recentMatches(); track match.eventId) {
+              @for (match of filteredMatches(); track match.eventId) {
               <tr
                 class="group hover:bg-[#234833]/50 transition-colors border-b border-[#234833]/50"
               >

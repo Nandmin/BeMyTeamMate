@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
@@ -19,6 +19,30 @@ export class Results {
   private eventService = inject(EventService);
   private groupService = inject(GroupService);
   private router = inject(Router);
+
+  periodOptions = [
+    { id: 'all', label: 'Teljes időszak', days: null },
+    { id: '1w', label: 'Elmúlt 1 hét', days: 7 },
+    { id: '1m', label: 'Elmúlt 1 hónap', days: 30 },
+    { id: '3m', label: 'Elmúlt 3 hónap', days: 90 },
+    { id: '6m', label: 'Elmúlt 6 hónap', days: 180 },
+    { id: '1y', label: 'Elmúlt 1 év', days: 365 },
+  ];
+
+  sportOptions = [
+    { id: 'soccer', name: 'Foci', icon: 'sports_soccer' },
+    { id: 'basketball', name: 'Kosárlabda', icon: 'sports_basketball' },
+    { id: 'handball', name: 'Kézilabda', icon: 'sports_handball' },
+    { id: 'tennis', name: 'Tenisz', icon: 'sports_tennis' },
+    { id: 'volleyball', name: 'Röplabda', icon: 'sports_volleyball' },
+    { id: 'hockey', name: 'Jégkorong', icon: 'sports_hockey' },
+    { id: 'squash', name: 'Squash', icon: 'sports_tennis' },
+    { id: 'bowling', name: 'Bowling', icon: 'sports_baseball' },
+    { id: 'other', name: 'Egyéb', icon: 'more_horiz' },
+  ];
+
+  selectedPeriod = signal('1m');
+  selectedSport = signal('all');
 
   recentMatches = toSignal(
     combineLatest([this.authService.user$, this.groupService.getUserGroups()]).pipe(
@@ -43,24 +67,56 @@ export class Results {
     { initialValue: [] }
   );
 
+  filteredMatches = computed(() => {
+    let matches = this.recentMatches();
+    const selectedPeriod = this.selectedPeriod();
+    const selectedSport = this.selectedSport();
+
+    const period = this.periodOptions.find((p) => p.id === selectedPeriod);
+    if (period && typeof period.days === 'number') {
+      const cutoff = Date.now() - period.days * 24 * 60 * 60 * 1000;
+      matches = matches.filter((m) => m.sortTime >= cutoff);
+    }
+
+    if (selectedSport !== 'all') {
+      matches = matches.filter((m) => m.sport === selectedSport);
+    }
+
+    return matches;
+  });
+
+  setPeriod(periodId: string) {
+    this.selectedPeriod.set(periodId);
+  }
+
+  setSport(sportId: string) {
+    this.selectedSport.set(sportId);
+  }
+
+  selectedPeriodLabel(): string {
+    const id = this.selectedPeriod();
+    return this.periodOptions.find((p) => p.id === id)?.label || 'Időszak';
+  }
+
+  selectedSportLabel(): string {
+    const id = this.selectedSport();
+    if (id === 'all') return 'Minden sportág';
+    return this.sportOptions.find((s) => s.id === id)?.name || 'Sportág';
+  }
+
   openMatch(match: RecentMatchRow) {
     this.router.navigate(['/groups', match.groupId, 'events', match.eventId]);
   }
 
   getSportIcon(sport?: string): string {
     if (!sport) return 'groups';
-    const s = sport.toLowerCase();
-    if (s.includes('foci') || s.includes('soccer') || s.includes('football'))
-      return 'sports_soccer';
-    if (s.includes('kosár') || s.includes('basketball')) return 'sports_basketball';
-    if (s.includes('röpi') || s.includes('volleyball')) return 'sports_volleyball';
-    if (s.includes('tenisz') || s.includes('tennis')) return 'sports_tennis';
-    if (s.includes('padel')) return 'sports_tennis';
-    return 'sports';
+    const id = sport.toLowerCase();
+    const match = this.sportOptions.find((opt) => opt.id === id);
+    return match?.icon || 'sports';
   }
 
   winRatePercent(): number {
-    const matches = this.recentMatches();
+    const matches = this.filteredMatches();
     const decided = matches.filter((m) => m.isWin !== null);
     if (decided.length === 0) return 0;
     const wins = decided.filter((m) => m.isWin === true).length;
@@ -68,18 +124,14 @@ export class Results {
   }
 
   earnedEloTotal(): number {
-    return this.recentMatches().reduce((sum, match) => sum + match.eloDelta, 0);
+    return this.filteredMatches().reduce((sum, match) => sum + match.eloDelta, 0);
   }
 
   private getSportLabel(sport?: string): string {
     if (!sport) return 'Ismeretlen';
-    const s = sport.toLowerCase();
-    if (s.includes('soccer') || s.includes('football')) return 'Foci';
-    if (s.includes('basketball')) return 'Kosár';
-    if (s.includes('volleyball')) return 'Röpi';
-    if (s.includes('tennis')) return 'Tenisz';
-    if (s.includes('padel')) return 'Padel';
-    return sport;
+    const id = sport.toLowerCase();
+    const match = this.sportOptions.find((opt) => opt.id === id);
+    return match?.name || sport;
   }
 
   private mapGroupMatches(

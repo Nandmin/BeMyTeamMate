@@ -251,68 +251,41 @@
         <div class="flex justify-between items-start mb-6">
           <div>
             <h3 class="text-white text-lg font-bold">Győzelem / Vereség</h3>
-            <p class="text-[#92c9a9] text-sm">Meccs kimenetelek aránya</p>
+            <p class="text-[#92c9a9] text-sm">
+              Havi győzelem és vereség darabszám ({{ winLossStats().monthLabel }})
+            </p>
           </div>
           <div class="text-right">
-            <p class="text-white text-2xl font-bold">16 Győzelem</p>
-            <p class="text-primary text-sm font-medium">Domináns forma</p>
+            <p class="text-white text-2xl font-bold">{{ winLossStats().wins }} Győzelem</p>
+            <p class="text-red-400 text-sm font-medium">{{ winLossStats().losses }} Vereség</p>
+            <div class="mt-2 flex items-center justify-end gap-3 text-xs font-semibold text-[#92c9a9]">
+              <span class="inline-flex items-center gap-1">
+                <span class="h-2 w-2 rounded-full bg-primary"></span> Győzelem
+              </span>
+              <span class="inline-flex items-center gap-1">
+                <span class="h-2 w-2 rounded-full bg-red-500"></span> Vereség
+              </span>
+            </div>
           </div>
         </div>
-        <div class="flex-1 flex gap-6 items-end h-48 mt-4 px-2">
-          <!-- Bar Items -->
-          <div class="flex-1 flex flex-col justify-end gap-2 group cursor-pointer">
-            <div class="w-full bg-[#234833] rounded-t-sm relative h-full">
+        <div class="flex-1 flex gap-2 items-end justify-center h-48 mt-4 px-2 w-full">
+          <!-- Win -->
+          <div class="flex flex-col justify-end gap-2 h-full w-[20px]">
+            <div class="w-full bg-[#234833] rounded-t-sm relative flex-1">
               <div
-                class="absolute bottom-0 w-full bg-[#92c9a9] rounded-t-sm group-hover:bg-primary transition-colors"
-                style="height: 40%"
+                class="absolute bottom-0 w-full bg-primary rounded-t-sm transition-colors"
+                [style.height.%]="winLossStats().winHeight"
               ></div>
             </div>
-            <span class="text-center text-[#5c856e] text-xs font-bold">Jan</span>
           </div>
-          <div class="flex-1 flex flex-col justify-end gap-2 group cursor-pointer">
-            <div class="w-full bg-[#234833] rounded-t-sm relative h-full">
+          <!-- Loss -->
+          <div class="flex flex-col justify-end gap-2 h-full w-[20px]">
+            <div class="w-full bg-[#234833] rounded-t-sm relative flex-1">
               <div
-                class="absolute bottom-0 w-full bg-[#92c9a9] rounded-t-sm group-hover:bg-primary transition-colors"
-                style="height: 65%"
+                class="absolute bottom-0 w-full bg-red-500 rounded-t-sm transition-colors"
+                [style.height.%]="winLossStats().lossHeight"
               ></div>
             </div>
-            <span class="text-center text-[#5c856e] text-xs font-bold">Feb</span>
-          </div>
-          <div class="flex-1 flex flex-col justify-end gap-2 group cursor-pointer">
-            <div class="w-full bg-[#234833] rounded-t-sm relative h-full">
-              <div
-                class="absolute bottom-0 w-full bg-[#92c9a9] rounded-t-sm group-hover:bg-primary transition-colors"
-                style="height: 55%"
-              ></div>
-            </div>
-            <span class="text-center text-[#5c856e] text-xs font-bold">Már</span>
-          </div>
-          <div class="flex-1 flex flex-col justify-end gap-2 group cursor-pointer">
-            <div class="w-full bg-[#234833] rounded-t-sm relative h-full">
-              <div
-                class="absolute bottom-0 w-full bg-[#92c9a9] rounded-t-sm group-hover:bg-primary transition-colors"
-                style="height: 80%"
-              ></div>
-            </div>
-            <span class="text-center text-[#5c856e] text-xs font-bold">Ápr</span>
-          </div>
-          <div class="flex-1 flex flex-col justify-end gap-2 group cursor-pointer">
-            <div class="w-full bg-[#234833] rounded-t-sm relative h-full">
-              <div
-                class="absolute bottom-0 w-full bg-[#92c9a9] rounded-t-sm group-hover:bg-primary transition-colors"
-                style="height: 30%"
-              ></div>
-            </div>
-            <span class="text-center text-[#5c856e] text-xs font-bold">Máj</span>
-          </div>
-          <div class="flex-1 flex flex-col justify-end gap-2 group cursor-pointer">
-            <div class="w-full bg-[#234833] rounded-t-sm relative h-full">
-              <div
-                class="absolute bottom-0 w-full bg-[#92c9a9] rounded-t-sm group-hover:bg-primary transition-colors"
-                style="height: 90%"
-              ></div>
-            </div>
-            <span class="text-center text-[#5c856e] text-xs font-bold text-primary">Jún</span>
           </div>
         </div>
       </div>

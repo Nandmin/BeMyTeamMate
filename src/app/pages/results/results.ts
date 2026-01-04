@@ -144,6 +144,31 @@ export class Results {
     return this.filteredMatches().reduce((sum, match) => sum + match.eloDelta, 0);
   }
 
+  winLossStats = computed(() => {
+    const matches = this.filteredMatches();
+    const decided = matches.filter((m) => m.isWin !== null);
+    const targetDate = decided.length > 0 ? new Date(decided[0].sortTime) : new Date();
+    const month = targetDate.getMonth();
+    const year = targetDate.getFullYear();
+    const monthMatches = decided.filter((m) => {
+      const date = new Date(m.sortTime);
+      return date.getMonth() === month && date.getFullYear() === year;
+    });
+
+    const wins = monthMatches.filter((m) => m.isWin === true).length;
+    const losses = monthMatches.filter((m) => m.isWin === false).length;
+    const max = Math.max(wins, losses, 1);
+
+    return {
+      wins,
+      losses,
+      total: wins + losses,
+      winHeight: Math.round((wins / max) * 100),
+      lossHeight: Math.round((losses / max) * 100),
+      monthLabel: targetDate.toLocaleDateString('hu-HU', { year: 'numeric', month: 'long' }),
+    };
+  });
+
   private getSportLabel(sport?: string): string {
     if (!sport) return 'Ismeretlen';
     const id = sport.toLowerCase();

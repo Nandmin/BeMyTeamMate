@@ -20,6 +20,8 @@ export class Results {
   private groupService = inject(GroupService);
   private router = inject(Router);
 
+  currentUser = this.authService.fullCurrentUser;
+
   recentMatches = toSignal(
     combineLatest([this.authService.user$, this.groupService.getUserGroups()]).pipe(
       switchMap(([user, groups]) => {
@@ -65,6 +67,12 @@ export class Results {
     if (decided.length === 0) return 0;
     const wins = decided.filter((m) => m.isWin === true).length;
     return Math.round((wins / decided.length) * 100);
+  }
+
+  earnedEloTotal(): number {
+    const baseElo = 1200;
+    const currentElo = this.currentUser()?.elo ?? baseElo;
+    return Math.max(0, Math.round(currentElo - baseElo));
   }
 
   private getSportLabel(sport?: string): string {

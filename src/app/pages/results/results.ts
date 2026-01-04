@@ -144,29 +144,44 @@ export class Results {
     return this.filteredMatches().reduce((sum, match) => sum + match.eloDelta, 0);
   }
 
-  winLossStats = computed(() => {
+  winLossChart = computed(() => {
     const matches = this.filteredMatches();
     const decided = matches.filter((m) => m.isWin !== null);
-    const targetDate = decided.length > 0 ? new Date(decided[0].sortTime) : new Date();
-    const month = targetDate.getMonth();
-    const year = targetDate.getFullYear();
-    const monthMatches = decided.filter((m) => {
-      const date = new Date(m.sortTime);
-      return date.getMonth() === month && date.getFullYear() === year;
+    const anchorDate = decided.length > 0 ? new Date(decided[0].sortTime) : new Date();
+    const months: { key: string; year: number; month: number; label: string }[] = [];
+
+    for (let i = 5; i >= 0; i--) {
+      const date = new Date(anchorDate.getFullYear(), anchorDate.getMonth() - i, 1);
+      const month = date.getMonth();
+      const year = date.getFullYear();
+      months.push({
+        key: `${year}-${String(month + 1).padStart(2, '0')}`,
+        year,
+        month,
+        label: date.toLocaleDateString('hu-HU', { month: 'short' }),
+      });
+    }
+
+    const monthStats = months.map((entry) => {
+      const monthMatches = decided.filter((m) => {
+        const date = new Date(m.sortTime);
+        return date.getMonth() === entry.month && date.getFullYear() === entry.year;
+      });
+      const wins = monthMatches.filter((m) => m.isWin === true).length;
+      const losses = monthMatches.filter((m) => m.isWin === false).length;
+      return { ...entry, wins, losses };
     });
 
-    const wins = monthMatches.filter((m) => m.isWin === true).length;
-    const losses = monthMatches.filter((m) => m.isWin === false).length;
-    const max = Math.max(wins, losses, 1);
+    const max = Math.max(
+      1,
+      ...monthStats.flatMap((entry) => [entry.wins, entry.losses])
+    );
 
-    return {
-      wins,
-      losses,
-      total: wins + losses,
-      winHeight: Math.round((wins / max) * 100),
-      lossHeight: Math.round((losses / max) * 100),
-      monthLabel: targetDate.toLocaleDateString('hu-HU', { year: 'numeric', month: 'long' }),
-    };
+    return monthStats.map((entry) => ({
+      ...entry,
+      winHeight: Math.round((entry.wins / max) * 100),
+      lossHeight: Math.round((entry.losses / max) * 100),
+    }));
   });
 
   private getSportLabel(sport?: string): string {

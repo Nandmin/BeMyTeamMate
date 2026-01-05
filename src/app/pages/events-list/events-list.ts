@@ -21,6 +21,7 @@ export class EventsList implements OnDestroy {
   visibleMonth = signal(this.getMonthAnchor(new Date()));
   selectedDate = signal(new Date());
   selectedSport = signal<string | null>(null);
+  rsvpHandledEvents = signal(new Set<string>());
 
   currentUser = toSignal(this.authService.user$, { initialValue: null });
   userEvents = toSignal(
@@ -116,6 +117,13 @@ export class EventsList implements OnDestroy {
     const event = this.nextEvent();
     if (!user || !event) return false;
     return (event.attendees || []).includes(user.uid);
+  });
+
+  shouldShowRsvpPrompt = computed(() => {
+    const event = this.nextEvent();
+    if (!event || !event.id || !event.groupId) return false;
+    if (this.isAttending()) return false;
+    return !this.rsvpHandledEvents().has(this.getEventKey(event));
   });
 
   private calendarEventKeys = computed(() => {
@@ -336,8 +344,20 @@ export class EventsList implements OnDestroy {
 
     try {
       await this.eventService.toggleRSVP(event.groupId, event.id);
+      this.markRsvpHandled(event);
     } catch (error) {
       console.error('RSVP update failed:', error);
     }
+  }
+
+  private markRsvpHandled(event: SportEvent) {
+    if (!event.id || !event.groupId) return;
+    const next = new Set(this.rsvpHandledEvents());
+    next.add(this.getEventKey(event));
+    this.rsvpHandledEvents.set(next);
+  }
+
+  private getEventKey(event: SportEvent): string {
+    return `${event.groupId}:${event.id}`;
   }
 }

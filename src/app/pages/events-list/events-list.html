@@ -10,7 +10,7 @@
     <div class="lg:col-span-8 flex flex-col gap-8">
       <!-- Hero Section: Next Match -->
       <div
-        class="bg-card-dark rounded-2xl shadow-lg border border-white/5 overflow-hidden relative group"
+        class="bg-gradient-to-b from-dark-accent to-background-dark rounded-2xl shadow-lg border border-white/5 overflow-hidden relative group"
       >
         <div
           class="absolute inset-0 bg-gradient-to-r from-background-dark/90 to-transparent z-10 pointer-events-none"
@@ -135,14 +135,14 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           @if (upcomingUserEvents().length === 0) {
           <div
-            class="bg-card-dark rounded-xl p-4 border border-border-dark text-gray-400 text-sm"
+            class="bg-gradient-to-b from-dark-accent to-background-dark rounded-xl p-4 border border-border-dark text-gray-400 text-sm"
           >
             Nincs közelgő esemény.
           </div>
           }
           @for (event of upcomingUserEvents(); track event.id ?? event.title) {
           <a
-            class="bg-card-dark rounded-xl p-4 border border-border-dark hover:border-primary/50 transition-all group hover:shadow-[0_0_20px_rgba(43,238,124,0.1)] block"
+            class="bg-gradient-to-b from-dark-accent to-background-dark rounded-xl p-4 border border-border-dark hover:border-primary/50 transition-all group hover:shadow-[0_0_20px_rgba(43,238,124,0.1)] block"
             [routerLink]="['/groups', event.groupId, 'events', event.id]"
             [class.pointer-events-none]="!event.id"
             [class.opacity-70]="!event.id"
@@ -240,7 +240,7 @@
     <!-- Right Column (Sidebar) -->
     <div class="lg:col-span-4 flex flex-col gap-6">
       <!-- Calendar Widget -->
-      <div class="bg-card-dark rounded-2xl p-6 border border-border-dark">
+      <div class="bg-gradient-to-b from-dark-accent to-background-dark rounded-2xl p-6 border border-border-dark">
         <div class="flex items-center justify-between mb-6">
           <h3 class="text-white font-bold text-lg">{{ calendarMonthLabel() }}</h3>
           <div class="flex gap-2">
@@ -292,7 +292,7 @@
         </div>
       </div>
       <!-- My Teams / Groups -->
-      <div class="bg-card-dark rounded-2xl p-6 border border-border-dark flex-1 flex flex-col">
+      <div class="bg-gradient-to-b from-dark-accent to-background-dark rounded-2xl p-6 border border-border-dark flex-1 flex flex-col">
         <div class="flex items-center justify-between mb-4">
           <div>
             <h3 class="text-white font-bold text-lg">Eseményeim</h3>
@@ -321,7 +321,7 @@
         </div>
       </div>
       <!-- Map Snippet -->
-      <!-- <div class="bg-card-dark rounded-2xl p-4 border border-border-dark">
+      <!-- <div class="bg-gradient-to-b from-dark-accent to-background-dark rounded-2xl p-4 border border-border-dark">
         <p class="text-white font-bold text-sm mb-3">Helyszín: Margitsziget</p>
         <div
           class="w-full aspect-video bg-cover bg-center rounded-lg relative overflow-hidden group"
@@ -342,6 +342,7 @@
     </div>
   </div>
 </main>
+
 
 
 

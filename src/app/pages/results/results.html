@@ -11,7 +11,7 @@
         </p>
       </div>
       <div class="flex flex-wrap gap-3">
-        <div class="relative flex h-10 items-center gap-2 rounded-xl bg-[#234833] px-3 border border-[#346b4c]">
+        <div class="relative flex h-10 items-center gap-2 rounded-xl bg-gradient-to-b from-dark-accent to-background-dark px-3 border border-border-dark">
           <span class="material-symbols-outlined text-[#92c9a9] text-lg pointer-events-none"
             >calendar_month</span
           >
@@ -19,13 +19,13 @@
             selectedPeriodLabel()
           }}</span>
           <select
-            class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10 bg-[#234833] text-white"
+            class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10 bg-gradient-to-b from-dark-accent to-background-dark text-white"
             (change)="setPeriod($any($event.target).value)"
             style="color-scheme: dark"
           >
             @for (period of periodOptions; track period.id) {
             <option
-              class="bg-[#234833] text-white"
+              class="bg-gradient-to-b from-dark-accent to-background-dark text-white"
               [value]="period.id"
               [selected]="selectedPeriod() === period.id"
             >
@@ -37,7 +37,7 @@
             >expand_more</span
           >
         </div>
-        <div class="relative flex h-10 items-center gap-2 rounded-xl bg-[#234833] px-3 border border-[#346b4c]">
+        <div class="relative flex h-10 items-center gap-2 rounded-xl bg-gradient-to-b from-dark-accent to-background-dark px-3 border border-border-dark">
           <span class="material-symbols-outlined text-[#92c9a9] text-lg pointer-events-none"
             >sports</span
           >
@@ -45,12 +45,12 @@
             selectedSportLabel()
           }}</span>
           <select
-            class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10 bg-[#234833] text-white"
+            class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10 bg-gradient-to-b from-dark-accent to-background-dark text-white"
             (change)="setSport($any($event.target).value)"
             style="color-scheme: dark"
           >
             <option
-              class="bg-[#234833] text-white"
+              class="bg-gradient-to-b from-dark-accent to-background-dark text-white"
               value="all"
               [selected]="selectedSport() === 'all'"
             >
@@ -58,7 +58,7 @@
             </option>
             @for (sport of sportOptions; track sport.id) {
             <option
-              class="bg-[#234833] text-white"
+              class="bg-gradient-to-b from-dark-accent to-background-dark text-white"
               [value]="sport.id"
               [selected]="selectedSport() === sport.id"
             >
@@ -70,7 +70,7 @@
             >expand_more</span
           >
         </div>
-        <div class="relative flex h-10 items-center gap-2 rounded-xl bg-[#234833] px-3 border border-[#346b4c]">
+        <div class="relative flex h-10 items-center gap-2 rounded-xl bg-gradient-to-b from-dark-accent to-background-dark px-3 border border-border-dark">
           <span class="material-symbols-outlined text-[#92c9a9] text-lg pointer-events-none"
             >group</span
           >
@@ -78,12 +78,12 @@
             selectedTeamLabel()
           }}</span>
           <select
-            class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10 bg-[#234833] text-white"
+            class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10 bg-gradient-to-b from-dark-accent to-background-dark text-white"
             (change)="setTeam($any($event.target).value)"
             style="color-scheme: dark"
           >
             <option
-              class="bg-[#234833] text-white"
+              class="bg-gradient-to-b from-dark-accent to-background-dark text-white"
               value="all"
               [selected]="selectedTeam() === 'all'"
             >
@@ -91,7 +91,7 @@
             </option>
             @for (group of userGroups(); track group.id) {
             <option
-              class="bg-[#234833] text-white"
+              class="bg-gradient-to-b from-dark-accent to-background-dark text-white"
               [value]="group.id"
               [selected]="selectedTeam() === group.id"
             >
@@ -109,7 +109,7 @@
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
       <!-- Card 1 -->
       <div
-        class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-[#234833] to-[#1a3626] p-6 border border-[#346b4c] group hover:border-primary/50 transition-colors"
+        class="relative overflow-hidden rounded-2xl bg-gradient-to-b from-dark-accent to-background-dark p-6 border border-border-dark group hover:border-primary/50 transition-colors"
       >
         <div class="flex justify-between items-start mb-4">
           <div class="p-2 bg-[#2bee7c]/10 rounded-lg text-primary">
@@ -128,7 +128,7 @@
       </div>
       <!-- Card 2 -->
       <div
-        class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-[#234833] to-[#1a3626] p-6 border border-[#346b4c] group hover:border-primary/50 transition-colors"
+        class="relative overflow-hidden rounded-2xl bg-gradient-to-b from-dark-accent to-background-dark p-6 border border-border-dark group hover:border-primary/50 transition-colors"
       >
         <div class="flex justify-between items-start mb-4">
           <div class="p-2 bg-[#2bee7c]/10 rounded-lg text-primary">
@@ -145,7 +145,7 @@
       </div>
       <!-- Card 3 -->
       <div
-        class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-[#234833] to-[#1a3626] p-6 border border-[#346b4c] group hover:border-primary/50 transition-colors"
+        class="relative overflow-hidden rounded-2xl bg-gradient-to-b from-dark-accent to-background-dark p-6 border border-border-dark group hover:border-primary/50 transition-colors"
       >
         <div class="flex justify-between items-start mb-4">
           <div class="p-2 bg-[#2bee7c]/10 rounded-lg text-primary">
@@ -164,7 +164,7 @@
     <!-- Charts Section -->
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
       <!-- Score Evolution Chart -->
-      <div class="rounded-2xl bg-[#1a2e24] border border-[#234833] p-6 flex flex-col">
+      <div class="rounded-2xl bg-gradient-to-b from-dark-accent to-background-dark border border-border-dark p-6 flex flex-col">
         <div class="flex justify-between items-start mb-6">
           <div>
             <h3 class="text-white text-lg font-bold">Pontszám alakulása</h3>
@@ -212,7 +212,7 @@
             }
           </svg>
           <div
-            class="flex justify-between text-[#5c856e] text-xs font-bold mt-2 pt-2 border-t border-[#234833] px-2"
+            class="flex justify-between text-[#5c856e] text-xs font-bold mt-2 pt-2 border-t border-border-dark px-2"
           >
             @for (point of eloChart().points; track point.key) {
             <span>{{ point.label }}</span>
@@ -222,7 +222,7 @@
       </div>
       
 <!-- Win/Loss Ratio -->
-      <div class="rounded-2xl bg-[#1a2e24] border border-[#234833] p-6 flex flex-col">
+      <div class="rounded-2xl bg-gradient-to-b from-dark-accent to-background-dark border border-border-dark p-6 flex flex-col">
         <div class="flex justify-between items-start mb-6">
           <div>
             <h3 class="text-white text-lg font-bold">Győzelem / Vereség</h3>
@@ -245,7 +245,7 @@
             <div class="flex items-end gap-2 h-full">
               <div
                 class="w-[20px] rounded-t-sm relative h-full"
-                [ngClass]="month.wins === 0 ? 'bg-transparent' : 'bg-[#234833]'"
+                [ngClass]="month.wins === 0 ? 'bg-transparent' : 'bg-gradient-to-b from-dark-accent to-background-dark'"
                 [style.--bar-height]="month.winHeight + '%'"
               >
                 <div
@@ -261,7 +261,7 @@
               </div>
               <div
                 class="w-[20px] rounded-t-sm relative h-full"
-                [ngClass]="month.losses === 0 ? 'bg-transparent' : 'bg-[#234833]'"
+                [ngClass]="month.losses === 0 ? 'bg-transparent' : 'bg-gradient-to-b from-dark-accent to-background-dark'"
                 [style.--bar-height]="month.lossHeight + '%'"
               >
                 <div
@@ -286,14 +286,14 @@
     <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
 
       <!-- Recent Matches Table -->
-      <div class="xl:col-span-3 w-full rounded-2xl bg-[#1a2e24] border border-[#234833] p-6 flex flex-col">
+      <div class="xl:col-span-3 w-full rounded-2xl bg-gradient-to-b from-dark-accent to-background-dark border border-border-dark p-6 flex flex-col">
         <div class="flex items-center justify-between mb-6">
           <h3 class="text-white text-lg font-bold">Legutóbbi eredmények</h3>
           <div class="flex gap-2">
-            <button class="p-2 rounded-lg bg-[#234833] text-white hover:bg-[#2c5a40]">
+            <button class="p-2 rounded-lg bg-gradient-to-b from-dark-accent to-background-dark text-white hover:bg-[#2c5a40]">
               <span class="material-symbols-outlined text-lg">filter_list</span>
             </button>
-            <button class="p-2 rounded-lg bg-[#234833] text-white hover:bg-[#2c5a40]">
+            <button class="p-2 rounded-lg bg-gradient-to-b from-dark-accent to-background-dark text-white hover:bg-[#2c5a40]">
               <span class="material-symbols-outlined text-lg">download</span>
             </button>
           </div>
@@ -301,7 +301,7 @@
         <div class="flex-1 overflow-x-auto">
           <table class="w-full text-left border-collapse">
             <thead>
-              <tr class="text-[#5c856e] text-xs uppercase border-b border-[#234833]">
+              <tr class="text-[#5c856e] text-xs uppercase border-b border-border-dark">
                 <th class="pb-3 pl-2 font-medium">Dátum</th>
                 <th class="pb-3 font-medium">Sportág</th>
                 <th class="pb-3 font-medium">Ellenfél</th>
@@ -319,7 +319,7 @@
               } @else {
               @for (match of filteredMatches(); track match.eventId) {
               <tr
-                class="group hover:bg-[#234833]/50 transition-colors border-b border-[#234833]/50"
+                class="group hover:bg-gradient-to-b from-dark-accent to-background-dark/50 transition-colors border-b border-border-dark/50"
               >
                 <td class="py-4 pl-2 text-white font-medium">{{ match.dateLabel }}</td>
                 <td class="py-4">
@@ -363,3 +363,5 @@
     </div>
   </div>
 <!-- </main> -->
+
+

@@ -1,24 +1,15 @@
 import { Component, OnDestroy, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { RouterModule } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { GroupService } from '../../services/group.service';
 import { EventService, SportEvent } from '../../services/event.service';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { combineLatest, map, of, switchMap } from 'rxjs';
 
-interface MockEvent {
-  id: string;
-  title: string;
-  sport: string;
-  location: string;
-  dateTime: Date;
-  attendees: number;
-  icon: string;
-}
-
 @Component({
   selector: 'app-events-list',
-  imports: [CommonModule],
+  imports: [CommonModule, RouterModule],
   templateUrl: './events-list.html',
   styleUrl: './events-list.scss',
 })
@@ -28,45 +19,6 @@ export class EventsList implements OnDestroy {
   private eventService = inject(EventService);
 
   visibleMonth = signal(this.getMonthAnchor(new Date()));
-
-  events = signal<MockEvent[]>([
-    {
-      id: '1',
-      title: 'Esti Foci',
-      sport: 'Foci',
-      location: 'Mara Sportpálya',
-      dateTime: new Date(2025, 11, 23, 18, 0),
-      attendees: 12,
-      icon: '⚽',
-    },
-    {
-      id: '2',
-      title: 'Kosárlabda Meccs',
-      sport: 'Kosárlabda',
-      location: 'Városi Sportcsarnok',
-      dateTime: new Date(2025, 11, 24, 19, 30),
-      attendees: 8,
-      icon: '🏀',
-    },
-    {
-      id: '3',
-      title: 'Hétvégi Foci',
-      sport: 'Foci',
-      location: 'Népliget Pálya',
-      dateTime: new Date(2025, 11, 25, 10, 0),
-      attendees: 16,
-      icon: '⚽',
-    },
-    {
-      id: '4',
-      title: 'Röplabda Torna',
-      sport: 'Röplabda',
-      location: 'Strand Sportpálya',
-      dateTime: new Date(2025, 11, 26, 16, 0),
-      attendees: 10,
-      icon: '🏐',
-    },
-  ]);
 
   currentUser = toSignal(this.authService.user$, { initialValue: null });
   userEvents = toSignal(
@@ -108,6 +60,17 @@ export class EventsList implements OnDestroy {
     ),
     { initialValue: null }
   );
+
+  upcomingUserEvents = computed(() => {
+    const user = this.currentUser();
+    const events = this.userEvents();
+    if (!user) return [];
+
+    return events
+      .filter((event) => this.isUpcoming(event))
+      .sort((a, b) => this.getEventDateTime(a).getTime() - this.getEventDateTime(b).getTime())
+      .slice(0, 4);
+  });
 
   countdown = computed(() => {
     const event = this.nextEvent();
@@ -212,6 +175,34 @@ export class EventsList implements OnDestroy {
     return date.toLocaleTimeString('hu-HU', { hour: '2-digit', minute: '2-digit' });
   }
 
+  getAttendanceText(event: SportEvent): string {
+    const current = event.currentAttendees ?? event.attendees?.length ?? 0;
+    const max = event.maxAttendees ?? 0;
+    return `${current}/${max} fo`;
+  }
+
+  getAttendancePercent(event: SportEvent): number {
+    const current = event.currentAttendees ?? event.attendees?.length ?? 0;
+    const max = event.maxAttendees ?? 0;
+    if (!max) return 0;
+    return Math.min(Math.round((current / max) * 100), 100);
+  }
+
+  getSportIcon(sport?: string): string {
+    const value = (sport || '').toLowerCase();
+    const normalized = value.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    if (normalized.includes('foci') || normalized.includes('soccer')) return 'sports_soccer';
+    if (normalized.includes('kosar') || normalized.includes('basket')) return 'sports_basketball';
+    if (normalized.includes('padel') || normalized.includes('tenisz') || normalized.includes('tennis')) {
+      return 'sports_tennis';
+    }
+    if (normalized.includes('roplabda') || normalized.includes('volley')) {
+      return 'sports_volleyball';
+    }
+    if (normalized.includes('futas') || normalized.includes('run')) return 'directions_run';
+    return 'event';
+  }
+
   goToPreviousMonth() {
     const current = this.visibleMonth();
     this.visibleMonth.set(new Date(current.getFullYear(), current.getMonth() - 1, 1));
@@ -222,7 +213,7 @@ export class EventsList implements OnDestroy {
     this.visibleMonth.set(new Date(current.getFullYear(), current.getMonth() + 1, 1));
   }
 
-  private getEventDateTime(event: SportEvent): Date {
+  getEventDateTime(event: SportEvent): Date {
     const rawDate = (event as any).dateTime ?? event.date;
     const baseDate = this.coerceDate(rawDate);
     if (event.time) {

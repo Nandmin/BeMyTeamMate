@@ -127,102 +127,56 @@
           Közelgő Események
         </h3>
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <!-- Event Card 1 -->
+          @if (upcomingUserEvents().length === 0) {
           <div
-            class="bg-card-dark rounded-xl p-4 border border-border-dark hover:border-primary/50 transition-all group hover:shadow-[0_0_20px_rgba(43,238,124,0.1)]"
+            class="bg-card-dark rounded-xl p-4 border border-border-dark text-gray-400 text-sm"
+          >
+            Nincs kozelgo esemeny.
+          </div>
+          }
+          @for (event of upcomingUserEvents(); track event.id ?? event.title) {
+          <a
+            class="bg-card-dark rounded-xl p-4 border border-border-dark hover:border-primary/50 transition-all group hover:shadow-[0_0_20px_rgba(43,238,124,0.1)] block"
+            [routerLink]="['/groups', event.groupId, 'events', event.id]"
+            [class.pointer-events-none]="!event.id"
+            [class.opacity-70]="!event.id"
           >
             <div class="flex items-start justify-between mb-4">
               <div class="flex items-center gap-3">
                 <div
                   class="w-12 h-12 rounded-lg bg-[#234833] flex items-center justify-center text-primary"
                 >
-                  <span class="material-symbols-outlined">sports_basketball</span>
+                  <span class="material-symbols-outlined">{{ getSportIcon(event.sport) }}</span>
                 </div>
                 <div>
-                  <h4 class="text-white font-bold leading-tight">Pénteki Kosár</h4>
-                  <p class="text-gray-400 text-xs">MOM Sportközpont</p>
+                  <h4 class="text-white font-bold leading-tight">{{ event.title }}</h4>
+                  <p class="text-gray-400 text-xs">{{ event.location }}</p>
                 </div>
               </div>
               <div class="text-right">
-                <p class="text-white font-bold text-sm">Aug 24.</p>
-                <p class="text-primary text-xs font-medium">19:00</p>
+                <p class="text-white font-bold text-sm">
+                  {{ formatDate(getEventDateTime(event)) }}
+                </p>
+                <p class="text-primary text-xs font-medium">
+                  {{ formatTime(getEventDateTime(event)) }}
+                </p>
               </div>
             </div>
             <!-- Attendance Bar -->
             <div class="space-y-1.5">
               <div class="flex justify-between text-xs text-gray-400 font-medium">
-                <span>Létszám</span>
-                <span class="text-white">8/10 fő</span>
+                <span>Letszam</span>
+                <span class="text-white">{{ getAttendanceText(event) }}</span>
               </div>
               <div class="w-full bg-[#112218] h-2 rounded-full overflow-hidden">
-                <div class="bg-primary h-full rounded-full w-[80%]"></div>
-              </div>
-            </div>
-          </div>
-          <!-- Event Card 2 -->
-          <div
-            class="bg-card-dark rounded-xl p-4 border border-border-dark hover:border-primary/50 transition-all group hover:shadow-[0_0_20px_rgba(43,238,124,0.1)]"
-          >
-            <div class="flex items-start justify-between mb-4">
-              <div class="flex items-center gap-3">
                 <div
-                  class="w-12 h-12 rounded-lg bg-[#234833] flex items-center justify-center text-primary"
-                >
-                  <span class="material-symbols-outlined">sports_tennis</span>
-                </div>
-                <div>
-                  <h4 class="text-white font-bold leading-tight">Vasárnapi Padel</h4>
-                  <p class="text-gray-400 text-xs">BudaPart</p>
-                </div>
-              </div>
-              <div class="text-right">
-                <p class="text-white font-bold text-sm">Aug 26.</p>
-                <p class="text-primary text-xs font-medium">10:00</p>
+                  class="bg-primary h-full rounded-full"
+                  [style.width.%]="getAttendancePercent(event)"
+                ></div>
               </div>
             </div>
-            <!-- Attendance Bar -->
-            <div class="space-y-1.5">
-              <div class="flex justify-between text-xs text-gray-400 font-medium">
-                <span>Létszám</span>
-                <span class="text-white">3/4 fő</span>
-              </div>
-              <div class="w-full bg-[#112218] h-2 rounded-full overflow-hidden">
-                <div class="bg-primary h-full rounded-full w-[75%]"></div>
-              </div>
-            </div>
-          </div>
-          <!-- Event Card 3 -->
-          <div
-            class="bg-card-dark rounded-xl p-4 border border-border-dark hover:border-primary/50 transition-all group hover:shadow-[0_0_20px_rgba(43,238,124,0.1)]"
-          >
-            <div class="flex items-start justify-between mb-4">
-              <div class="flex items-center gap-3">
-                <div
-                  class="w-12 h-12 rounded-lg bg-[#234833] flex items-center justify-center text-primary"
-                >
-                  <span class="material-symbols-outlined">directions_run</span>
-                </div>
-                <div>
-                  <h4 class="text-white font-bold leading-tight">Sziget Kör</h4>
-                  <p class="text-gray-400 text-xs">Margitsziget</p>
-                </div>
-              </div>
-              <div class="text-right">
-                <p class="text-white font-bold text-sm">Aug 28.</p>
-                <p class="text-primary text-xs font-medium">18:30</p>
-              </div>
-            </div>
-            <!-- Attendance Bar -->
-            <div class="space-y-1.5">
-              <div class="flex justify-between text-xs text-gray-400 font-medium">
-                <span>Létszám</span>
-                <span class="text-white">12/∞ fő</span>
-              </div>
-              <div class="w-full bg-[#112218] h-2 rounded-full overflow-hidden">
-                <div class="bg-yellow-500 h-full rounded-full w-[40%]"></div>
-              </div>
-            </div>
-          </div>
+          </a>
+          }
         </div>
       </div>
       <!-- Past Events Section -->

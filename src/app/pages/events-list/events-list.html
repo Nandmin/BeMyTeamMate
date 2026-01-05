@@ -284,14 +284,18 @@
       <!-- Calendar Widget -->
       <div class="bg-card-dark rounded-2xl p-6 border border-border-dark">
         <div class="flex items-center justify-between mb-6">
-          <h3 class="text-white font-bold text-lg">Augusztus</h3>
+          <h3 class="text-white font-bold text-lg">{{ calendarMonthLabel() }}</h3>
           <div class="flex gap-2">
             <button
+              (click)="goToPreviousMonth()"
+              aria-label="Előző hónap"
               class="p-1 rounded-full hover:bg-white/10 text-gray-400 hover:text-white transition-colors"
             >
               <span class="material-symbols-outlined text-lg">chevron_left</span>
             </button>
             <button
+              (click)="goToNextMonth()"
+              aria-label="Következő hónap"
               class="p-1 rounded-full hover:bg-white/10 text-gray-400 hover:text-white transition-colors"
             >
               <span class="material-symbols-outlined text-lg">chevron_right</span>
@@ -306,182 +310,25 @@
           <div class="text-gray-500 text-xs font-medium">P</div>
           <div class="text-gray-500 text-xs font-medium">Sz</div>
           <div class="text-gray-500 text-xs font-medium">V</div>
-          <!-- Days (Placeholders) -->
-          <!-- Prev month -->
-          <div class="text-gray-700">29</div>
-          <div class="text-gray-700">30</div>
-          <div class="text-gray-700">31</div>
-          <!-- Current month -->
-          <div
-            class="text-white hover:bg-white/5 rounded-full cursor-pointer h-8 w-8 flex items-center justify-center mx-auto"
+          @for (day of calendarDays(); track day.key) {
+          <button
+            class="relative h-8 w-8 mx-auto flex items-center justify-center rounded-full text-sm transition-colors"
+            [disabled]="!day.inMonth"
+            [ngClass]="{
+              'text-gray-600 cursor-default': !day.inMonth,
+              'text-white hover:bg-white/5 cursor-pointer': day.inMonth && !day.isToday,
+              'bg-primary text-background-dark font-bold shadow-[0_0_10px_rgba(43,238,124,0.4)]':
+                day.isToday
+            }"
           >
-            1
-          </div>
-          <div
-            class="text-white hover:bg-white/5 rounded-full cursor-pointer h-8 w-8 flex items-center justify-center mx-auto"
-          >
-            2
-          </div>
-          <div
-            class="text-white hover:bg-white/5 rounded-full cursor-pointer h-8 w-8 flex items-center justify-center mx-auto"
-          >
-            3
-          </div>
-          <div
-            class="text-white hover:bg-white/5 rounded-full cursor-pointer h-8 w-8 flex items-center justify-center mx-auto"
-          >
-            4
-          </div>
-          <div
-            class="text-white hover:bg-white/5 rounded-full cursor-pointer h-8 w-8 flex items-center justify-center mx-auto"
-          >
-            5
-          </div>
-          <div
-            class="text-white hover:bg-white/5 rounded-full cursor-pointer h-8 w-8 flex items-center justify-center mx-auto"
-          >
-            6
-          </div>
-          <div
-            class="text-white hover:bg-white/5 rounded-full cursor-pointer h-8 w-8 flex items-center justify-center mx-auto relative"
-          >
-            7
-          </div>
-          <div
-            class="text-white hover:bg-white/5 rounded-full cursor-pointer h-8 w-8 flex items-center justify-center mx-auto"
-          >
-            8
-          </div>
-          <div
-            class="text-white hover:bg-white/5 rounded-full cursor-pointer h-8 w-8 flex items-center justify-center mx-auto"
-          >
-            9
-          </div>
-          <div
-            class="text-white hover:bg-white/5 rounded-full cursor-pointer h-8 w-8 flex items-center justify-center mx-auto"
-          >
-            10
-          </div>
-          <div
-            class="text-white hover:bg-white/5 rounded-full cursor-pointer h-8 w-8 flex items-center justify-center mx-auto"
-          >
-            11
-          </div>
-          <div
-            class="text-white hover:bg-white/5 rounded-full cursor-pointer h-8 w-8 flex items-center justify-center mx-auto"
-          >
-            12
-          </div>
-          <div
-            class="text-white hover:bg-white/5 rounded-full cursor-pointer h-8 w-8 flex items-center justify-center mx-auto"
-          >
-            13
-          </div>
-          <div
-            class="text-white hover:bg-white/5 rounded-full cursor-pointer h-8 w-8 flex items-center justify-center mx-auto relative"
-          >
-            14
-            <span
-              class="absolute bottom-0.5 left-1/2 -translate-x-1/2 w-1 h-1 bg-gray-500 rounded-full"
-            ></span>
-          </div>
-          <div
-            class="text-white hover:bg-white/5 rounded-full cursor-pointer h-8 w-8 flex items-center justify-center mx-auto"
-          >
-            15
-          </div>
-          <div
-            class="text-white hover:bg-white/5 rounded-full cursor-pointer h-8 w-8 flex items-center justify-center mx-auto"
-          >
-            16
-          </div>
-          <div
-            class="text-white hover:bg-white/5 rounded-full cursor-pointer h-8 w-8 flex items-center justify-center mx-auto relative"
-          >
-            17
-            <span
-              class="absolute bottom-0.5 left-1/2 -translate-x-1/2 w-1 h-1 bg-gray-500 rounded-full"
-            ></span>
-          </div>
-          <div
-            class="text-white hover:bg-white/5 rounded-full cursor-pointer h-8 w-8 flex items-center justify-center mx-auto"
-          >
-            18
-          </div>
-          <div
-            class="text-white hover:bg-white/5 rounded-full cursor-pointer h-8 w-8 flex items-center justify-center mx-auto"
-          >
-            19
-          </div>
-          <div
-            class="bg-primary text-background-dark font-bold rounded-full cursor-pointer h-8 w-8 flex items-center justify-center mx-auto shadow-[0_0_10px_rgba(43,238,124,0.4)]"
-          >
-            20
-          </div>
-          <div
-            class="text-white hover:bg-white/5 rounded-full cursor-pointer h-8 w-8 flex items-center justify-center mx-auto"
-          >
-            21
-          </div>
-          <div
-            class="text-white hover:bg-white/5 rounded-full cursor-pointer h-8 w-8 flex items-center justify-center mx-auto"
-          >
-            22
-          </div>
-          <div
-            class="text-white hover:bg-white/5 rounded-full cursor-pointer h-8 w-8 flex items-center justify-center mx-auto"
-          >
-            23
-          </div>
-          <div
-            class="text-white hover:bg-white/5 rounded-full cursor-pointer h-8 w-8 flex items-center justify-center mx-auto relative"
-          >
-            24
+            {{ day.label }}
+            @if (day.hasEvent) {
             <span
               class="absolute bottom-0.5 left-1/2 -translate-x-1/2 w-1 h-1 bg-primary rounded-full"
             ></span>
-          </div>
-          <div
-            class="text-white hover:bg-white/5 rounded-full cursor-pointer h-8 w-8 flex items-center justify-center mx-auto"
-          >
-            25
-          </div>
-          <div
-            class="text-white hover:bg-white/5 rounded-full cursor-pointer h-8 w-8 flex items-center justify-center mx-auto relative"
-          >
-            26
-            <span
-              class="absolute bottom-0.5 left-1/2 -translate-x-1/2 w-1 h-1 bg-primary rounded-full"
-            ></span>
-          </div>
-          <div
-            class="text-white hover:bg-white/5 rounded-full cursor-pointer h-8 w-8 flex items-center justify-center mx-auto"
-          >
-            27
-          </div>
-          <div
-            class="text-white hover:bg-white/5 rounded-full cursor-pointer h-8 w-8 flex items-center justify-center mx-auto relative"
-          >
-            28
-            <span
-              class="absolute bottom-0.5 left-1/2 -translate-x-1/2 w-1 h-1 bg-primary rounded-full"
-            ></span>
-          </div>
-          <div
-            class="text-white hover:bg-white/5 rounded-full cursor-pointer h-8 w-8 flex items-center justify-center mx-auto"
-          >
-            29
-          </div>
-          <div
-            class="text-white hover:bg-white/5 rounded-full cursor-pointer h-8 w-8 flex items-center justify-center mx-auto"
-          >
-            30
-          </div>
-          <div
-            class="text-white hover:bg-white/5 rounded-full cursor-pointer h-8 w-8 flex items-center justify-center mx-auto"
-          >
-            31
-          </div>
+            }
+          </button>
+          }
         </div>
       </div>
       <!-- My Teams / Groups -->

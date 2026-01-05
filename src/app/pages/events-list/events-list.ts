@@ -27,6 +27,8 @@ export class EventsList implements OnDestroy {
   private groupService = inject(GroupService);
   private eventService = inject(EventService);
 
+  visibleMonth = signal(this.getMonthAnchor(new Date()));
+
   events = signal<MockEvent[]>([
     {
       id: '1',
@@ -67,6 +69,22 @@ export class EventsList implements OnDestroy {
   ]);
 
   currentUser = toSignal(this.authService.user$, { initialValue: null });
+  userEvents = toSignal(
+    this.groupService.getUserGroups().pipe(
+      switchMap((groups) => {
+        if (!groups || groups.length === 0) return of([]);
+
+        const eventsByGroup$ = groups.map((group) =>
+          this.eventService.getEvents(group.id!).pipe(
+            map((events) => events.map((event) => ({ ...event, groupId: event.groupId || group.id! })))
+          )
+        );
+
+        return combineLatest(eventsByGroup$).pipe(map((events) => events.flat()));
+      })
+    ),
+    { initialValue: [] as SportEvent[] }
+  );
   now = signal(new Date());
   nextEvent = toSignal(
     this.groupService.getUserGroups().pipe(
@@ -118,6 +136,62 @@ export class EventsList implements OnDestroy {
     return (event.attendees || []).includes(user.uid);
   });
 
+  private calendarEventKeys = computed(() => {
+    const user = this.currentUser();
+    const events = this.userEvents();
+    const keys = new Set<string>();
+
+    if (!user) return keys;
+
+    for (const event of events) {
+      if (!event.attendees || !event.attendees.includes(user.uid)) continue;
+      if (event.status === 'finished') continue;
+
+      const eventDate = this.getEventDateTime(event);
+      if (Number.isNaN(eventDate.getTime())) continue;
+
+      keys.add(this.formatDateKey(eventDate));
+    }
+
+    return keys;
+  });
+
+  calendarDays = computed(() => {
+    const anchor = this.visibleMonth();
+    const year = anchor.getFullYear();
+    const month = anchor.getMonth();
+    const firstOfMonth = new Date(year, month, 1);
+    const mondayOffset = (firstOfMonth.getDay() + 6) % 7;
+    const startDate = new Date(year, month, 1 - mondayOffset);
+
+    const days = [];
+    for (let i = 0; i < 42; i += 1) {
+      const date = new Date(startDate);
+      date.setDate(startDate.getDate() + i);
+
+      const key = this.formatDateKey(date);
+      const inMonth = date.getMonth() === month;
+      const isToday = this.formatDateKey(date) === this.formatDateKey(this.now());
+
+      days.push({
+        key,
+        date,
+        label: date.getDate(),
+        inMonth,
+        isToday,
+        hasEvent: this.calendarEventKeys().has(key),
+      });
+    }
+
+    return days;
+  });
+
+  calendarMonthLabel = computed(() => {
+    const anchor = this.visibleMonth();
+    const label = anchor.toLocaleDateString('hu-HU', { year: 'numeric', month: 'long' });
+    return label.charAt(0).toUpperCase() + label.slice(1);
+  });
+
   private timerId: ReturnType<typeof setInterval> | null = null;
 
   constructor() {
@@ -136,6 +210,16 @@ export class EventsList implements OnDestroy {
 
   formatTime(date: Date): string {
     return date.toLocaleTimeString('hu-HU', { hour: '2-digit', minute: '2-digit' });
+  }
+
+  goToPreviousMonth() {
+    const current = this.visibleMonth();
+    this.visibleMonth.set(new Date(current.getFullYear(), current.getMonth() - 1, 1));
+  }
+
+  goToNextMonth() {
+    const current = this.visibleMonth();
+    this.visibleMonth.set(new Date(current.getFullYear(), current.getMonth() + 1, 1));
   }
 
   private getEventDateTime(event: SportEvent): Date {
@@ -164,6 +248,17 @@ export class EventsList implements OnDestroy {
 
   private padTime(value: number): string {
     return value.toString().padStart(2, '0');
+  }
+
+  private formatDateKey(date: Date): string {
+    const year = date.getFullYear();
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    const day = date.getDate().toString().padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  }
+
+  private getMonthAnchor(date: Date): Date {
+    return new Date(date.getFullYear(), date.getMonth(), 1);
   }
 
   private coerceDate(value: any): Date {

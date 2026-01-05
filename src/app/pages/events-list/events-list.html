@@ -1,68 +1,558 @@
-<div class="events-container">
-    <!-- Header -->
-    <header class="page-header">
-        <div class="header-content">
-            <h1 class="header-title">Események</h1>
-            <p class="header-subtitle">Hamarosan induló sportesemények</p>
-        </div>
-    </header>
-
-    <!-- Events List -->
-    <div class="events-list">
-        @for (event of events(); track event.id) {
-        <div class="event-card animate-slide-up">
-            <div class="event-icon">
-                <span class="icon-emoji">{{ event.icon }}</span>
+<!-- Main Content -->
+<main class="flex-grow w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+  <!-- Page Headline -->
+  <div class="flex flex-col md:flex-row md:items-center justify-between pb-8">
+    <h1 class="text-white tracking-tight text-[32px] font-bold leading-tight">Vezérlőpult</h1>
+    <p class="text-gray-400 mt-2 md:mt-0">Üdvözöllek újra a pályán, Péter!</p>
+  </div>
+  <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+    <!-- Left Column (Main Content) -->
+    <div class="lg:col-span-8 flex flex-col gap-8">
+      <!-- Hero Section: Next Match -->
+      <div
+        class="bg-card-dark rounded-2xl shadow-lg border border-white/5 overflow-hidden relative group"
+      >
+        <div
+          class="absolute inset-0 bg-gradient-to-r from-background-dark/90 to-transparent z-10 pointer-events-none"
+        ></div>
+        <div
+          class="absolute right-0 top-0 h-full w-2/3 bg-cover bg-center z-0 opacity-60 group-hover:scale-105 transition-transform duration-700"
+          data-alt="Dynamic action shot of a five-a-side football match at night on artificial turf"
+          style="
+            background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuB9VSOAhYfEE9kQ4908Oqt13aZK-vV_V8S96ua1g8cBjIFguUkM3YrtAZ7WZbR0XsJrbH53HI3URPVuMJdEUOH3_LtuUkIPiBI2pn4OaYH9AVVlq_BFdjdLS_SqIh-Ik0Dwg1ZW3zm2IVTsaou-Sr_zvC2Lq633MUk1E1XoK4M5UtbJdZz50H3Ut7I3xnZ5yxXpD2b93cm4iR3fA5o9r40yeXlKy8JfUHOkKcKhYdhTr8Q4RjO6-dH3kZXVyf3bO2erHXwBk0A7PYQ');
+          "
+        ></div>
+        <div class="relative z-20 p-6 sm:p-8 flex flex-col h-full justify-between min-h-[320px]">
+          <div>
+            <span
+              class="inline-flex items-center gap-1.5 py-1.5 px-3 rounded-full text-xs font-bold bg-primary text-background-dark mb-4"
+            >
+              <span class="material-symbols-outlined text-sm">alarm_on</span>
+              KÖVETKEZŐ MECCS
+            </span>
+            <h2 class="text-white text-3xl sm:text-4xl font-bold leading-tight max-w-lg mb-2">
+              {{ nextEvent()?.title || 'Nincs közelgő esemény' }}
+            </h2>
+            <div class="flex items-center gap-2 text-[#92c9a9] text-base sm:text-lg mb-6">
+              <span class="material-symbols-outlined">location_on</span>
+              <span>{{ nextEvent()?.location || '---' }}</span>
             </div>
-
-            <div class="event-details">
-                <h3 class="event-title">{{ event.title }}</h3>
-
-                <div class="event-meta">
-                    <div class="meta-item">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
-                            stroke="currentColor" stroke-width="2">
-                            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
-                            <circle cx="12" cy="10" r="3"></circle>
-                        </svg>
-                        <span>{{ event.location }}</span>
-                    </div>
-
-                    <div class="meta-item">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
-                            stroke="currentColor" stroke-width="2">
-                            <circle cx="12" cy="12" r="10"></circle>
-                            <polyline points="12 6 12 12 16 14"></polyline>
-                        </svg>
-                        <span>{{ formatDate(event.dateTime) }} · {{ formatTime(event.dateTime) }}</span>
-                    </div>
+          </div>
+          <!-- Timer & Action -->
+          <div class="flex flex-col sm:flex-row items-start sm:items-end justify-between gap-6">
+            <!-- Timer -->
+            <div class="flex gap-3">
+              <div class="flex flex-col items-center gap-1">
+                <div
+                  class="flex h-12 w-12 items-center justify-center rounded-lg bg-background-dark/80 backdrop-blur-sm border border-white/10 text-primary text-xl font-bold"
+                >
+                  {{ countdown().hours }}
                 </div>
-
-                <div class="event-footer">
-                    <div class="attendees">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
-                            stroke="currentColor" stroke-width="2">
-                            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-                            <circle cx="9" cy="7" r="4"></circle>
-                            <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-                            <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-                        </svg>
-                        <span>{{ event.attendees }} résztvevő</span>
-                    </div>
-
-                    <span class="chip chip-primary">{{ event.sport }}</span>
+                <span class="text-xs text-gray-400 uppercase">Óra</span>
+              </div>
+              <div class="flex flex-col items-center gap-1">
+                <div
+                  class="flex h-12 w-12 items-center justify-center rounded-lg bg-background-dark/80 backdrop-blur-sm border border-white/10 text-primary text-xl font-bold"
+                >
+                  {{ countdown().minutes }}
                 </div>
+                <span class="text-xs text-gray-400 uppercase">Perc</span>
+              </div>
+              <div class="flex flex-col items-center gap-1">
+                <div
+                  class="flex h-12 w-12 items-center justify-center rounded-lg bg-background-dark/80 backdrop-blur-sm border border-white/10 text-primary text-xl font-bold"
+                >
+                  {{ countdown().seconds }}
+                </div>
+                <span class="text-xs text-gray-400 uppercase">Mp</span>
+              </div>
             </div>
+            <!-- Action Box -->
+            <div
+              class="bg-background-dark/80 backdrop-blur-sm p-4 rounded-xl border border-white/10 w-full sm:w-auto"
+            >
+              @if (nextEvent() && !isAttending()) {
+              <p class="text-sm text-gray-300 mb-3 font-medium">
+                Jelenléted: <span class="text-yellow-400">Még nem jeleztél</span>
+              </p>
+              }
+              @if (nextEvent() && !isAttending()) {
+              <div class="flex gap-2">
+                <button
+                  (click)="onRsvpYes()"
+                  class="flex-1 sm:flex-none h-9 px-4 rounded-lg bg-primary hover:bg-primary-hover text-background-dark text-sm font-bold flex items-center justify-center transition-colors"
+                >
+                  <span class="material-symbols-outlined text-sm mr-1">check</span>
+                  Ott leszek
+                </button>
+                <button
+                  (click)="onRsvpNo()"
+                  class="flex-1 sm:flex-none h-9 px-4 rounded-lg bg-white/10 hover:bg-white/20 text-white text-sm font-medium flex items-center justify-center transition-colors"
+                >
+                  Nem
+                </button>
+              </div>
+              }
+            </div>
+          </div>
         </div>
-        }
+      </div>
+      <!-- Filters -->
+      <div class="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-hide">
+        <button
+          class="px-5 py-2 rounded-full bg-white text-background-dark font-bold text-sm whitespace-nowrap transition-transform hover:scale-105"
+        >
+          Összes esemény
+        </button>
+        <button
+          class="px-5 py-2 rounded-full border border-border-dark text-gray-300 font-medium text-sm whitespace-nowrap hover:bg-white/5 hover:border-white/20 transition-all"
+        >
+          Baráti foci
+        </button>
+        <button
+          class="px-5 py-2 rounded-full border border-border-dark text-gray-300 font-medium text-sm whitespace-nowrap hover:bg-white/5 hover:border-white/20 transition-all"
+        >
+          Kosarasok
+        </button>
+        <button
+          class="px-5 py-2 rounded-full border border-border-dark text-gray-300 font-medium text-sm whitespace-nowrap hover:bg-white/5 hover:border-white/20 transition-all"
+        >
+          Padel Crew
+        </button>
+      </div>
+      <!-- Upcoming Events Grid -->
+      <div>
+        <h3 class="text-white text-xl font-bold mb-4 flex items-center gap-2">
+          <span class="material-symbols-outlined text-primary">calendar_month</span>
+          Közelgő Események
+        </h3>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <!-- Event Card 1 -->
+          <div
+            class="bg-card-dark rounded-xl p-4 border border-border-dark hover:border-primary/50 transition-all group hover:shadow-[0_0_20px_rgba(43,238,124,0.1)]"
+          >
+            <div class="flex items-start justify-between mb-4">
+              <div class="flex items-center gap-3">
+                <div
+                  class="w-12 h-12 rounded-lg bg-[#234833] flex items-center justify-center text-primary"
+                >
+                  <span class="material-symbols-outlined">sports_basketball</span>
+                </div>
+                <div>
+                  <h4 class="text-white font-bold leading-tight">Pénteki Kosár</h4>
+                  <p class="text-gray-400 text-xs">MOM Sportközpont</p>
+                </div>
+              </div>
+              <div class="text-right">
+                <p class="text-white font-bold text-sm">Aug 24.</p>
+                <p class="text-primary text-xs font-medium">19:00</p>
+              </div>
+            </div>
+            <!-- Attendance Bar -->
+            <div class="space-y-1.5">
+              <div class="flex justify-between text-xs text-gray-400 font-medium">
+                <span>Létszám</span>
+                <span class="text-white">8/10 fő</span>
+              </div>
+              <div class="w-full bg-[#112218] h-2 rounded-full overflow-hidden">
+                <div class="bg-primary h-full rounded-full w-[80%]"></div>
+              </div>
+            </div>
+          </div>
+          <!-- Event Card 2 -->
+          <div
+            class="bg-card-dark rounded-xl p-4 border border-border-dark hover:border-primary/50 transition-all group hover:shadow-[0_0_20px_rgba(43,238,124,0.1)]"
+          >
+            <div class="flex items-start justify-between mb-4">
+              <div class="flex items-center gap-3">
+                <div
+                  class="w-12 h-12 rounded-lg bg-[#234833] flex items-center justify-center text-primary"
+                >
+                  <span class="material-symbols-outlined">sports_tennis</span>
+                </div>
+                <div>
+                  <h4 class="text-white font-bold leading-tight">Vasárnapi Padel</h4>
+                  <p class="text-gray-400 text-xs">BudaPart</p>
+                </div>
+              </div>
+              <div class="text-right">
+                <p class="text-white font-bold text-sm">Aug 26.</p>
+                <p class="text-primary text-xs font-medium">10:00</p>
+              </div>
+            </div>
+            <!-- Attendance Bar -->
+            <div class="space-y-1.5">
+              <div class="flex justify-between text-xs text-gray-400 font-medium">
+                <span>Létszám</span>
+                <span class="text-white">3/4 fő</span>
+              </div>
+              <div class="w-full bg-[#112218] h-2 rounded-full overflow-hidden">
+                <div class="bg-primary h-full rounded-full w-[75%]"></div>
+              </div>
+            </div>
+          </div>
+          <!-- Event Card 3 -->
+          <div
+            class="bg-card-dark rounded-xl p-4 border border-border-dark hover:border-primary/50 transition-all group hover:shadow-[0_0_20px_rgba(43,238,124,0.1)]"
+          >
+            <div class="flex items-start justify-between mb-4">
+              <div class="flex items-center gap-3">
+                <div
+                  class="w-12 h-12 rounded-lg bg-[#234833] flex items-center justify-center text-primary"
+                >
+                  <span class="material-symbols-outlined">directions_run</span>
+                </div>
+                <div>
+                  <h4 class="text-white font-bold leading-tight">Sziget Kör</h4>
+                  <p class="text-gray-400 text-xs">Margitsziget</p>
+                </div>
+              </div>
+              <div class="text-right">
+                <p class="text-white font-bold text-sm">Aug 28.</p>
+                <p class="text-primary text-xs font-medium">18:30</p>
+              </div>
+            </div>
+            <!-- Attendance Bar -->
+            <div class="space-y-1.5">
+              <div class="flex justify-between text-xs text-gray-400 font-medium">
+                <span>Létszám</span>
+                <span class="text-white">12/∞ fő</span>
+              </div>
+              <div class="w-full bg-[#112218] h-2 rounded-full overflow-hidden">
+                <div class="bg-yellow-500 h-full rounded-full w-[40%]"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- Past Events Section -->
+      <div>
+        <h3 class="text-white text-xl font-bold mb-4 flex items-center gap-2">
+          <span class="material-symbols-outlined text-gray-400">history</span>
+          Múltbeli Eredmények
+        </h3>
+        <div class="space-y-3">
+          <!-- Past Item 1 -->
+          <div
+            class="flex items-center justify-between bg-[#193324]/50 p-4 rounded-xl border border-white/5 hover:bg-[#193324] transition-colors"
+          >
+            <div class="flex items-center gap-4">
+              <div class="text-gray-500">
+                <span class="material-symbols-outlined">sports_soccer</span>
+              </div>
+              <div>
+                <p class="text-gray-200 font-medium text-sm">Kispályás Foci</p>
+                <p class="text-xs text-gray-500">Aug 17. • Kedd</p>
+              </div>
+            </div>
+            <div class="flex items-center gap-4">
+              <div class="flex items-center gap-2 text-sm font-bold text-white">
+                <span class="opacity-50">Pirosak</span>
+                <span class="bg-[#112218] px-2 py-1 rounded text-primary">5 - 3</span>
+                <span class="opacity-50">Kékek</span>
+              </div>
+              <button class="text-xs text-primary hover:underline">Részletek</button>
+            </div>
+          </div>
+          <!-- Past Item 2 -->
+          <div
+            class="flex items-center justify-between bg-[#193324]/50 p-4 rounded-xl border border-white/5 hover:bg-[#193324] transition-colors"
+          >
+            <div class="flex items-center gap-4">
+              <div class="text-gray-500">
+                <span class="material-symbols-outlined">sports_basketball</span>
+              </div>
+              <div>
+                <p class="text-gray-200 font-medium text-sm">Utcai Kosár</p>
+                <p class="text-xs text-gray-500">Aug 14. • Péntek</p>
+              </div>
+            </div>
+            <div class="flex items-center gap-4">
+              <div class="flex items-center gap-2 text-sm font-bold text-white">
+                <span class="opacity-50">Csapat A</span>
+                <span class="bg-[#112218] px-2 py-1 rounded text-primary">21 - 18</span>
+                <span class="opacity-50">Csapat B</span>
+              </div>
+              <button class="text-xs text-primary hover:underline">Részletek</button>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
-
-    <!-- Floating Action Button -->
-    <button class="fab" aria-label="Új esemény létrehozása">
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
-            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <line x1="12" y1="5" x2="12" y2="19"></line>
-            <line x1="5" y1="12" x2="19" y2="12"></line>
-        </svg>
-    </button>
-</div>
+    <!-- Right Column (Sidebar) -->
+    <div class="lg:col-span-4 flex flex-col gap-6">
+      <!-- Calendar Widget -->
+      <div class="bg-card-dark rounded-2xl p-6 border border-border-dark">
+        <div class="flex items-center justify-between mb-6">
+          <h3 class="text-white font-bold text-lg">Augusztus</h3>
+          <div class="flex gap-2">
+            <button
+              class="p-1 rounded-full hover:bg-white/10 text-gray-400 hover:text-white transition-colors"
+            >
+              <span class="material-symbols-outlined text-lg">chevron_left</span>
+            </button>
+            <button
+              class="p-1 rounded-full hover:bg-white/10 text-gray-400 hover:text-white transition-colors"
+            >
+              <span class="material-symbols-outlined text-lg">chevron_right</span>
+            </button>
+          </div>
+        </div>
+        <div class="grid grid-cols-7 gap-y-4 gap-x-1 text-center text-sm mb-2">
+          <div class="text-gray-500 text-xs font-medium">H</div>
+          <div class="text-gray-500 text-xs font-medium">K</div>
+          <div class="text-gray-500 text-xs font-medium">Sz</div>
+          <div class="text-gray-500 text-xs font-medium">Cs</div>
+          <div class="text-gray-500 text-xs font-medium">P</div>
+          <div class="text-gray-500 text-xs font-medium">Sz</div>
+          <div class="text-gray-500 text-xs font-medium">V</div>
+          <!-- Days (Placeholders) -->
+          <!-- Prev month -->
+          <div class="text-gray-700">29</div>
+          <div class="text-gray-700">30</div>
+          <div class="text-gray-700">31</div>
+          <!-- Current month -->
+          <div
+            class="text-white hover:bg-white/5 rounded-full cursor-pointer h-8 w-8 flex items-center justify-center mx-auto"
+          >
+            1
+          </div>
+          <div
+            class="text-white hover:bg-white/5 rounded-full cursor-pointer h-8 w-8 flex items-center justify-center mx-auto"
+          >
+            2
+          </div>
+          <div
+            class="text-white hover:bg-white/5 rounded-full cursor-pointer h-8 w-8 flex items-center justify-center mx-auto"
+          >
+            3
+          </div>
+          <div
+            class="text-white hover:bg-white/5 rounded-full cursor-pointer h-8 w-8 flex items-center justify-center mx-auto"
+          >
+            4
+          </div>
+          <div
+            class="text-white hover:bg-white/5 rounded-full cursor-pointer h-8 w-8 flex items-center justify-center mx-auto"
+          >
+            5
+          </div>
+          <div
+            class="text-white hover:bg-white/5 rounded-full cursor-pointer h-8 w-8 flex items-center justify-center mx-auto"
+          >
+            6
+          </div>
+          <div
+            class="text-white hover:bg-white/5 rounded-full cursor-pointer h-8 w-8 flex items-center justify-center mx-auto relative"
+          >
+            7
+          </div>
+          <div
+            class="text-white hover:bg-white/5 rounded-full cursor-pointer h-8 w-8 flex items-center justify-center mx-auto"
+          >
+            8
+          </div>
+          <div
+            class="text-white hover:bg-white/5 rounded-full cursor-pointer h-8 w-8 flex items-center justify-center mx-auto"
+          >
+            9
+          </div>
+          <div
+            class="text-white hover:bg-white/5 rounded-full cursor-pointer h-8 w-8 flex items-center justify-center mx-auto"
+          >
+            10
+          </div>
+          <div
+            class="text-white hover:bg-white/5 rounded-full cursor-pointer h-8 w-8 flex items-center justify-center mx-auto"
+          >
+            11
+          </div>
+          <div
+            class="text-white hover:bg-white/5 rounded-full cursor-pointer h-8 w-8 flex items-center justify-center mx-auto"
+          >
+            12
+          </div>
+          <div
+            class="text-white hover:bg-white/5 rounded-full cursor-pointer h-8 w-8 flex items-center justify-center mx-auto"
+          >
+            13
+          </div>
+          <div
+            class="text-white hover:bg-white/5 rounded-full cursor-pointer h-8 w-8 flex items-center justify-center mx-auto relative"
+          >
+            14
+            <span
+              class="absolute bottom-0.5 left-1/2 -translate-x-1/2 w-1 h-1 bg-gray-500 rounded-full"
+            ></span>
+          </div>
+          <div
+            class="text-white hover:bg-white/5 rounded-full cursor-pointer h-8 w-8 flex items-center justify-center mx-auto"
+          >
+            15
+          </div>
+          <div
+            class="text-white hover:bg-white/5 rounded-full cursor-pointer h-8 w-8 flex items-center justify-center mx-auto"
+          >
+            16
+          </div>
+          <div
+            class="text-white hover:bg-white/5 rounded-full cursor-pointer h-8 w-8 flex items-center justify-center mx-auto relative"
+          >
+            17
+            <span
+              class="absolute bottom-0.5 left-1/2 -translate-x-1/2 w-1 h-1 bg-gray-500 rounded-full"
+            ></span>
+          </div>
+          <div
+            class="text-white hover:bg-white/5 rounded-full cursor-pointer h-8 w-8 flex items-center justify-center mx-auto"
+          >
+            18
+          </div>
+          <div
+            class="text-white hover:bg-white/5 rounded-full cursor-pointer h-8 w-8 flex items-center justify-center mx-auto"
+          >
+            19
+          </div>
+          <div
+            class="bg-primary text-background-dark font-bold rounded-full cursor-pointer h-8 w-8 flex items-center justify-center mx-auto shadow-[0_0_10px_rgba(43,238,124,0.4)]"
+          >
+            20
+          </div>
+          <div
+            class="text-white hover:bg-white/5 rounded-full cursor-pointer h-8 w-8 flex items-center justify-center mx-auto"
+          >
+            21
+          </div>
+          <div
+            class="text-white hover:bg-white/5 rounded-full cursor-pointer h-8 w-8 flex items-center justify-center mx-auto"
+          >
+            22
+          </div>
+          <div
+            class="text-white hover:bg-white/5 rounded-full cursor-pointer h-8 w-8 flex items-center justify-center mx-auto"
+          >
+            23
+          </div>
+          <div
+            class="text-white hover:bg-white/5 rounded-full cursor-pointer h-8 w-8 flex items-center justify-center mx-auto relative"
+          >
+            24
+            <span
+              class="absolute bottom-0.5 left-1/2 -translate-x-1/2 w-1 h-1 bg-primary rounded-full"
+            ></span>
+          </div>
+          <div
+            class="text-white hover:bg-white/5 rounded-full cursor-pointer h-8 w-8 flex items-center justify-center mx-auto"
+          >
+            25
+          </div>
+          <div
+            class="text-white hover:bg-white/5 rounded-full cursor-pointer h-8 w-8 flex items-center justify-center mx-auto relative"
+          >
+            26
+            <span
+              class="absolute bottom-0.5 left-1/2 -translate-x-1/2 w-1 h-1 bg-primary rounded-full"
+            ></span>
+          </div>
+          <div
+            class="text-white hover:bg-white/5 rounded-full cursor-pointer h-8 w-8 flex items-center justify-center mx-auto"
+          >
+            27
+          </div>
+          <div
+            class="text-white hover:bg-white/5 rounded-full cursor-pointer h-8 w-8 flex items-center justify-center mx-auto relative"
+          >
+            28
+            <span
+              class="absolute bottom-0.5 left-1/2 -translate-x-1/2 w-1 h-1 bg-primary rounded-full"
+            ></span>
+          </div>
+          <div
+            class="text-white hover:bg-white/5 rounded-full cursor-pointer h-8 w-8 flex items-center justify-center mx-auto"
+          >
+            29
+          </div>
+          <div
+            class="text-white hover:bg-white/5 rounded-full cursor-pointer h-8 w-8 flex items-center justify-center mx-auto"
+          >
+            30
+          </div>
+          <div
+            class="text-white hover:bg-white/5 rounded-full cursor-pointer h-8 w-8 flex items-center justify-center mx-auto"
+          >
+            31
+          </div>
+        </div>
+      </div>
+      <!-- My Teams / Groups -->
+      <div class="bg-card-dark rounded-2xl p-6 border border-border-dark">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="text-white font-bold text-lg">Csapataim</h3>
+          <a class="text-xs text-primary font-medium hover:underline" href="#">Összes</a>
+        </div>
+        <div class="space-y-4">
+          <div class="flex items-center gap-3 cursor-pointer group">
+            <div
+              class="w-10 h-10 rounded-full bg-blue-900/40 border border-blue-500/30 flex items-center justify-center text-blue-400 group-hover:bg-blue-900/60 transition-colors"
+            >
+              <span class="material-symbols-outlined text-xl">groups</span>
+            </div>
+            <div class="flex-1">
+              <p class="text-white font-medium text-sm">Baráti Foci</p>
+              <p class="text-xs text-gray-500">12 tag</p>
+            </div>
+            <span class="w-2 h-2 rounded-full bg-primary"></span>
+          </div>
+          <div class="flex items-center gap-3 cursor-pointer group">
+            <div
+              class="w-10 h-10 rounded-full bg-orange-900/40 border border-orange-500/30 flex items-center justify-center text-orange-400 group-hover:bg-orange-900/60 transition-colors"
+            >
+              <span class="material-symbols-outlined text-xl">sports_basketball</span>
+            </div>
+            <div class="flex-1">
+              <p class="text-white font-medium text-sm">Kosarasok</p>
+              <p class="text-xs text-gray-500">8 tag</p>
+            </div>
+          </div>
+          <div class="flex items-center gap-3 cursor-pointer group">
+            <div
+              class="w-10 h-10 rounded-full bg-purple-900/40 border border-purple-500/30 flex items-center justify-center text-purple-400 group-hover:bg-purple-900/60 transition-colors"
+            >
+              <span class="material-symbols-outlined text-xl">sports_tennis</span>
+            </div>
+            <div class="flex-1">
+              <p class="text-white font-medium text-sm">Padel Crew</p>
+              <p class="text-xs text-gray-500">4 tag</p>
+            </div>
+          </div>
+          <!-- Add new team Button -->
+          <button
+            class="w-full mt-2 py-2 border border-dashed border-gray-600 rounded-lg text-gray-400 text-sm hover:text-white hover:border-gray-400 transition-colors flex items-center justify-center gap-2"
+          >
+            <span class="material-symbols-outlined text-lg">add</span>
+            Csatlakozz vagy hozz létre
+          </button>
+        </div>
+      </div>
+      <!-- Map Snippet -->
+      <div class="bg-card-dark rounded-2xl p-4 border border-border-dark">
+        <p class="text-white font-bold text-sm mb-3">Helyszín: Margitsziget</p>
+        <div
+          class="w-full aspect-video bg-cover bg-center rounded-lg relative overflow-hidden group"
+          data-alt="Stylized dark mode map view of Budapest Margaret Island"
+          data-location="Budapest, Margitsziget"
+          style="
+            background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDCibFRpkwlxVoszAJtnhJTXiImJ5MEdITgTdxM2ELla0Jdd6Kew1D3V2UP4W3NrBdUmptIfjY0W2TzzIrlhZFjiUirSEool7YLES_KgpvQDFhH56XnpBRGoRPNJZZ6pJV18puwMeK_Kti0hQ4PMR-6tT1iG4MpLfnf4vmC7-v0BlfmIqYjyeM_I59vCjCwYO-gGumMwCOkPUIjbV7fRjjXTTyMOZVpI1aH_CXQSJGubvgvaGSTzHpSJz4HTEy0juZlMdGulZdG-kU');
+          "
+        >
+          <div class="absolute inset-0 bg-black/30 group-hover:bg-black/10 transition-colors"></div>
+          <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
+            <span class="material-symbols-outlined text-primary text-4xl drop-shadow-lg"
+              >location_on</span
+            >
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>

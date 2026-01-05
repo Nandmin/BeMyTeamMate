@@ -10,22 +10,21 @@
           Részletes statisztikák, teljesítmény áttekintés és meccstörténet.
         </p>
       </div>
-      <div class="flex flex-wrap gap-3">
-        <div class="relative flex h-10 items-center gap-2 rounded-xl bg-gradient-to-b from-dark-accent to-background-dark px-3 border border-border-dark">
-          <span class="material-symbols-outlined text-[#92c9a9] text-lg pointer-events-none"
-            >calendar_month</span
-          >
-          <span class="text-white text-sm font-medium pr-6 pointer-events-none">{{
-            selectedPeriodLabel()
-          }}</span>
+      <div class="flex gap-3 flex-nowrap items-center">
+        <div class="relative shrink-0">
+          <div class="flex items-center gap-1 h-10 rounded-xl bg-gradient-to-b from-dark-accent to-background-dark border border-border-dark px-3 text-white text-sm font-medium">
+            <span class="material-symbols-outlined text-[#92c9a9] text-lg">calendar_month</span>
+            <span class="pr-2 whitespace-nowrap">{{ selectedPeriodLabel() }}</span>
+            <span class="material-symbols-outlined text-[#92c9a9]">expand_more</span>
+          </div>
           <select
-            class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10 bg-gradient-to-b from-dark-accent to-background-dark text-white"
+            class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
             (change)="setPeriod($any($event.target).value)"
             style="color-scheme: dark"
           >
             @for (period of periodOptions; track period.id) {
             <option
-              class="bg-gradient-to-b from-dark-accent to-background-dark text-white"
+              class="bg-background-dark text-white"
               [value]="period.id"
               [selected]="selectedPeriod() === period.id"
             >
@@ -33,32 +32,28 @@
             </option>
             }
           </select>
-          <span class="material-symbols-outlined text-[#92c9a9] absolute right-2 pointer-events-none"
-            >expand_more</span
-          >
         </div>
-        <div class="relative flex h-10 items-center gap-2 rounded-xl bg-gradient-to-b from-dark-accent to-background-dark px-3 border border-border-dark">
-          <span class="material-symbols-outlined text-[#92c9a9] text-lg pointer-events-none"
-            >sports</span
-          >
-          <span class="text-white text-sm font-medium pr-6 pointer-events-none">{{
-            selectedSportLabel()
-          }}</span>
+        <div class="relative shrink-0">
+          <div class="flex items-center gap-1 h-10 rounded-xl bg-gradient-to-b from-dark-accent to-background-dark border border-border-dark px-3 text-white text-sm font-medium">
+            <span class="material-symbols-outlined text-[#92c9a9] text-lg">sports</span>
+            <span class="pr-2 whitespace-nowrap">{{ selectedSportLabel() }}</span>
+            <span class="material-symbols-outlined text-[#92c9a9]">expand_more</span>
+          </div>
           <select
-            class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10 bg-gradient-to-b from-dark-accent to-background-dark text-white"
+            class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
             (change)="setSport($any($event.target).value)"
             style="color-scheme: dark"
           >
             <option
-              class="bg-gradient-to-b from-dark-accent to-background-dark text-white"
+              class="bg-background-dark text-white"
               value="all"
               [selected]="selectedSport() === 'all'"
             >
-              Minden sportág
+              Minden sportag
             </option>
             @for (sport of sportOptions; track sport.id) {
             <option
-              class="bg-gradient-to-b from-dark-accent to-background-dark text-white"
+              class="bg-background-dark text-white"
               [value]="sport.id"
               [selected]="selectedSport() === sport.id"
             >
@@ -66,24 +61,20 @@
             </option>
             }
           </select>
-          <span class="material-symbols-outlined text-[#92c9a9] absolute right-2 pointer-events-none"
-            >expand_more</span
-          >
         </div>
-        <div class="relative flex h-10 items-center gap-2 rounded-xl bg-gradient-to-b from-dark-accent to-background-dark px-3 border border-border-dark">
-          <span class="material-symbols-outlined text-[#92c9a9] text-lg pointer-events-none"
-            >group</span
-          >
-          <span class="text-white text-sm font-medium pr-6 pointer-events-none">{{
-            selectedTeamLabel()
-          }}</span>
+        <div class="relative shrink-0">
+          <div class="flex items-center gap-1 h-10 rounded-xl bg-gradient-to-b from-dark-accent to-background-dark border border-border-dark px-3 text-white text-sm font-medium">
+            <span class="material-symbols-outlined text-[#92c9a9] text-lg">group</span>
+            <span class="pr-2 whitespace-nowrap">{{ selectedTeamLabel() }}</span>
+            <span class="material-symbols-outlined text-[#92c9a9]">expand_more</span>
+          </div>
           <select
-            class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10 bg-gradient-to-b from-dark-accent to-background-dark text-white"
+            class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
             (change)="setTeam($any($event.target).value)"
             style="color-scheme: dark"
           >
             <option
-              class="bg-gradient-to-b from-dark-accent to-background-dark text-white"
+              class="bg-background-dark text-white"
               value="all"
               [selected]="selectedTeam() === 'all'"
             >
@@ -91,7 +82,7 @@
             </option>
             @for (group of userGroups(); track group.id) {
             <option
-              class="bg-gradient-to-b from-dark-accent to-background-dark text-white"
+              class="bg-background-dark text-white"
               [value]="group.id"
               [selected]="selectedTeam() === group.id"
             >
@@ -99,9 +90,6 @@
             </option>
             }
           </select>
-          <span class="material-symbols-outlined text-[#92c9a9] absolute right-2 pointer-events-none"
-            >expand_more</span
-          >
         </div>
       </div>
     </div>
@@ -212,7 +200,7 @@
             }
           </svg>
           <div
-            class="flex justify-between text-[#5c856e] text-xs font-bold mt-2 pt-2 border-t border-border-dark px-2"
+            class="flex justify-between text-[#2bee7c] text-xs font-bold mt-2 pt-2 border-t border-border-dark px-2"
           >
             @for (point of eloChart().points; track point.key) {
             <span>{{ point.label }}</span>
@@ -276,7 +264,7 @@
                 </span>
               </div>
             </div>
-            <span class="text-center text-[#5c856e] text-xs font-bold">{{ month.label }}</span>
+            <span class="text-center text-[#2bee7c] text-xs font-bold">{{ month.label }}</span>
           </div>
           }
         </div>
@@ -301,7 +289,7 @@
         <div class="flex-1 overflow-x-auto">
           <table class="w-full text-left border-collapse">
             <thead>
-              <tr class="text-[#5c856e] text-xs uppercase border-b border-border-dark">
+              <tr class="text-[#2bee7c] text-xs uppercase border-b border-border-dark">
                 <th class="pb-3 pl-2 font-medium">Dátum</th>
                 <th class="pb-3 font-medium">Sportág</th>
                 <th class="pb-3 font-medium">Ellenfél</th>
@@ -312,7 +300,7 @@
             <tbody class="text-sm">
               @if (filteredMatches().length === 0) {
               <tr>
-                <td class="py-6 text-center text-[#5c856e]" colspan="5">
+                <td class="py-6 text-center text-[#2bee7c]" colspan="5">
                   Nincs lej?tszott meccs.
                 </td>
               </tr>
@@ -362,6 +350,16 @@
       </div>
     </div>
   </div>
-<!-- </main> -->
+  <!-- </main> -->
+
+
+
+
+
+
+
+
+
+
 
 

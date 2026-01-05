@@ -20,6 +20,7 @@ export class EventsList implements OnDestroy {
 
   visibleMonth = signal(this.getMonthAnchor(new Date()));
   selectedDate = signal(new Date());
+  selectedSport = signal<string | null>(null);
 
   currentUser = toSignal(this.authService.user$, { initialValue: null });
   userEvents = toSignal(
@@ -65,12 +66,29 @@ export class EventsList implements OnDestroy {
   upcomingUserEvents = computed(() => {
     const user = this.currentUser();
     const events = this.userEvents();
+    const selectedSport = this.selectedSport();
     if (!user) return [];
 
     return events
       .filter((event) => this.isUpcoming(event))
+      .filter((event) => !selectedSport || event.sport === selectedSport)
       .sort((a, b) => this.getEventDateTime(a).getTime() - this.getEventDateTime(b).getTime())
       .slice(0, 4);
+  });
+
+  availableSports = computed(() => {
+    const user = this.currentUser();
+    const events = this.userEvents();
+    if (!user) return [] as string[];
+
+    const sports = new Set<string>();
+    for (const event of events) {
+      if (!event.attendees || !event.attendees.includes(user.uid)) continue;
+      if (!event.sport) continue;
+      sports.add(event.sport);
+    }
+
+    return Array.from(sports).sort((a, b) => a.localeCompare(b));
   });
 
   countdown = computed(() => {
@@ -205,7 +223,7 @@ export class EventsList implements OnDestroy {
   getAttendanceText(event: SportEvent): string {
     const current = event.currentAttendees ?? event.attendees?.length ?? 0;
     const max = event.maxAttendees ?? 0;
-    return `${current}/${max} fo`;
+    return `${current}/${max} fő`;
   }
 
   getAttendancePercent(event: SportEvent): number {
@@ -246,6 +264,10 @@ export class EventsList implements OnDestroy {
 
   selectDay(date: Date) {
     this.selectedDate.set(new Date(date));
+  }
+
+  setSportFilter(sport: string | null) {
+    this.selectedSport.set(sport);
   }
 
   getEventDateTime(event: SportEvent): Date {

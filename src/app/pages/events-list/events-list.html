@@ -100,25 +100,31 @@
       <!-- Filters -->
       <div class="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-hide">
         <button
-          class="px-5 py-2 rounded-full bg-white text-background-dark font-bold text-sm whitespace-nowrap transition-transform hover:scale-105"
+          (click)="setSportFilter(null)"
+          class="px-5 py-2 rounded-full text-sm whitespace-nowrap transition-transform hover:scale-105"
+          [ngClass]="
+            selectedSport() === null
+              ? 'bg-white text-background-dark font-bold'
+              : 'border border-border-dark text-gray-300 font-medium hover:bg-white/5 hover:border-white/20'
+          "
         >
           Összes esemény
         </button>
+        @for (sport of availableSports(); track sport) {
         <button
-          class="px-5 py-2 rounded-full border border-border-dark text-gray-300 font-medium text-sm whitespace-nowrap hover:bg-white/5 hover:border-white/20 transition-all"
+          (click)="setSportFilter(sport)"
+          class="h-10 w-10 rounded-full border border-border-dark text-gray-300 hover:bg-white/5 hover:border-white/20 transition-all flex items-center justify-center"
+          [ngClass]="
+            selectedSport() === sport
+              ? 'bg-white text-background-dark border-white'
+              : ''
+          "
+          [attr.aria-label]="sport"
+          [title]="sport"
         >
-          Baráti foci
+          <span class="material-symbols-outlined text-lg">{{ getSportIcon(sport) }}</span>
         </button>
-        <button
-          class="px-5 py-2 rounded-full border border-border-dark text-gray-300 font-medium text-sm whitespace-nowrap hover:bg-white/5 hover:border-white/20 transition-all"
-        >
-          Kosarasok
-        </button>
-        <button
-          class="px-5 py-2 rounded-full border border-border-dark text-gray-300 font-medium text-sm whitespace-nowrap hover:bg-white/5 hover:border-white/20 transition-all"
-        >
-          Padel Crew
-        </button>
+        }
       </div>
       <!-- Upcoming Events Grid -->
       <div>
@@ -336,6 +342,8 @@
     </div>
   </div>
 </main>
+
+
 
 
 

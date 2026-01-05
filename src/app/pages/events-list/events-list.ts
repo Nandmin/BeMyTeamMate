@@ -19,6 +19,7 @@ export class EventsList implements OnDestroy {
   private eventService = inject(EventService);
 
   visibleMonth = signal(this.getMonthAnchor(new Date()));
+  selectedDate = signal(new Date());
 
   currentUser = toSignal(this.authService.user$, { initialValue: null });
   userEvents = toSignal(
@@ -126,6 +127,7 @@ export class EventsList implements OnDestroy {
     const firstOfMonth = new Date(year, month, 1);
     const mondayOffset = (firstOfMonth.getDay() + 6) % 7;
     const startDate = new Date(year, month, 1 - mondayOffset);
+    const selectedKey = this.formatDateKey(this.selectedDate());
 
     const days = [];
     for (let i = 0; i < 42; i += 1) {
@@ -142,6 +144,7 @@ export class EventsList implements OnDestroy {
         label: date.getDate(),
         inMonth,
         isToday,
+        isSelected: key === selectedKey,
         hasEvent: this.calendarEventKeys().has(key),
       });
     }
@@ -153,6 +156,30 @@ export class EventsList implements OnDestroy {
     const anchor = this.visibleMonth();
     const label = anchor.toLocaleDateString('hu-HU', { year: 'numeric', month: 'long' });
     return label.charAt(0).toUpperCase() + label.slice(1);
+  });
+
+  selectedDayLabel = computed(() => {
+    const selected = this.selectedDate();
+    return selected.toLocaleDateString('hu-HU', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    });
+  });
+
+  selectedDayEvents = computed(() => {
+    const user = this.currentUser();
+    if (!user) return [] as SportEvent[];
+
+    const selectedKey = this.formatDateKey(this.selectedDate());
+    return this.userEvents().filter((event) => {
+      if (!event.attendees || !event.attendees.includes(user.uid)) return false;
+      if (event.status === 'finished') return false;
+
+      const eventDate = this.getEventDateTime(event);
+      if (Number.isNaN(eventDate.getTime())) return false;
+      return this.formatDateKey(eventDate) === selectedKey;
+    });
   });
 
   private timerId: ReturnType<typeof setInterval> | null = null;
@@ -205,12 +232,20 @@ export class EventsList implements OnDestroy {
 
   goToPreviousMonth() {
     const current = this.visibleMonth();
-    this.visibleMonth.set(new Date(current.getFullYear(), current.getMonth() - 1, 1));
+    const next = new Date(current.getFullYear(), current.getMonth() - 1, 1);
+    this.visibleMonth.set(next);
+    this.selectedDate.set(new Date(next));
   }
 
   goToNextMonth() {
     const current = this.visibleMonth();
-    this.visibleMonth.set(new Date(current.getFullYear(), current.getMonth() + 1, 1));
+    const next = new Date(current.getFullYear(), current.getMonth() + 1, 1);
+    this.visibleMonth.set(next);
+    this.selectedDate.set(new Date(next));
+  }
+
+  selectDay(date: Date) {
+    this.selectedDate.set(new Date(date));
   }
 
   getEventDateTime(event: SportEvent): Date {

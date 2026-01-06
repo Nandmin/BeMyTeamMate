@@ -117,8 +117,8 @@
               ? 'bg-white text-background-dark border-white'
               : ''
           "
-          [attr.aria-label]="sport"
-          [title]="sport"
+          [attr.aria-label]="getSportLabel(sport)"
+          [title]="getSportLabel(sport)"
         >
           <span class="material-symbols-outlined text-lg">{{ getSportIcon(sport) }}</span>
         </button>

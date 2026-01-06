@@ -246,14 +246,40 @@ export class EventsList implements OnDestroy {
     const normalized = value.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
     if (normalized.includes('foci') || normalized.includes('soccer')) return 'sports_soccer';
     if (normalized.includes('kosar') || normalized.includes('basket')) return 'sports_basketball';
+    if (normalized.includes('kezilabda') || normalized.includes('handball'))
+      return 'sports_handball';
     if (normalized.includes('padel') || normalized.includes('tenisz') || normalized.includes('tennis')) {
       return 'sports_tennis';
     }
     if (normalized.includes('roplabda') || normalized.includes('volley')) {
       return 'sports_volleyball';
     }
+    if (normalized.includes('jegkorong') || normalized.includes('hockey')) return 'sports_hockey';
+    if (normalized.includes('squash')) return 'sports_tennis';
+    if (normalized.includes('bowling')) return 'sports_baseball';
+    if (normalized.includes('other') || normalized.includes('egyeb')) return 'more_horiz';
     if (normalized.includes('futas') || normalized.includes('run')) return 'directions_run';
     return 'event';
+  }
+
+  getSportLabel(sport?: string): string {
+    if (!sport) return 'Sport';
+    const normalized = sport.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    if (normalized.includes('foci') || normalized.includes('soccer') || normalized.includes('football')) {
+      return 'Foci';
+    }
+    if (normalized.includes('kosar') || normalized.includes('basket')) return 'Kosárlabda';
+    if (normalized.includes('kezilabda') || normalized.includes('handball')) return 'Kézilabda';
+    if (normalized.includes('roplabda') || normalized.includes('volley')) return 'Röplabda';
+    if (normalized.includes('tenisz') || normalized.includes('tennis') || normalized.includes('padel')) {
+      return 'Tenisz';
+    }
+    if (normalized.includes('jegkorong') || normalized.includes('hockey')) return 'Jégkorong';
+    if (normalized.includes('squash')) return 'Squash';
+    if (normalized.includes('bowling')) return 'Bowling';
+    if (normalized.includes('other') || normalized.includes('egyeb')) return 'Egyéb';
+    if (normalized.includes('futas') || normalized.includes('run')) return 'Futás';
+    return sport;
   }
 
   goToPreviousMonth() {

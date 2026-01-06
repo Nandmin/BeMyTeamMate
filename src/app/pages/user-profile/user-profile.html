@@ -15,45 +15,57 @@
                         @if ((userGroups() || []).length > 0) {
                         <p class="text-primary text-xs font-normal leading-normal">Aktív Tag</p>
                         } @else {
-                        <p class="text-text-secondary text-xs font-normal leading-normal">Nem tag</p>
+                        <p class="text-text-secondary text-xs font-normal leading-normal">Nincs tagsága</p>
                         }
                     </div>
                 </div>
                 <nav class="flex flex-col gap-1">
-                    <a class="group flex items-center gap-3 px-4 py-3 rounded-xl bg-primary/10 border-l-4 border-primary transition-all duration-200"
-                        href="#personal" (click)="scrollTo('personal', $event)">
+                    <a class="group flex items-center gap-3 px-4 py-3 rounded-xl border-l-4 transition-all duration-200"
+                        href="#personal" (click)="scrollTo('personal', $event)"
+                        [ngClass]="activeSection() === 'personal' ? 'bg-primary/10 border-primary' : 'hover:bg-[#234833]/50 border-transparent hover:border-text-secondary'">
                         <span
-                            class="material-symbols-outlined text-primary group-hover:scale-110 transition-transform">person</span>
-                        <p class="text-white text-sm font-medium leading-normal">Személyes adatok</p>
+                            class="material-symbols-outlined group-hover:scale-110 transition-transform"
+                            [ngClass]="activeSection() === 'personal' ? 'text-primary' : 'text-text-secondary group-hover:text-white'">person</span>
+                        <p class="text-sm font-medium leading-normal"
+                            [ngClass]="activeSection() === 'personal' ? 'text-white' : 'text-[#2bee7c] group-hover:text-white'">Személyes adatok</p>
                     </a>
-                    <a class="group flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-[#234833]/50 border-l-4 border-transparent hover:border-text-secondary transition-all duration-200"
-                        href="#groups" (click)="scrollTo('groups', $event)">
+                    <a class="group flex items-center gap-3 px-4 py-3 rounded-xl border-l-4 transition-all duration-200"
+                        href="#groups" (click)="scrollTo('groups', $event)"
+                        [ngClass]="activeSection() === 'groups' ? 'bg-primary/10 border-primary' : 'hover:bg-[#234833]/50 border-transparent hover:border-text-secondary'">
                         <span
-                            class="material-symbols-outlined text-text-secondary group-hover:text-white transition-colors">groups</span>
-                        <p class="text-text-secondary group-hover:text-white text-sm font-medium leading-normal">
+                            class="material-symbols-outlined transition-colors"
+                            [ngClass]="activeSection() === 'groups' ? 'text-primary' : 'text-text-secondary group-hover:text-white'">groups</span>
+                        <p class="text-sm font-medium leading-normal"
+                            [ngClass]="activeSection() === 'groups' ? 'text-white' : 'text-[#2bee7c] group-hover:text-white'">
                             Társaságaim
                         </p>
                     </a>
-                    <a class="group flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-[#234833]/50 border-l-4 border-transparent hover:border-text-secondary transition-all duration-200"
-                        href="#notifications">
+                    <a class="group flex items-center gap-3 px-4 py-3 rounded-xl border-l-4 transition-all duration-200"
+                        href="#notifications" (click)="scrollTo('notifications', $event)"
+                        [ngClass]="activeSection() === 'notifications' ? 'bg-primary/10 border-primary' : 'hover:bg-[#234833]/50 border-transparent hover:border-text-secondary'">
                         <span
-                            class="material-symbols-outlined text-text-secondary group-hover:text-white transition-colors">notifications</span>
-                        <p class="text-text-secondary group-hover:text-white text-sm font-medium leading-normal">
+                            class="material-symbols-outlined transition-colors"
+                            [ngClass]="activeSection() === 'notifications' ? 'text-primary' : 'text-text-secondary group-hover:text-white'">notifications</span>
+                        <p class="text-sm font-medium leading-normal"
+                            [ngClass]="activeSection() === 'notifications' ? 'text-white' : 'text-[#2bee7c] group-hover:text-white'">
                             Értesítések
                         </p>
                     </a>
-                    <a class="group flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-[#234833]/50 border-l-4 border-transparent hover:border-text-secondary transition-all duration-200"
-                        href="#privacy">
+                    <a class="group flex items-center gap-3 px-4 py-3 rounded-xl border-l-4 transition-all duration-200"
+                        href="#privacy" (click)="scrollTo('privacy', $event)"
+                        [ngClass]="activeSection() === 'privacy' ? 'bg-primary/10 border-primary' : 'hover:bg-[#234833]/50 border-transparent hover:border-text-secondary'">
                         <span
-                            class="material-symbols-outlined text-text-secondary group-hover:text-white transition-colors">security</span>
-                        <p class="text-text-secondary group-hover:text-white text-sm font-medium leading-normal">
+                            class="material-symbols-outlined transition-colors"
+                            [ngClass]="activeSection() === 'privacy' ? 'text-primary' : 'text-text-secondary group-hover:text-white'">security</span>
+                        <p class="text-sm font-medium leading-normal"
+                            [ngClass]="activeSection() === 'privacy' ? 'text-white' : 'text-[#2bee7c] group-hover:text-white'">
                             Adatvédelem
                         </p>
                     </a>
                     @if (isOwnProfile()) {
                     <div class="h-px bg-[#234833] my-2 mx-4"></div>
                     <button (click)="onLogout()"
-                        class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-red-500/10 text-red-400 hover:text-red-300 transition-colors">
+                        class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-red-500/10 text-red-600 hover:text-red-300 transition-colors">
                         <span class="material-symbols-outlined">logout</span>
                         <p class="text-sm font-medium leading-normal">Kijelentkezés</p>
                     </button>
@@ -221,7 +233,7 @@
                     </details>
                 </div>
 
-                <div class="flex justify-end pt-8 border-t border-[#234833]">
+                <div class="flex justify-end pt-8">
                     <button (click)="onSaveProfile()"
                         class="flex items-center gap-2 rounded-xl h-12 px-8 bg-primary text-background-dark text-base font-bold hover:bg-primary-hover hover:scale-105 transition-all shadow-[0_4px_14px_rgba(43,238,124,0.4)]">
                         <span class="material-symbols-outlined text-[20px]">save</span>
@@ -309,7 +321,7 @@
                 </div>
 
                 <button [routerLink]="['/groups', group.id]"
-                    class="w-full py-2.5 rounded-lg bg-[#234833] hover:bg-primary hover:text-background-dark text-white text-xs font-bold transition-all uppercase tracking-widest shadow-lg">
+                    class="w-full py-2.5 rounded-lg bg-[#0b28aa] hover:bg-primary hover:text-background-dark text-white text-xs font-bold transition-all uppercase tracking-widest shadow-lg">
                     Megtekintés
                 </button>
             </div>

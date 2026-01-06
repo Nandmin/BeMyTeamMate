@@ -74,6 +74,7 @@ export class UserProfilePage {
 
   // Edit profile state
   isEditing = signal(false);
+  activeSection = signal('personal');
 
   // Form fields
   profileData = {
@@ -215,6 +216,7 @@ export class UserProfilePage {
   scrollTo(id: string, event?: Event) {
     if (event) event.preventDefault();
     try {
+      this.activeSection.set(id);
       const el = document.getElementById(id);
       if (!el) return;
 
@@ -264,13 +266,32 @@ export class UserProfilePage {
 
   getSportIcon(sport?: string): string {
     if (!sport) return 'groups';
-    const s = sport.toLowerCase();
-    if (s.includes('foci') || s.includes('soccer') || s.includes('football'))
+    const normalized = sport.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+    if (
+      normalized.includes('foci') ||
+      normalized.includes('soccer') ||
+      normalized.includes('football')
+    ) {
       return 'sports_soccer';
-    if (s.includes('kosár') || s.includes('basketball')) return 'sports_basketball';
-    if (s.includes('röpi') || s.includes('volleyball')) return 'sports_volleyball';
-    if (s.includes('tenisz') || s.includes('tennis')) return 'sports_tennis';
-    if (s.includes('padel')) return 'sports_tennis';
+    }
+    if (normalized.includes('kosar') || normalized.includes('basketball')) {
+      return 'sports_basketball';
+    }
+    if (normalized.includes('kezilabda') || normalized.includes('handball')) {
+      return 'sports_handball';
+    }
+    if (normalized.includes('roplabda') || normalized.includes('volleyball')) {
+      return 'sports_volleyball';
+    }
+    if (normalized.includes('tenisz') || normalized.includes('tennis') || normalized.includes('padel')) {
+      return 'sports_tennis';
+    }
+    if (normalized.includes('jegkorong') || normalized.includes('hockey')) {
+      return 'sports_hockey';
+    }
+    if (normalized.includes('squash')) return 'sports_tennis';
+    if (normalized.includes('bowling')) return 'sports_baseball';
+    if (normalized.includes('other') || normalized.includes('egyeb')) return 'more_horiz';
     return 'sports';
   }
 

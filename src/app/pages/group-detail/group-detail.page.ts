@@ -76,6 +76,14 @@ export class GroupDetailPage {
       });
   });
 
+  matchStats = computed(() => {
+    const events = this.events();
+    if (!events) return { played: 0, pending: 0, total: 0 };
+    const played = events.filter((event) => this.isEventPast(event)).length;
+    const total = events.length;
+    return { played, pending: Math.max(total - played, 0), total };
+  });
+
   protected isEventPast(event: SportEvent): boolean {
     if (event.status === 'finished') return true;
     if (event.goalsA !== undefined || event.goalsB !== undefined) return true;

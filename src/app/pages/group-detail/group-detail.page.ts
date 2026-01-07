@@ -68,11 +68,9 @@ export class GroupDetailPage {
       })
       .sort((a, b) => {
         // Sort upcoming ascending (nearest first), previous descending (newest first)
-        const dateA = a.date.toDate();
-        const dateB = b.date.toDate();
-        return view === 'upcoming'
-          ? dateA.getTime() - dateB.getTime()
-          : dateB.getTime() - dateA.getTime();
+        const timeA = this.getEventDateTime(a).getTime();
+        const timeB = this.getEventDateTime(b).getTime();
+        return view === 'upcoming' ? timeA - timeB : timeB - timeA;
       });
   });
 
@@ -90,16 +88,7 @@ export class GroupDetailPage {
     if (event.playerStats && Object.keys(event.playerStats).length > 0) return true;
     if (!event.date) return false;
 
-    const eventDate = event.date.toDate();
-    // Reset to start of day to ensure clean combination with time, though date field should be correct
-    eventDate.setHours(0, 0, 0, 0);
-
-    if (event.time) {
-      const [hours, minutes] = event.time.split(':').map(Number);
-      eventDate.setHours(hours, minutes);
-    }
-
-    return eventDate < new Date();
+    return this.getEventDateTime(event) < new Date();
   }
 
   isMember = computed(() => {
@@ -219,6 +208,19 @@ export class GroupDetailPage {
       month: months[date.getMonth()],
       day: date.getDate().toString(),
     };
+  }
+
+  private getEventDateTime(event: SportEvent): Date {
+    if (!event.date) return new Date(NaN);
+    const eventDate = event.date.toDate();
+    eventDate.setHours(0, 0, 0, 0);
+
+    if (event.time) {
+      const [hours, minutes] = event.time.split(':').map(Number);
+      eventDate.setHours(hours ?? 0, minutes ?? 0, 0, 0);
+    }
+
+    return eventDate;
   }
 
   isUserAttending(event: SportEvent): boolean {

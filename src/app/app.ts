@@ -5,6 +5,8 @@ import { FooterComponent } from './components/footer/footer';
 import { HeaderComponent } from './components/header/header';
 import { ModalComponent } from './components/modal/modal.component';
 
+import { ThemeService } from './services/theme.service';
+
 @Component({
   selector: 'app-root',
   imports: [
@@ -20,6 +22,8 @@ import { ModalComponent } from './components/modal/modal.component';
 })
 export class App {
   private router = inject(Router);
+  // Inject ThemeService to initialize theme immediately on app load
+  private themeService = inject(ThemeService);
   protected readonly title = signal('BeMyTeamMate');
   protected showNav = signal(true);
   protected showFooter = signal(true);

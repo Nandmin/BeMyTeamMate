@@ -1,2 +1,85 @@
 // Register page specific styles
 // Most styling is handled via Tailwind classes in the HTML template.
+
+:host {
+  display: block;
+  min-height: 100vh;
+}
+
+// Light mode overrides for register page
+:host-context(html.light) {
+  // Main background
+  .bg-background-dark {
+    background-color: #f8fafc;
+  }
+
+  // Gradient overlay - lighten it up
+  .from-background-dark\/90, 
+  .to-background-dark\/95 {
+    --tw-gradient-from: rgba(248, 250, 252, 0.9);
+    --tw-gradient-to: rgba(248, 250, 252, 0.95);
+  }
+
+  .via-background-dark\/80 {
+    --tw-gradient-stops: var(--tw-gradient-from), rgba(248, 250, 252, 0.8), var(--tw-gradient-to);
+  }
+
+  // Card
+  .bg-card-dark\/60 {
+    background-color: rgba(255, 255, 255, 0.9);
+    border-color: rgba(0, 0, 0, 0.1);
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.1);
+  }
+
+  .border-border-dark {
+    border-color: rgba(0, 0, 0, 0.1);
+  }
+
+  // Side Visual
+  .from-dark-accent {
+    --tw-gradient-from: #e2e8f0;
+    --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to, rgba(226, 232, 240, 0));
+    color: #475569;
+  }
+  
+  .to-background-dark {
+    --tw-gradient-to: #ffffff;
+  }
+
+  // Text colors
+  .text-white {
+    color: #1e293b !important;
+  }
+
+  .text-gray-200 {
+    color: #64748b !important;
+  }
+  
+  // Inputs
+  input, textarea {
+    background-color: #ffffff;
+    border-color: rgba(0, 0, 0, 0.2);
+    color: #1e293b;
+
+    &::placeholder {
+      color: #94a3b8;
+    }
+
+    &:focus {
+      border-color: #22c55e;
+      background-color: #ffffff;
+    }
+  }
+
+  .bg-dark-accent\/50 {
+    background-color: #ffffff;
+    border-color: rgba(0, 0, 0, 0.2);
+  }
+  
+  // Links
+  a.text-primary:hover {
+    color: #16a34a;
+  }
+}
+
+

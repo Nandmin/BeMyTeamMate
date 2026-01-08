@@ -1,6 +1,8 @@
 :host {
   display: block;
   min-height: 100%;
+  background-color: var(--bg-primary);
+  transition: background-color 0.3s ease;
 }
 
 // Custom toggle styles from design
@@ -47,7 +49,97 @@ aside a {
     background-color: #0d1b13;
 }
 
+// Consistent input/panel background for theme overrides
+.profile-input,
+.profile-panel {
+  background-color: #0d111b;
+}
+
 // Reset some styles that might conflict with global ones
 section {
     scroll-margin-top: 100px;
 }
+
+// Light mode overrides for user profile
+:host-context(html.light) {
+  .text-white {
+    color: #1e293b;
+  }
+
+  .text-gray-400 {
+    color: #64748b;
+  }
+
+  .bg-dark-card, .bg-surface-card {
+    background-color: #ffffff;
+    border-color: rgba(0, 0, 0, 0.1);
+  }
+
+  .bg-surface-dark {
+    background-color: #f1f5f9;
+  }
+
+  .bg-surface-darker {
+    background-color: #e2e8f0;
+  }
+
+  .profile-input,
+  .profile-panel {
+    background-color: #ffffff;
+    color: #1e293b;
+  }
+
+  .from-dark-accent {
+    --tw-gradient-from: #e2e8f0;
+    --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to, rgba(226, 232, 240, 0));
+  }
+
+  .to-background-dark {
+    --tw-gradient-to: #ffffff;
+  }
+
+  .border-\[\#234833\] {
+    border-color: rgba(0, 0, 0, 0.1);
+  }
+
+  .border-\[\#326748\] {
+    border-color: rgba(0, 0, 0, 0.12);
+  }
+
+  .border-\[\#326748\]\/50 {
+    border-color: rgba(0, 0, 0, 0.08);
+  }
+
+  .bg-\[\#234833\] {
+    background-color: rgba(226, 232, 240, 0.8);
+  }
+
+  .hover\:bg-\[\#234833\]\/50:hover {
+    background-color: rgba(226, 232, 240, 0.6);
+  }
+
+  .hover\:bg-\[\#234833\]:hover {
+    background-color: rgba(226, 232, 240, 0.8);
+  }
+
+  .bg-\[\#112218\] {
+    background-color: #e2e8f0;
+  }
+
+  .bg-surface-darker\/50 {
+    background-color: rgba(226, 232, 240, 0.5);
+  }
+
+  .bg-surface-darker\/30 {
+    background-color: rgba(226, 232, 240, 0.3);
+  }
+
+  .border-white\/10 {
+    border-color: rgba(0, 0, 0, 0.1);
+  }
+
+  .text-text-secondary {
+    color: #64748b;
+  }
+}
+

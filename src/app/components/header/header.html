@@ -51,10 +51,19 @@
                     <span class="material-symbols-outlined text-[20px]">admin_panel_settings</span>
                 </a>
                 }
+                <!-- Theme Toggle Button -->
+                <button (click)="toggleTheme()" class="theme-toggle"
+                    [title]="themeService.isDark() ? 'Váltás világos módra' : 'Váltás sötét módra'">
+                    @if (themeService.isDark()) {
+                    <span class="material-symbols-outlined icon">dark_mode</span>
+                    } @else {
+                    <span class="material-symbols-outlined icon">light_mode</span>
+                    }
+                </button>
                 <div class="flex items-center gap-3 cursor-pointer group/user" routerLink="/profile">
                     <div class="hidden sm:flex flex-col items-end">
-                        <span
-                            class="text-sm font-bold text-white leading-none group-hover/user:text-primary transition-colors">
+                        <span class="text-sm font-bold leading-none group-hover/user:text-primary transition-colors"
+                            [class.text-white]="themeService.isDark()" [class.text-light-text]="themeService.isLight()">
                             {{ user.displayName || 'Játékos' }}
                         </span>
                     </div>

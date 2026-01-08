@@ -2,7 +2,7 @@
 <main class="flex-grow w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
   <!-- Page Headline -->
   <div class="flex flex-col md:flex-row md:items-center justify-between pb-8">
-    <h1 class="text-white tracking-tight text-[32px] font-bold leading-tight">Vezérlőpult</h1>
+    <h1 class="text-white tracking-tight text-[32px] font-bold leading-tight dashboard-title">Vezérlőpult</h1>
     <p class="text-gray-400 mt-2 md:mt-0">Üdvözöllek újra a pályán, Péter!</p>
   </div>
   <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
@@ -10,7 +10,7 @@
     <div class="lg:col-span-8 flex flex-col gap-8">
       <!-- Hero Section: Next Match -->
       <div
-        class="bg-gradient-to-b from-dark-accent to-background-dark rounded-2xl shadow-lg border border-white/5 overflow-hidden relative group"
+        class="bg-gradient-to-b from-dark-accent to-background-dark rounded-2xl shadow-lg border border-white/5 overflow-hidden relative group next-match-card"
       >
         <div
           class="absolute inset-0 bg-gradient-to-r from-background-dark/90 to-transparent z-10 pointer-events-none"
@@ -48,7 +48,7 @@
                 >
                   {{ countdown().hours }}
                 </div>
-                <span class="text-xs text-gray-400 uppercase">Óra</span>
+                <span class="text-xs text-gray-400 uppercase text-white">Óra</span>
               </div>
               <div class="flex flex-col items-center gap-1">
                 <div
@@ -56,7 +56,7 @@
                 >
                   {{ countdown().minutes }}
                 </div>
-                <span class="text-xs text-gray-400 uppercase">Perc</span>
+                <span class="text-xs text-gray-400 uppercase text-white">Perc</span>
               </div>
               <div class="flex flex-col items-center gap-1">
                 <div
@@ -64,7 +64,7 @@
                 >
                   {{ countdown().seconds }}
                 </div>
-                <span class="text-xs text-gray-400 uppercase">Mp</span>
+                <span class="text-xs text-gray-400 uppercase text-white">Mp</span>
               </div>
             </div>
             <!-- Action Box -->
@@ -102,8 +102,8 @@
           class="px-5 py-2 rounded-full text-sm whitespace-nowrap transition-transform hover:scale-105"
           [ngClass]="
             selectedSport() === null
-              ? 'bg-white text-background-dark font-bold'
-              : 'border border-border-dark text-gray-300 font-medium hover:bg-white/5 hover:border-white/20'
+              ? 'bg-white text-background-dark font-bold filter-active'
+              : 'border border-border-dark text-gray-300 font-medium hover:bg-white/5 hover:border-white/20 filter-inactive'
           "
         >
           Összes esemény
@@ -114,8 +114,8 @@
           class="h-10 w-10 rounded-full border border-border-dark text-gray-300 hover:bg-white/5 hover:border-white/20 transition-all flex items-center justify-center"
           [ngClass]="
             selectedSport() === sport
-              ? 'bg-white text-background-dark border-white'
-              : ''
+              ? 'bg-white text-background-dark border-white filter-active'
+              : 'filter-inactive'
           "
           [attr.aria-label]="getSportLabel(sport)"
           [title]="getSportLabel(sport)"
@@ -126,7 +126,7 @@
       </div>
       <!-- Upcoming Events Grid -->
       <div>
-        <h3 class="text-white text-xl font-bold mb-4 flex items-center gap-2">
+        <h3 class="text-white text-xl font-bold mb-4 flex items-center gap-2 upcoming-title">
           <span class="material-symbols-outlined text-primary">calendar_month</span>
           Közelgő események
         </h3>
@@ -172,7 +172,7 @@
                 <span>Létszám</span>
                 <span class="text-white">{{ getAttendanceText(event) }}</span>
               </div>
-              <div class="w-full bg-[#112218] h-2 rounded-full overflow-hidden">
+              <div class="w-full bg-[#112218] h-2 rounded-full overflow-hidden attendance-track">
                 <div
                   class="bg-primary h-full rounded-full"
                   [style.width.%]="getAttendancePercent(event)"

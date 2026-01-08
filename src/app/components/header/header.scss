@@ -3,6 +3,10 @@
 }
 
 header {
+  background-color: var(--bg-secondary);
+  border-color: var(--border-color);
+  transition: background-color 0.3s ease, border-color 0.3s ease;
+  
   // Adding a slight sub-border for depth
   &::after {
     content: '';
@@ -12,6 +16,17 @@ header {
     right: 0;
     height: 1px;
     background: linear-gradient(90deg, transparent, rgba(34, 197, 94, 0.1), transparent);
+  }
+}
+
+// Light mode header adjustments
+:host-context(html.light) header {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+  
+  &::after {
+    background: linear-gradient(90deg, transparent, rgba(34, 197, 94, 0.15), transparent);
   }
 }
 
@@ -34,6 +49,21 @@ header {
   }
 }
 
+// Light mode active link
+:host-context(html.light) .active-link {
+  color: #1e293b !important;
+  background: linear-gradient(180deg, rgba(34, 197, 94, 0) 0%, rgba(34, 197, 94, 0.08) 100%);
+}
+
+// Navigation link styling for light mode
+:host-context(html.light) header nav a {
+  color: #64748b;
+  
+  &:hover {
+    color: #1e293b;
+  }
+}
+
 @keyframes slideIn {
   from {
     transform: scaleX(0);
@@ -48,3 +78,22 @@ header {
 .material-symbols-outlined {
   font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
 }
+
+// Light mode button styling
+:host-context(html.light) {
+  .bg-dark-accent {
+    background-color: #e2e8f0;
+    border-color: rgba(0, 0, 0, 0.1);
+    color: #475569;
+    
+    &:hover {
+      border-color: #22c55e;
+    }
+  }
+}
+
+// Logo text color for light mode
+:host-context(html.light) header .text-white {
+  color: #1e293b;
+}
+

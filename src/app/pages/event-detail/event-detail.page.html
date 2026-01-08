@@ -1,7 +1,7 @@
-<main class="flex-grow min-h-screen bg-sport-background text-white pb-16">
+<main class="flex-grow min-h-screen bg-sport-background text-white pb-16 pt-8">
     <!-- Hero / Breadcrumbs Area -->
     <!-- Hero / Breadcrumbs Area -->
-    <div class="relative w-full border-b border-card-border bg-card-dark/30 shadow-2xl overflow-hidden">
+    <div class="relative w-full border-b border-card-border bg-card-dark/30 shadow-2xl overflow-hidden event-header">
         <!-- Background decorative elements -->
         <div
             class="absolute top-0 right-0 w-[500px] h-[500px] bg-primary/5 rounded-full blur-[100px] pointer-events-none -translate-y-1/2 translate-x-1/2">
@@ -234,7 +234,7 @@
                 <!-- Central VS Badge / Scoreboard -->
                 <div class="hidden lg:flex flex-col items-center justify-center relative z-10 w-0">
                     <div
-                        class="absolute bg-sport-background border-[8px] border-sport-background rounded-full p-0 shadow-[0_0_30px_rgba(0,0,0,0.5)]">
+                        class="absolute bg-sport-background border-[8px] border-sport-background rounded-full p-0 shadow-[0_0_30px_rgba(0,0,0,0.5)] vs-ring">
                         <div
                             class="size-20 rounded-full bg-gradient-to-br from-primary to-primary-dark flex items-center justify-center shadow-inner overflow-hidden">
                             @if (event()?.status === 'active' || event()?.status === 'finished') {
@@ -248,7 +248,7 @@
                             </div>
                             } @else {
                             <span
-                                class="text-background-dark font-black text-3xl italic pr-1 tracking-tighter">VS</span>
+                                class="text-background-dark font-black text-3xl italic pr-1 tracking-tighter vs-text">VS</span>
                             }
                         </div>
                     </div>
@@ -257,7 +257,7 @@
                 <!-- Mobile VS Badge / Scoreboard -->
                 <div class="lg:hidden flex justify-center -my-6">
                     <div
-                        class="size-14 rounded-full bg-gradient-to-br from-primary to-primary-dark flex items-center justify-center shadow-lg border-[6px] border-sport-background relative z-10 overflow-hidden">
+                        class="size-14 rounded-full bg-gradient-to-br from-primary to-primary-dark flex items-center justify-center shadow-lg border-[6px] border-sport-background relative z-10 overflow-hidden vs-ring-mobile">
                         @if (event()?.status === 'active' || event()?.status === 'finished') {
                         <div class="flex flex-col items-center justify-center w-full h-full bg-card-dark text-white">
                             <div class="flex items-center gap-1 font-black text-lg leading-none">
@@ -267,7 +267,7 @@
                             </div>
                         </div>
                         } @else {
-                        <span class="text-background-dark font-black text-xl italic pr-1">VS</span>
+                        <span class="text-background-dark font-black text-xl italic pr-1 vs-text">VS</span>
                         }
                     </div>
                 </div>

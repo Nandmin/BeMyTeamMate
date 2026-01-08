@@ -1,1 +1,26 @@
 /* Footer specific styles can act here if needed, mostly Tailwind */
+
+:host-context(html.light) {
+  .bg-background-dark {
+    background-color: #e2e8f0; // Darker shade for footer in light mode
+  }
+
+  .text-white {
+    color: #1e293b;
+  }
+
+  .border-border-dark {
+    border-color: rgba(0, 0, 0, 0.1);
+  }
+
+  p {
+    color: #475569;
+  }
+
+  a {
+    color: #475569;
+    &:hover {
+      color: #22c55e; // Primary color
+    }
+  }
+}

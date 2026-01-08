@@ -1,10 +1,10 @@
 <main class="flex-grow min-h-screen bg-background-dark text-white">
-    <div class="relative w-full">
+    <div class="relative w-full group-hero">
         <!-- Hero Background - Neutralized/Premium -->
         <div class="absolute inset-0 h-[400px] overflow-hidden pointer-events-none">
-            <div class="absolute inset-0 bg-gradient-to-b from-white/5 to-background-dark"></div>
+            <div class="absolute inset-0 bg-gradient-to-b from-white/5 to-background-dark hero-overlay"></div>
             <div
-                class="h-full w-full bg-[url('https://images.unsplash.com/photo-1522778119026-d647f0565c6a?q=80&w=2070&auto=format&fit=crop')] bg-cover bg-center opacity-5">
+                class="h-full w-full bg-[url('https://images.unsplash.com/photo-1522778119026-d647f0565c6a?q=80&w=2070&auto=format&fit=crop')] bg-cover bg-center opacity-5 hero-image">
             </div>
         </div>
 
@@ -69,12 +69,12 @@
                             }
                             @if (isMember()) {
                             <button
-                                class="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary text-white font-bold text-sm hover:bg-primary-hover transition-all shadow-[0_0_15px_rgba(43,238,124,0.3)] hover:scale-105 active:scale-95">
+                                class="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary text-white font-bold text-sm hover:bg-primary-hover transition-all shadow-[0_0_15px_rgba(43,238,124,0.3)] hover:scale-105 active:scale-95 keep-white">
                                 <span class="material-symbols-outlined text-lg">person_add</span>
                                 <span>Tag meghívása</span>
                             </button>
                             <button [routerLink]="['/groups', group()?.id, 'create-event']"
-                                class="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary text-white font-bold text-sm hover:bg-primary-hover transition-all shadow-[0_0_15px_rgba(43,238,124,0.3)] hover:scale-105 active:scale-95">
+                                class="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary text-white font-bold text-sm hover:bg-primary-hover transition-all shadow-[0_0_15px_rgba(43,238,124,0.3)] hover:scale-105 active:scale-95 keep-white">
                                 <span class="material-symbols-outlined text-lg">event</span>
                                 <span>Esemény létrehozása</span>
                             </button>
@@ -223,7 +223,7 @@
                                 [class.bg-red-600]="isUserAttending(event)" [class.text-white]="isUserAttending(event)"
                                 [class.border-red-600]="isUserAttending(event)"
                                 [class.hover:bg-red-700]="isUserAttending(event)"
-                                class="sm:self-center px-4 py-2 rounded-lg bg-primary/10 text-primary font-bold text-sm hover:bg-primary hover:text-white transition-colors border border-primary/20">
+                                class="sm:self-center px-4 py-2 rounded-lg bg-primary/10 text-primary font-bold text-sm hover:bg-primary hover:text-white transition-colors border border-primary/20 rsvp-button">
                                 {{ isUserAttending(event) ? 'Lemondás' : 'Jelentkezés' }}
                             </button>
                             }

@@ -28,3 +28,100 @@
 .animate-slide-up {
   animation: slide-up 0.3s ease-out;
 }
+
+// Light mode overrides
+:host-context(html.light) {
+  // Main background overrides
+  .bg-background-dark {
+    background-color: #f8fafc;
+  }
+  
+  .dark\:bg-background-dark {
+     background-color: #f8fafc;
+  }
+
+  // Text Colors
+  .text-white {
+    color: #1e293b !important;
+  }
+  
+  .text-gray-400 {
+    color: #64748b !important;
+  }
+
+  .text-gray-300 {
+    color: #475569 !important;
+  }
+  
+  .text-gray-500 {
+    color: #94a3b8 !important;
+  }
+
+  // Backgrounds that were white-transparent (for dark mode) -> change to dark-transparent
+  .bg-white\/5 {
+    background-color: rgba(15, 23, 42, 0.05) !important;
+  }
+
+  .bg-white\/10 {
+    background-color: rgba(15, 23, 42, 0.08) !important;
+  }
+
+  // Hover states for backgrounds
+  .hover\:bg-white\/5:hover {
+    background-color: rgba(15, 23, 42, 0.08) !important;
+  }
+  
+  .hover\:bg-white\/10:hover {
+    background-color: rgba(15, 23, 42, 0.12) !important;
+  }
+
+  // Borders
+  .border-white\/10 {
+    border-color: rgba(15, 23, 42, 0.1) !important;
+  }
+  
+  // Inputs & Textareas
+  input, textarea {
+    background-color: #ffffff !important;
+    border-color: rgba(0, 0, 0, 0.15) !important;
+    color: #1e293b !important;
+    
+    &::placeholder {
+      color: #94a3b8 !important;
+    }
+    
+    &:focus {
+      border-color: #22c55e !important;
+    }
+  }
+
+  // Buttons and Tabs
+  button {
+    // Handling buttons that use border-white/10
+    &.border-white\/10 {
+      border-color: rgba(15, 23, 42, 0.1) !important;
+    }
+  }
+
+  // Active Tab specific overrides (relying on bg-white/10 logic above, but checking specifics)
+  
+  // Modals
+  .bg-card-dark {
+    background-color: #ffffff;
+    border-color: rgba(0,0,0,0.1);
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+  }
+  
+  .bg-background-dark\/90 {
+    background-color: rgba(248, 250, 252, 0.9);
+  }
+  
+  // Gradient Fixes
+  .from-white\/5 {
+     --tw-gradient-from: rgba(0, 0, 0, 0.05);
+  }
+  
+  .to-background-dark {
+    --tw-gradient-to: #ffffff;
+  }
+}

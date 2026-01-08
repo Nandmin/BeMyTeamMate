@@ -1,5 +1,8 @@
 :host {
   display: block;
+  min-height: 100vh;
+  background-color: var(--bg-primary);
+  transition: background-color 0.3s ease;
 }
 
 .material-symbols-outlined {
@@ -22,6 +25,7 @@ main {
   background: rgba(255, 255, 255, 0.03);
   backdrop-filter: blur(12px);
   border: 1px solid rgba(255, 255, 255, 0.08);
+  transition: background 0.3s ease, border-color 0.3s ease;
 }
 
 // Hover effects
@@ -74,5 +78,159 @@ main {
     display: none; /* Chrome, Safari and Opera */
   }
 }
+
+// Light mode overrides
+// Light mode overrides
+:host-context(html.light) {
+  // Main background Override
+  .bg-background-dark {
+    background-color: #f8fafc;
+  }
+
+  .bg-background-dark\/90 {
+    background-color: rgba(248, 250, 252, 0.9);
+  }
+
+  .bg-background-dark\/80 {
+    background-color: rgba(248, 250, 252, 0.85);
+  }
+
+  .bg-background-dark\/50 {
+    background-color: rgba(248, 250, 252, 0.7);
+  }
+
+  // Glass Panel adaptation
+  .glass-panel {
+    background: rgba(255, 255, 255, 0.8);
+    border: 1px solid rgba(0, 0, 0, 0.08);
+  }
+
+  // Text Colors
+  .text-white {
+    color: #1e293b !important; // Force text color override
+  }
+  
+  .text-gray-400 {
+    color: #64748b !important;
+  }
+
+  .text-gray-300 {
+    color: #475569 !important;
+  }
+
+  // Backgrounds that were white-transparent (for dark mode) -> change to dark-transparent
+  .bg-white\/5 {
+    background-color: rgba(15, 23, 42, 0.05) !important;
+  }
+
+  .bg-white\/10 {
+    background-color: rgba(15, 23, 42, 0.08) !important;
+  }
+
+  // Hover states for backgrounds
+  .hover\:bg-white\/5:hover {
+    background-color: rgba(15, 23, 42, 0.08) !important;
+  }
+
+  .hover\:bg-white\/10:hover {
+    background-color: rgba(15, 23, 42, 0.12) !important;
+  }
+
+  // Borders
+  .border-white\/10 {
+    border-color: rgba(15, 23, 42, 0.1) !important;
+  }
+
+  .border-white\/5 {
+    border-color: rgba(15, 23, 42, 0.05) !important;
+  }
+  
+  .border-white\/20 {
+    border-color: rgba(15, 23, 42, 0.15) !important;
+  }
+
+  // Accents
+  .bg-dark-accent {
+    background: #f1f5f9;
+  }
+
+  .bg-card-dark {
+    background-color: #ffffff;
+    border-color: rgba(0, 0, 0, 0.08);
+  }
+  
+  .bg-primary\/10 {
+    background: rgba(34, 197, 94, 0.1);
+    color: #15803d;
+  }
+
+  // Handle transparent/blur backgrounds in group header
+  .from-background-dark {
+    --tw-gradient-from: #f8fafc;
+    --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to, rgba(248, 250, 252, 0));
+  }
+
+  .to-background-dark {
+    --tw-gradient-to: #ffffff;
+  }
+
+  .from-white\/5 {
+     --tw-gradient-from: rgba(0, 0, 0, 0.05);
+  }
+
+  // Buttons in light mode need to be visible
+  button.bg-background-dark\/80 {
+    background-color: rgba(255, 255, 255, 0.9);
+    color: #1e293b;
+    border-color: rgba(0,0,0,0.1);
+    
+    .text-white {
+      color: #1e293b !important;
+    }
+    
+    &:hover {
+      background-color: #22c55e;
+      color: white;
+      .text-white { color: white !important; }
+    }
+  }
+
+  // Inputs in modal
+  input, select {
+    background-color: #ffffff !important;
+    border-color: rgba(0, 0, 0, 0.15) !important;
+    color: #1e293b !important;
+  }
+
+  // Hero section image overlay
+  .border-white\/5 {
+    border-color: rgba(0, 0, 0, 0.1) !important;
+  }
+
+  .keep-white {
+    color: #ffffff !important;
+  }
+
+  .rsvp-button.bg-red-600 {
+    background-color: #dc2626;
+    color: #ffffff !important;
+    border-color: #dc2626;
+  }
+
+  .rsvp-button.bg-red-600:hover {
+    background-color: #b91c1c;
+  }
+
+  .group-hero {
+    background-color: #f8fafc;
+  }
+
+  .group-hero .hero-overlay,
+  .group-hero .hero-image {
+    display: none;
+  }
+}
+
+
 
 

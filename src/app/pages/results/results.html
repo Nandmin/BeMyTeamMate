@@ -1,5 +1,5 @@
 <!-- <main class="flex-grow w-full px-6 lg:px-40 py-8"> -->
-  <div class="max-w-[1200px] mx-auto flex flex-col gap-8">
+  <div class="max-w-[1200px] mx-auto flex flex-col gap-8 pt-6">
     <!-- Page Heading & Filters -->
     <div class="flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
       <div class="flex flex-col gap-2">
@@ -18,13 +18,13 @@
             <span class="material-symbols-outlined text-[#92c9a9]">expand_more</span>
           </div>
           <select
-            class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+            class="absolute inset-0 w-full h-full opacity-0 cursor-pointer results-select"
             (change)="setPeriod($any($event.target).value)"
             style="color-scheme: dark"
           >
             @for (period of periodOptions; track period.id) {
             <option
-              class="bg-background-dark text-white"
+              class="bg-background-dark text-white results-option"
               [value]="period.id"
               [selected]="selectedPeriod() === period.id"
             >
@@ -40,12 +40,12 @@
             <span class="material-symbols-outlined text-[#92c9a9]">expand_more</span>
           </div>
           <select
-            class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+            class="absolute inset-0 w-full h-full opacity-0 cursor-pointer results-select"
             (change)="setSport($any($event.target).value)"
             style="color-scheme: dark"
           >
             <option
-              class="bg-background-dark text-white"
+              class="bg-background-dark text-white results-option"
               value="all"
               [selected]="selectedSport() === 'all'"
             >
@@ -53,7 +53,7 @@
             </option>
             @for (sport of sportOptions; track sport.id) {
             <option
-              class="bg-background-dark text-white"
+              class="bg-background-dark text-white results-option"
               [value]="sport.id"
               [selected]="selectedSport() === sport.id"
             >
@@ -69,12 +69,12 @@
             <span class="material-symbols-outlined text-[#92c9a9]">expand_more</span>
           </div>
           <select
-            class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+            class="absolute inset-0 w-full h-full opacity-0 cursor-pointer results-select"
             (change)="setTeam($any($event.target).value)"
             style="color-scheme: dark"
           >
             <option
-              class="bg-background-dark text-white"
+              class="bg-background-dark text-white results-option"
               value="all"
               [selected]="selectedTeam() === 'all'"
             >
@@ -82,7 +82,7 @@
             </option>
             @for (group of userGroups(); track group.id) {
             <option
-              class="bg-background-dark text-white"
+              class="bg-background-dark text-white results-option"
               [value]="group.id"
               [selected]="selectedTeam() === group.id"
             >

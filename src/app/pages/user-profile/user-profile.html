@@ -73,7 +73,6 @@
                 </nav>
             </div>
         </aside>
-
         <!-- Content Area -->
         <div class="flex-1 flex flex-col gap-8 min-w-0">
             <!-- Section: Personal Info -->
@@ -139,7 +138,6 @@
                         }
                     </div>
                 </div>
-
                 <!-- Global Stats Row -->
                 <!-- backdrop-blur -->
                 <!-- <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-10">
@@ -154,7 +152,6 @@
                         <p class="text-text-secondary text-[10px] uppercase font-bold tracking-wider">Elo pont</p>
                     </div>
                 </div> -->
-
                 <!-- Form Fields -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
                     @if (isOwnProfile()) {
@@ -164,8 +161,7 @@
                             <span
                                 class="absolute left-4 top-1/2 -translate-y-1/2 material-symbols-outlined text-text-secondary">badge</span>
                             <input
-                                class="w-full rounded-xl border border-[#326748] text-white placeholder-text-secondary/50 focus:border-primary focus:ring-1 focus:ring-primary pl-12 pr-4 py-3.5 outline-none transition-all"
-                                style="background-color: #0d111b;"
+                                class="w-full rounded-xl border border-[#326748] text-white placeholder-text-secondary/50 focus:border-primary focus:ring-1 focus:ring-primary pl-12 pr-4 py-3.5 outline-none transition-all profile-input"
                                 type="text" [(ngModel)]="profileData.displayName" />
                         </div>
                     </label>
@@ -175,16 +171,14 @@
                             <span
                                 class="absolute left-4 top-1/2 -translate-y-1/2 material-symbols-outlined text-text-secondary">mail</span>
                             <input
-                                class="w-full rounded-xl bg-surface-darker border border-[#326748] text-white placeholder-text-secondary/50 focus:border-primary focus:ring-1 focus:ring-primary pl-12 pr-4 py-3.5 outline-none transition-all"
-                                style="background-color: #0d111b;"
+                                class="w-full rounded-xl bg-surface-darker border border-[#326748] text-white placeholder-text-secondary/50 focus:border-primary focus:ring-1 focus:ring-primary pl-12 pr-4 py-3.5 outline-none transition-all profile-input"
                                 type="email" [(ngModel)]="profileData.email" disabled />
                         </div>
                     </label>
                     <label class="flex flex-col gap-2 md:col-span-2">
                         <span class="text-white text-sm font-medium">Bemutatkozás</span>
                         <textarea
-                            class="w-full rounded-xl bg-surface-darker border border-[#326748] text-white placeholder-text-secondary/50 focus:border-primary focus:ring-1 focus:ring-primary px-4 py-3.5 outline-none transition-all resize-none"
-                            style="background-color: #0d111b;"
+                            class="w-full rounded-xl bg-surface-darker border border-[#326748] text-white placeholder-text-secondary/50 focus:border-primary focus:ring-1 focus:ring-primary px-4 py-3.5 outline-none transition-all resize-none profile-input"
                             rows="3" [(ngModel)]="profileData.bio" placeholder="Mesélj magadról..."></textarea>
                     </label>
                     } @else {
@@ -196,10 +190,9 @@
                     }
                 </div>
                 @if (isOwnProfile()) {
-
                 <!-- Accordion: Jelszó megváltoztatása (zárt alapértelmezés szerint) -->
                 <div class="mt-6">
-                    <details class="rounded-xl border border-[#326748] p-4" style="background-color: #0d111b;">
+                    <details class="rounded-xl border border-[#326748] p-4 profile-panel">
                         <summary class="cursor-pointer flex items-center justify-between text-white font-medium py-2 px-2 select-none">
                             <div class="flex items-center gap-3">
                                 <span class="material-symbols-outlined text-primary">key</span>
@@ -207,32 +200,27 @@
                             </div>
                             <span class="material-symbols-outlined text-text-secondary">expand_more</span>
                         </summary>
-
                         <div class="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4">
                             <label class="flex flex-col gap-2 md:col-span-3">
                                 <span class="text-white text-sm font-medium">Jelenlegi jelszó</span>
                                 <input type="password" [(ngModel)]="passwordData.currentPassword"
-                                    class="w-full rounded-xl bg-surface-darker border border-[#326748] text-white px-4 py-3.5 outline-none" style="background-color: #0d111b;" />
+                                    class="w-full rounded-xl bg-surface-darker border border-[#326748] text-white px-4 py-3.5 outline-none profile-input" />
                             </label>
-
                             <label class="flex flex-col gap-2 md:col-span-1">
                                 <span class="text-white text-sm font-medium">Új jelszó</span>
                                 <input type="password" [(ngModel)]="passwordData.newPassword"
-                                    class="w-full rounded-xl bg-surface-darker border border-[#326748] text-white px-4 py-3.5 outline-none" style="background-color: #0d111b;" />
+                                    class="w-full rounded-xl bg-surface-darker border border-[#326748] text-white px-4 py-3.5 outline-none profile-input" />
                             </label>
-
                             <label class="flex flex-col gap-2 md:col-span-2">
                                 <span class="text-white text-sm font-medium">Új jelszó ismét</span>
                                 <input type="password" [(ngModel)]="passwordData.confirmNewPassword"
-                                    class="w-full rounded-xl border border-[#326748] text-white px-4 py-3.5 outline-none" style="background-color: #0d111b;" />
+                                    class="w-full rounded-xl border border-[#326748] text-white px-4 py-3.5 outline-none profile-input" />
                             </label>
-
                             <div class="md:col-span-3 flex items-center justify-end gap-4 mt-2">
                             </div>
                         </div>
                     </details>
                 </div>
-
                 <div class="flex justify-end pt-8">
                     <button (click)="onSaveProfile()"
                         class="flex items-center gap-2 rounded-xl h-12 px-8 bg-primary text-background-dark text-base font-bold hover:bg-primary-hover hover:scale-105 transition-all shadow-[0_4px_14px_rgba(43,238,124,0.4)]">
@@ -242,7 +230,6 @@
                 </div>
                 }
             </section>
-
 <!-- Section: Groups -->
 <section class="bg-gradient-to-b from-dark-accent to-background-dark rounded-2xl border border-[#234833] p-6 md:p-8" id="groups">
     <div class="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
@@ -277,7 +264,6 @@
             <div class="h-32 w-full bg-cover bg-center relative"
                 [style.backgroundImage]="'url(' + (group.image || 'https://images.unsplash.com/photo-1517486808906-6ca8b3f04846?auto=format&fit=crop&q=80&w=800') + ')'">
                 <div class="absolute inset-0"></div>
-
                 <!-- Sport Icon overlapping the bottom edge -->
                 <div
                     class="absolute bottom-0 translate-y-1/2 left-6 size-12 rounded-xl border-2 border-white/20 bg-surface-dark backdrop-blur-md flex items-center justify-center text-primary shadow-xl z-30">
@@ -286,7 +272,6 @@
                     </span>
                 </div>
             </div>
-
             <div class="p-5 pt-5 relative bg-gradient-to-b from-dark-accent to-background-dark">
                 <!-- Role tag aligned right -->
                 <div class="flex justify-end mb-1">
@@ -298,11 +283,9 @@
                         class="px-2 py-0.5 rounded text-[10px] uppercase tracking-wider bg-white/5 border border-white/10 text-text-secondary font-bold">Tag</span>
                     }
                 </div>
-
                 <h3
                     class="text-xl font-bold text-white mb-2 truncate group-hover:text-primary transition-colors">
                     {{ group.name }}</h3>
-
                 <!-- Group stats and Next Event info -->
                 <div
                     class="flex items-center flex-wrap gap-x-3 gap-y-1 mb-5 text-[12px] text-text-secondary">
@@ -319,7 +302,6 @@
                     </div>
                     }
                 </div>
-
                 <button [routerLink]="['/groups', group.id]"
                     class="w-full py-2.5 rounded-lg bg-[#0b28aa] hover:bg-primary hover:text-background-dark text-white text-xs font-bold transition-all uppercase tracking-widest shadow-lg">
                     Megtekintés

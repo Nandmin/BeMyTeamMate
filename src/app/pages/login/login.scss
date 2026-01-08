@@ -1,2 +1,89 @@
 // Styles are primarily handled by Tailwind CSS in the HTML template.
 // Specific component overrides can be added here.
+
+:host {
+  display: block;
+  min-height: 100vh;
+  background-color: var(--bg-primary);
+  transition: background-color 0.3s ease;
+}
+
+// Light mode overrides for login page
+// Light mode overrides for login page
+:host-context(html.light) {
+  // Main background overrides
+  .bg-background-light {
+    background-color: #f8fafc;
+  }
+  
+  .dark\:bg-background-dark { // Handle if tailwind dark mode class is active/inactive confusion
+     background-color: #f8fafc;
+  }
+
+  // Card Background
+  .bg-card-dark\/60 {
+    background-color: rgba(255, 255, 255, 0.9);
+    border-color: rgba(0, 0, 0, 0.1);
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+  }
+
+  // Text Colors - Force overrides
+  .text-white {
+    color: #1e293b !important;
+  }
+
+  .text-gray-200 {
+    color: #475569 !important;
+  }
+
+  .text-gray-400 {
+     color: #64748b !important;
+  }
+  
+  // Footer copyright
+  .text-\[\#ffffff\]\/40, .text-white\/40 {
+    color: #94a3b8 !important;
+  }
+
+  // Inputs
+  input, .form-input {
+    background-color: #ffffff;
+    border-color: rgba(0, 0, 0, 0.2);
+    color: #1e293b;
+
+    &::placeholder {
+      color: #94a3b8;
+    }
+    
+    &:focus {
+      border-color: #22c55e;
+      background-color: #ffffff;
+    }
+  }
+
+  .bg-dark-accent\/50 {
+    background-color: #ffffff;
+    border-color: rgba(0, 0, 0, 0.2);
+  }
+
+  // Social Buttons
+  .bg-dark-accent {
+    background-color: #f1f5f9;
+    color: #1e293b;
+    border-color: rgba(0, 0, 0, 0.1);
+    
+    &:hover {
+      background-color: #e2e8f0;
+      border-color: #22c55e;
+    }
+  }
+
+  // Background Gradient Overlay
+  .from-background-dark\/90, .via-background-dark\/80, .to-background-dark\/95 {
+     --tw-gradient-from: rgba(248, 250, 252, 0.8) !important;
+     --tw-gradient-to: rgba(248, 250, 252, 0.9) !important;
+     --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to) !important;
+  }
+}
+
+

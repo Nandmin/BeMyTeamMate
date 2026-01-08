@@ -9,12 +9,22 @@ module.exports = {
   theme: {
     extend: {
       colors: {
+        // Dark mode colors
         'dark-bg': '#0f1419',
         'dark-card': '#1a1f3a',
         'dark-accent': '#2d3561',
+        // Light mode colors
+        'light-bg': '#f8fafc',
+        'light-card': '#ffffff',
+        'light-accent': '#e2e8f0',
+        'light-border': '#cbd5e1',
+        'light-text': '#1e293b',
+        'light-text-muted': '#64748b',
+        // Primary colors
         primary: '#22c55e',
         'primary-hover': '#16a34a',
         'primary-dark': '#15803d',
+        'primary-light': '#4ade80',
         secondary: '#8b5cf6',
         'accent-gradient-start': '#4ade80',
         'accent-gradient-end': '#22c55e',

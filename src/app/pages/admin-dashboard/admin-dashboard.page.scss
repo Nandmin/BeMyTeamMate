@@ -1,3 +1,44 @@
 :host {
   display: block;
+  min-height: 100vh;
+  background-color: var(--bg-primary);
+  transition: background-color 0.3s ease;
 }
+
+// Light mode overrides
+:host-context(html.light) {
+  .text-white {
+    color: #1e293b;
+  }
+  
+  .text-gray-400 {
+    color: #64748b;
+  }
+
+  .bg-card-dark, .bg-surface-card {
+    background-color: #ffffff;
+    border-color: rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  }
+
+  table {
+    thead {
+      background-color: #f1f5f9;
+      th {
+        color: #475569;
+      }
+    }
+    tbody {
+      tr {
+        border-color: rgba(0, 0, 0, 0.05);
+        &:hover {
+          background-color: #f8fafc;
+        }
+      }
+      td {
+        color: #1e293b;
+      }
+    }
+  }
+}
+

@@ -1,0 +1,59 @@
+:host {
+  display: block;
+  min-height: 100vh;
+  background-color: var(--bg-primary);
+  transition: background-color 0.3s ease;
+}
+
+// Light mode overrides for results page
+:host-context(html.light) {
+  .text-primary,
+  .text-\[\#2bee7c\] {
+    color: #1F3A2B;
+  }
+
+  .text-\[\#92c9a9\] {
+    color: #1F3A2B !important;
+  }
+
+  .results-select {
+    color-scheme: light !important;
+  }
+
+  .results-option {
+    background-color: #ffffff !important;
+    color: #1e293b !important;
+  }
+
+  .text-white {
+    color: #1e293b;
+  }
+
+  .text-gray-400 {
+    color: #64748b;
+  }
+
+  .bg-dark-card, .bg-surface-card {
+    background-color: #ffffff;
+    border-color: rgba(0, 0, 0, 0.08);
+  }
+
+  .border-white\/10 {
+    border-color: rgba(0, 0, 0, 0.1);
+  }
+}
+
+// Dark mode re-assertion for green text tones
+:host-context(html.dark) {
+  .text-primary {
+    color: #2bee7c;
+  }
+
+  .text-\[\#2bee7c\] {
+    color: #2bee7c;
+  }
+
+  .text-\[\#92c9a9\] {
+    color: #92c9a9;
+  }
+}

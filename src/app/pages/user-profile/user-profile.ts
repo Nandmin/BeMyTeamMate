@@ -49,7 +49,7 @@ export class UserProfilePage {
         if (!groups || groups.length === 0) return of([]);
 
         const enrichedGroups$ = groups.map((group) =>
-          this.eventService.getEvents(group.id!).pipe(
+          this.eventService.getUpcomingEvents(group.id!).pipe(
             map((events: SportEvent[]) => {
               const nextEvent = events
                 .filter((e) => {

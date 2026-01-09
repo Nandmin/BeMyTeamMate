@@ -30,7 +30,7 @@ export class EventsList implements OnDestroy {
         if (!groups || groups.length === 0) return of([]);
 
         const eventsByGroup$ = groups.map((group) =>
-          this.eventService.getEvents(group.id!).pipe(
+          this.eventService.getUpcomingEvents(group.id!).pipe(
             map((events) => events.map((event) => ({ ...event, groupId: event.groupId || group.id! })))
           )
         );
@@ -47,7 +47,7 @@ export class EventsList implements OnDestroy {
         if (!groups || groups.length === 0) return of(null);
 
         const eventsByGroup$ = groups.map((group) =>
-          this.eventService.getEvents(group.id!).pipe(
+          this.eventService.getUpcomingEvents(group.id!).pipe(
             map((events) =>
               events
                 .map((event) => ({ ...event, groupId: event.groupId || group.id! }))
@@ -78,13 +78,11 @@ export class EventsList implements OnDestroy {
   });
 
   availableSports = computed(() => {
-    const user = this.currentUser();
     const events = this.userEvents();
-    if (!user) return [] as string[];
 
     const sports = new Set<string>();
     for (const event of events) {
-      if (!event.attendees || !event.attendees.includes(user.uid)) continue;
+      if (!this.isUpcoming(event)) continue;
       if (!event.sport) continue;
       sports.add(event.sport);
     }
@@ -127,14 +125,10 @@ export class EventsList implements OnDestroy {
   });
 
   private calendarEventKeys = computed(() => {
-    const user = this.currentUser();
     const events = this.userEvents();
     const keys = new Set<string>();
 
-    if (!user) return keys;
-
     for (const event of events) {
-      if (!event.attendees || !event.attendees.includes(user.uid)) continue;
       if (event.status === 'finished') continue;
 
       const eventDate = this.getEventDateTime(event);
@@ -199,7 +193,6 @@ export class EventsList implements OnDestroy {
 
     const selectedKey = this.formatDateKey(this.selectedDate());
     return this.userEvents().filter((event) => {
-      if (!event.attendees || !event.attendees.includes(user.uid)) return false;
       if (event.status === 'finished') return false;
 
       const eventDate = this.getEventDateTime(event);

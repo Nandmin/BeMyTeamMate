@@ -16,9 +16,9 @@ import {
   sendPasswordResetEmail,
 } from '@angular/fire/auth';
 import { EmailAuthProvider, reauthenticateWithCredential, updatePassword } from '@angular/fire/auth';
-import { Firestore, doc, setDoc, serverTimestamp, docData } from '@angular/fire/firestore';
+import { Firestore, doc, setDoc, serverTimestamp, getDoc } from '@angular/fire/firestore';
 import { Router } from '@angular/router';
-import { from, Observable, of, firstValueFrom } from 'rxjs';
+import { defer, Observable, of, firstValueFrom, from } from 'rxjs';
 import { map, switchMap, tap } from 'rxjs/operators';
 import { AppUser } from '../models/user.model';
 
@@ -29,6 +29,8 @@ export class AuthService {
   private auth = inject(Auth);
   private firestore = inject(Firestore);
   private router = inject(Router);
+  private cacheTtlMs = 5 * 60 * 1000;
+  private profileCache = new Map<string, { data: AppUser; ts: number }>();
 
   // Expose the current user as a signal or observable
   user$ = user(this.auth);
@@ -38,8 +40,7 @@ export class AuthService {
   userData$: Observable<AppUser | null> = this.user$.pipe(
     switchMap((u) => {
       if (u) {
-        const ref = doc(this.firestore, `users/${u.uid}`);
-        return docData(ref, { idField: 'uid' }) as Observable<AppUser>;
+        return this.getUserProfile(u.uid);
       } else {
         return of(null);
       }
@@ -186,14 +187,25 @@ export class AuthService {
   }
 
   getUserProfile(uid: string): Observable<AppUser | null> {
-    const userRef = doc(this.firestore, `users/${uid}`);
-    return docData(userRef, { idField: 'uid' }) as Observable<AppUser>;
+    return defer(() => {
+      const cached = this.getCachedProfile(uid);
+      if (cached) return of(cached);
+
+      const userRef = doc(this.firestore, `users/${uid}`);
+      return from(getDoc(userRef)).pipe(
+        map((snap) => (snap.exists() ? ({ ...(snap.data() as AppUser), uid } as AppUser) : null)),
+        tap((data) => {
+          if (data) this.setCachedProfile(uid, data);
+        })
+      );
+    });
   }
 
   // --- Firestore User Data Logic ---
   private async updateUserData(firebaseUser: any, additionalData: any = {}) {
     const userRef = doc(this.firestore, `users/${firebaseUser.uid}`);
-    const existingData = (await firstValueFrom(docData(userRef))) || {};
+    const existingSnap = await getDoc(userRef);
+    const existingData = existingSnap.exists() ? existingSnap.data() : {};
 
     const data: any = {
       uid: firebaseUser.uid,
@@ -217,6 +229,56 @@ export class AuthService {
       data.bio = additionalData.bio;
     }
 
-    return setDoc(userRef, data, { merge: true });
+    const result = await setDoc(userRef, data, { merge: true });
+    this.clearCachedProfile(firebaseUser.uid);
+    return result;
+  }
+
+  private getCachedProfile(uid: string): AppUser | null {
+    const inMemory = this.profileCache.get(uid);
+    if (inMemory && Date.now() - inMemory.ts < this.cacheTtlMs) {
+      return inMemory.data;
+    }
+
+    try {
+      if (typeof window === 'undefined' || !window.localStorage) return null;
+      const raw = window.localStorage.getItem(this.profileStorageKey(uid));
+      if (!raw) return null;
+      const parsed = JSON.parse(raw) as { data: AppUser; ts: number };
+      if (!parsed?.data || !parsed?.ts) return null;
+      if (Date.now() - parsed.ts > this.cacheTtlMs) {
+        window.localStorage.removeItem(this.profileStorageKey(uid));
+        return null;
+      }
+      this.profileCache.set(uid, { data: parsed.data, ts: parsed.ts });
+      return parsed.data;
+    } catch {
+      return null;
+    }
+  }
+
+  private setCachedProfile(uid: string, data: AppUser) {
+    const entry = { data, ts: Date.now() };
+    this.profileCache.set(uid, entry);
+    try {
+      if (typeof window === 'undefined' || !window.localStorage) return;
+      window.localStorage.setItem(this.profileStorageKey(uid), JSON.stringify(entry));
+    } catch {
+      // ignore cache errors
+    }
+  }
+
+  private clearCachedProfile(uid: string) {
+    this.profileCache.delete(uid);
+    try {
+      if (typeof window === 'undefined' || !window.localStorage) return;
+      window.localStorage.removeItem(this.profileStorageKey(uid));
+    } catch {
+      // ignore cache errors
+    }
+  }
+
+  private profileStorageKey(uid: string) {
+    return `userProfile:${uid}`;
   }
 }

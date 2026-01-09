@@ -6,7 +6,7 @@ import { FormsModule } from '@angular/forms';
 import { GroupService, Group, GroupMember } from '../../services/group.service';
 import { AuthService } from '../../services/auth.service';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { switchMap } from 'rxjs';
+import { switchMap, combineLatest, map } from 'rxjs';
 import { EventService, SportEvent } from '../../services/event.service';
 
 @Component({
@@ -52,7 +52,14 @@ export class GroupDetailPage {
   );
 
   events = toSignal(
-    this.route.params.pipe(switchMap((params) => this.eventService.getEvents(params['id'])))
+    this.route.params.pipe(
+      switchMap((params) =>
+        combineLatest([
+          this.eventService.getUpcomingEventsInternal(params['id'], { daysAhead: 3650, limit: 500 }),
+          this.eventService.getPastEventsInternal(params['id'], { daysBack: 3650, limit: 500 }),
+        ]).pipe(map(([upcoming, past]) => [...upcoming, ...past]))
+      )
+    )
   );
 
   currentPage = signal(1);
@@ -268,7 +275,10 @@ export class GroupDetailPage {
 
   private getEventDateTime(event: SportEvent): Date {
     if (!event.date) return new Date(NaN);
-    const eventDate = event.date.toDate();
+    const eventDate =
+      typeof (event.date as any).toDate === 'function'
+        ? (event.date as any).toDate()
+        : new Date(event.date as any);
     eventDate.setHours(0, 0, 0, 0);
 
     if (event.time) {

@@ -275,6 +275,7 @@ export class Results {
   ): RecentMatchRow[] {
     return events
       .filter((event) => this.isUserInEvent(event, userId))
+      .filter((event) => this.hasRecordedResult(event))
       .map((event) => this.toMatchRow(groupId, event, members, userId));
   }
 
@@ -283,6 +284,13 @@ export class Results {
     const inTeamB = event.teamB?.includes(userId) ?? false;
     const inAttendees = event.attendees?.includes(userId) ?? false;
     return inTeamA || inTeamB || inAttendees;
+  }
+
+  private hasRecordedResult(event: SportEvent): boolean {
+    if (event.status === 'finished') return true;
+    if (typeof event.goalsA === 'number' && typeof event.goalsB === 'number') return true;
+    if (event.playerStats && Object.keys(event.playerStats).length > 0) return true;
+    return false;
   }
 
   private toMatchRow(
@@ -317,7 +325,7 @@ export class Results {
           : goalsB > goalsA
         : null;
 
-    const date = event.date?.toDate ? event.date.toDate() : new Date();
+    const date = this.coerceDate(event.date);
     const dateLabel = date.toLocaleDateString('hu-HU', {
       year: 'numeric',
       month: '2-digit',
@@ -337,6 +345,14 @@ export class Results {
       eloDelta,
       sortTime: date.getTime(),
     };
+  }
+
+  private coerceDate(value: any): Date {
+    if (!value) return new Date(NaN);
+    if (value instanceof Date) return value;
+    if (typeof value?.toDate === 'function') return value.toDate();
+    if (typeof value?.seconds === 'number') return new Date(value.seconds * 1000);
+    return new Date(value);
   }
 }
 

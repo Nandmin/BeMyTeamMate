@@ -6,7 +6,7 @@ import { EventService, SportEvent } from '../../services/event.service';
 import { AuthService } from '../../services/auth.service';
 import { ModalService } from '../../services/modal.service';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { switchMap, map } from 'rxjs';
+import { switchMap, from } from 'rxjs';
 import {
   DragDropModule,
   CdkDragDrop,
@@ -36,8 +36,7 @@ export class EventDetailPage {
   // Directly fetch the specific event
   event = toSignal(
     this.route.params.pipe(
-      switchMap((params) => this.eventService.getEvents(params['id'])),
-      map((events) => events.find((e) => e.id === this.eventId))
+      switchMap((params) => from(this.eventService.getEvent(params['id'], params['eventId'])))
     )
   );
 
@@ -126,7 +125,8 @@ export class EventDetailPage {
     if (!event) return false;
     if (!event.date) return false;
 
-    const eventDate = event.date.toDate();
+    const eventDate = this.coerceDate(event.date);
+    if (Number.isNaN(eventDate.getTime())) return false;
     eventDate.setHours(0, 0, 0, 0);
 
     if (event.time) {
@@ -324,7 +324,8 @@ export class EventDetailPage {
 
   formatEventDate(timestamp: any) {
     if (!timestamp) return { month: '', day: '' };
-    const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+    const date = this.coerceDate(timestamp);
+    if (Number.isNaN(date.getTime())) return { month: '', day: '' };
     const months = [
       'JAN',
       'FEB',
@@ -347,7 +348,8 @@ export class EventDetailPage {
 
   formatFullDate(timestamp: any) {
     if (!timestamp) return '';
-    const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+    const date = this.coerceDate(timestamp);
+    if (Number.isNaN(date.getTime())) return '';
     return date.toLocaleDateString('hu-HU', {
       year: 'numeric',
       month: 'long',
@@ -425,6 +427,14 @@ export class EventDetailPage {
   calculateTeamGoals(team: 'A' | 'B'): number {
     const members = team === 'A' ? this.teamA() : this.teamB();
     return members.reduce((sum, m) => sum + this.getStat(m.userId, 'goals'), 0);
+  }
+
+  private coerceDate(value: any): Date {
+    if (!value) return new Date(NaN);
+    if (value instanceof Date) return value;
+    if (typeof value?.toDate === 'function') return value.toDate();
+    if (typeof value?.seconds === 'number') return new Date(value.seconds * 1000);
+    return new Date(value);
   }
 
   async saveResults() {

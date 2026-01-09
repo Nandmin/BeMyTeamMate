@@ -1,0 +1,49 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    // 1. User documents
+    match /users/{userId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn() && request.auth.uid == userId;
+      allow update: if isSignedIn() && (
+        request.auth.uid == userId ||
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['elo', 'formFactor'])
+      );
+
+      // User group summaries (users/{uid}/groups/{groupId})
+      match /groups/{groupId} {
+        allow read, write: if isSignedIn() && request.auth.uid == userId;
+      }
+    }
+
+    // 2. Collection group query for members
+    match /{path=**}/members/{memberId} {
+      allow read: if isSignedIn();
+      allow write: if isSignedIn();
+    }
+
+    // 3. Groups
+    match /groups/{groupId} {
+      allow read, create: if isSignedIn();
+
+      allow update: if isSignedIn() && (
+        resource.data.ownerId == request.auth.uid ||
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['memberCount'])
+      );
+
+      allow delete: if isSignedIn() && resource.data.ownerId == request.auth.uid;
+
+      match /events/{eventId} {
+        allow read, write: if isSignedIn();
+      }
+
+      match /members/{memberId} {
+        allow read, write: if isSignedIn();
+      }
+    }
+  }
+}

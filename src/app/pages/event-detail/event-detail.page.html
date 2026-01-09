@@ -234,9 +234,9 @@
                 <!-- Central VS Badge / Scoreboard -->
                 <div class="hidden lg:flex flex-col items-center justify-center relative z-10 w-0">
                     <div
-                        class="absolute bg-sport-background border-[8px] border-sport-background rounded-full p-0 shadow-[0_0_30px_rgba(0,0,0,0.5)] vs-ring">
+                        class="absolute bg-sport-background rounded-full p-0 shadow-[0_0_30px_rgba(0,0,0,0.5)]">
                         <div
-                            class="size-20 rounded-full bg-gradient-to-br from-primary to-primary-dark flex items-center justify-center shadow-inner overflow-hidden">
+                            class="size-20 rounded-full bg-primary flex items-center justify-center shadow-inner overflow-hidden">
                             @if (event()?.status === 'active' || event()?.status === 'finished') {
                             <div
                                 class="flex flex-col items-center justify-center w-full h-full bg-card-dark text-white">
@@ -247,8 +247,7 @@
                                 </div>
                             </div>
                             } @else {
-                            <span
-                                class="text-background-dark font-black text-3xl italic pr-1 tracking-tighter vs-text">VS</span>
+                            <span class="text-white font-black text-3xl italic pr-1 tracking-tighter vs-text">VS</span>
                             }
                         </div>
                     </div>
@@ -257,7 +256,7 @@
                 <!-- Mobile VS Badge / Scoreboard -->
                 <div class="lg:hidden flex justify-center -my-6">
                     <div
-                        class="size-14 rounded-full bg-gradient-to-br from-primary to-primary-dark flex items-center justify-center shadow-lg border-[6px] border-sport-background relative z-10 overflow-hidden vs-ring-mobile">
+                        class="size-14 rounded-full bg-primary flex items-center justify-center shadow-lg relative z-10 overflow-hidden vs-ring-mobile">
                         @if (event()?.status === 'active' || event()?.status === 'finished') {
                         <div class="flex flex-col items-center justify-center w-full h-full bg-card-dark text-white">
                             <div class="flex items-center gap-1 font-black text-lg leading-none">
@@ -267,7 +266,7 @@
                             </div>
                         </div>
                         } @else {
-                        <span class="text-background-dark font-black text-xl italic pr-1 vs-text">VS</span>
+                        <span class="text-white font-black text-xl italic pr-1 vs-text">VS</span>
                         }
                     </div>
                 </div>

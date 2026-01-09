@@ -34,6 +34,11 @@
     display: block;
     background-color: var(--bg-primary); 
     transition: background-color 0.3s ease;
+    //font-family: 'Newsreader', 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+h1, h2, h3 {
+    font-family: 'Newsreader', 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 /* CDK Drag & Drop Styles */
@@ -169,4 +174,3 @@
                 0 3px 14px 2px rgba(0, 0, 0, 0.05);
   }
 }
-

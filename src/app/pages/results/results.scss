@@ -7,14 +7,11 @@
 
 // Light mode overrides for results page
 :host-context(html.light) {
-  .text-primary,
-  .text-\[\#2bee7c\] {
+  .text-primary {
     color: #1F3A2B;
   }
 
-  .text-\[\#92c9a9\] {
-    color: #1F3A2B !important;
-  }
+
 
   .results-select {
     color-scheme: light !important;
@@ -53,7 +50,5 @@
     color: #2bee7c;
   }
 
-  .text-\[\#92c9a9\] {
-    color: #92c9a9;
-  }
+
 }

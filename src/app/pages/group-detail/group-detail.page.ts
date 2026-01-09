@@ -24,6 +24,7 @@ export class GroupDetailPage {
   protected authService = inject(AuthService);
   private renderer = inject(Renderer2);
   private document = inject(DOCUMENT);
+  protected math = Math;
 
   selectedView = signal<'upcoming' | 'previous'>('upcoming');
 
@@ -54,11 +55,37 @@ export class GroupDetailPage {
     this.route.params.pipe(switchMap((params) => this.eventService.getEvents(params['id'])))
   );
 
-  filteredEvents = computed(() => {
+  currentPage = signal(1);
+  pageSize = 5;
+
+  totalPages = computed(() => Math.ceil(this.sortedEvents().length / this.pageSize));
+
+  visiblePages = computed(() => {
+    const total = this.totalPages();
+    const current = this.currentPage();
+    const range: (number | string)[] = [];
+
+    if (total <= 7) {
+      for (let i = 1; i <= total; i++) range.push(i);
+    } else {
+      range.push(1);
+      if (current > 3) range.push('...');
+
+      const start = Math.max(2, current - 1);
+      const end = Math.min(total - 1, current + 1);
+
+      for (let i = start; i <= end; i++) range.push(i);
+
+      if (current < total - 2) range.push('...');
+      range.push(total);
+    }
+    return range;
+  });
+
+  sortedEvents = computed(() => {
     const allEvents = this.events();
     if (!allEvents) return [];
 
-    const now = new Date();
     const view = this.selectedView();
 
     return allEvents
@@ -73,6 +100,35 @@ export class GroupDetailPage {
         return view === 'upcoming' ? timeA - timeB : timeB - timeA;
       });
   });
+
+  paginatedEvents = computed(() => {
+    const events = this.sortedEvents();
+    const start = (this.currentPage() - 1) * this.pageSize;
+    return events.slice(start, start + this.pageSize);
+  });
+
+  setView(view: 'upcoming' | 'previous') {
+    this.selectedView.set(view);
+    this.currentPage.set(1);
+  }
+
+  nextPage() {
+    if (this.currentPage() < this.totalPages()) {
+      this.currentPage.update((p) => p + 1);
+    }
+  }
+
+  previousPage() {
+    if (this.currentPage() > 1) {
+      this.currentPage.update((p) => p - 1);
+    }
+  }
+
+  goToPage(page: number | string) {
+    if (typeof page === 'number') {
+      this.currentPage.set(page);
+    }
+  }
 
   matchStats = computed(() => {
     const events = this.events();

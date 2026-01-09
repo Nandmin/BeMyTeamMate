@@ -127,21 +127,52 @@
                             Események
                         </h3>
                         <div class="flex bg-white/5 p-1 rounded-lg border border-white/10">
-                            <button (click)="selectedView.set('upcoming')"
-                                [class.bg-white/10]="selectedView() === 'upcoming'"
+                            <button (click)="setView('upcoming')" [class.bg-white/10]="selectedView() === 'upcoming'"
                                 [class.text-white]="selectedView() === 'upcoming'"
                                 [class.text-gray-400]="selectedView() !== 'upcoming'"
                                 class="px-4 py-1.5 rounded-md text-sm font-medium shadow-sm transition-all">Közelgő</button>
-                            <button (click)="selectedView.set('previous')"
-                                [class.bg-white/10]="selectedView() === 'previous'"
+                            <button (click)="setView('previous')" [class.bg-white/10]="selectedView() === 'previous'"
                                 [class.text-white]="selectedView() === 'previous'"
                                 [class.text-gray-400]="selectedView() !== 'previous'"
                                 class="px-4 py-1.5 rounded-md text-sm font-medium transition-all">Korábbi</button>
                         </div>
                     </div>
 
+                    <!-- Pagination (Top) -->
+                    @if (totalPages() > 1) {
+                    <nav class="flex items-center justify-center gap-4 mb-6" aria-label="Lapozás">
+                        <button (click)="previousPage()" [disabled]="currentPage() === 1"
+                            class="w-10 h-10 flex items-center justify-center rounded-full transition-all duration-200 bg-white/5 border border-white/10 text-gray-400 hover:text-white hover:bg-white/10 hover:border-primary/30 disabled:opacity-30 disabled:cursor-not-allowed">
+                            <span class="material-symbols-outlined">chevron_left</span>
+                        </button>
+
+                        <div class="flex items-center gap-2">
+                            @for (page of visiblePages(); track page) {
+                            @if (page === '...') {
+                            <span class="w-8 h-8 flex items-center justify-center text-gray-400 font-medium">
+                                ...
+                            </span>
+                            }
+                            @if (page !== '...') {
+                            <button (click)="goToPage(page)" [ngClass]="currentPage() === page 
+                                    ? 'bg-primary text-white font-bold' 
+                                    : 'bg-white/5 text-gray-400 border-white/10 hover:bg-white/10 hover:text-white'"
+                                class="w-8 h-8 flex items-center justify-center rounded-full text-sm transition-all duration-200 border border-transparent">
+                                {{ page }}
+                            </button>
+                            }
+                            }
+                        </div>
+
+                        <button (click)="nextPage()" [disabled]="currentPage() === totalPages()"
+                            class="w-10 h-10 flex items-center justify-center rounded-full transition-all duration-200 bg-white/5 border border-white/10 text-gray-400 hover:text-white hover:bg-white/10 hover:border-primary/30 disabled:opacity-30 disabled:cursor-not-allowed">
+                            <span class="material-symbols-outlined">chevron_right</span>
+                        </button>
+                    </nav>
+                    }
+
                     <!-- Event Cards -->
-                    @for (event of filteredEvents(); track event.id) {
+                    @for (event of paginatedEvents(); track event.id) {
                     <div (click)="openAttendeesModal(event)"
                         class="group relative overflow-hidden rounded-2xl bg-white/5 border border-white/10 p-5 hover:border-primary/50 transition-all duration-300 hover:shadow-lg hover:-translate-y-1 cursor-pointer">
                         <div class="absolute top-0 right-0 p-0 flex gap-2">
@@ -235,6 +266,8 @@
                         'Nincsenek korábbi események ebben a csoportban.' }}
                     </p>
                     }
+
+
 
                     <!-- Create New Event CTA -->
                     @if (isMember()) {

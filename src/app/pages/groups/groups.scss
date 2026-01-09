@@ -103,6 +103,11 @@
     background: #ffffff;
   }
 
+  .group-creation-input {
+    color: #1e293b;
+    border-color: rgba(0, 0, 0, 0.1);
+  }
+
   .border-border-green {
     border-color: rgba(0, 0, 0, 0.1);
   }
@@ -114,5 +119,26 @@
   .bg-background-dark {
     background: #f1f5f9;
   }
+
+  // Group type radio selectors in modal
+  .peer + div {
+    background-color: #f8fafc;
+    border-color: rgba(0, 0, 0, 0.1);
+    span {
+      color: #64748b;
+    }
+  }
+
+  .peer:checked + div {
+    border-color: #22c55e !important;
+    background-color: rgba(34, 197, 94, 0.05);
+    span {
+      color: #15803d !important;
+    }
+  }
+}
+
+h1, h3 {
+  font-family: 'Newsreader', 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 

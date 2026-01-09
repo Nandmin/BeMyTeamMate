@@ -2,8 +2,8 @@
     <div class="layout-content-container flex flex-col lg:flex-row max-w-[1200px] flex-1 gap-6">
         <!-- Sidebar Menu -->
         <aside class="w-full lg:w-72 flex-shrink-0">
-            <div
-                class="sticky flex flex-col gap-4 bg-gradient-to-b from-dark-accent to-background-dark backdrop-blur-sm p-4 rounded-xl border border-[#234833]" style="top: 2rem;">
+            <div class="sticky flex flex-col gap-4 bg-gradient-to-b from-dark-accent to-background-dark backdrop-blur-sm p-4 rounded-xl border border-[#234833]"
+                style="top: 2rem;">
                 <div class="flex items-center gap-3 p-2 mb-2">
                     <div class="bg-center bg-no-repeat bg-cover rounded-full size-12 border-2 border-primary"
                         [style.backgroundImage]="'url(' + (profileUser()?.photoURL || 'https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y') + ')'">
@@ -23,17 +23,16 @@
                     <a class="group flex items-center gap-3 px-4 py-3 rounded-xl border-l-4 transition-all duration-200"
                         href="#personal" (click)="scrollTo('personal', $event)"
                         [ngClass]="activeSection() === 'personal' ? 'bg-primary/10 border-primary' : 'hover:bg-[#234833]/50 border-transparent hover:border-text-secondary'">
-                        <span
-                            class="material-symbols-outlined group-hover:scale-110 transition-transform"
+                        <span class="material-symbols-outlined group-hover:scale-110 transition-transform"
                             [ngClass]="activeSection() === 'personal' ? 'text-primary' : 'text-text-secondary group-hover:text-white'">person</span>
                         <p class="text-sm font-medium leading-normal"
-                            [ngClass]="activeSection() === 'personal' ? 'text-white' : 'text-[#2bee7c] group-hover:text-white'">Személyes adatok</p>
+                            [ngClass]="activeSection() === 'personal' ? 'text-white' : 'text-[#2bee7c] group-hover:text-white'">
+                            Személyes adatok</p>
                     </a>
                     <a class="group flex items-center gap-3 px-4 py-3 rounded-xl border-l-4 transition-all duration-200"
                         href="#groups" (click)="scrollTo('groups', $event)"
                         [ngClass]="activeSection() === 'groups' ? 'bg-primary/10 border-primary' : 'hover:bg-[#234833]/50 border-transparent hover:border-text-secondary'">
-                        <span
-                            class="material-symbols-outlined transition-colors"
+                        <span class="material-symbols-outlined transition-colors"
                             [ngClass]="activeSection() === 'groups' ? 'text-primary' : 'text-text-secondary group-hover:text-white'">groups</span>
                         <p class="text-sm font-medium leading-normal"
                             [ngClass]="activeSection() === 'groups' ? 'text-white' : 'text-[#2bee7c] group-hover:text-white'">
@@ -44,8 +43,7 @@
                     <a class="group flex items-center gap-3 px-4 py-3 rounded-xl border-l-4 transition-all duration-200"
                         href="#notifications" (click)="scrollTo('notifications', $event)"
                         [ngClass]="activeSection() === 'notifications' ? 'bg-primary/10 border-primary' : 'hover:bg-[#234833]/50 border-transparent hover:border-text-secondary'">
-                        <span
-                            class="material-symbols-outlined transition-colors"
+                        <span class="material-symbols-outlined transition-colors"
                             [ngClass]="activeSection() === 'notifications' ? 'text-primary' : 'text-text-secondary group-hover:text-white'">notifications</span>
                         <p class="text-sm font-medium leading-normal"
                             [ngClass]="activeSection() === 'notifications' ? 'text-white' : 'text-[#2bee7c] group-hover:text-white'">
@@ -55,8 +53,7 @@
                     <a class="group flex items-center gap-3 px-4 py-3 rounded-xl border-l-4 transition-all duration-200"
                         href="#privacy" (click)="scrollTo('privacy', $event)"
                         [ngClass]="activeSection() === 'privacy' ? 'bg-primary/10 border-primary' : 'hover:bg-[#234833]/50 border-transparent hover:border-text-secondary'">
-                        <span
-                            class="material-symbols-outlined transition-colors"
+                        <span class="material-symbols-outlined transition-colors"
                             [ngClass]="activeSection() === 'privacy' ? 'text-primary' : 'text-text-secondary group-hover:text-white'">security</span>
                         <p class="text-sm font-medium leading-normal"
                             [ngClass]="activeSection() === 'privacy' ? 'text-white' : 'text-[#2bee7c] group-hover:text-white'">
@@ -76,7 +73,8 @@
         <!-- Content Area -->
         <div class="flex-1 flex flex-col gap-8 min-w-0">
             <!-- Section: Personal Info -->
-            <section class="bg-gradient-to-b from-dark-accent to-background-dark rounded-2xl border border-[#234833] p-6 md:p-8 animate-fade-in-up"
+            <section
+                class="bg-gradient-to-b from-dark-accent to-background-dark rounded-2xl border border-[#234833] p-6 md:p-8 animate-fade-in-up"
                 id="personal">
                 <div class="flex items-center justify-between mb-8">
                     <h2 class="text-2xl font-bold text-white tracking-tight">
@@ -127,7 +125,7 @@
                         @if (isOwnProfile()) {
                         <div class="flex gap-4 mt-2 justify-center md:justify-start">
                             <button (click)="fileInput.click()"
-                                class="flex items-center justify-center rounded-xl h-10 px-6 bg-primary text-background-dark text-sm font-bold hover:bg-primary-hover transition-colors shadow-[0_0_15px_rgba(43,238,124,0.3)]">
+                                class="upload-btn flex items-center justify-center rounded-xl h-10 px-6 bg-primary text-white text-sm font-bold hover:bg-primary-hover transition-colors shadow-[0_0_15px_rgba(43,238,124,0.3)]">
                                 Kép feltöltése
                             </button>
                             <button (click)="onDeletePhoto()"
@@ -193,7 +191,8 @@
                 <!-- Accordion: Jelszó megváltoztatása (zárt alapértelmezés szerint) -->
                 <div class="mt-6">
                     <details class="rounded-xl border border-[#326748] p-4 profile-panel">
-                        <summary class="cursor-pointer flex items-center justify-between text-white font-medium py-2 px-2 select-none">
+                        <summary
+                            class="cursor-pointer flex items-center justify-between text-white font-medium py-2 px-2 select-none">
                             <div class="flex items-center gap-3">
                                 <span class="material-symbols-outlined text-primary">key</span>
                                 Jelszó megváltoztatása
@@ -223,25 +222,27 @@
                 </div>
                 <div class="flex justify-end pt-8">
                     <button (click)="onSaveProfile()"
-                        class="flex items-center gap-2 rounded-xl h-12 px-8 bg-primary text-background-dark text-base font-bold hover:bg-primary-hover hover:scale-105 transition-all shadow-[0_4px_14px_rgba(43,238,124,0.4)]">
+                        class="save-profile-btn flex items-center gap-2 rounded-xl h-12 px-8 bg-primary text-white text-base font-bold hover:bg-primary-hover hover:scale-105 transition-all shadow-[0_4px_14px_rgba(43,238,124,0.4)]">
                         <span class="material-symbols-outlined text-[20px]">save</span>
                         Mentés
                     </button>
                 </div>
                 }
             </section>
-<!-- Section: Groups -->
-<section class="bg-gradient-to-b from-dark-accent to-background-dark rounded-2xl border border-[#234833] p-6 md:p-8" id="groups">
-    <div class="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
-        <div>
-            <h2 class="text-2xl font-bold text-white tracking-tight">Tagságaim</h2>
-            <p class="text-text-secondary text-sm mt-1">
-                {{ isOwnProfile() ? 'Tekintsd át a csapataidat.' :
-                (profileUser()?.displayName ||
-                'A felhasználó') + ' csapatai.' }}
-            </p>
-        </div>
-        <!-- @if (isOwnProfile()) {
+            <!-- Section: Groups -->
+            <section
+                class="bg-gradient-to-b from-dark-accent to-background-dark rounded-2xl border border-[#234833] p-6 md:p-8"
+                id="groups">
+                <div class="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
+                    <div>
+                        <h2 class="text-2xl font-bold text-white tracking-tight">Tagságaim</h2>
+                        <p class="text-text-secondary text-sm mt-1">
+                            {{ isOwnProfile() ? 'Tekintsd át a csapataidat.' :
+                            (profileUser()?.displayName ||
+                            'A felhasználó') + ' csapatai.' }}
+                        </p>
+                    </div>
+                    <!-- @if (isOwnProfile()) {
         <div class="flex gap-3">
             <button
                 class="flex items-center gap-2 rounded-xl h-10 px-4 bg-[#234833] text-white text-sm font-bold hover:bg-[#2c5840] transition-colors">
@@ -255,72 +256,74 @@
             </button>
         </div> 
         }-->
-    </div>
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        @for (group of userGroups(); track group.id) {
-        <div
-            class="group relative overflow-hidden rounded-xl border border-[#326748] bg-surface-darker hover:border-primary transition-all duration-300 max-w-[380px] w-full mx-auto md:mx-0">
-            <!-- Image section -->
-            <div class="h-32 w-full bg-cover bg-center relative"
-                [style.backgroundImage]="'url(' + (group.image || 'https://images.unsplash.com/photo-1517486808906-6ca8b3f04846?auto=format&fit=crop&q=80&w=800') + ')'">
-                <div class="absolute inset-0"></div>
-                <!-- Sport Icon overlapping the bottom edge -->
-                <div
-                    class="absolute bottom-0 translate-y-1/2 left-6 size-12 rounded-xl border-2 border-white/20 bg-surface-dark backdrop-blur-md flex items-center justify-center text-primary shadow-xl z-30">
-                    <span class="material-symbols-outlined text-2xl">
-                        {{ getSportIcon(group.nextEvent?.sport) }}
-                    </span>
                 </div>
-            </div>
-            <div class="p-5 pt-5 relative bg-gradient-to-b from-dark-accent to-background-dark">
-                <!-- Role tag aligned right -->
-                <div class="flex justify-end mb-1">
-                    @if (group.ownerId === profileUser()?.uid) {
-                    <span
-                        class="px-2 py-0.5 rounded text-[10px] uppercase tracking-wider bg-primary/20 text-primary font-bold border border-primary/20 shadow-sm">Kapitány</span>
-                    } @else {
-                    <span
-                        class="px-2 py-0.5 rounded text-[10px] uppercase tracking-wider bg-white/5 border border-white/10 text-text-secondary font-bold">Tag</span>
-                    }
-                </div>
-                <h3
-                    class="text-xl font-bold text-white mb-2 truncate group-hover:text-primary transition-colors">
-                    {{ group.name }}</h3>
-                <!-- Group stats and Next Event info -->
-                <div
-                    class="flex items-center flex-wrap gap-x-3 gap-y-1 mb-5 text-[12px] text-text-secondary">
-                    <span class="flex items-center gap-1">
-                        <span class="material-symbols-outlined text-[14px] opacity-70">person</span>
-                        {{ group.memberCount }} tag
-                    </span>
-                    @if (group.nextEvent) {
-                    <span class="opacity-30">•</span>
-                    <div class="flex items-center gap-1.5 min-w-0">
-                        <span class="material-symbols-outlined text-[14px] text-primary">schedule</span>
-                        <span class="truncate">Következő esemény: {{ formatFullDate(group.nextEvent.date,
-                            group.nextEvent.time) }}</span>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    @for (group of userGroups(); track group.id) {
+                    <div
+                        class="group relative overflow-hidden rounded-xl border border-[#326748] bg-surface-darker hover:border-primary transition-all duration-300 max-w-[380px] w-full mx-auto md:mx-0">
+                        <!-- Image section -->
+                        <div class="h-32 w-full bg-cover bg-center relative"
+                            [style.backgroundImage]="'url(' + (group.image || 'https://images.unsplash.com/photo-1517486808906-6ca8b3f04846?auto=format&fit=crop&q=80&w=800') + ')'">
+                            <div class="absolute inset-0"></div>
+                            <!-- Sport Icon overlapping the bottom edge -->
+                            <div
+                                class="absolute bottom-0 translate-y-1/2 left-6 size-12 rounded-xl border-2 border-white/20 bg-surface-dark backdrop-blur-md flex items-center justify-center text-primary shadow-xl z-30">
+                                <span class="material-symbols-outlined text-2xl">
+                                    {{ getSportIcon(group.nextEvent?.sport) }}
+                                </span>
+                            </div>
+                        </div>
+                        <div class="p-5 pt-5 relative bg-gradient-to-b from-dark-accent to-background-dark">
+                            <!-- Role tag aligned right -->
+                            <div class="flex justify-end mb-1">
+                                @if (group.ownerId === profileUser()?.uid) {
+                                <span
+                                    class="px-2 py-0.5 rounded text-[10px] uppercase tracking-wider bg-primary/20 text-primary font-bold border border-primary/20 shadow-sm">Kapitány</span>
+                                } @else {
+                                <span
+                                    class="px-2 py-0.5 rounded text-[10px] uppercase tracking-wider bg-white/5 border border-white/10 text-text-secondary font-bold">Tag</span>
+                                }
+                            </div>
+                            <h3
+                                class="text-xl font-bold text-white mb-2 truncate group-hover:text-primary transition-colors">
+                                {{ group.name }}</h3>
+                            <!-- Group stats and Next Event info -->
+                            <div
+                                class="flex items-center flex-wrap gap-x-3 gap-y-1 mb-5 text-[12px] text-text-secondary">
+                                <span class="flex items-center gap-1">
+                                    <span class="material-symbols-outlined text-[14px] opacity-70">person</span>
+                                    {{ group.memberCount }} tag
+                                </span>
+                                @if (group.nextEvent) {
+                                <span class="opacity-30">•</span>
+                                <div class="flex items-center gap-1.5 min-w-0">
+                                    <span class="material-symbols-outlined text-[14px] text-primary">schedule</span>
+                                    <span class="truncate">Következő esemény: {{ formatFullDate(group.nextEvent.date,
+                                        group.nextEvent.time) }}</span>
+                                </div>
+                                }
+                            </div>
+                            <button [routerLink]="['/groups', group.id]"
+                                class="view-group-btn w-full py-2.5 rounded-lg bg-primary hover:bg-primary-hover text-white text-xs font-bold transition-all uppercase tracking-widest shadow-lg">
+                                Megtekintés
+                            </button>
+                        </div>
+                    </div>
+                    } @empty {
+                    <div class="col-span-1 md:col-span-2 py-10 text-center">
+                        <p class="text-text-secondary">
+                            {{ isOwnProfile() ? 'Még nem tartozol egyetlen társasághoz sem.' : 'Ez a felhasználó még nem
+                            tartozik egyetlen társasághoz sem.' }}
+                        </p>
                     </div>
                     }
                 </div>
-                <button [routerLink]="['/groups', group.id]"
-                    class="w-full py-2.5 rounded-lg bg-[#0b28aa] hover:bg-primary hover:text-background-dark text-white text-xs font-bold transition-all uppercase tracking-widest shadow-lg">
-                    Megtekintés
-                </button>
-            </div>
-        </div>
-        } @empty {
-        <div class="col-span-1 md:col-span-2 py-10 text-center">
-            <p class="text-text-secondary">
-                {{ isOwnProfile() ? 'Még nem tartozol egyetlen társasághoz sem.' : 'Ez a felhasználó még nem
-                tartozik egyetlen társasághoz sem.' }}
-            </p>
-        </div>
-        }
-    </div>
-</section>
+            </section>
             @if (isOwnProfile()) {
             <!-- Section: Notifications -->
-            <section class="bg-gradient-to-b from-dark-accent to-background-dark rounded-2xl border border-[#234833] p-6 md:p-8 mb-8" id="notifications">
+            <section
+                class="bg-gradient-to-b from-dark-accent to-background-dark rounded-2xl border border-[#234833] p-6 md:p-8 mb-8"
+                id="notifications">
                 <div class="mb-6">
                     <h2 class="text-2xl font-bold text-white tracking-tight">Értesítések</h2>
                 </div>

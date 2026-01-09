@@ -143,3 +143,11 @@ section {
   }
 }
 
+h2, h3 {
+  font-family: 'Newsreader', 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+// Force white text for the view group button as it always has a dark blue background
+.view-group-btn, .upload-btn {
+    color: #ffffff !important;
+}

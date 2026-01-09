@@ -177,3 +177,13 @@ body {
   transform: rotate(15deg);
 }
 
+
+/* Global override for primary buttons to ensure text is always white */
+/* This overrides the light mode text inversion in .from-dark-accent sections */
+button.bg-primary,
+a.bg-primary,
+.view-group-btn,
+.upload-btn,
+.save-profile-btn {
+  color: #ffffff !important;
+}

@@ -2,7 +2,7 @@
     <!-- Title Section -->
     <div class="flex flex-col md:flex-row md:items-end justify-between gap-4 pb-6 pt-2">
         <div>
-            <h1 class="text-white tracking-tight text-[32px] md:text-[40px] font-extrabold leading-tight">Csoportjaim
+            <h1 class="text-white tracking-tight text-[32px] md:text-[40px] font-extrabold leading-tight">Tagságaim
             </h1>
             <p class="text-gray-400 mt-2 text-sm md:text-base">Kezeld a csoportjaidat, vagy csatlakozz újakhoz.</p>
         </div>
@@ -157,7 +157,7 @@
             <div class="space-y-2">
                 <label class="text-sm font-medium text-gray-400">Csoport neve</label>
                 <input type="text" formControlName="name" placeholder="Pl. Szerdai Foci"
-                    class="w-full bg-background-dark border border-border-green rounded-xl p-3 text-white placeholder-gray-600 focus:ring-2 focus:ring-primary focus:border-transparent transition-all" />
+                    class="group-creation-input w-full bg-background-dark border border-border-green rounded-xl p-3 text-white placeholder-gray-600 focus:ring-2 focus:ring-primary focus:border-transparent transition-all" />
                 @if (groupForm.get('name')?.touched && groupForm.get('name')?.errors?.['required']) {
                 <p class="text-xs text-red-500 mt-1">A csoport név megadása kötelező.</p>
                 }
@@ -192,7 +192,7 @@
             <div class="space-y-2">
                 <label class="text-sm font-medium text-gray-400">Leírás (opcionális)</label>
                 <textarea formControlName="description" rows="3" placeholder="Miről szól ez a csoport?"
-                    class="w-full bg-background-dark border border-border-green rounded-xl p-3 text-white placeholder-gray-600 focus:ring-2 focus:ring-primary focus:border-transparent transition-all resize-none"></textarea>
+                    class="group-creation-input w-full bg-background-dark border border-border-green rounded-xl p-3 text-white placeholder-gray-600 focus:ring-2 focus:ring-primary focus:border-transparent transition-all resize-none"></textarea>
             </div>
 
             <!-- Submit Button -->

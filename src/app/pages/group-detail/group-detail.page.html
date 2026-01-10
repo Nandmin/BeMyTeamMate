@@ -293,9 +293,10 @@
 
                     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-3">
                         @for (member of members(); track member.id) {
-                        <div class="flex items-center gap-3 p-3 rounded-xl bg-white/5 border transition-all group"
+                        <div [routerLink]="['/profile', member.userId]"
+                            class="flex items-center gap-3 p-3 rounded-xl bg-white/5 border transition-all group cursor-pointer"
                             [ngClass]="member.isAdmin ? 'border-primary/30 hover:bg-primary/5' : 'border-white/5 hover:border-white/20'">
-                            <div class="relative cursor-pointer" [routerLink]="['/profile', member.userId]">
+                            <div class="relative">
                                 <img [src]="member.photo || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + member.userId"
                                     [alt]="member.name"
                                     class="w-12 h-12 rounded-full object-cover border-2 border-transparent group-hover:border-primary transition-all">
@@ -307,8 +308,9 @@
                                 }
                             </div>
                             <div class="flex-1 min-w-0">
-                                <p class="text-white font-bold text-sm truncate hover:text-primary cursor-pointer transition-colors"
-                                    [routerLink]="['/profile', member.userId]">{{ member.name }}</p>
+                                <p class="text-white font-bold text-sm truncate hover:text-primary transition-colors">
+                                    {{ member.name }}
+                                </p>
                                 <p class="text-xs font-medium"
                                     [ngClass]="member.isAdmin ? 'text-primary' : 'text-gray-400'">{{
                                     member.role }}</p>
@@ -318,7 +320,7 @@
                                     </div>
                                 </div>
                             </div>
-                            <button
+                            <button (click)="$event.stopPropagation()"
                                 class="text-gray-500 hover:text-white opacity-0 group-hover:opacity-100 transition-opacity">
                                 <span class="material-symbols-outlined">more_vert</span>
                             </button>

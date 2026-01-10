@@ -124,6 +124,39 @@ export class GroupService {
     );
   }
 
+  getGroupsForMember(userId: string): Observable<Group[]> {
+    return defer(() => {
+      if (!userId) return of([]);
+      const membersQuery = query(
+        collectionGroup(this.firestore, 'members'),
+        where('userId', '==', userId)
+      );
+      const ownedQuery = query(this.groupsCollection, where('ownerId', '==', userId));
+      return from(Promise.all([getDocs(ownedQuery), getDocs(membersQuery)])).pipe(
+        switchMap(([ownedSnap, membersSnap]) => {
+          const ownedGroups = ownedSnap.docs.map((d) => {
+            const group = { id: d.id, ...(d.data() as Group) };
+            this.setCachedGroup(d.id, group);
+            return group;
+          });
+          const ownedIds = new Set(ownedGroups.map((g) => g.id));
+          const ids = membersSnap.docs
+            .map((d) => d.ref.parent.parent?.id)
+            .filter(Boolean) as string[];
+          const missingIds = Array.from(new Set(ids.filter((id) => !ownedIds.has(id))));
+          if (missingIds.length === 0) {
+            return of(ownedGroups.sort((a, b) => a.name.localeCompare(b.name)));
+          }
+          return from(this.fetchGroupsByIds(missingIds)).pipe(
+            map((memberGroups) =>
+              [...ownedGroups, ...memberGroups].sort((a, b) => a.name.localeCompare(b.name))
+            )
+          );
+        })
+      );
+    });
+  }
+
   getGroup(id: string): Observable<Group | undefined> {
     return defer(() => {
       const cached = this.getCachedGroup(id);
@@ -334,16 +367,7 @@ export class GroupService {
     const ownedIds = new Set(ownedGroups.map((g) => g.id));
     const missingIds = joinedIds.filter((id) => !ownedIds.has(id));
 
-    const joinedGroups: Group[] = [];
-    const chunks = this.chunkArray(missingIds, 10);
-    for (const chunk of chunks) {
-      const chunkSnap = await getDocs(
-        query(this.groupsCollection, where(documentId(), 'in', chunk))
-      );
-      joinedGroups.push(
-        ...chunkSnap.docs.map((d) => ({ id: d.id, ...(d.data() as Group) }))
-      );
-    }
+    const joinedGroups = await this.fetchGroupsByIds(missingIds);
 
     const allGroups = [...ownedGroups, ...joinedGroups].sort((a, b) =>
       a.name.localeCompare(b.name)
@@ -367,6 +391,23 @@ export class GroupService {
       chunks.push(items.slice(i, i + size));
     }
     return chunks;
+  }
+
+  private async fetchGroupsByIds(ids: string[]): Promise<Group[]> {
+    if (ids.length === 0) return [];
+    const chunks = this.chunkArray(ids, 10);
+    const groups: Group[] = [];
+    for (const chunk of chunks) {
+      const chunkSnap = await getDocs(
+        query(this.groupsCollection, where(documentId(), 'in', chunk))
+      );
+      for (const docSnap of chunkSnap.docs) {
+        const group = { id: docSnap.id, ...(docSnap.data() as Group) };
+        groups.push(group);
+        this.setCachedGroup(docSnap.id, group);
+      }
+    }
+    return groups.sort((a, b) => a.name.localeCompare(b.name));
   }
 
   private getCachedGroup(groupId: string): Group | null {

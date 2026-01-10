@@ -16,27 +16,27 @@
         <!-- Center: Navigation Links (Desktop) -->
         <nav class="hidden md:flex items-center gap-1 h-full">
             <a routerLink="/" [routerLinkActiveOptions]="{exact: true}" routerLinkActive="active-link"
-                class="relative flex h-8 items-center px-4 text-lg font-semibold text-gray-400 hover:text-white transition-all">
+                class="relative flex h-8 items-center px-4 text-base font-semibold text-gray-400 hover:text-white transition-all">
                 Kezdőlap
             </a>
             <a routerLink="/events" routerLinkActive="active-link"
-                class="relative flex h-8 items-center px-4 text-lg font-semibold text-gray-400 hover:text-white transition-all">
+                class="relative flex h-8 items-center px-4 text-base font-semibold text-gray-400 hover:text-white transition-all">
                 Események
             </a>
             <a routerLink="/groups" routerLinkActive="active-link"
-                class="relative flex h-8 items-center px-4 text-lg font-semibold text-gray-400 hover:text-white transition-all">
+                class="relative flex h-8 items-center px-4 text-base font-semibold text-gray-400 hover:text-white transition-all">
                 Tagságaim
             </a>
             <a routerLink="/results" routerLinkActive="active-link"
-                class="relative flex h-8 items-center px-4 text-lg font-semibold text-gray-400 hover:text-white transition-all">
+                class="relative flex h-8 items-center px-4 text-base font-semibold text-gray-400 hover:text-white transition-all">
                 Eredmények
             </a>
-            @if (authService.fullCurrentUser()?.role === 'siteadmin') {
+            <!-- @if (authService.fullCurrentUser()?.role === 'siteadmin') {
             <a routerLink="/admin" routerLinkActive="active-link"
-                class="relative flex h-8 items-center px-4 text-lg font-semibold text-gray-400 hover:text-white transition-all">
+                class="relative flex h-8 items-center px-4 text-base font-semibold text-gray-400 hover:text-white transition-all">
                 Dashboard
-            </a>
-            }
+            </a> 
+            } -->
         </nav>
 
         <!-- Right: Auth Section -->
@@ -62,7 +62,7 @@
                 </button>
                 <div class="flex items-center gap-3 cursor-pointer group/user" routerLink="/profile">
                     <div class="hidden sm:flex flex-col items-end">
-                        <span class="text-lg font-bold leading-none group-hover/user:text-primary transition-colors"
+                        <span class="text-base font-bold leading-none group-hover/user:text-primary transition-colors"
                             [class.text-white]="themeService.isDark()" [class.text-light-text]="themeService.isLight()">
                             {{ user.displayName || 'Játékos' }}
                         </span>

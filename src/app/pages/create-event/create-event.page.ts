@@ -5,6 +5,7 @@ import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { EventService } from '../../services/event.service';
 import { AuthService } from '../../services/auth.service';
+import { ModalService } from '../../services/modal.service';
 import { Timestamp } from '@angular/fire/firestore';
 
 @Component({
@@ -20,6 +21,7 @@ export class CreateEventPage implements OnInit {
   private sanitizer = inject(DomSanitizer);
   private eventService = inject(EventService);
   private authService = inject(AuthService);
+  private modalService = inject(ModalService);
 
   groupId = this.route.snapshot.params['id'];
   eventId = this.route.snapshot.params['eventId'];
@@ -64,7 +66,18 @@ export class CreateEventPage implements OnInit {
       // Security check: only creator can edit
       const user = this.authService.currentUser();
       if (event.creatorId !== user?.uid) {
-        alert('Nincs jogosultságod az esemény szerkesztéséhez.');
+        await this.modalService.alert(
+          'Nincs jogosultsagod az esemeny szerkesztesehez.',
+          'Hiba',
+          'error'
+        );
+        this.router.navigate(['/groups', this.groupId]);
+        return;
+      }
+
+      const eventDate = this.toDate(event.date);
+      if (!eventDate) {
+        await this.modalService.alert('Hibas esemeny datum.', 'Hiba', 'error');
         this.router.navigate(['/groups', this.groupId]);
         return;
       }
@@ -72,7 +85,7 @@ export class CreateEventPage implements OnInit {
       this.eventData = {
         title: event.title,
         sport: event.sport,
-        date: event.date.toDate().toISOString().split('T')[0],
+        date: eventDate.toISOString().split('T')[0],
         time: event.time,
         duration: event.duration,
         location: event.location,
@@ -83,7 +96,7 @@ export class CreateEventPage implements OnInit {
       };
     } catch (error) {
       console.error('Error loading event:', error);
-      alert('Hiba történt az esemény betöltésekor.');
+      await this.modalService.alert('Hiba tortent az esemeny betolteseakor.', 'Hiba', 'error');
       this.router.navigate(['/groups', this.groupId]);
     }
   }
@@ -143,7 +156,7 @@ export class CreateEventPage implements OnInit {
       this.router.navigate(['/groups', this.groupId]);
     } catch (error) {
       console.error('Error saving event:', error);
-      alert('Hiba történt az esemény mentésekor.');
+      await this.modalService.alert('Hiba tortent az esemeny mentesekor.', 'Hiba', 'error');
     } finally {
       this.isSubmitting.set(false);
     }
@@ -156,14 +169,15 @@ export class CreateEventPage implements OnInit {
   async onDeleteEvent() {
     if (!this.groupId || !this.eventId) return;
 
-    if (confirm('Biztosan törölni szeretnéd ezt az eseményt?')) {
+    const shouldDelete = await this.modalService.confirm('Biztosan torolni szeretned ezt az esemenyt?');
+    if (shouldDelete) {
       this.isSubmitting.set(true);
       try {
         await this.eventService.deleteEvent(this.groupId, this.eventId);
         this.router.navigate(['/groups', this.groupId]);
       } catch (error) {
         console.error('Error deleting event:', error);
-        alert('Hiba történt az esemény törlésekor.');
+        await this.modalService.alert('Hiba tortent az esemeny torlesekor.', 'Hiba', 'error');
       } finally {
         this.isSubmitting.set(false);
       }
@@ -220,5 +234,13 @@ export class CreateEventPage implements OnInit {
       this.mapZoom -= 1;
       this.cachedMapUrl = null;
     }
+  }
+
+  private toDate(value: any): Date | null {
+    if (!value) return null;
+    if (value instanceof Date) return value;
+    if (typeof value?.toDate === 'function') return value.toDate();
+    const parsed = new Date(value);
+    return Number.isNaN(parsed.getTime()) ? null : parsed;
   }
 }

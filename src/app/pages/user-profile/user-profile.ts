@@ -139,7 +139,11 @@ export class UserProfilePage {
 
     // Max 1MB
     if (file.size > 1024 * 1024) {
-      alert('A fájl mérete nem lehet nagyobb, mint 1MB.');
+      await this.modalService.alert(
+        'A fájl mérete nem lehet nagyobb, mint 1MB.',
+        'Hiba',
+        'error'
+      );
       return;
     }
 
@@ -192,7 +196,8 @@ export class UserProfilePage {
   }
 
   async onDeletePhoto() {
-    if (confirm('Biztosan törlöd a profilképedet?')) {
+    const shouldDelete = await this.modalService.confirm('Biztosan törlöd a profilképedet?');
+    if (shouldDelete) {
       await this.updateProfilePhoto(null);
     }
   }

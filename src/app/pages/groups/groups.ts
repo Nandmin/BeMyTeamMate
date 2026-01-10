@@ -4,6 +4,7 @@ import { Router, RouterLink } from '@angular/router';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { GroupService, Group } from '../../services/group.service';
 import { AuthService } from '../../services/auth.service';
+import { ModalService } from '../../services/modal.service';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { catchError, of } from 'rxjs';
 
@@ -19,6 +20,7 @@ export class GroupsPage {
   private fb = inject(FormBuilder);
   private router = inject(Router);
   protected authService = inject(AuthService);
+  private modalService = inject(ModalService);
 
   groups: Signal<Group[] | undefined> = toSignal(
     this.groupService.getGroups().pipe(
@@ -62,7 +64,11 @@ export class GroupsPage {
       this.toggleCreateModal();
     } catch (error) {
       console.error('Error creating group:', error);
-      alert('Hiba történt a csoport létrehozása közben. Ellenőrizd a jogosultságokat!');
+      await this.modalService.alert(
+        'Hiba történt a csoport létrehozása közben. Ellenőrizd a jogosultságokat!',
+        'Hiba',
+        'error'
+      );
     } finally {
       this.isSubmitting = false;
     }

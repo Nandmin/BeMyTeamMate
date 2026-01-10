@@ -8,6 +8,7 @@ import { AuthService } from '../../services/auth.service';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { switchMap, combineLatest, map } from 'rxjs';
 import { EventService, SportEvent } from '../../services/event.service';
+import { ModalService } from '../../services/modal.service';
 
 @Component({
   selector: 'app-group-detail',
@@ -22,6 +23,7 @@ export class GroupDetailPage {
   private groupService = inject(GroupService);
   private eventService = inject(EventService);
   protected authService = inject(AuthService);
+  private modalService = inject(ModalService);
   private renderer = inject(Renderer2);
   private document = inject(DOCUMENT);
   protected math = Math;
@@ -229,7 +231,7 @@ export class GroupDetailPage {
       this.selectedEventForRecurrence.set(null);
     } catch (error) {
       console.error('Error making recurring:', error);
-      alert('Hiba történt.');
+      await this.modalService.alert('Hiba történt.', 'Hiba', 'error');
     } finally {
       this.isSubmitting.set(false);
     }
@@ -244,7 +246,7 @@ export class GroupDetailPage {
       await this.groupService.joinGroup(groupId);
     } catch (error) {
       console.error('Error joining group:', error);
-      alert('Hiba történt a csatlakozáskor.');
+      await this.modalService.alert('Hiba történt a csatlakozáskor.', 'Hiba', 'error');
     } finally {
       this.isSubmitting.set(false);
     }
@@ -301,7 +303,11 @@ export class GroupDetailPage {
 
     // Check if user is a member first
     if (!this.isMember()) {
-      alert('Csak csoporttagok jelentkezhetnek az eseményekre.');
+      await this.modalService.alert(
+        'Csak csoporttagok jelentkezhetnek az eseményekre.',
+        'Figyelem',
+        'warning'
+      );
       return;
     }
 
@@ -310,7 +316,11 @@ export class GroupDetailPage {
       await this.eventService.toggleRSVP(groupId, event.id);
     } catch (error: any) {
       console.error('Error toggling RSVP:', error);
-      alert(error.message || 'Hiba történt a jelentkezés során.');
+      await this.modalService.alert(
+        error.message || 'Hiba történt a jelentkezés során.',
+        'Hiba',
+        'error'
+      );
     } finally {
       this.isSubmitting.set(false);
     }

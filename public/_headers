@@ -1,0 +1,6 @@
+/ngsw.json
+  Cache-Control: no-cache
+/ngsw-worker.js
+  Cache-Control: no-cache
+/firebase-messaging-sw.js
+  Cache-Control: no-cache

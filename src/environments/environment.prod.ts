@@ -1,13 +1,15 @@
 export const environment = {
   production: true,
   firebase: {
-    apiKey: 'YOUR_API_KEY',
-    authDomain: 'YOUR_AUTH_DOMAIN',
-    projectId: 'YOUR_PROJECT_ID',
-    storageBucket: 'YOUR_STORAGE_BUCKET',
-    messagingSenderId: 'YOUR_MESSAGING_SENDER_ID',
-    appId: 'YOUR_APP_ID',
-    vapidKey: 'YOUR_VAPID_KEY',
+    apiKey: 'AIzaSyD0CWx35U-Ry5o57rqJ3FaMmm7SQnu5VAk',
+    authDomain: 'bemyteammate.firebaseapp.com',
+    databaseURL: 'https://bemyteammate-default-rtdb.europe-west1.firebasedatabase.app',
+    projectId: 'bemyteammate',
+    storageBucket: 'bemyteammate.firebasestorage.app',
+    messagingSenderId: '592557549877',
+    appId: '1:592557549877:web:4b9655a3f7af4948fcc47c',
+    measurementId: 'G-HK3YR5501H',
+    vapidKey: '5EKZ0McUTcJw8mzyn-mBof7_vOdiDjVS48m-UunqCPI',
   },
   cloudflareWorkerUrl: 'https://your-worker.workers.dev/send-notification',
 };

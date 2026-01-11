@@ -60,6 +60,36 @@
                     <span class="material-symbols-outlined icon">light_mode</span>
                     }
                 </button>
+                <!-- Notifications -->
+                <div class="relative">
+                    <button (click)="toggleNotifications()"
+                        class="relative flex h-9 w-9 items-center justify-center rounded-xl bg-dark-accent border border-white/5 hover:border-primary hover:text-white transition-all active:scale-95 shadow-sm"
+                        title="Ertesitesek">
+                        <span class="material-symbols-outlined text-[20px]">notifications</span>
+                        @if (unreadCount() > 0) {
+                        <span class="notif-badge">{{ unreadCount() }}</span>
+                        }
+                    </button>
+                    @if (isNotificationsOpen()) {
+                    <div class="notif-panel">
+                        <div class="notif-panel-title">Ertesitesek</div>
+                        @if (notifications().length > 0) {
+                        <div class="notif-list">
+                            @for (n of notifications(); track n.id) {
+                            <a class="notif-item" [routerLink]="n.link || '/groups/' + n.groupId"
+                                (click)="closeNotifications()">
+                                <div class="notif-item-title">{{ n.title }}</div>
+                                <div class="notif-item-body">{{ n.body }}</div>
+                                <div class="notif-item-meta">{{ formatTime(n.createdAt) }}</div>
+                            </a>
+                            }
+                        </div>
+                        } @else {
+                        <div class="notif-empty">Nincs uj ertesites.</div>
+                        }
+                    </div>
+                    }
+                </div>
                 <div class="flex items-center gap-3 cursor-pointer group/user" routerLink="/profile">
                     <div class="hidden sm:flex flex-col items-end">
                         <span class="text-base font-bold leading-none group-hover/user:text-primary transition-colors"

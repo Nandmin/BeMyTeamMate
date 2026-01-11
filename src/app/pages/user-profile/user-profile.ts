@@ -6,6 +6,7 @@ import { AuthService } from '../../services/auth.service';
 import { GroupService } from '../../services/group.service';
 import { ModalService } from '../../services/modal.service';
 import { EventService, SportEvent } from '../../services/event.service';
+import { NotificationService } from '../../services/notification.service';
 import { AppUser } from '../../models/user.model';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { switchMap, map, of, from, take, combineLatest, catchError } from 'rxjs';
@@ -22,6 +23,7 @@ export class UserProfilePage {
   protected modalService = inject(ModalService);
   private groupService = inject(GroupService);
   private eventService = inject(EventService);
+  private notificationService = inject(NotificationService);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
 
@@ -78,7 +80,8 @@ export class UserProfilePage {
                 })[0];
               return { ...group, nextEvent };
             })
-          ));
+          )
+        );
 
         return combineLatest(enrichedGroups$);
       }),
@@ -105,6 +108,8 @@ export class UserProfilePage {
   // Edit profile state
   isEditing = signal(false);
   activeSection = signal('personal');
+  pushEnabled = signal(this.notificationService.isPushEnabled());
+  pushBusy = signal(false);
 
   // Form fields
   profileData = {
@@ -139,11 +144,7 @@ export class UserProfilePage {
 
     // Max 1MB
     if (file.size > 1024 * 1024) {
-      await this.modalService.alert(
-        'A fájl mérete nem lehet nagyobb, mint 1MB.',
-        'Hiba',
-        'error'
-      );
+      await this.modalService.alert('A fájl mérete nem lehet nagyobb, mint 1MB.', 'Hiba', 'error');
       return;
     }
 
@@ -221,7 +222,8 @@ export class UserProfilePage {
         if (!pw.currentPassword) throw new Error('Add meg a jelenlegi jelszavadat.');
         if (!pw.newPassword || pw.newPassword.length < 6)
           throw new Error('Az új jelszónak legalább 6 karakter hosszúnak kell lennie.');
-        if (pw.newPassword !== pw.confirmNewPassword) throw new Error('Az új jelszavak nem egyeznek.');
+        if (pw.newPassword !== pw.confirmNewPassword)
+          throw new Error('Az új jelszavak nem egyeznek.');
 
         await this.authService.changePassword(pw.currentPassword, pw.newPassword);
         results.push('Jelszó megváltoztatva');
@@ -232,7 +234,8 @@ export class UserProfilePage {
         pw.confirmNewPassword = '';
       }
 
-      const message = results.length > 0 ? results.join(', ') + ' sikeresen.' : 'Nincs változtatás.';
+      const message =
+        results.length > 0 ? results.join(', ') + ' sikeresen.' : 'Nincs változtatás.';
       await this.modalService.alert(message, 'Siker', 'success');
     } catch (error: any) {
       console.error('Error saving profile or changing password:', error);
@@ -241,10 +244,30 @@ export class UserProfilePage {
     }
   }
 
-  
-
   async onLogout() {
     await this.authService.logout();
+  }
+
+  async togglePushNotifications() {
+    if (this.pushBusy()) return;
+    this.pushBusy.set(true);
+    try {
+      if (this.pushEnabled()) {
+        await this.notificationService.disablePushForCurrentUser();
+        this.pushEnabled.set(false);
+        await this.modalService.alert('Push ertesitesek kikapcsolva.', 'Siker', 'success');
+      } else {
+        await this.notificationService.enablePushForCurrentUser();
+        this.pushEnabled.set(true);
+        await this.modalService.alert('Push ertesitesek bekapcsolva.', 'Siker', 'success');
+      }
+    } catch (error: any) {
+      console.error('Push toggle error:', error);
+      const msg = error?.message || 'Nem sikerult a push ertesitesek kezelese.';
+      await this.modalService.alert(msg, 'Hiba', 'error');
+    } finally {
+      this.pushBusy.set(false);
+    }
   }
 
   // Smooth-scroll to a section on this page (with small offset for sticky headers)
@@ -256,12 +279,17 @@ export class UserProfilePage {
       if (!el) return;
 
       // Find nearest scrollable ancestor
-      const getScrollParent = (node: HTMLElement | null): HTMLElement | (Element & { scrollTo?: any }) => {
+      const getScrollParent = (
+        node: HTMLElement | null
+      ): HTMLElement | (Element & { scrollTo?: any }) => {
         let parent = node?.parentElement;
         while (parent) {
           const style = window.getComputedStyle(parent);
           const overflowY = style.overflowY;
-          if ((overflowY === 'auto' || overflowY === 'scroll') && parent.scrollHeight > parent.clientHeight) {
+          if (
+            (overflowY === 'auto' || overflowY === 'scroll') &&
+            parent.scrollHeight > parent.clientHeight
+          ) {
             return parent;
           }
           parent = parent.parentElement;
@@ -318,7 +346,11 @@ export class UserProfilePage {
     if (normalized.includes('roplabda') || normalized.includes('volleyball')) {
       return 'sports_volleyball';
     }
-    if (normalized.includes('tenisz') || normalized.includes('tennis') || normalized.includes('padel')) {
+    if (
+      normalized.includes('tenisz') ||
+      normalized.includes('tennis') ||
+      normalized.includes('padel')
+    ) {
       return 'sports_tennis';
     }
     if (normalized.includes('jegkorong') || normalized.includes('hockey')) {
@@ -347,6 +379,7 @@ export class UserProfilePage {
     if (!value) return null;
     if (value instanceof Date) return value;
     if (typeof value?.toDate === 'function') return value.toDate();
+    if (typeof value?.seconds === 'number') return new Date(value.seconds * 1000);
     const parsed = new Date(value);
     return Number.isNaN(parsed.getTime()) ? null : parsed;
   }

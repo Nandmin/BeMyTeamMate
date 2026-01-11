@@ -22,14 +22,7 @@ export class GroupsPage {
   protected authService = inject(AuthService);
   private modalService = inject(ModalService);
 
-  groups: Signal<Group[] | undefined> = toSignal(
-    this.groupService.getGroups().pipe(
-      catchError((error) => {
-        console.error('Error fetching groups:', error);
-        return of([]); // Return empty array on error
-      })
-    )
-  );
+  groups: Signal<Group[] | undefined> = toSignal(this.groupService.getGroups());
 
   showCreateModal = false;
   groupForm: FormGroup;

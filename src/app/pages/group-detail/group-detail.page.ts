@@ -57,7 +57,10 @@ export class GroupDetailPage {
     this.route.params.pipe(
       switchMap((params) =>
         combineLatest([
-          this.eventService.getUpcomingEventsInternal(params['id'], { daysAhead: 3650, limit: 500 }),
+          this.eventService.getUpcomingEventsInternal(params['id'], {
+            daysAhead: 3650,
+            limit: 500,
+          }),
           this.eventService.getPastEventsInternal(params['id'], { daysBack: 3650, limit: 500 }),
         ]).pipe(map(([upcoming, past]) => [...upcoming, ...past]))
       )
@@ -253,8 +256,8 @@ export class GroupDetailPage {
   }
 
   formatEventDate(timestamp: any) {
-    if (!timestamp) return { month: '', day: '' };
-    const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+    const date = this.coerceDate(timestamp);
+    if (isNaN(date.getTime())) return { month: '---', day: '--' };
     const months = [
       'JAN',
       'FEB',
@@ -276,12 +279,8 @@ export class GroupDetailPage {
   }
 
   private getEventDateTime(event: SportEvent): Date {
-    if (!event.date) return new Date(NaN);
-    const eventDate =
-      typeof (event.date as any).toDate === 'function'
-        ? (event.date as any).toDate()
-        : new Date(event.date as any);
-    eventDate.setHours(0, 0, 0, 0);
+    const rawDate = (event as any).dateTime ?? event.date;
+    const eventDate = this.coerceDate(rawDate);
 
     if (event.time) {
       const [hours, minutes] = event.time.split(':').map(Number);
@@ -330,6 +329,14 @@ export class GroupDetailPage {
     const groupId = this.route.snapshot.params['id'];
     if (!groupId || !event.id) return;
     this.router.navigate(['/groups', groupId, 'events', event.id]);
+  }
+
+  private coerceDate(value: any): Date {
+    if (!value) return new Date(NaN);
+    if (value instanceof Date) return value;
+    if (typeof value?.toDate === 'function') return value.toDate();
+    if (typeof value?.seconds === 'number') return new Date(value.seconds * 1000);
+    return new Date(value);
   }
 
   // Get attending members for a specific event card

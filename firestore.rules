@@ -11,12 +11,21 @@ service cloud.firestore {
       allow create: if isSignedIn() && request.auth.uid == userId;
       allow update: if isSignedIn() && (
         request.auth.uid == userId ||
-        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['elo', 'formFactor'])
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['elo', 'formFactor', 'fcmTokens'])
       );
 
       // User group summaries (users/{uid}/groups/{groupId})
       match /groups/{groupId} {
         allow read, write: if isSignedIn() && request.auth.uid == userId;
+      }
+
+      // User notifications (users/{uid}/notifications/{notificationId})
+      match /notifications/{notificationId} {
+        allow create: if isSignedIn()
+          && request.resource.data.groupId is string
+          && exists(/databases/$(database)/documents/groups/$(request.resource.data.groupId)/members/$(request.auth.uid))
+          && exists(/databases/$(database)/documents/groups/$(request.resource.data.groupId)/members/$(userId));
+        allow read, update, delete: if isSignedIn() && request.auth.uid == userId;
       }
     }
 

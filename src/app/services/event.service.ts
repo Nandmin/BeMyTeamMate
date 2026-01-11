@@ -20,8 +20,9 @@ import {
 import { AuthService } from './auth.service';
 import { EloService } from './elo.service';
 import { GroupMember } from './group.service';
+import { NotificationService } from './notification.service';
 import { Observable, defer, from, of } from 'rxjs';
-import { map, tap } from 'rxjs/operators';
+import { map, tap, switchMap, catchError } from 'rxjs/operators';
 
 export interface PlayerStats {
   goals: number;
@@ -73,6 +74,7 @@ export class EventService {
   private firestore = inject(Firestore);
   private authService = inject(AuthService);
   private eloService = inject(EloService);
+  private notificationService = inject(NotificationService);
   private cacheTtlMs = 5 * 60 * 1000;
   private eventCache = new Map<string, { data: SportEvent; ts: number }>();
   private eventsListCache = new Map<string, { data: SportEvent[]; ts: number }>();
@@ -103,6 +105,23 @@ export class EventService {
 
     const docRef = await addDoc(this.getEventsCollection(groupId), data);
     this.invalidateEventCaches(groupId);
+
+    const groupSnap = await getDoc(doc(this.firestore, `groups/${groupId}`));
+    const groupName = groupSnap.exists() ? (groupSnap.data() as any).name : 'Csoport';
+    await this.notificationService.notifyGroupMembers(
+      {
+        type: 'event_created',
+        groupId,
+        eventId: docRef.id,
+        title: `${groupName} - uj esemeny`,
+        body: `${eventData.title} letrehozva.`,
+        link: `/groups/${groupId}/events/${docRef.id}`,
+        actorId: user.uid,
+        actorName: user.displayName || 'Ismeretlen',
+        actorPhoto: user.photoURL || null,
+      },
+      [user.uid]
+    );
     return docRef;
   }
 
@@ -153,6 +172,22 @@ export class EventService {
     const promises = eventsToCreate.map((data) => addDoc(this.getEventsCollection(groupId), data));
     const result = await Promise.all(promises);
     this.invalidateEventCaches(groupId);
+
+    const groupSnap = await getDoc(doc(this.firestore, `groups/${groupId}`));
+    const groupName = groupSnap.exists() ? (groupSnap.data() as any).name : 'Csoport';
+    await this.notificationService.notifyGroupMembers(
+      {
+        type: 'event_created',
+        groupId,
+        title: `${groupName} - uj esemeny sorozat`,
+        body: `${eventData.title} (${result.length} alkalom) letrehozva.`,
+        link: `/groups/${groupId}`,
+        actorId: user.uid,
+        actorName: user.displayName || 'Ismeretlen',
+        actorPhoto: user.photoURL || null,
+      },
+      [user.uid]
+    );
     return result;
   }
 
@@ -336,34 +371,42 @@ export class EventService {
     options: { daysAhead: number; limit: number; startAfterDate?: Timestamp }
   ): Observable<SportEvent[]> {
     const cacheKey = this.eventsListCacheKey(groupId, 'upcoming', options);
-    return defer(() => {
-      const cached = this.getCachedEventsList(cacheKey);
-      if (cached) return of(cached);
+    return this.authService.user$.pipe(
+      switchMap((user: any) => {
+        if (!user) return of([]);
 
-      const now = new Date();
-      const end = new Date();
-      end.setDate(end.getDate() + options.daysAhead);
+        const cached = this.getCachedEventsList(cacheKey);
+        if (cached) return of(cached);
 
-      let q = query(
-        this.getEventsCollection(groupId),
-        where('date', '>=', Timestamp.fromDate(now)),
-        where('date', '<=', Timestamp.fromDate(end)),
-        orderBy('date', 'asc'),
-        limit(options.limit)
-      );
+        const now = new Date();
+        const end = new Date();
+        end.setDate(end.getDate() + options.daysAhead);
 
-      if (options.startAfterDate) {
-        q = query(q, startAfter(options.startAfterDate));
-      }
+        let q = query(
+          this.getEventsCollection(groupId),
+          where('date', '>=', Timestamp.fromDate(now)),
+          where('date', '<=', Timestamp.fromDate(end)),
+          orderBy('date', 'asc'),
+          limit(options.limit)
+        );
 
-      return from(getDocs(q)).pipe(
-        map((snap) => snap.docs.map((d) => ({ id: d.id, ...(d.data() as SportEvent) }))),
-        tap((events) => {
-          this.setCachedEventsList(cacheKey, events);
-          events.forEach((event) => event.id && this.setCachedEvent(groupId, event.id, event));
-        })
-      );
-    });
+        if (options.startAfterDate) {
+          q = query(q, startAfter(options.startAfterDate));
+        }
+
+        return from(getDocs(q)).pipe(
+          map((snap) => snap.docs.map((d) => ({ id: d.id, ...(d.data() as SportEvent) }))),
+          tap((events) => {
+            this.setCachedEventsList(cacheKey, events);
+            events.forEach((event) => event.id && this.setCachedEvent(groupId, event.id, event));
+          }),
+          catchError((err: any) => {
+            console.error('getUpcomingEventsInternal error:', err);
+            return of([]);
+          })
+        );
+      })
+    );
   }
 
   getPastEventsInternal(
@@ -371,34 +414,42 @@ export class EventService {
     options: { daysBack: number; limit: number; startAfterDate?: Timestamp }
   ): Observable<SportEvent[]> {
     const cacheKey = this.eventsListCacheKey(groupId, 'past', options);
-    return defer(() => {
-      const cached = this.getCachedEventsList(cacheKey);
-      if (cached) return of(cached);
+    return this.authService.user$.pipe(
+      switchMap((user: any) => {
+        if (!user) return of([]);
 
-      const now = new Date();
-      const start = new Date();
-      start.setDate(start.getDate() - options.daysBack);
+        const cached = this.getCachedEventsList(cacheKey);
+        if (cached) return of(cached);
 
-      let q = query(
-        this.getEventsCollection(groupId),
-        where('date', '<', Timestamp.fromDate(now)),
-        where('date', '>=', Timestamp.fromDate(start)),
-        orderBy('date', 'desc'),
-        limit(options.limit)
-      );
+        const now = new Date();
+        const start = new Date();
+        start.setDate(start.getDate() - options.daysBack);
 
-      if (options.startAfterDate) {
-        q = query(q, startAfter(options.startAfterDate));
-      }
+        let q = query(
+          this.getEventsCollection(groupId),
+          where('date', '<', Timestamp.fromDate(now)),
+          where('date', '>=', Timestamp.fromDate(start)),
+          orderBy('date', 'desc'),
+          limit(options.limit)
+        );
 
-      return from(getDocs(q)).pipe(
-        map((snap) => snap.docs.map((d) => ({ id: d.id, ...(d.data() as SportEvent) }))),
-        tap((events) => {
-          this.setCachedEventsList(cacheKey, events);
-          events.forEach((event) => event.id && this.setCachedEvent(groupId, event.id, event));
-        })
-      );
-    });
+        if (options.startAfterDate) {
+          q = query(q, startAfter(options.startAfterDate));
+        }
+
+        return from(getDocs(q)).pipe(
+          map((snap) => snap.docs.map((d) => ({ id: d.id, ...(d.data() as SportEvent) }))),
+          tap((events) => {
+            this.setCachedEventsList(cacheKey, events);
+            events.forEach((event) => event.id && this.setCachedEvent(groupId, event.id, event));
+          }),
+          catchError((err: any) => {
+            console.error('getPastEventsInternal error:', err);
+            return of([]);
+          })
+        );
+      })
+    );
   }
 
   private getCachedEvent(groupId: string, eventId: string): SportEvent | null {
@@ -478,7 +529,6 @@ export class EventService {
     const startAfterKey = options.startAfterDate ? options.startAfterDate.toMillis() : 0;
     return `events:${groupId}:${type}:${windowSize}:${options.limit}:${startAfterKey}`;
   }
-
 
   private invalidateEventCaches(groupId: string, eventId?: string) {
     const listPrefix = `events:${groupId}:`;

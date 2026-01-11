@@ -18,8 +18,9 @@ import {
   documentId,
 } from '@angular/fire/firestore';
 import { AuthService } from './auth.service';
-import { Observable, switchMap, of, map, from, defer } from 'rxjs';
-import { tap } from 'rxjs/operators';
+import { NotificationService } from './notification.service';
+import { Observable, of, from, defer } from 'rxjs';
+import { tap, switchMap, map, catchError } from 'rxjs/operators';
 
 export interface Group {
   id?: string;
@@ -52,12 +53,15 @@ export interface GroupMember {
 export class GroupService {
   private firestore = inject(Firestore);
   private authService = inject(AuthService);
+  private notificationService = inject(NotificationService);
   private cacheTtlMs = 5 * 60 * 1000;
   private groupCache = new Map<string, { data: Group; ts: number }>();
   private groupsListCache: { data: Group[]; ts: number } | null = null;
   private userGroupsCache = new Map<string, { data: Group[]; ts: number }>();
 
-  private groupsCollection = collection(this.firestore, 'groups');
+  private get groupsCollection() {
+    return collection(this.firestore, 'groups');
+  }
 
   async createGroup(name: string, type: 'open' | 'closed', description: string = '') {
     const user = this.authService.currentUser();
@@ -102,24 +106,29 @@ export class GroupService {
   }
 
   getGroups(): Observable<Group[]> {
-    return defer(() => {
-      const cached = this.getCachedGroupsList();
-      if (cached) return of(cached);
-      const q = query(this.groupsCollection, orderBy('createdAt', 'desc'));
-      return from(getDocs(q)).pipe(
-        map((snap) => snap.docs.map((d) => ({ id: d.id, ...(d.data() as Group) }))),
-        tap((groups) => this.setCachedGroupsList(groups))
-      );
-    });
+    return this.authService.user$.pipe(
+      switchMap((user) => {
+        if (!user) return of([]);
+        const q = query(this.groupsCollection, orderBy('createdAt', 'desc'));
+        return from(getDocs(q)).pipe(
+          map((snap) => snap.docs.map((d) => ({ id: d.id, ...(d.data() as Group) }))),
+          tap((groups) => this.setCachedGroupsList(groups)),
+          catchError((err: any) => {
+            console.error('getGroups error:', err);
+            return of([]);
+          })
+        );
+      })
+    );
   }
 
   getUserGroups(userId?: string): Observable<Group[]> {
-    const uid$ = userId ? of(userId) : this.authService.user$.pipe(map((u) => u?.uid));
+    const user$: Observable<any> = userId ? of({ uid: userId }) : this.authService.user$;
 
-    return uid$.pipe(
-      switchMap((uid) => {
-        if (!uid) return of([]);
-        return this.getUserGroupsInternal(uid);
+    return user$.pipe(
+      switchMap((user: any) => {
+        if (!user?.uid) return of([]);
+        return this.getUserGroupsInternal(user.uid);
       })
     );
   }
@@ -163,7 +172,9 @@ export class GroupService {
       if (cached) return of(cached);
       const docRef = doc(this.firestore, `groups/${id}`);
       return from(getDoc(docRef)).pipe(
-        map((snap) => (snap.exists() ? ({ id: snap.id, ...(snap.data() as Group) } as Group) : undefined)),
+        map((snap) =>
+          snap.exists() ? ({ id: snap.id, ...(snap.data() as Group) } as Group) : undefined
+        ),
         tap((group) => {
           if (group) this.setCachedGroup(id, group);
         })
@@ -232,6 +243,20 @@ export class GroupService {
       const updatedGroup = { ...group, memberCount: (group.memberCount || 0) + 1 };
       this.setCachedGroup(groupId, updatedGroup);
       await this.upsertUserGroupSummary(user.uid, groupId, updatedGroup);
+
+      await this.notificationService.notifyGroupMembers(
+        {
+          type: 'group_join',
+          groupId,
+          title: `${updatedGroup.name} - uj tag`,
+          body: `${user.displayName || 'Ismeretlen'} csatlakozott a csoporthoz.`,
+          link: `/groups/${groupId}`,
+          actorId: user.uid,
+          actorName: user.displayName || 'Ismeretlen',
+          actorPhoto: user.photoURL || null,
+        },
+        [user.uid]
+      );
     }
   }
 
@@ -260,6 +285,24 @@ export class GroupService {
     const memberRef = doc(this.firestore, `groups/${groupId}/members/${memberId}`);
     const memberSnap = await getDoc(memberRef);
     const memberData = memberSnap.exists() ? (memberSnap.data() as GroupMember) : null;
+
+    const group = await this.getGroupOnce(groupId);
+    if (group && memberData?.userId) {
+      await this.notificationService.notifyGroupMembers(
+        {
+          type: 'group_leave',
+          groupId,
+          title: `${group.name} - tag kilepett`,
+          body: `${memberData.name || 'Ismeretlen'} kilepett a csoportbol.`,
+          link: `/groups/${groupId}`,
+          actorId: memberData.userId,
+          actorName: memberData.name || 'Ismeretlen',
+          actorPhoto: memberData.photo || null,
+        },
+        [memberData.userId]
+      );
+    }
+
     await deleteDoc(memberRef);
 
     // Decrement member count
@@ -301,11 +344,7 @@ export class GroupService {
     return group;
   }
 
-  private async upsertUserGroupSummary(
-    uid: string,
-    groupId: string,
-    group: Partial<Group>
-  ) {
+  private async upsertUserGroupSummary(uid: string, groupId: string, group: Partial<Group>) {
     const summary = this.buildGroupSummary(groupId, group);
     await setDoc(doc(this.firestore, `users/${uid}/groups/${groupId}`), summary, { merge: true });
     this.invalidateUserGroupsCache(uid);
@@ -375,9 +414,13 @@ export class GroupService {
 
     await Promise.all(
       allGroups.map((group) =>
-        setDoc(doc(this.firestore, `users/${uid}/groups/${group.id}`), this.buildGroupSummary(group.id!, group), {
-          merge: true,
-        })
+        setDoc(
+          doc(this.firestore, `users/${uid}/groups/${group.id}`),
+          this.buildGroupSummary(group.id!, group),
+          {
+            merge: true,
+          }
+        )
       )
     );
 

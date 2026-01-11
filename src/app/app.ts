@@ -6,6 +6,8 @@ import { HeaderComponent } from './components/header/header';
 import { ModalComponent } from './components/modal/modal.component';
 
 import { ThemeService } from './services/theme.service';
+import { NotificationService } from './services/notification.service';
+import { AuthService } from './services/auth.service';
 
 @Component({
   selector: 'app-root',
@@ -24,12 +26,20 @@ export class App {
   private router = inject(Router);
   // Inject ThemeService to initialize theme immediately on app load
   private themeService = inject(ThemeService);
+  private notificationService = inject(NotificationService);
+  private authService = inject(AuthService);
   protected readonly title = signal('BeMyTeamMate');
   protected showNav = signal(true);
   protected showFooter = signal(true);
   protected showHeader = signal(true);
 
   constructor() {
+    this.authService.user$.subscribe((user) => {
+      if (!user?.uid) return;
+      this.notificationService.syncTokenForCurrentUser();
+      this.notificationService.listenForForegroundMessages();
+    });
+
     this.router.events
       .pipe(filter((event) => event instanceof NavigationEnd))
       .subscribe((event: NavigationEnd) => {

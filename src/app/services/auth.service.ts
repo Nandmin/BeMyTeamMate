@@ -1,4 +1,5 @@
-import { Injectable, inject, signal } from '@angular/core';
+import { Injectable, inject, signal, Signal } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
 import {
   Auth,
   GoogleAuthProvider,
@@ -15,7 +16,11 @@ import {
   sendEmailVerification,
   sendPasswordResetEmail,
 } from '@angular/fire/auth';
-import { EmailAuthProvider, reauthenticateWithCredential, updatePassword } from '@angular/fire/auth';
+import {
+  EmailAuthProvider,
+  reauthenticateWithCredential,
+  updatePassword,
+} from '@angular/fire/auth';
 import { Firestore, doc, setDoc, serverTimestamp, getDoc } from '@angular/fire/firestore';
 import { Router } from '@angular/router';
 import { defer, Observable, of, firstValueFrom, from } from 'rxjs';
@@ -32,26 +37,29 @@ export class AuthService {
   private cacheTtlMs = 5 * 60 * 1000;
   private profileCache = new Map<string, { data: AppUser; ts: number }>();
 
-  // Expose the current user as a signal or observable
-  user$ = user(this.auth);
-  currentUser = signal<User | null>(null);
+  // Expose the current user as an observable and signals
+  public readonly user$: Observable<User | null>;
+  public currentUser: Signal<User | null | undefined>;
 
   // Expose the full user profile data from Firestore
-  userData$: Observable<AppUser | null> = this.user$.pipe(
-    switchMap((u) => {
-      if (u) {
-        return this.getUserProfile(u.uid);
-      } else {
-        return of(null);
-      }
-    })
-  );
-  fullCurrentUser = signal<AppUser | null>(null);
+  public readonly userData$: Observable<AppUser | null>;
+  public fullCurrentUser: Signal<AppUser | null | undefined>;
 
   constructor() {
-    // Sync signal with auth state (optional, for easier template usage)
-    this.user$.subscribe((u) => this.currentUser.set(u));
-    this.userData$.subscribe((u) => this.fullCurrentUser.set(u));
+    // Initialize observables inside the constructor to ensure context safety
+    this.user$ = user(this.auth);
+    this.currentUser = toSignal(this.user$, { initialValue: null });
+
+    this.userData$ = this.user$.pipe(
+      switchMap((u) => {
+        if (u) {
+          return this.getUserProfile(u.uid);
+        } else {
+          return of(null);
+        }
+      })
+    );
+    this.fullCurrentUser = toSignal(this.userData$, { initialValue: null });
   }
 
   // --- Change Password (reauthenticate + update) ---

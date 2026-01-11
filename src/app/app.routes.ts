@@ -1,4 +1,5 @@
 import { Routes } from '@angular/router';
+import { authGuard } from './guards/auth.guard';
 import { siteAdminGuard } from './guards/site-admin.guard';
 
 export const routes: Routes = [
@@ -16,10 +17,12 @@ export const routes: Routes = [
   },
   {
     path: 'events',
+    canActivate: [authGuard],
     loadComponent: () => import('./pages/events-list/events-list').then((m) => m.EventsList),
   },
   {
     path: 'groups',
+    canActivate: [authGuard],
     loadComponent: () => import('./pages/groups/groups').then((m) => m.GroupsPage),
   },
   {
@@ -44,6 +47,7 @@ export const routes: Routes = [
   },
   {
     path: 'groups/:id/events/:eventId',
+    canActivate: [authGuard],
     loadComponent: () =>
       import('./pages/event-detail/event-detail.page').then((m) => m.EventDetailPage),
   },
@@ -55,6 +59,7 @@ export const routes: Routes = [
   },
   {
     path: 'results',
+    canActivate: [authGuard],
     loadComponent: () => import('./pages/results/results').then((m) => m.Results),
   }, // TODO
   {

@@ -223,10 +223,7 @@ export class NotificationService {
     }
     const messaging = getMessaging();
 
-    // Register the service worker
-    await navigator.serviceWorker.register('/firebase-messaging-sw.js');
-
-    // Wait for the service worker to be active
+    // Wait for the service worker to be ready (already registered in app.config.ts)
     const registration = await navigator.serviceWorker.ready;
 
     if (!registration.active) {

@@ -32,6 +32,7 @@ export const appConfig: ApplicationConfig = {
       ? [
           provideAppCheck(() => {
             if (!environment.production && environment.firebase.appCheckDebugToken) {
+              // Set the debug token if it's provided
               (globalThis as any).FIREBASE_APPCHECK_DEBUG_TOKEN =
                 environment.firebase.appCheckDebugToken;
             }

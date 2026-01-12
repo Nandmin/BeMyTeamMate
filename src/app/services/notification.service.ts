@@ -172,7 +172,7 @@ export class NotificationService {
   private async sendPushToMembers(userIds: string[], payload: GroupNotificationPayload) {
     const tokens = await this.collectTokens(userIds);
     if (tokens.length === 0) return;
-    if (!environment.cloudflareWorkerUrl) return;
+    if (!this.isValidPushWorkerUrl(environment.cloudflareWorkerUrl)) return;
 
     const body = {
       tokens,
@@ -188,11 +188,15 @@ export class NotificationService {
       },
     };
 
-    await fetch(environment.cloudflareWorkerUrl, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body),
-    });
+    try {
+      await fetch(environment.cloudflareWorkerUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+    } catch (error) {
+      console.warn('Push dispatch failed:', error);
+    }
   }
 
   private async collectTokens(userIds: string[]): Promise<string[]> {
@@ -248,5 +252,16 @@ export class NotificationService {
       chunks.push(items.slice(i, i + size));
     }
     return chunks;
+  }
+
+  private isValidPushWorkerUrl(value?: string) {
+    if (!value) return false;
+    if (value.includes('your-worker.workers.dev')) return false;
+    try {
+      const url = new URL(value);
+      return url.protocol === 'https:';
+    } catch {
+      return false;
+    }
   }
 }

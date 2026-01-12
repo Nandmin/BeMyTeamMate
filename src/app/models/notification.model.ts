@@ -1,4 +1,10 @@
-export type NotificationType = 'group_join' | 'group_leave' | 'event_created';
+export type NotificationType =
+  | 'group_join'
+  | 'group_leave'
+  | 'event_created'
+  | 'event_cancelled'
+  | 'event_rsvp_yes'
+  | 'event_rsvp_no';
 
 export interface AppNotification {
   id?: string;

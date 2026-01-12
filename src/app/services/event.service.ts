@@ -215,8 +215,33 @@ export class EventService {
 
   async deleteEvent(groupId: string, eventId: string) {
     const docRef = doc(this.firestore, `groups/${groupId}/events/${eventId}`);
+    const user = this.authService.currentUser();
+    const [eventSnap, groupSnap] = await Promise.all([
+      getDoc(docRef),
+      getDoc(doc(this.firestore, `groups/${groupId}`)),
+    ]);
+    const event = eventSnap.exists() ? (eventSnap.data() as SportEvent) : null;
+    const groupName = groupSnap.exists() ? ((groupSnap.data() as any).name as string) : 'Csoport';
+
     const result = await deleteDoc(docRef);
     this.invalidateEventCaches(groupId, eventId);
+
+    if (event) {
+      await this.notificationService.notifyGroupMembers(
+        {
+          type: 'event_cancelled',
+          groupId,
+          eventId,
+          title: `${groupName} - esemeny lemondva`,
+          body: `${event.title || 'Egy esemeny'} lemondva.`,
+          link: `/groups/${groupId}`,
+          actorId: user?.uid,
+          actorName: user?.displayName || 'Ismeretlen',
+          actorPhoto: user?.photoURL || null,
+        },
+        user?.uid ? [user.uid] : []
+      );
+    }
     return result;
   }
 
@@ -246,6 +271,25 @@ export class EventService {
       currentAttendees: attendees.length,
     });
     this.invalidateEventCaches(groupId, eventId);
+
+    const groupSnap = await getDoc(doc(this.firestore, `groups/${groupId}`));
+    const groupName = groupSnap.exists() ? ((groupSnap.data() as any).name as string) : 'Csoport';
+    await this.notificationService.notifyGroupMembers(
+      {
+        type: isJoining ? 'event_rsvp_yes' : 'event_rsvp_no',
+        groupId,
+        eventId,
+        title: `${groupName} - visszajelzes`,
+        body: `${user.displayName || 'Ismeretlen'} ${
+          isJoining ? 'reszt vesz' : 'nem vesz reszt'
+        } az esemenyen: ${event.title}.`,
+        link: `/groups/${groupId}/events/${eventId}`,
+        actorId: user.uid,
+        actorName: user.displayName || 'Ismeretlen',
+        actorPhoto: user.photoURL || null,
+      },
+      [user.uid]
+    );
     return result;
   }
 

@@ -10,6 +10,8 @@ export const environment = {
     appId: 'YOUR_APP_ID',
     measurementId: 'YOUR_MEASUREMENT_ID',
     vapidKey: 'YOUR_VAPID_KEY',
+    appCheckSiteKey: 'YOUR_RECAPTCHA_V3_SITE_KEY',
+    appCheckDebugToken: false,
   },
   cloudflareWorkerUrl: 'https://your-worker.workers.dev/send-notification',
 };

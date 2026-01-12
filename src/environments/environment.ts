@@ -11,5 +11,5 @@ export const environment = {
     measurementId: 'G-HK3YR5501H',
     vapidKey: 'BKl1Pd0srJRPM4PjNOhsrvOapWCA7pCiSL_LG3vdJbbNxFBG3i6nDI43VxfCuSQgXIGTua0vGKjKzJtp3og9IoI', // For FCM web push (fill when available)
   },
-  cloudflareWorkerUrl: 'https://your-worker.workers.dev/send-notification',
+  cloudflareWorkerUrl: 'https://bemyteammate-push.andras78-nemeth.workers.dev/send-notification',
 };

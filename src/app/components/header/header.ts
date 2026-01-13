@@ -75,7 +75,7 @@ export class HeaderComponent {
     this.isNotificationsOpen.update((open) => !open);
     if (!this.isNotificationsOpen()) return;
     const uid = this.authService.currentUser()?.uid;
-    if (uid) {
+    if (uid && this.unreadCount() > 0) {
       await this.notificationService.markAllAsRead(uid);
     }
   }

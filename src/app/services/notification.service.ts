@@ -20,7 +20,8 @@ import { getMessaging, getToken, deleteToken, onMessage } from 'firebase/messagi
 import { AuthService } from './auth.service';
 import { environment } from '../../environments/environment';
 import { AppNotification, NotificationType } from '../models/notification.model';
-import { Observable, of, defer } from 'rxjs';
+import { Observable, of, defer, concat } from 'rxjs';
+import { tap } from 'rxjs/operators';
 
 interface GroupNotificationPayload {
   type: NotificationType;
@@ -41,13 +42,24 @@ export class NotificationService {
   private firestore = inject(Firestore);
   private authService = inject(AuthService);
   private tokenStorageKey = 'fcmToken';
+  private notificationCacheTtlMs = 60 * 1000;
+  private memberCacheTtlMs = 2 * 60 * 1000;
+  private tokenCacheTtlMs = 5 * 60 * 1000;
+  private notificationCache = new Map<string, { data: AppNotification[]; ts: number }>();
+  private memberIdsCache = new Map<string, { data: string[]; ts: number }>();
+  private tokenCache = new Map<string, { data: string[]; ts: number }>();
 
   watchNotifications(uid: string): Observable<AppNotification[]> {
     if (!uid) return of([]);
     return defer(() => {
+      const cached = this.getCachedNotifications(uid);
       const notificationsRef = collection(this.firestore, `users/${uid}/notifications`);
       const q = query(notificationsRef, orderBy('createdAt', 'desc'), limit(20));
-      return collectionData(q, { idField: 'id' }) as Observable<AppNotification[]>;
+      const realtime$ = collectionData(q, { idField: 'id' }) as Observable<AppNotification[]>;
+      const streaming$ = realtime$.pipe(
+        tap((items) => this.setCachedNotifications(uid, items))
+      );
+      return cached ? concat(of(cached), streaming$) : streaming$;
     });
   }
 
@@ -151,9 +163,7 @@ export class NotificationService {
   }
 
   async notifyGroupMembers(payload: GroupNotificationPayload, excludeUserIds: string[] = []) {
-    const membersRef = collection(this.firestore, `groups/${payload.groupId}/members`);
-    const membersSnap = await getDocs(membersRef);
-    const memberIds = membersSnap.docs.map((d) => d.data()['userId']).filter(Boolean) as string[];
+    const memberIds = await this.getGroupMemberIds(payload.groupId);
     const targetIds = memberIds.filter((id) => !excludeUserIds.includes(id));
     if (targetIds.length === 0) return;
 
@@ -217,18 +227,39 @@ export class NotificationService {
   }
 
   private async collectTokens(userIds: string[]): Promise<string[]> {
-    const chunks = this.chunkArray(userIds, 10);
     const tokens: string[] = [];
-    for (const chunk of chunks) {
-      const q = query(collection(this.firestore, 'users'), where(documentId(), 'in', chunk));
-      const snap = await getDocs(q);
-      snap.docs.forEach((docSnap) => {
-        const data = docSnap.data() as { fcmTokens?: string[] };
-        if (Array.isArray(data.fcmTokens)) {
-          tokens.push(...data.fcmTokens);
-        }
-      });
+    const missingIds: string[] = [];
+
+    userIds.forEach((uid) => {
+      const cached = this.getCachedTokens(uid);
+      if (cached) {
+        tokens.push(...cached);
+      } else {
+        missingIds.push(uid);
+      }
+    });
+
+    if (missingIds.length > 0) {
+      const chunks = this.chunkArray(missingIds, 10);
+      for (const chunk of chunks) {
+        const q = query(collection(this.firestore, 'users'), where(documentId(), 'in', chunk));
+        const snap = await getDocs(q);
+        const found = new Set<string>();
+        snap.docs.forEach((docSnap) => {
+          found.add(docSnap.id);
+          const data = docSnap.data() as { fcmTokens?: string[] };
+          const userTokens = Array.isArray(data.fcmTokens) ? data.fcmTokens : [];
+          this.setCachedTokens(docSnap.id, userTokens);
+          tokens.push(...userTokens);
+        });
+        chunk.forEach((uid) => {
+          if (!found.has(uid)) {
+            this.setCachedTokens(uid, []);
+          }
+        });
+      }
     }
+
     return Array.from(new Set(tokens));
   }
 
@@ -258,6 +289,74 @@ export class NotificationService {
     return (
       typeof window !== 'undefined' && 'Notification' in window && 'serviceWorker' in navigator
     );
+  }
+
+  private getCachedNotifications(uid: string): AppNotification[] | null {
+    const inMemory = this.notificationCache.get(uid);
+    if (inMemory && Date.now() - inMemory.ts < this.notificationCacheTtlMs) {
+      return inMemory.data;
+    }
+    try {
+      if (typeof window === 'undefined' || !window.localStorage) return null;
+      const raw = window.localStorage.getItem(this.notificationStorageKey(uid));
+      if (!raw) return null;
+      const parsed = JSON.parse(raw) as { data: AppNotification[]; ts: number };
+      if (!parsed?.data || !parsed?.ts) return null;
+      if (Date.now() - parsed.ts > this.notificationCacheTtlMs) {
+        window.localStorage.removeItem(this.notificationStorageKey(uid));
+        return null;
+      }
+      this.notificationCache.set(uid, { data: parsed.data, ts: parsed.ts });
+      return parsed.data;
+    } catch {
+      return null;
+    }
+  }
+
+  private setCachedNotifications(uid: string, items: AppNotification[]) {
+    const entry = { data: items, ts: Date.now() };
+    this.notificationCache.set(uid, entry);
+    try {
+      if (typeof window === 'undefined' || !window.localStorage) return;
+      window.localStorage.setItem(this.notificationStorageKey(uid), JSON.stringify(entry));
+    } catch {
+      // ignore cache errors
+    }
+  }
+
+  private notificationStorageKey(uid: string) {
+    return `notifications:${uid}`;
+  }
+
+  private getCachedMemberIds(groupId: string): string[] | null {
+    const entry = this.memberIdsCache.get(groupId);
+    if (entry && Date.now() - entry.ts < this.memberCacheTtlMs) return entry.data;
+    return null;
+  }
+
+  private setCachedMemberIds(groupId: string, memberIds: string[]) {
+    this.memberIdsCache.set(groupId, { data: memberIds, ts: Date.now() });
+  }
+
+  private getCachedTokens(uid: string): string[] | null {
+    const entry = this.tokenCache.get(uid);
+    if (entry && Date.now() - entry.ts < this.tokenCacheTtlMs) return entry.data;
+    return null;
+  }
+
+  private setCachedTokens(uid: string, tokens: string[]) {
+    this.tokenCache.set(uid, { data: tokens, ts: Date.now() });
+  }
+
+  private async getGroupMemberIds(groupId: string): Promise<string[]> {
+    const cached = this.getCachedMemberIds(groupId);
+    if (cached) return cached;
+
+    const membersRef = collection(this.firestore, `groups/${groupId}/members`);
+    const membersSnap = await getDocs(membersRef);
+    const memberIds = membersSnap.docs.map((d) => d.data()['userId']).filter(Boolean) as string[];
+    this.setCachedMemberIds(groupId, memberIds);
+    return memberIds;
   }
 
   private chunkArray<T>(items: T[], size: number) {

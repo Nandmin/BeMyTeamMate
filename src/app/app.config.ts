@@ -9,6 +9,7 @@ import { initializeApp, provideFirebaseApp } from '@angular/fire/app';
 import { provideAppCheck } from '@angular/fire/app-check';
 import { getAuth, provideAuth } from '@angular/fire/auth';
 import { getFirestore, provideFirestore } from '@angular/fire/firestore';
+import { enableIndexedDbPersistence } from 'firebase/firestore';
 import { environment } from '../environments/environment';
 
 import { routes } from './app.routes';
@@ -44,7 +45,13 @@ export const appConfig: ApplicationConfig = {
         ]
       : []),
     provideAuth(() => getAuth()),
-    provideFirestore(() => getFirestore()),
+    provideFirestore(() => {
+      const firestore = getFirestore();
+      enableIndexedDbPersistence(firestore).catch((err) => {
+        console.warn('Firestore persistence disabled:', err);
+      });
+      return firestore;
+    }),
     provideServiceWorker('firebase-messaging-sw.js', {
       enabled: true, // Bekapcsolva fejlesztés alatt is a teszteléshez
       registrationStrategy: 'registerWhenStable:30000',

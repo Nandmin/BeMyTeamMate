@@ -110,6 +110,8 @@ export class GroupService {
       this.authService.user$.pipe(
         switchMap((user) => {
           if (!user) return of([]);
+          const cached = this.getCachedGroupsList();
+          if (cached) return of(cached);
           const q = query(this.groupsCollection, orderBy('createdAt', 'desc'));
           return from(getDocs(q)).pipe(
             map((snap) => snap.docs.map((d) => ({ id: d.id, ...(d.data() as Group) }))),

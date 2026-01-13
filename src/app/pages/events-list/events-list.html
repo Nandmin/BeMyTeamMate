@@ -10,23 +10,18 @@
     <div class="lg:col-span-8 flex flex-col gap-8">
       <!-- Hero Section: Next Match -->
       <div
-        class="bg-gradient-to-b from-dark-accent to-background-dark rounded-2xl shadow-lg border border-white/5 overflow-hidden relative group next-match-card"
-      >
-        <div
-          class="absolute inset-0 bg-gradient-to-r from-background-dark/90 to-transparent z-10 pointer-events-none"
-        ></div>
+        class="bg-gradient-to-b from-dark-accent to-background-dark rounded-2xl shadow-lg border border-white/5 overflow-hidden relative group next-match-card">
+        <div class="absolute inset-0 bg-gradient-to-r from-background-dark/90 to-transparent z-10 pointer-events-none">
+        </div>
         <div
           class="absolute right-0 top-0 h-full w-2/3 bg-cover bg-center z-0 opacity-60 group-hover:scale-105 transition-transform duration-700"
-          data-alt="Dynamic action shot of a five-a-side football match at night on artificial turf"
-          style="
+          data-alt="Dynamic action shot of a five-a-side football match at night on artificial turf" style="
             background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuB9VSOAhYfEE9kQ4908Oqt13aZK-vV_V8S96ua1g8cBjIFguUkM3YrtAZ7WZbR0XsJrbH53HI3URPVuMJdEUOH3_LtuUkIPiBI2pn4OaYH9AVVlq_BFdjdLS_SqIh-Ik0Dwg1ZW3zm2IVTsaou-Sr_zvC2Lq633MUk1E1XoK4M5UtbJdZz50H3Ut7I3xnZ5yxXpD2b93cm4iR3fA5o9r40yeXlKy8JfUHOkKcKhYdhTr8Q4RjO6-dH3kZXVyf3bO2erHXwBk0A7PYQ');
-          "
-        ></div>
+          "></div>
         <div class="relative z-20 p-6 sm:p-8 flex flex-col h-full justify-between min-h-[320px]">
           <div>
             <span
-              class="inline-flex items-center gap-1.5 py-1.5 px-3 rounded-full text-xs font-bold bg-primary text-background-dark mb-4"
-            >
+              class="inline-flex items-center gap-1.5 py-1.5 px-3 rounded-full text-xs font-bold bg-primary text-background-dark mb-4">
               <span class="material-symbols-outlined text-sm">alarm_on</span>
               KÖVETKEZŐ MECCS
             </span>
@@ -44,49 +39,40 @@
             <div class="flex gap-3">
               <div class="flex flex-col items-center gap-1">
                 <div
-                  class="flex h-12 w-12 items-center justify-center rounded-lg bg-background-dark/80 backdrop-blur-sm border border-white/10 text-primary text-xl font-bold"
-                >
+                  class="flex h-12 w-12 items-center justify-center rounded-lg bg-background-dark/80 backdrop-blur-sm border border-white/10 text-primary text-xl font-bold">
                   {{ countdown().hours }}
                 </div>
-                <span class="text-xs text-gray-400 uppercase text-white">Óra</span>
+                <span class="text-xs text-gray-400 uppercase">Óra</span>
               </div>
               <div class="flex flex-col items-center gap-1">
                 <div
-                  class="flex h-12 w-12 items-center justify-center rounded-lg bg-background-dark/80 backdrop-blur-sm border border-white/10 text-primary text-xl font-bold"
-                >
+                  class="flex h-12 w-12 items-center justify-center rounded-lg bg-background-dark/80 backdrop-blur-sm border border-white/10 text-primary text-xl font-bold">
                   {{ countdown().minutes }}
                 </div>
-                <span class="text-xs text-gray-400 uppercase text-white">Perc</span>
+                <span class="text-xs text-gray-400 uppercase">Perc</span>
               </div>
               <div class="flex flex-col items-center gap-1">
                 <div
-                  class="flex h-12 w-12 items-center justify-center rounded-lg bg-background-dark/80 backdrop-blur-sm border border-white/10 text-primary text-xl font-bold"
-                >
+                  class="flex h-12 w-12 items-center justify-center rounded-lg bg-background-dark/80 backdrop-blur-sm border border-white/10 text-primary text-xl font-bold">
                   {{ countdown().seconds }}
                 </div>
-                <span class="text-xs text-gray-400 uppercase text-white">Mp</span>
+                <span class="text-xs text-gray-400 uppercase">Mp</span>
               </div>
             </div>
             <!-- Action Box -->
             @if (nextEvent() && shouldShowRsvpPrompt()) {
-            <div
-              class="bg-background-dark/80 backdrop-blur-sm p-4 rounded-xl border border-white/10 w-full sm:w-auto"
-            >
+            <div class="bg-background-dark/80 backdrop-blur-sm p-4 rounded-xl border border-white/10 w-full sm:w-auto">
               <p class="text-sm text-gray-300 mb-3 font-medium">
                 Jelenléted: <span class="text-yellow-400">Még nem jeleztél</span>
               </p>
               <div class="flex gap-2">
-                <button
-                  (click)="onRsvpYes()"
-                  class="flex-1 sm:flex-none h-9 px-4 rounded-lg bg-primary hover:bg-primary-hover text-background-dark text-sm font-bold flex items-center justify-center transition-colors"
-                >
+                <button (click)="onRsvpYes()"
+                  class="flex-1 sm:flex-none h-9 px-4 rounded-lg bg-primary hover:bg-primary-hover text-background-dark text-sm font-bold flex items-center justify-center transition-colors">
                   <span class="material-symbols-outlined text-sm mr-1">check</span>
                   Ott leszek
                 </button>
-                <button
-                  (click)="onRsvpNo()"
-                  class="flex-1 sm:flex-none h-9 px-4 rounded-lg bg-white/10 hover:bg-white/20 text-white text-sm font-medium flex items-center justify-center transition-colors"
-                >
+                <button (click)="onRsvpNo()"
+                  class="flex-1 sm:flex-none h-9 px-4 rounded-lg bg-white/10 hover:bg-white/20 text-white text-sm font-medium flex items-center justify-center transition-colors">
                   Nem
                 </button>
               </div>
@@ -97,29 +83,22 @@
       </div>
       <!-- Filters -->
       <div class="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-hide">
-        <button
-          (click)="setSportFilter(null)"
-          class="px-5 py-2 rounded-full text-sm whitespace-nowrap transition-transform hover:scale-105"
-          [ngClass]="
+        <button (click)="setSportFilter(null)"
+          class="px-5 py-2 rounded-full text-sm whitespace-nowrap transition-transform hover:scale-105" [ngClass]="
             selectedSport() === null
               ? 'bg-white text-background-dark font-bold filter-active'
               : 'border border-border-dark text-gray-300 font-medium hover:bg-white/5 hover:border-white/20 filter-inactive'
-          "
-        >
+          ">
           Összes esemény
         </button>
         @for (sport of availableSports(); track sport) {
-        <button
-          (click)="setSportFilter(sport)"
+        <button (click)="setSportFilter(sport)"
           class="h-10 w-10 rounded-full border border-border-dark text-gray-300 hover:bg-white/5 hover:border-white/20 transition-all flex items-center justify-center"
           [ngClass]="
             selectedSport() === sport
               ? 'bg-white text-background-dark border-white filter-active'
               : 'filter-inactive'
-          "
-          [attr.aria-label]="getSportLabel(sport)"
-          [title]="getSportLabel(sport)"
-        >
+          " [attr.aria-label]="getSportLabel(sport)" [title]="getSportLabel(sport)">
           <span class="material-symbols-outlined text-lg">{{ getSportIcon(sport) }}</span>
         </button>
         }
@@ -133,23 +112,17 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           @if (upcomingUserEvents().length === 0) {
           <div
-            class="bg-gradient-to-b from-dark-accent to-background-dark rounded-xl p-4 border border-border-dark text-gray-400 text-sm"
-          >
+            class="bg-gradient-to-b from-dark-accent to-background-dark rounded-xl p-4 border border-border-dark text-gray-400 text-sm">
             Nincs közelgő esemény.
           </div>
           }
           @for (event of upcomingUserEvents(); track event.id ?? event.title) {
-          <a
-            class="bg-gradient-to-b from-dark-accent to-background-dark rounded-xl p-4 border border-border-dark hover:border-primary/50 transition-all group hover:shadow-[0_0_20px_rgba(43,238,124,0.1)] block"
-            [routerLink]="['/groups', event.groupId, 'events', event.id]"
-            [class.pointer-events-none]="!event.id"
-            [class.opacity-70]="!event.id"
-          >
+          <a class="bg-gradient-to-b from-dark-accent to-background-dark rounded-xl p-4 border border-border-dark hover:border-primary/50 transition-all group hover:shadow-[0_0_20px_rgba(43,238,124,0.1)] block"
+            [routerLink]="['/groups', event.groupId, 'events', event.id]" [class.pointer-events-none]="!event.id"
+            [class.opacity-70]="!event.id">
             <div class="flex items-start justify-between mb-4">
               <div class="flex items-center gap-3">
-                <div
-                  class="w-12 h-12 rounded-lg bg-[#234833] flex items-center justify-center text-primary"
-                >
+                <div class="w-12 h-12 rounded-lg bg-[#234833] flex items-center justify-center text-primary">
                   <span class="material-symbols-outlined">{{ getSportIcon(event.sport) }}</span>
                 </div>
                 <div>
@@ -173,10 +146,7 @@
                 <span class="text-white">{{ getAttendanceText(event) }}</span>
               </div>
               <div class="w-full bg-[#112218] h-2 rounded-full overflow-hidden attendance-track">
-                <div
-                  class="bg-primary h-full rounded-full"
-                  [style.width.%]="getAttendancePercent(event)"
-                ></div>
+                <div class="bg-primary h-full rounded-full" [style.width.%]="getAttendancePercent(event)"></div>
               </div>
             </div>
           </a>
@@ -242,18 +212,12 @@
         <div class="flex items-center justify-between mb-6">
           <h3 class="text-white font-bold text-lg">{{ calendarMonthLabel() }}</h3>
           <div class="flex gap-2">
-            <button
-              (click)="goToPreviousMonth()"
-              aria-label="Előző hónap"
-              class="p-1 rounded-full hover:bg-white/10 text-gray-400 hover:text-white transition-colors"
-            >
+            <button (click)="goToPreviousMonth()" aria-label="Előző hónap"
+              class="p-1 rounded-full hover:bg-white/10 text-gray-400 hover:text-white transition-colors">
               <span class="material-symbols-outlined text-lg">chevron_left</span>
             </button>
-            <button
-              (click)="goToNextMonth()"
-              aria-label="Következő hónap"
-              class="p-1 rounded-full hover:bg-white/10 text-gray-400 hover:text-white transition-colors"
-            >
+            <button (click)="goToNextMonth()" aria-label="Következő hónap"
+              class="p-1 rounded-full hover:bg-white/10 text-gray-400 hover:text-white transition-colors">
               <span class="material-symbols-outlined text-lg">chevron_right</span>
             </button>
           </div>
@@ -269,28 +233,24 @@
           @for (day of calendarDays(); track day.key) {
           <button
             class="relative h-8 w-8 mx-auto flex items-center justify-center rounded-full text-sm transition-colors"
-            [disabled]="!day.inMonth"
-            (click)="day.inMonth && selectDay(day.date)"
-            [ngClass]="{
+            [disabled]="!day.inMonth" (click)="day.inMonth && selectDay(day.date)" [ngClass]="{
               'text-gray-600 cursor-default': !day.inMonth,
               'text-white hover:bg-white/5 cursor-pointer': day.inMonth && !day.isToday,
               'bg-primary text-background-dark font-bold shadow-[0_0_10px_rgba(43,238,124,0.4)]':
                 day.isToday,
               'bg-white/10 text-white font-bold': day.isSelected && !day.isToday
-            }"
-          >
+            }">
             {{ day.label }}
             @if (day.hasEvent) {
-            <span
-              class="absolute bottom-0.5 left-1/2 -translate-x-1/2 w-1 h-1 bg-primary rounded-full"
-            ></span>
+            <span class="absolute bottom-0.5 left-1/2 -translate-x-1/2 w-1 h-1 bg-primary rounded-full"></span>
             }
           </button>
           }
         </div>
       </div>
       <!-- My Teams / Groups -->
-      <div class="bg-gradient-to-b from-dark-accent to-background-dark rounded-2xl p-6 border border-border-dark flex-1 flex flex-col">
+      <div
+        class="bg-gradient-to-b from-dark-accent to-background-dark rounded-2xl p-6 border border-border-dark flex-1 flex flex-col">
         <div class="flex items-center justify-between mb-4">
           <div>
             <h3 class="text-white font-bold text-lg">Eseményeim</h3>
@@ -305,8 +265,7 @@
           }
           @for (event of selectedDayEvents(); track event.id) {
           <div
-            class="flex items-center justify-between bg-[#193324]/50 p-4 rounded-xl border border-white/5 hover:bg-[#193324] transition-colors"
-          >
+            class="flex items-center justify-between bg-[#193324]/50 p-4 rounded-xl border border-white/5 hover:bg-[#193324] transition-colors">
             <div>
               <p class="text-white font-medium text-sm">{{ event.title }}</p>
               <p class="text-xs text-primary">
@@ -340,11 +299,3 @@
     </div>
   </div>
 </main>
-
-
-
-
-
-
-
-

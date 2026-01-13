@@ -1,4 +1,4 @@
-import { Component, inject, signal, computed } from '@angular/core';
+import { Component, inject, signal, computed, HostListener, ElementRef, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
@@ -20,6 +20,10 @@ export class HeaderComponent {
   public themeService = inject(ThemeService);
   public notificationService = inject(NotificationService);
   public isNotificationsOpen = signal(false);
+  public isFilterOpen = signal(false);
+  public filterEventId = signal<string | null>(null);
+  @ViewChild('notifPanel') notifPanel?: ElementRef<HTMLElement>;
+  @ViewChild('notifButton') notifButton?: ElementRef<HTMLElement>;
 
   public notifications = toSignal(
     this.authService.user$.pipe(
@@ -34,6 +38,26 @@ export class HeaderComponent {
   public unreadCount = computed(
     () => this.notifications().filter((n) => !n.read).length
   );
+
+  public filteredNotifications = computed(() => {
+    const eventId = this.filterEventId();
+    const all = this.notifications();
+    if (!eventId) return all;
+    return all.filter(
+      (n) => this.isRsvpNotification(n) && this.getNotificationFilterKey(n) === eventId
+    );
+  });
+
+  public availableEventFilters = computed(() => {
+    const seen = new Map<string, string>();
+    this.notifications().forEach((n) => {
+      if (!this.isRsvpNotification(n)) return;
+      const key = this.getNotificationFilterKey(n);
+      if (!key || seen.has(key)) return;
+      seen.set(key, this.getNotificationTitle(n));
+    });
+    return Array.from(seen.entries()).map(([id, title]) => ({ id, title }));
+  });
 
   async onLogout() {
     try {
@@ -56,8 +80,41 @@ export class HeaderComponent {
     }
   }
 
+  toggleFilter() {
+    this.isFilterOpen.update((open) => !open);
+  }
+
+  setFilter(eventId: string) {
+    this.filterEventId.set(eventId || null);
+    if (!eventId) this.isFilterOpen.set(false);
+  }
+
+  async clearNotifications() {
+    const uid = this.authService.currentUser()?.uid;
+    if (!uid) return;
+    await this.notificationService.deleteAllNotifications(uid);
+    this.filterEventId.set(null);
+    this.isFilterOpen.set(false);
+  }
+
   closeNotifications() {
     this.isNotificationsOpen.set(false);
+  }
+
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent) {
+    if (!this.isNotificationsOpen()) return;
+    const target = event.target as Node | null;
+    const panelEl = this.notifPanel?.nativeElement;
+    const buttonEl = this.notifButton?.nativeElement;
+    if (panelEl?.contains(target as Node) || buttonEl?.contains(target as Node)) return;
+    this.closeNotifications();
+  }
+
+  @HostListener('document:keydown.escape')
+  onEscapePress() {
+    if (!this.isNotificationsOpen()) return;
+    this.closeNotifications();
   }
 
   formatTime(value: any) {
@@ -65,11 +122,49 @@ export class HeaderComponent {
     const date = typeof value.toDate === 'function' ? value.toDate() : new Date(value);
     const diffMs = Date.now() - date.getTime();
     const minutes = Math.floor(diffMs / 60000);
-    if (minutes < 1) return 'now';
-    if (minutes < 60) return `${minutes}m`;
+    if (minutes < 1) return 'Most';
+    if (minutes < 60) return `${minutes} perce`;
     const hours = Math.floor(minutes / 60);
-    if (hours < 24) return `${hours}h`;
+    if (hours < 24) return `${hours} órája`;
     const days = Math.floor(hours / 24);
-    return `${days}d`;
+    return `${days} napja`;
+  }
+
+  private getNotificationEventId(notification: AppNotification): string | null {
+    if (notification.eventId) return notification.eventId;
+    if (!notification.link) return null;
+    const match = notification.link.match(/\/events\/([^/]+)$/);
+    return match ? match[1] : null;
+  }
+
+  getNotificationTitle(notification: AppNotification): string {
+    return this.getRsvpEventLabel(notification) || notification.title || 'Értesítés';
+  }
+
+  private getNotificationFilterKey(notification: AppNotification): string | null {
+    if (!this.isRsvpNotification(notification)) return null;
+    const eventId = this.getNotificationEventId(notification);
+    if (eventId) return eventId;
+    const label = this.getRsvpEventLabel(notification);
+    if (label) return `label:${label}`;
+    if (notification.link) return `link:${notification.link}`;
+    return null;
+  }
+
+  private getRsvpEventLabel(notification: AppNotification): string | null {
+    if (!this.isRsvpNotification(notification)) return null;
+    const title = (notification.title || '').trim();
+    if (this.isEventTitleWithDate(title)) return title;
+    const body = (notification.body || '').trim();
+    const match = body.match(/az esem[ée]nyen:\s*(.+?)\s*\(/i);
+    return match ? match[1].trim() : null;
+  }
+
+  private isEventTitleWithDate(title: string) {
+    return /\d{4}\.\d{2}\.\d{2}\.\s*\d{2}:\d{2}/.test(title);
+  }
+
+  private isRsvpNotification(notification: AppNotification) {
+    return notification.type === 'event_rsvp_yes' || notification.type === 'event_rsvp_no';
   }
 }

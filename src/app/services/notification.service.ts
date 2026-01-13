@@ -71,6 +71,21 @@ export class NotificationService {
     await batch.commit();
   }
 
+  async deleteAllNotifications(uid: string) {
+    if (!uid) return;
+    const notificationsRef = collection(this.firestore, `users/${uid}/notifications`);
+    while (true) {
+      const q = query(notificationsRef, limit(400));
+      const snap = await getDocs(q);
+      if (snap.empty) break;
+      const batch = writeBatch(this.firestore);
+      snap.docs.forEach((docSnap) => {
+        batch.delete(docSnap.ref);
+      });
+      await batch.commit();
+    }
+  }
+
   async enablePushForCurrentUser() {
     const user = this.authService.currentUser();
     if (!user) throw new Error('User must be logged in');

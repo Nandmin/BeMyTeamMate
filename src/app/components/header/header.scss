@@ -104,8 +104,8 @@ header {
 
 .notif-panel {
   position: absolute;
-  right: 0;
-  top: calc(100% + 10px);
+  left: -100px;
+  top: calc(100% + 20px);
   width: 320px;
   max-height: 420px;
   overflow: hidden;
@@ -116,11 +116,83 @@ header {
   z-index: 70;
 }
 
-.notif-panel-title {
+.notif-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
   padding: 12px 14px;
+  border-bottom: 1px solid rgba(34, 197, 94, 0.15);
+}
+
+.notif-panel-title {
   font-weight: 700;
   color: #e2e8f0;
-  border-bottom: 1px solid rgba(34, 197, 94, 0.15);
+}
+
+.notif-panel-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.notif-action-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.02);
+  color: #94a3b8;
+  transition: color 0.2s ease, border-color 0.2s ease, background-color 0.2s ease;
+
+  &:hover:not(:disabled) {
+    color: #e2e8f0;
+    border-color: rgba(34, 197, 94, 0.4);
+    background: rgba(34, 197, 94, 0.08);
+  }
+
+  &:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+
+  .material-symbols-outlined {
+    font-size: 18px;
+  }
+}
+
+.notif-action-btn.danger:hover:not(:disabled) {
+  border-color: rgba(239, 68, 68, 0.5);
+  color: #fecaca;
+  background: rgba(239, 68, 68, 0.12);
+}
+
+.notif-filter {
+  padding: 10px 14px 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.notif-filter-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.notif-filter-select {
+  margin-top: 8px;
+  width: 100%;
+  height: 32px;
+  padding: 0 10px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(15, 23, 42, 0.6);
+  color: #e2e8f0;
+  font-size: 12px;
 }
 
 .notif-list {
@@ -153,6 +225,14 @@ header {
   color: #94a3b8;
 }
 
+.notif-body-yes {
+  color: #22c55e;
+}
+
+.notif-body-no {
+  color: #ef4444;
+}
+
 .notif-item-meta {
   margin-top: 6px;
   font-size: 11px;
@@ -171,6 +251,10 @@ header {
   border-color: rgba(15, 23, 42, 0.12);
 }
 
+:host-context(html.light) .notif-panel-header {
+  border-bottom-color: rgba(15, 23, 42, 0.08);
+}
+
 :host-context(html.light) .notif-item-title {
   color: #0f172a;
 }
@@ -179,6 +263,46 @@ header {
 :host-context(html.light) .notif-item-meta,
 :host-context(html.light) .notif-empty {
   color: #475569;
+}
+
+:host-context(html.light) .notif-action-btn {
+  border-color: rgba(15, 23, 42, 0.12);
+  background: rgba(15, 23, 42, 0.02);
+  color: #64748b;
+}
+
+:host-context(html.light) .notif-action-btn:hover:not(:disabled) {
+  border-color: rgba(34, 197, 94, 0.4);
+  color: #0f172a;
+  background: rgba(34, 197, 94, 0.1);
+}
+
+:host-context(html.light) .notif-action-btn.danger:hover:not(:disabled) {
+  border-color: rgba(239, 68, 68, 0.5);
+  color: #7f1d1d;
+  background: rgba(239, 68, 68, 0.12);
+}
+
+:host-context(html.light) .notif-filter {
+  border-bottom-color: rgba(15, 23, 42, 0.06);
+}
+
+:host-context(html.light) .notif-filter-label {
+  color: #64748b;
+}
+
+:host-context(html.light) .notif-filter-select {
+  border-color: rgba(15, 23, 42, 0.12);
+  background: #f8fafc;
+  color: #0f172a;
+}
+
+:host-context(html.light) .notif-body-yes {
+  color: #16a34a;
+}
+
+:host-context(html.light) .notif-body-no {
+  color: #dc2626;
 }
 
 // Light mode button styling
@@ -198,4 +322,3 @@ header {
 :host-context(html.light) header .text-white {
   color: #1e293b;
 }
-

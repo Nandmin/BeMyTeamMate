@@ -255,15 +255,15 @@ export class UserProfilePage {
       if (this.pushEnabled()) {
         await this.notificationService.disablePushForCurrentUser();
         this.pushEnabled.set(false);
-        await this.modalService.alert('Push ertesitesek kikapcsolva.', 'Siker', 'success');
+        await this.modalService.alert('Push értesítések kikapcsolva.', 'Siker', 'success');
       } else {
         await this.notificationService.enablePushForCurrentUser();
         this.pushEnabled.set(true);
-        await this.modalService.alert('Push ertesitesek bekapcsolva.', 'Siker', 'success');
+        await this.modalService.alert('Push értesítések bekapcsolva.', 'Siker', 'success');
       }
     } catch (error: any) {
       console.error('Push toggle error:', error);
-      const msg = error?.message || 'Nem sikerult a push ertesitesek kezelese.';
+      const msg = error?.message || 'Nem sikerult a push értesítések kezelése.';
       await this.modalService.alert(msg, 'Hiba', 'error');
     } finally {
       this.pushBusy.set(false);

@@ -113,8 +113,8 @@ export class EventService {
         type: 'event_created',
         groupId,
         eventId: docRef.id,
-        title: `${groupName} - uj esemeny`,
-        body: `${eventData.title} letrehozva.`,
+        title: `${groupName} - Új esemény`,
+        body: `${eventData.title} létrehozva.`,
         link: `/groups/${groupId}/events/${docRef.id}`,
         actorId: user.uid,
         actorName: user.displayName || 'Ismeretlen',
@@ -179,8 +179,8 @@ export class EventService {
       {
         type: 'event_created',
         groupId,
-        title: `${groupName} - uj esemeny sorozat`,
-        body: `${eventData.title} (${result.length} alkalom) letrehozva.`,
+        title: `${groupName} - Új esemény sorozat`,
+        body: `${eventData.title} (${result.length} alkalom) létrehozva.`,
         link: `/groups/${groupId}`,
         actorId: user.uid,
         actorName: user.displayName || 'Ismeretlen',
@@ -274,15 +274,26 @@ export class EventService {
 
     const groupSnap = await getDoc(doc(this.firestore, `groups/${groupId}`));
     const groupName = groupSnap.exists() ? ((groupSnap.data() as any).name as string) : 'Csoport';
+    const eventDate = event.date ? event.date.toDate() : new Date();
+    const pad = (value: number) => String(value).padStart(2, '0');
+    const datePart = `${eventDate.getFullYear()}.${pad(eventDate.getMonth() + 1)}.${pad(
+      eventDate.getDate()
+    )}.`;
+    const timePart = event.time || `${pad(eventDate.getHours())}:${pad(eventDate.getMinutes())}`;
+    const capacity = event.maxAttendees || attendees.length;
+    const attendeeCount = attendees.length;
+    const eventDateTime = `${datePart} ${timePart}`;
+    const eventTitle = event.title || 'Esemeny';
+    const rsvpTitle = `${eventTitle} - ${eventDateTime}`;
     await this.notificationService.notifyGroupMembers(
       {
         type: isJoining ? 'event_rsvp_yes' : 'event_rsvp_no',
         groupId,
         eventId,
-        title: `${groupName} - visszajelzes`,
+        title: rsvpTitle,
         body: `${user.displayName || 'Ismeretlen'} ${
-          isJoining ? 'reszt vesz' : 'nem vesz reszt'
-        } az esemenyen: ${event.title}.`,
+          isJoining ? 'részt vesz' : 'nem vesz részt'
+        } az eseményen ( ${attendeeCount} / ${capacity} )`,
         link: `/groups/${groupId}/events/${eventId}`,
         actorId: user.uid,
         actorName: user.displayName || 'Ismeretlen',

@@ -19,7 +19,7 @@ jobs:
           node-version: 22
 
       - name: Install Wrangler
-        run: npm install -g wrangler
+        run: npm install -g wrangler@3.99.0
 
       - name: Deploy Worker
         working-directory: cloudflare

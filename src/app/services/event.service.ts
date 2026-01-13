@@ -415,41 +415,43 @@ export class EventService {
     options: { daysAhead: number; limit: number; startAfterDate?: Timestamp }
   ): Observable<SportEvent[]> {
     const cacheKey = this.eventsListCacheKey(groupId, 'upcoming', options);
-    return this.authService.user$.pipe(
-      switchMap((user: any) => {
-        if (!user) return of([]);
+    return defer(() =>
+      this.authService.user$.pipe(
+        switchMap((user: any) => {
+          if (!user) return of([]);
 
-        const cached = this.getCachedEventsList(cacheKey);
-        if (cached) return of(cached);
+          const cached = this.getCachedEventsList(cacheKey);
+          if (cached) return of(cached);
 
-        const now = new Date();
-        const end = new Date();
-        end.setDate(end.getDate() + options.daysAhead);
+          const now = new Date();
+          const end = new Date();
+          end.setDate(end.getDate() + options.daysAhead);
 
-        let q = query(
-          this.getEventsCollection(groupId),
-          where('date', '>=', Timestamp.fromDate(now)),
-          where('date', '<=', Timestamp.fromDate(end)),
-          orderBy('date', 'asc'),
-          limit(options.limit)
-        );
+          let q = query(
+            this.getEventsCollection(groupId),
+            where('date', '>=', Timestamp.fromDate(now)),
+            where('date', '<=', Timestamp.fromDate(end)),
+            orderBy('date', 'asc'),
+            limit(options.limit)
+          );
 
-        if (options.startAfterDate) {
-          q = query(q, startAfter(options.startAfterDate));
-        }
+          if (options.startAfterDate) {
+            q = query(q, startAfter(options.startAfterDate));
+          }
 
-        return from(getDocs(q)).pipe(
-          map((snap) => snap.docs.map((d) => ({ id: d.id, ...(d.data() as SportEvent) }))),
-          tap((events) => {
-            this.setCachedEventsList(cacheKey, events);
-            events.forEach((event) => event.id && this.setCachedEvent(groupId, event.id, event));
-          }),
-          catchError((err: any) => {
-            console.error('getUpcomingEventsInternal error:', err);
-            return of([]);
-          })
-        );
-      })
+          return from(getDocs(q)).pipe(
+            map((snap) => snap.docs.map((d) => ({ id: d.id, ...(d.data() as SportEvent) }))),
+            tap((events) => {
+              this.setCachedEventsList(cacheKey, events);
+              events.forEach((event) => event.id && this.setCachedEvent(groupId, event.id, event));
+            }),
+            catchError((err: any) => {
+              console.error('getUpcomingEventsInternal error:', err);
+              return of([]);
+            })
+          );
+        })
+      )
     );
   }
 
@@ -458,41 +460,43 @@ export class EventService {
     options: { daysBack: number; limit: number; startAfterDate?: Timestamp }
   ): Observable<SportEvent[]> {
     const cacheKey = this.eventsListCacheKey(groupId, 'past', options);
-    return this.authService.user$.pipe(
-      switchMap((user: any) => {
-        if (!user) return of([]);
+    return defer(() =>
+      this.authService.user$.pipe(
+        switchMap((user: any) => {
+          if (!user) return of([]);
 
-        const cached = this.getCachedEventsList(cacheKey);
-        if (cached) return of(cached);
+          const cached = this.getCachedEventsList(cacheKey);
+          if (cached) return of(cached);
 
-        const now = new Date();
-        const start = new Date();
-        start.setDate(start.getDate() - options.daysBack);
+          const now = new Date();
+          const start = new Date();
+          start.setDate(start.getDate() - options.daysBack);
 
-        let q = query(
-          this.getEventsCollection(groupId),
-          where('date', '<', Timestamp.fromDate(now)),
-          where('date', '>=', Timestamp.fromDate(start)),
-          orderBy('date', 'desc'),
-          limit(options.limit)
-        );
+          let q = query(
+            this.getEventsCollection(groupId),
+            where('date', '<', Timestamp.fromDate(now)),
+            where('date', '>=', Timestamp.fromDate(start)),
+            orderBy('date', 'desc'),
+            limit(options.limit)
+          );
 
-        if (options.startAfterDate) {
-          q = query(q, startAfter(options.startAfterDate));
-        }
+          if (options.startAfterDate) {
+            q = query(q, startAfter(options.startAfterDate));
+          }
 
-        return from(getDocs(q)).pipe(
-          map((snap) => snap.docs.map((d) => ({ id: d.id, ...(d.data() as SportEvent) }))),
-          tap((events) => {
-            this.setCachedEventsList(cacheKey, events);
-            events.forEach((event) => event.id && this.setCachedEvent(groupId, event.id, event));
-          }),
-          catchError((err: any) => {
-            console.error('getPastEventsInternal error:', err);
-            return of([]);
-          })
-        );
-      })
+          return from(getDocs(q)).pipe(
+            map((snap) => snap.docs.map((d) => ({ id: d.id, ...(d.data() as SportEvent) }))),
+            tap((events) => {
+              this.setCachedEventsList(cacheKey, events);
+              events.forEach((event) => event.id && this.setCachedEvent(groupId, event.id, event));
+            }),
+            catchError((err: any) => {
+              console.error('getPastEventsInternal error:', err);
+              return of([]);
+            })
+          );
+        })
+      )
     );
   }
 

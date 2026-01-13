@@ -20,7 +20,7 @@ import { getMessaging, getToken, deleteToken, onMessage } from 'firebase/messagi
 import { AuthService } from './auth.service';
 import { environment } from '../../environments/environment';
 import { AppNotification, NotificationType } from '../models/notification.model';
-import { Observable, of } from 'rxjs';
+import { Observable, of, defer } from 'rxjs';
 
 interface GroupNotificationPayload {
   type: NotificationType;
@@ -44,9 +44,11 @@ export class NotificationService {
 
   watchNotifications(uid: string): Observable<AppNotification[]> {
     if (!uid) return of([]);
-    const notificationsRef = collection(this.firestore, `users/${uid}/notifications`);
-    const q = query(notificationsRef, orderBy('createdAt', 'desc'), limit(20));
-    return collectionData(q, { idField: 'id' }) as Observable<AppNotification[]>;
+    return defer(() => {
+      const notificationsRef = collection(this.firestore, `users/${uid}/notifications`);
+      const q = query(notificationsRef, orderBy('createdAt', 'desc'), limit(20));
+      return collectionData(q, { idField: 'id' }) as Observable<AppNotification[]>;
+    });
   }
 
   isPushEnabled() {

@@ -106,19 +106,21 @@ export class GroupService {
   }
 
   getGroups(): Observable<Group[]> {
-    return this.authService.user$.pipe(
-      switchMap((user) => {
-        if (!user) return of([]);
-        const q = query(this.groupsCollection, orderBy('createdAt', 'desc'));
-        return from(getDocs(q)).pipe(
-          map((snap) => snap.docs.map((d) => ({ id: d.id, ...(d.data() as Group) }))),
-          tap((groups) => this.setCachedGroupsList(groups)),
-          catchError((err: any) => {
-            console.error('getGroups error:', err);
-            return of([]);
-          })
-        );
-      })
+    return defer(() =>
+      this.authService.user$.pipe(
+        switchMap((user) => {
+          if (!user) return of([]);
+          const q = query(this.groupsCollection, orderBy('createdAt', 'desc'));
+          return from(getDocs(q)).pipe(
+            map((snap) => snap.docs.map((d) => ({ id: d.id, ...(d.data() as Group) }))),
+            tap((groups) => this.setCachedGroupsList(groups)),
+            catchError((err: any) => {
+              console.error('getGroups error:', err);
+              return of([]);
+            })
+          );
+        })
+      )
     );
   }
 
@@ -183,32 +185,34 @@ export class GroupService {
   }
 
   getGroupMembers(groupId: string): Observable<GroupMember[]> {
-    const membersCollection = collection(this.firestore, `groups/${groupId}/members`);
-    const q = query(membersCollection, orderBy('joinedAt', 'asc'));
-    return from(getDocs(q)).pipe(
-      map((snap) => snap.docs.map((d) => ({ id: d.id, ...(d.data() as GroupMember) }))),
-      switchMap((members) => {
-        const hasOwner = members.some((m) => m.role === 'Csapatkapitány');
-        if (hasOwner) return of(members);
+    return defer(() => {
+      const membersCollection = collection(this.firestore, `groups/${groupId}/members`);
+      const q = query(membersCollection, orderBy('joinedAt', 'asc'));
+      return from(getDocs(q)).pipe(
+        map((snap) => snap.docs.map((d) => ({ id: d.id, ...(d.data() as GroupMember) }))),
+        switchMap((members) => {
+          const hasOwner = members.some((m) => m.role === 'Csapatkapitány');
+          if (hasOwner) return of(members);
 
-        return this.getGroup(groupId).pipe(
-          map((group) => {
-            if (!group) return members;
-            const ownerMember: GroupMember = {
-              id: 'owner-fallback',
-              userId: group.ownerId,
-              name: group.ownerName,
-              photo: group.ownerPhoto,
-              role: 'Csapatkapitány',
-              isAdmin: true,
-              joinedAt: group.createdAt,
-              skillLevel: 100,
-            };
-            return [ownerMember, ...members];
-          })
-        );
-      })
-    );
+          return this.getGroup(groupId).pipe(
+            map((group) => {
+              if (!group) return members;
+              const ownerMember: GroupMember = {
+                id: 'owner-fallback',
+                userId: group.ownerId,
+                name: group.ownerName,
+                photo: group.ownerPhoto,
+                role: 'Csapatkapitány',
+                isAdmin: true,
+                joinedAt: group.createdAt,
+                skillLevel: 100,
+              };
+              return [ownerMember, ...members];
+            })
+          );
+        })
+      );
+    });
   }
 
   async joinGroup(groupId: string) {

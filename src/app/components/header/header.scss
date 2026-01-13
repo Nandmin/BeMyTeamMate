@@ -255,6 +255,10 @@ header {
   border-bottom-color: rgba(15, 23, 42, 0.08);
 }
 
+:host-context(html.light) .notif-panel-title {
+  color: #0f172a;
+}
+
 :host-context(html.light) .notif-item-title {
   color: #0f172a;
 }

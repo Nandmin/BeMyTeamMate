@@ -1,58 +1,167 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
+
+    /* -----------------------------
+       Helpers
+    ----------------------------- */
     function isSignedIn() {
       return request.auth != null;
     }
 
-    // 1. User documents
-    match /users/{userId} {
-      allow read: if isSignedIn();
-      allow create: if isSignedIn() && request.auth.uid == userId;
-      allow update: if isSignedIn() && (
-        request.auth.uid == userId ||
-        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['elo', 'formFactor', 'fcmTokens'])
-      );
+    function uid() {
+      return request.auth.uid;
+    }
 
-      // User group summaries (users/{uid}/groups/{groupId})
+    // Siteadmin: best practice custom claim.
+    // Fallback: /siteAdmins/{uid} doc (ha még nincs claim).
+    function isSiteAdmin() {
+      return isSignedIn() && (
+        request.auth.token.siteadmin == true ||
+        request.auth.token.role == 'siteadmin' ||
+        exists(/databases/$(database)/documents/siteAdmins/$(uid()))
+      );
+    }
+
+    function isSelf(userId) {
+      return isSignedIn() && uid() == userId;
+    }
+
+    function memberDoc(groupId, userId) {
+      return get(/databases/$(database)/documents/groups/$(groupId)/members/$(userId));
+    }
+
+    function isGroupMember(groupId) {
+      return isSignedIn()
+        && exists(/databases/$(database)/documents/groups/$(groupId)/members/$(uid()));
+    }
+
+    // "csoportadmin" nálad: members/{uid}.isAdmin == true
+    function isGroupAdmin(groupId) {
+      return isSiteAdmin() || (
+        isGroupMember(groupId) &&
+        memberDoc(groupId, uid()).data.isAdmin == true
+      );
+    }
+
+    // Átmeneti védelem: a users docban ne tárolj fcmTokens-t.
+    function disallowFcmTokensWrite() {
+      return !(request.resource.data.keys().hasAny(['fcmTokens']));
+    }
+
+    /* -----------------------------
+       Optional: siteAdmins collection (fallback)
+       - Ne lehessen kliensből admin jogot osztogatni
+    ----------------------------- */
+    match /siteAdmins/{adminUid} {
+      allow read: if isSiteAdmin();
+      allow write: if false;
+    }
+
+    /* -----------------------------
+       1) USERS
+       Biztonság: users doc legyen privát (self + siteadmin).
+       (A csoporton belüli név/kép úgyis ott van a members docban.)
+    ----------------------------- */
+    match /users/{userId} {
+      allow read: if isSelf(userId) || isSiteAdmin();
+
+      allow create: if isSelf(userId) && disallowFcmTokensWrite();
+
+      // Kritikus fix: más usert senki ne frissíthessen
+      allow update: if (isSelf(userId) || isSiteAdmin()) && disallowFcmTokensWrite();
+
+      allow delete: if isSiteAdmin();
+
+      // User group summaries (ha használod): users/{uid}/groups/{groupId}
       match /groups/{groupId} {
-        allow read, write: if isSignedIn() && request.auth.uid == userId;
+        allow read, write: if isSelf(userId) || isSiteAdmin();
       }
 
-      // User notifications (users/{uid}/notifications/{notificationId})
+      // User notifications: users/{uid}/notifications/{notificationId}
       match /notifications/{notificationId} {
+        // Létrehozás: csak groupadmin/siteadmin, és csak ha a címzett csoporttag.
         allow create: if isSignedIn()
           && request.resource.data.groupId is string
-          && exists(/databases/$(database)/documents/users/$(request.auth.uid)/groups/$(request.resource.data.groupId))
-          && exists(/databases/$(database)/documents/users/$(userId)/groups/$(request.resource.data.groupId));
-        allow read, update, delete: if isSignedIn() && request.auth.uid == userId;
+          && (isSiteAdmin() || isGroupAdmin(request.resource.data.groupId))
+          && exists(/databases/$(database)/documents/groups/$(request.resource.data.groupId)/members/$(userId));
+
+        allow read, update, delete: if isSelf(userId) || isSiteAdmin();
       }
     }
 
-    // 2. Collection group query for members
-    match /{path=**}/members/{memberId} {
-      allow read: if isSignedIn();
-      allow write: if isSignedIn();
-    }
-
-    // 3. Groups
+    /* -----------------------------
+       2) GROUPS
+    ----------------------------- */
     match /groups/{groupId} {
-      allow read, create: if isSignedIn();
+      // olvasás: csak tag vagy siteadmin
+      allow read: if isGroupMember(groupId) || isSiteAdmin();
 
-      allow update: if isSignedIn() && (
-        resource.data.ownerId == request.auth.uid ||
-        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['memberCount'])
-      );
+      // létrehozás: bejelentkezett user
+      // (a tagságot és admin flag-et a members subcollection-ben kezeld)
+      allow create: if isSignedIn();
 
-      allow delete: if isSignedIn() && resource.data.ownerId == request.auth.uid;
+      // módosítás: csak csoportadmin vagy siteadmin
+      allow update: if isGroupAdmin(groupId);
 
-      match /events/{eventId} {
-        allow read, write: if isSignedIn();
-      }
+      // törlés: csoportadmin vagy siteadmin
+      // (ha csak owner törölhet: ezt szigoríthatjuk ownerId == uid() feltétellel)
+      allow delete: if isGroupAdmin(groupId);
 
+      /* ---- Members ---- */
       match /members/{memberId} {
-        allow read, write: if isSignedIn();
+        // olvasás: csoporttag vagy siteadmin
+        allow read: if isGroupMember(groupId) || isSiteAdmin();
+
+        // create/delete: csak csoportadmin/siteadmin
+        // (Create-nél kikötjük, hogy a doc id = userId)
+        allow create: if isGroupAdmin(groupId)
+          && request.resource.data.userId == memberId;
+
+        allow delete: if isGroupAdmin(groupId);
+
+        // update:
+        // - csoportadmin/siteadmin: bármit (pl. isAdmin)
+        // - sima user: csak a saját member docját, és csak nem-privilegizált mezőket (ha kell)
+        allow update: if isGroupAdmin(groupId)
+          || (isGroupMember(groupId) && uid() == memberId
+              && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+                'name', 'photo', 'skillLevel', 'elo'
+              ]));
       }
+
+      /* ---- Events ---- */
+      match /events/{eventId} {
+        allow read: if isGroupMember(groupId) || isSiteAdmin();
+
+        // esemény létrehozás: tag vagy siteadmin
+        // + alap konzisztencia: groupId egyezzen, creatorId a hívó legyen
+        allow create: if (isGroupMember(groupId) || isSiteAdmin())
+          && request.resource.data.groupId == groupId
+          && request.resource.data.creatorId == uid();
+
+        // update:
+        // - admin: mindent
+        // - sima tag: CSAK RSVP jellegű mezőket módosíthasson (attendees/currentAttendees)
+        allow update: if isGroupAdmin(groupId)
+          || (isGroupMember(groupId)
+              && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['attendees', 'currentAttendees'])
+              // alap sanity: currentAttendees == attendees.size()
+              && request.resource.data.currentAttendees == request.resource.data.attendees.size()
+              // legalább saját maga benne legyen (ha csatlakozik)
+              && (uid() in request.resource.data.attendees || !(uid() in resource.data.attendees))
+             );
+
+        // delete: admin
+        allow delete: if isGroupAdmin(groupId);
+      }
+    }
+
+    /* -----------------------------
+       3) Everything else denied
+    ----------------------------- */
+    match /{document=**} {
+      allow read, write: if false;
     }
   }
 }

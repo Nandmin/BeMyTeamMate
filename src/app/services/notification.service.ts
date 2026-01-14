@@ -56,9 +56,7 @@ export class NotificationService {
       const notificationsRef = collection(this.firestore, `users/${uid}/notifications`);
       const q = query(notificationsRef, orderBy('createdAt', 'desc'), limit(20));
       const realtime$ = collectionData(q, { idField: 'id' }) as Observable<AppNotification[]>;
-      const streaming$ = realtime$.pipe(
-        tap((items) => this.setCachedNotifications(uid, items))
-      );
+      const streaming$ = realtime$.pipe(tap((items) => this.setCachedNotifications(uid, items)));
       return cached ? concat(of(cached), streaming$) : streaming$;
     });
   }
@@ -201,6 +199,19 @@ export class NotificationService {
     if (tokens.length === 0) return;
     if (!this.isValidPushWorkerUrl(environment.cloudflareWorkerUrl)) return;
 
+    const user = this.authService.currentUser();
+    let authToken = '';
+    if (user) {
+      try {
+        authToken = await user.getIdToken();
+      } catch (err) {
+        console.error('Push: Error getting ID token:', err);
+      }
+    }
+
+    // Ensure environment URL is used directly
+    const url = environment.cloudflareWorkerUrl;
+
     const body = {
       tokens,
       notification: {
@@ -216,13 +227,23 @@ export class NotificationService {
     };
 
     try {
-      await fetch(environment.cloudflareWorkerUrl, {
+      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+      if (authToken) {
+        headers['Authorization'] = `Bearer ${authToken}`;
+      }
+
+      const response = await fetch(url, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: headers,
         body: JSON.stringify(body),
       });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Push dispatch failed with status:', response.status, errorText);
+      }
     } catch (error) {
-      console.warn('Push dispatch failed:', error);
+      console.warn('Push dispatch network/logic error:', error);
     }
   }
 

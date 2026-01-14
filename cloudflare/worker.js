@@ -4,20 +4,32 @@ export default {
   async fetch(request, env) {
     const url = new URL(request.url);
 
-    if (url.pathname !== '/send-notification') {
-      return jsonResponse({ error: 'Not found' }, 404);
-    }
-
-    if (!ALLOWED_METHODS.includes(request.method)) {
-      return jsonResponse({ error: 'Method not allowed' }, 405);
-    }
-
+    // Handle CORS preflight
     if (request.method === 'OPTIONS') {
       return new Response(null, {
         status: 204,
         headers: corsHeaders(),
       });
     }
+
+    // Only allow specific endpoint
+    if (url.pathname !== '/send-notification') {
+      return jsonResponse({ error: 'Endpoint not found. Use /send-notification' }, 404);
+    }
+
+    if (!ALLOWED_METHODS.includes(request.method)) {
+      return jsonResponse({ error: 'Method not allowed' }, 405);
+    }
+
+    // 1. Authentication Check
+    const authResult = await verifyAuth(request, env);
+    if (!authResult.authorized) {
+      return jsonResponse({ error: 'Unauthorized', detail: authResult.error }, 401);
+    }
+
+    // 2. Rate Limiting (Basic)
+    // Authenticated users are less likely to spam.
+    // Ideally, use Cloudflare Rate Limiting feature in Dashboard.
 
     let body;
     try {
@@ -28,7 +40,7 @@ export default {
 
     const tokens = Array.isArray(body.tokens) ? body.tokens.filter(Boolean) : [];
     if (tokens.length === 0) {
-      return jsonResponse({ error: 'Missing tokens' }, 400);
+      return jsonResponse({ error: 'Missing recipients (tokens)' }, 400);
     }
 
     const notification = body.notification || {};
@@ -39,19 +51,23 @@ export default {
     const privateKey = normalizePrivateKey(env.FCM_PRIVATE_KEY);
 
     if (!projectId || !clientEmail || !privateKey) {
-      return jsonResponse({ error: 'Missing FCM credentials' }, 500);
+      console.error('Missing FCM Configuration in Secrets');
+      return jsonResponse({ error: 'Server configuration error' }, 500);
     }
 
+    // 3. Get FCM Refresh Token / Access Token
     let accessToken;
     try {
       accessToken = await getAccessToken(clientEmail, privateKey);
     } catch (error) {
+      console.error('Token generation failed:', error);
       return jsonResponse(
-        { error: 'Failed to obtain access token', detail: error?.message || String(error) },
+        { error: 'Failed to obtain FCM access token', detail: String(error) },
         500
       );
     }
 
+    // 4. Send Notifications
     const result = await sendToFcm(
       tokens,
       { title: notification.title, body: notification.body },
@@ -60,6 +76,7 @@ export default {
       projectId
     );
 
+    // Log the result (Cloudflare logs)
     return jsonResponse(
       {
         success: result.success,
@@ -75,7 +92,7 @@ function corsHeaders() {
   return {
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Methods': 'POST, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Admin-Secret',
   };
 }
 
@@ -91,7 +108,56 @@ function jsonResponse(payload, status = 200) {
 
 function normalizePrivateKey(value) {
   if (!value) return value;
-  return value.replace(/\\n/g, '\n');
+  // Handle escaped newlines from env vars (common issue)
+  return value.replace(/\\n/g, '\n').replace(/"/g, '');
+}
+
+/**
+ * Verifies the request using Admin Secret or Firebase ID Token
+ */
+async function verifyAuth(request, env) {
+  const authHeader = request.headers.get('Authorization');
+  const adminSecretHeader = request.headers.get('X-Admin-Secret');
+
+  // 1. Check Admin Secret (server-to-server or admin bypass)
+  if (env.ADMIN_SECRET && adminSecretHeader === env.ADMIN_SECRET) {
+    return { authorized: true, user: 'internal-admin' };
+  }
+
+  // 2. Check Firebase ID Token
+  if (authHeader && authHeader.startsWith('Bearer ')) {
+    const token = authHeader.split('Bearer ')[1];
+    try {
+      if (!env.FIREBASE_API_KEY) {
+        return { authorized: false, error: 'Missing FIREBASE_API_KEY' };
+      }
+
+      const lookupUrl = `https://identitytoolkit.googleapis.com/v1/accounts:lookup?key=${env.FIREBASE_API_KEY}`;
+      const resp = await fetch(lookupUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ idToken: token }),
+      });
+
+      if (!resp.ok) {
+        const errorText = await resp.text();
+        return { authorized: false, error: `Invalid ID Token: ${errorText}` };
+      }
+
+      const payload = await resp.json();
+      const user = Array.isArray(payload.users) ? payload.users[0] : null;
+      if (!user || !user.localId) {
+        return { authorized: false, error: 'Invalid ID Token: user not found' };
+      }
+
+      return { authorized: true, user: user.localId, email: user.email };
+    } catch (e) {
+      console.error('Auth verification failed:', e);
+      return { authorized: false, error: 'Token verification failed' };
+    }
+  }
+
+  return { authorized: false, error: 'Missing or invalid authentication credentials' };
 }
 
 async function sendToFcm(tokens, notification, data, accessToken, projectId) {
@@ -99,18 +165,39 @@ async function sendToFcm(tokens, notification, data, accessToken, projectId) {
   let failure = 0;
   const errors = [];
 
-  for (const token of tokens) {
-    const message = {
-      message: {
-        token,
-        notification: {
-          title: notification.title || 'Notification',
-          body: notification.body || '',
-        },
-        data: normalizeData(data),
-      },
-    };
+  // Batch tokens in chunks to avoid hitting concurrency limits too hard
+  const chunks = chunkArray(tokens, 10);
+  
+  for (const chunk of chunks) {
+    const promises = chunk.map(token => sendSingleMessage(token, notification, data, accessToken, projectId));
+    const results = await Promise.all(promises);
+    
+    results.forEach(res => {
+      if (res.ok) {
+        success++;
+      } else {
+        failure++;
+        errors.push(res.error);
+      }
+    });
+  }
 
+  return { success, failure, errors };
+}
+
+async function sendSingleMessage(token, notification, data, accessToken, projectId) {
+  const message = {
+    message: {
+      token,
+      notification: {
+        title: notification.title || 'Notification',
+        body: notification.body || '',
+      },
+      data: normalizeData(data),
+    },
+  };
+
+  try {
     const response = await fetch(
       `https://fcm.googleapis.com/v1/projects/${projectId}/messages:send`,
       {
@@ -124,20 +211,20 @@ async function sendToFcm(tokens, notification, data, accessToken, projectId) {
     );
 
     if (response.ok) {
-      success += 1;
+      return { ok: true };
     } else {
-      failure += 1;
       let detail = '';
       try {
         detail = await response.text();
-      } catch {
-        detail = 'Unknown error';
-      }
-      errors.push({ token, status: response.status, detail });
+      } catch { detail = 'Unknown error'; }
+      
+      console.error(`FCM Error: ${response.status} - ${detail}`);
+      return { ok: false, error: { token, status: response.status, detail } };
     }
+  } catch (err) {
+    console.error(`Fetch Error: ${err}`);
+    return { ok: false, error: { token, status: 0, detail: String(err) } };
   }
-
-  return { success, failure, errors };
 }
 
 function normalizeData(data) {
@@ -147,6 +234,14 @@ function normalizeData(data) {
     result[key] = String(value);
   }
   return result;
+}
+
+function chunkArray(array, size) {
+  const chunks = [];
+  for (let i = 0; i < array.length; i += size) {
+    chunks.push(array.slice(i, i + size));
+  }
+  return chunks;
 }
 
 async function getAccessToken(clientEmail, privateKey) {
@@ -197,8 +292,8 @@ async function signJwt(payload, privateKey) {
 
 async function importPrivateKey(pem) {
   const cleaned = pem
-    .replace('-----BEGIN PRIVATE KEY-----', '')
-    .replace('-----END PRIVATE KEY-----', '')
+    .replace(/-----BEGIN PRIVATE KEY-----/g, '')
+    .replace(/-----END PRIVATE KEY-----/g, '')
     .replace(/\s+/g, '');
   const binary = Uint8Array.from(atob(cleaned), (c) => c.charCodeAt(0));
   return crypto.subtle.importKey(

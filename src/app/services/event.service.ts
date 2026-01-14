@@ -435,12 +435,15 @@ export class EventService {
           if (cached) return of(cached);
 
           const now = new Date();
-          const end = new Date();
+          const startOfToday = new Date(now);
+          startOfToday.setHours(0, 0, 0, 0);
+          const end = new Date(startOfToday);
           end.setDate(end.getDate() + options.daysAhead);
+          end.setHours(23, 59, 59, 999);
 
           let q = query(
             this.getEventsCollection(groupId),
-            where('date', '>=', Timestamp.fromDate(now)),
+            where('date', '>=', Timestamp.fromDate(startOfToday)),
             where('date', '<=', Timestamp.fromDate(end)),
             orderBy('date', 'asc'),
             limit(options.limit)
@@ -480,12 +483,14 @@ export class EventService {
           if (cached) return of(cached);
 
           const now = new Date();
-          const start = new Date();
+          const startOfToday = new Date(now);
+          startOfToday.setHours(0, 0, 0, 0);
+          const start = new Date(startOfToday);
           start.setDate(start.getDate() - options.daysBack);
 
           let q = query(
             this.getEventsCollection(groupId),
-            where('date', '<', Timestamp.fromDate(now)),
+            where('date', '<', Timestamp.fromDate(startOfToday)),
             where('date', '>=', Timestamp.fromDate(start)),
             orderBy('date', 'desc'),
             limit(options.limit)

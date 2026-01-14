@@ -6,7 +6,7 @@ import { EventService, SportEvent } from '../../services/event.service';
 import { AuthService } from '../../services/auth.service';
 import { ModalService } from '../../services/modal.service';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { switchMap, from } from 'rxjs';
+import { switchMap } from 'rxjs';
 import {
   DragDropModule,
   CdkDragDrop,
@@ -36,7 +36,7 @@ export class EventDetailPage {
   // Directly fetch the specific event
   event = toSignal(
     this.route.params.pipe(
-      switchMap((params) => from(this.eventService.getEvent(params['id'], params['eventId'])))
+      switchMap((params) => this.eventService.watchEvent(params['id'], params['eventId']))
     )
   );
 

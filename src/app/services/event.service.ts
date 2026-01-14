@@ -21,8 +21,8 @@ import { AuthService } from './auth.service';
 import { EloService } from './elo.service';
 import { GroupMember } from './group.service';
 import { NotificationService } from './notification.service';
-import { Observable, defer, from, of } from 'rxjs';
-import { map, tap, switchMap, catchError } from 'rxjs/operators';
+import { Observable, Subject, defer, from, of } from 'rxjs';
+import { map, tap, switchMap, catchError, startWith, filter } from 'rxjs/operators';
 
 export interface PlayerStats {
   goals: number;
@@ -78,6 +78,8 @@ export class EventService {
   private cacheTtlMs = 5 * 60 * 1000;
   private eventCache = new Map<string, { data: SportEvent; ts: number }>();
   private eventsListCache = new Map<string, { data: SportEvent[]; ts: number }>();
+  private eventsChange$ = new Subject<string>();
+  private eventChange$ = new Subject<{ groupId: string; eventId: string }>();
 
   private getEventsCollection(groupId: string) {
     return collection(this.firestore, `groups/${groupId}/events`);
@@ -105,6 +107,7 @@ export class EventService {
 
     const docRef = await addDoc(this.getEventsCollection(groupId), data);
     this.invalidateEventCaches(groupId);
+    this.emitEventsChange(groupId);
 
     const groupSnap = await getDoc(doc(this.firestore, `groups/${groupId}`));
     const groupName = groupSnap.exists() ? (groupSnap.data() as any).name : 'Csoport';
@@ -172,6 +175,7 @@ export class EventService {
     const promises = eventsToCreate.map((data) => addDoc(this.getEventsCollection(groupId), data));
     const result = await Promise.all(promises);
     this.invalidateEventCaches(groupId);
+    this.emitEventsChange(groupId);
 
     const groupSnap = await getDoc(doc(this.firestore, `groups/${groupId}`));
     const groupName = groupSnap.exists() ? (groupSnap.data() as any).name : 'Csoport';
@@ -195,6 +199,8 @@ export class EventService {
     const docRef = doc(this.firestore, `groups/${groupId}/events/${eventId}`);
     const result = await updateDoc(docRef, data);
     this.invalidateEventCaches(groupId, eventId);
+    this.emitEventsChange(groupId);
+    this.emitEventChange(groupId, eventId);
     return result;
   }
 
@@ -225,6 +231,7 @@ export class EventService {
 
     const result = await deleteDoc(docRef);
     this.invalidateEventCaches(groupId, eventId);
+    this.emitEventsChange(groupId);
 
     if (event) {
       await this.notificationService.notifyGroupMembers(
@@ -271,6 +278,8 @@ export class EventService {
       currentAttendees: attendees.length,
     });
     this.invalidateEventCaches(groupId, eventId);
+    this.emitEventsChange(groupId);
+    this.emitEventChange(groupId, eventId);
 
     const groupSnap = await getDoc(doc(this.firestore, `groups/${groupId}`));
     const groupName = groupSnap.exists() ? ((groupSnap.data() as any).name as string) : 'Csoport';
@@ -325,6 +334,8 @@ export class EventService {
       matchEvents: [],
     });
     this.invalidateEventCaches(groupId, eventId);
+    this.emitEventsChange(groupId);
+    this.emitEventChange(groupId, eventId);
     return result;
   }
 
@@ -409,6 +420,8 @@ export class EventService {
 
     const result = await batch.commit();
     this.invalidateEventCaches(groupId, eventId);
+    this.emitEventsChange(groupId);
+    this.emitEventChange(groupId, eventId);
     return result;
   }
 
@@ -431,37 +444,43 @@ export class EventService {
         switchMap((user: any) => {
           if (!user) return of([]);
 
-          const cached = this.getCachedEventsList(cacheKey);
-          if (cached) return of(cached);
+          return this.eventsChange$.pipe(
+            startWith(groupId),
+            filter((changedGroupId) => changedGroupId === groupId),
+            switchMap(() => {
+              const cached = this.getCachedEventsList(cacheKey);
+              if (cached) return of(cached);
 
-          const now = new Date();
-          const startOfToday = new Date(now);
-          startOfToday.setHours(0, 0, 0, 0);
-          const end = new Date(startOfToday);
-          end.setDate(end.getDate() + options.daysAhead);
-          end.setHours(23, 59, 59, 999);
+              const now = new Date();
+              const startOfToday = new Date(now);
+              startOfToday.setHours(0, 0, 0, 0);
+              const end = new Date(startOfToday);
+              end.setDate(end.getDate() + options.daysAhead);
+              end.setHours(23, 59, 59, 999);
 
-          let q = query(
-            this.getEventsCollection(groupId),
-            where('date', '>=', Timestamp.fromDate(startOfToday)),
-            where('date', '<=', Timestamp.fromDate(end)),
-            orderBy('date', 'asc'),
-            limit(options.limit)
-          );
+              let q = query(
+                this.getEventsCollection(groupId),
+                where('date', '>=', Timestamp.fromDate(startOfToday)),
+                where('date', '<=', Timestamp.fromDate(end)),
+                orderBy('date', 'asc'),
+                limit(options.limit)
+              );
 
-          if (options.startAfterDate) {
-            q = query(q, startAfter(options.startAfterDate));
-          }
+              if (options.startAfterDate) {
+                q = query(q, startAfter(options.startAfterDate));
+              }
 
-          return from(getDocs(q)).pipe(
-            map((snap) => snap.docs.map((d) => ({ id: d.id, ...(d.data() as SportEvent) }))),
-            tap((events) => {
-              this.setCachedEventsList(cacheKey, events);
-              events.forEach((event) => event.id && this.setCachedEvent(groupId, event.id, event));
-            }),
-            catchError((err: any) => {
-              console.error('getUpcomingEventsInternal error:', err);
-              return of([]);
+              return from(getDocs(q)).pipe(
+                map((snap) => snap.docs.map((d) => ({ id: d.id, ...(d.data() as SportEvent) }))),
+                tap((events) => {
+                  this.setCachedEventsList(cacheKey, events);
+                  events.forEach((event) => event.id && this.setCachedEvent(groupId, event.id, event));
+                }),
+                catchError((err: any) => {
+                  console.error('getUpcomingEventsInternal error:', err);
+                  return of([]);
+                })
+              );
             })
           );
         })
@@ -479,40 +498,54 @@ export class EventService {
         switchMap((user: any) => {
           if (!user) return of([]);
 
-          const cached = this.getCachedEventsList(cacheKey);
-          if (cached) return of(cached);
+          return this.eventsChange$.pipe(
+            startWith(groupId),
+            filter((changedGroupId) => changedGroupId === groupId),
+            switchMap(() => {
+              const cached = this.getCachedEventsList(cacheKey);
+              if (cached) return of(cached);
 
-          const now = new Date();
-          const startOfToday = new Date(now);
-          startOfToday.setHours(0, 0, 0, 0);
-          const start = new Date(startOfToday);
-          start.setDate(start.getDate() - options.daysBack);
+              const now = new Date();
+              const startOfToday = new Date(now);
+              startOfToday.setHours(0, 0, 0, 0);
+              const start = new Date(startOfToday);
+              start.setDate(start.getDate() - options.daysBack);
 
-          let q = query(
-            this.getEventsCollection(groupId),
-            where('date', '<', Timestamp.fromDate(startOfToday)),
-            where('date', '>=', Timestamp.fromDate(start)),
-            orderBy('date', 'desc'),
-            limit(options.limit)
-          );
+              let q = query(
+                this.getEventsCollection(groupId),
+                where('date', '<', Timestamp.fromDate(startOfToday)),
+                where('date', '>=', Timestamp.fromDate(start)),
+                orderBy('date', 'desc'),
+                limit(options.limit)
+              );
 
-          if (options.startAfterDate) {
-            q = query(q, startAfter(options.startAfterDate));
-          }
+              if (options.startAfterDate) {
+                q = query(q, startAfter(options.startAfterDate));
+              }
 
-          return from(getDocs(q)).pipe(
-            map((snap) => snap.docs.map((d) => ({ id: d.id, ...(d.data() as SportEvent) }))),
-            tap((events) => {
-              this.setCachedEventsList(cacheKey, events);
-              events.forEach((event) => event.id && this.setCachedEvent(groupId, event.id, event));
-            }),
-            catchError((err: any) => {
-              console.error('getPastEventsInternal error:', err);
-              return of([]);
+              return from(getDocs(q)).pipe(
+                map((snap) => snap.docs.map((d) => ({ id: d.id, ...(d.data() as SportEvent) }))),
+                tap((events) => {
+                  this.setCachedEventsList(cacheKey, events);
+                  events.forEach((event) => event.id && this.setCachedEvent(groupId, event.id, event));
+                }),
+                catchError((err: any) => {
+                  console.error('getPastEventsInternal error:', err);
+                  return of([]);
+                })
+              );
             })
           );
         })
       )
+    );
+  }
+
+  watchEvent(groupId: string, eventId: string): Observable<SportEvent> {
+    return this.eventChange$.pipe(
+      startWith({ groupId, eventId }),
+      filter((changed) => changed.groupId === groupId && changed.eventId === eventId),
+      switchMap(() => from(this.getEvent(groupId, eventId)))
     );
   }
 
@@ -619,5 +652,13 @@ export class EventService {
         // ignore cache errors
       }
     }
+  }
+
+  private emitEventsChange(groupId: string) {
+    this.eventsChange$.next(groupId);
+  }
+
+  private emitEventChange(groupId: string, eventId: string) {
+    this.eventChange$.next({ groupId, eventId });
   }
 }

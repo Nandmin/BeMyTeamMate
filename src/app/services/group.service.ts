@@ -16,6 +16,8 @@ import {
   collectionGroup,
   writeBatch,
   documentId,
+  collectionData,
+  limit,
 } from '@angular/fire/firestore';
 import { AuthService } from './auth.service';
 import { NotificationService } from './notification.service';
@@ -45,6 +47,16 @@ export interface GroupMember {
   joinedAt: any;
   skillLevel?: number;
   elo?: number;
+}
+
+export interface JoinRequest {
+  id: string; // userId
+  groupId: string;
+  userId: string;
+  userName: string;
+  userPhoto?: string | null;
+  status: 'pending' | 'approved' | 'rejected';
+  createdAt: any;
 }
 
 @Injectable({
@@ -221,15 +233,7 @@ export class GroupService {
     const user = this.authService.currentUser();
     if (!user) throw new Error('User logged in required');
 
-    const membersCollection = collection(this.firestore, `groups/${groupId}/members`);
-    const memberRef = doc(membersCollection, user.uid);
-    const memberSnap = await getDoc(memberRef);
-    if (memberSnap.exists()) return;
-
-    const legacySnap = await getDocs(query(membersCollection, where('userId', '==', user.uid)));
-    if (!legacySnap.empty) return;
-
-    await setDoc(memberRef, {
+    await this.addMemberToGroup(groupId, {
       userId: user.uid,
       name: user.displayName || 'Ismeretlen',
       photo: user.photoURL || null,
@@ -238,6 +242,149 @@ export class GroupService {
       joinedAt: serverTimestamp(),
       skillLevel: 50,
     });
+
+    const group = await this.getGroupOnce(groupId);
+    if (group) {
+      await this.notificationService.notifyGroupMembers(
+        {
+          type: 'group_join',
+          groupId,
+          title: `${group.name} - ?j tag`,
+          body: `${user.displayName || 'Ismeretlen'} csatlakozott a csoporthoz.`,
+          link: `/groups/${groupId}`,
+          actorId: user.uid,
+          actorName: user.displayName || 'Ismeretlen',
+          actorPhoto: user.photoURL || null,
+        },
+        [user.uid]
+      );
+    }
+  }
+
+  async findGroupByName(name: string): Promise<Group | null> {
+    const q = query(this.groupsCollection, where('name', '==', name), limit(1));
+    const snap = await getDocs(q);
+    if (snap.empty) return null;
+    return { id: snap.docs[0].id, ...(snap.docs[0].data() as Group) };
+  }
+
+  async requestJoinGroup(groupId: string) {
+    const user = this.authService.currentUser();
+    if (!user) throw new Error('User must be logged in');
+
+    // Check if already member
+    const memberRef = doc(this.firestore, `groups/${groupId}/members/${user.uid}`);
+    const memberSnap = await getDoc(memberRef);
+    if (memberSnap.exists()) throw new Error('Már tag vagy ebben a csoportban.');
+
+    // Check if request already exists
+    const requestRef = doc(this.firestore, `groups/${groupId}/joinRequests/${user.uid}`);
+    const requestSnap = await getDoc(requestRef);
+    if (requestSnap.exists()) throw new Error('Már elküldted a csatlakozási kérelmet.');
+
+    const group = await this.getGroupOnce(groupId);
+    if (!group) throw new Error('Csoport nem található');
+
+    const requestData: JoinRequest = {
+      id: user.uid,
+      groupId,
+      userId: user.uid,
+      userName: user.displayName || 'Ismeretlen',
+      userPhoto: user.photoURL || null,
+      status: 'pending',
+      createdAt: serverTimestamp(),
+    };
+
+    await setDoc(requestRef, requestData);
+
+    // Notify Owner and Admins
+    const members = await getDocs(collection(this.firestore, `groups/${groupId}/members`));
+    const adminIds = members.docs
+      .filter((d) => d.data()['isAdmin'] === true || d.id === group.ownerId) // Owner might not be marked isAdmin explicitly in members sometimes based on logic, but usually is. Checking ownerId is safe.
+      .map((d) => d.data()['userId']);
+
+    // Always include owner
+    if (!adminIds.includes(group.ownerId)) adminIds.push(group.ownerId);
+
+    const uniqueAdminIds = [...new Set(adminIds)];
+
+    await this.notificationService.notifyUsers(uniqueAdminIds, {
+      type: 'group_join', // using group_join type for now or add new type
+      groupId,
+      title: 'Csatlakozási kérelem',
+      body: `${user.displayName || 'Valaki'} csatlakozni szeretne a(z) ${group.name} csoporthoz.`,
+      link: `/groups/${groupId}/settings`,
+      eventId: null, // Explicitly set to null to avoid undefined error
+      actorId: user.uid,
+      actorName: user.displayName || 'Ismeretlen',
+      actorPhoto: user.photoURL || null,
+    });
+  }
+
+  getJoinRequests(groupId: string): Observable<JoinRequest[]> {
+    const requestsRef = collection(this.firestore, `groups/${groupId}/joinRequests`);
+    const q = query(requestsRef, orderBy('createdAt', 'desc')); // orderBy might need index
+    // To avoid index issues for now, maybe just getDocs or client side sort if small.
+    // `createdAt` sorting usually works fine on single collection queries.
+    return collectionData(q, { idField: 'id' }) as Observable<JoinRequest[]>;
+  }
+
+  async approveJoinRequest(requestId: string, groupId: string) {
+    const requestRef = doc(this.firestore, `groups/${groupId}/joinRequests/${requestId}`);
+    const requestSnap = await getDoc(requestRef);
+    if (!requestSnap.exists()) return;
+    const request = requestSnap.data() as JoinRequest;
+
+    await this.addMemberToGroup(groupId, {
+      userId: request.userId,
+      name: request.userName,
+      photo: request.userPhoto,
+      role: 'Tag',
+      isAdmin: false,
+      joinedAt: serverTimestamp(),
+      skillLevel: 50,
+      elo: 1200,
+    });
+
+    await deleteDoc(requestRef);
+
+    // Notify the user
+    await this.notificationService.notifyUsers([request.userId], {
+      type: 'group_join',
+      groupId,
+      title: 'Csatlakozási kérelem elfogadva',
+      body: `Csatlakoztál a csoporthoz!`,
+      link: `/groups/${groupId}`,
+      eventId: null,
+      actorId: request.userId, // System notification essentially
+    });
+  }
+
+  async rejectJoinRequest(requestId: string, groupId: string) {
+    const group = await this.getGroupOnce(groupId);
+    await this.notificationService.notifyUsers([requestId], {
+      type: 'group_leave', // Using group_leave as a proxy for "not joined/rejected" or potentially new type
+      groupId,
+      title: 'Csatlakozási kérelem elutasítva',
+      body: `Sajnos a(z) ${group?.name || 'csoport'} csatlakozási kérelmedet elutasították.`,
+      link: `/groups`,
+      eventId: null,
+      actorId: groupId,
+      actorName: 'Rendszer',
+      actorPhoto: null,
+    });
+
+    const requestRef = doc(this.firestore, `groups/${groupId}/joinRequests/${requestId}`);
+    await deleteDoc(requestRef);
+  }
+
+  private async addMemberToGroup(groupId: string, memberData: any) {
+    const memberRef = doc(this.firestore, `groups/${groupId}/members/${memberData.userId}`);
+    // Check duplication protection again just in case
+    const snap = await getDoc(memberRef);
+    if (snap.exists()) return;
+
+    await setDoc(memberRef, memberData);
 
     const groupRef = doc(this.firestore, `groups/${groupId}`);
     await updateDoc(groupRef, {
@@ -248,21 +395,7 @@ export class GroupService {
     if (group) {
       const updatedGroup = { ...group, memberCount: (group.memberCount || 0) + 1 };
       this.setCachedGroup(groupId, updatedGroup);
-      await this.upsertUserGroupSummary(user.uid, groupId, updatedGroup);
-
-      await this.notificationService.notifyGroupMembers(
-        {
-          type: 'group_join',
-          groupId,
-          title: `${updatedGroup.name} - uj tag`,
-          body: `${user.displayName || 'Ismeretlen'} csatlakozott a csoporthoz.`,
-          link: `/groups/${groupId}`,
-          actorId: user.uid,
-          actorName: user.displayName || 'Ismeretlen',
-          actorPhoto: user.photoURL || null,
-        },
-        [user.uid]
-      );
+      await this.upsertUserGroupSummary(memberData.userId, groupId, updatedGroup);
     }
   }
 

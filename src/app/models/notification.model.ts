@@ -10,13 +10,13 @@ export interface AppNotification {
   id?: string;
   type: NotificationType;
   groupId: string;
-  eventId?: string;
+  eventId?: string | null;
   title: string;
   body: string;
   link?: string;
   createdAt: any;
   read: boolean;
-  actorId?: string;
-  actorName?: string;
+  actorId?: string | null;
+  actorName?: string | null;
   actorPhoto?: string | null;
 }

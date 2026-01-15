@@ -30,6 +30,10 @@ export class GroupSettingsPage {
     this.route.params.pipe(switchMap((params) => this.groupService.getGroupMembers(params['id'])))
   );
 
+  joinRequests = toSignal(
+    this.route.params.pipe(switchMap((params) => this.groupService.getJoinRequests(params['id'])))
+  );
+
   // Check if current user is owner or admin
   isOwner = computed(() => {
     const user = this.authService.currentUser();
@@ -67,6 +71,9 @@ export class GroupSettingsPage {
 
   successMessage = signal('');
   errorMessage = signal('');
+
+  // Request to reject
+  requestToReject = signal<any>(null);
 
   constructor() {
     // Initialize edit form when group loads
@@ -197,5 +204,45 @@ export class GroupSettingsPage {
       return 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30';
     if (member.isAdmin) return 'bg-primary/20 text-primary border-primary/30';
     return 'bg-white/10 text-gray-300 border-white/10';
+  }
+
+  // --- Join Requests ---
+  async onApproveRequest(request: any) {
+    this.isSubmitting.set(true);
+    try {
+      await this.groupService.approveJoinRequest(request.id, this.groupId);
+      this.successMessage.set(`${request.userName} csatlakozása jóváhagyva.`);
+    } catch (error: any) {
+      console.error('Approve error:', error);
+      this.errorMessage.set('Hiba történt a jóváhagyás során.');
+    } finally {
+      this.isSubmitting.set(false);
+    }
+  }
+
+  // --- Reject Modal Logic ---
+  openRejectModal(request: any) {
+    this.requestToReject.set(request);
+  }
+
+  closeRejectModal() {
+    this.requestToReject.set(null);
+  }
+
+  async confirmRejectRequest() {
+    const request = this.requestToReject();
+    if (!request) return;
+
+    this.isSubmitting.set(true);
+    try {
+      await this.groupService.rejectJoinRequest(request.id, this.groupId);
+      this.successMessage.set(`${request.userName} jelentkezése elutasítva.`);
+      this.closeRejectModal();
+    } catch (error: any) {
+      console.error('Reject error:', error);
+      this.errorMessage.set('Hiba történt az elutasítás során.');
+    } finally {
+      this.isSubmitting.set(false);
+    }
   }
 }

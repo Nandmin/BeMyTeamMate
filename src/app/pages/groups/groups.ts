@@ -66,4 +66,45 @@ export class GroupsPage {
       this.isSubmitting = false;
     }
   }
+
+  // --- Join Group ---
+  showJoinModal = false;
+  joinForm = this.fb.group({
+    groupName: ['', [Validators.required]],
+  });
+
+  toggleJoinModal() {
+    this.showJoinModal = !this.showJoinModal;
+    if (!this.showJoinModal) {
+      this.joinForm.reset();
+    }
+  }
+
+  async onJoinGroup() {
+    if (this.joinForm.invalid) return;
+
+    this.isSubmitting = true;
+    const { groupName } = this.joinForm.value;
+
+    try {
+      const group = await this.groupService.findGroupByName(groupName!);
+      if (!group) {
+        await this.modalService.alert('Nem található csoport ezzel a névvel.', 'Hiba', 'error');
+        return;
+      }
+
+      await this.groupService.requestJoinGroup(group.id!);
+      await this.modalService.alert('Csatlakozási kérelem elküldve!', 'Siker', 'success');
+      this.toggleJoinModal();
+    } catch (error: any) {
+      console.error('Join error:', error);
+      await this.modalService.alert(
+        error.message || 'Hiba történt a csatlakozás során.',
+        'Hiba',
+        'error'
+      );
+    } finally {
+      this.isSubmitting = false;
+    }
+  }
 }

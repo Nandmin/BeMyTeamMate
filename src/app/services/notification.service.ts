@@ -23,15 +23,15 @@ import { AppNotification, NotificationType } from '../models/notification.model'
 import { Observable, of, defer, concat } from 'rxjs';
 import { tap } from 'rxjs/operators';
 
-interface GroupNotificationPayload {
+export interface GroupNotificationPayload {
   type: NotificationType;
   groupId: string;
   title: string;
   body: string;
   link?: string;
-  eventId?: string;
-  actorId?: string;
-  actorName?: string;
+  eventId?: string | null;
+  actorId?: string | null;
+  actorName?: string | null;
   actorPhoto?: string | null;
 }
 
@@ -165,8 +165,13 @@ export class NotificationService {
     const targetIds = memberIds.filter((id) => !excludeUserIds.includes(id));
     if (targetIds.length === 0) return;
 
-    await this.writeNotifications(targetIds, payload);
-    await this.sendPushToMembers(targetIds, payload);
+    await this.notifyUsers(targetIds, payload);
+  }
+
+  async notifyUsers(userIds: string[], payload: GroupNotificationPayload) {
+    if (userIds.length === 0) return;
+    await this.writeNotifications(userIds, payload);
+    await this.sendPushToMembers(userIds, payload);
   }
 
   private async writeNotifications(userIds: string[], payload: GroupNotificationPayload) {
@@ -178,14 +183,14 @@ export class NotificationService {
         const data: AppNotification = {
           type: payload.type,
           groupId: payload.groupId,
-          eventId: payload.eventId,
+          eventId: payload.eventId ?? null,
           title: payload.title,
           body: payload.body,
-          link: payload.link,
+          link: payload.link || '',
           createdAt: serverTimestamp(),
           read: false,
-          actorId: payload.actorId,
-          actorName: payload.actorName,
+          actorId: payload.actorId || null,
+          actorName: payload.actorName || 'Ismeretlen',
           actorPhoto: payload.actorPhoto ?? null,
         };
         batch.set(notificationRef, data);

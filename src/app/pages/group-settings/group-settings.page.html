@@ -90,6 +90,44 @@
                     </h2>
                 </div>
 
+                @if ((joinRequests() || []).length > 0) {
+                <div class="bg-primary/5 border-b border-white/10">
+                    <div class="p-4 border-b border-white/5">
+                        <h3 class="text-sm font-bold text-primary uppercase tracking-wider flex items-center gap-2">
+                            <span class="material-symbols-outlined text-lg">pending_actions</span>
+                            Felvételre váró tagok ({{ (joinRequests() || []).length }})
+                        </h3>
+                    </div>
+                    @for (req of joinRequests(); track req.id) {
+                    <div
+                        class="p-4 flex items-center gap-4 hover:bg-white/5 transition-colors border-b border-white/5 last:border-0">
+                        <div class="relative">
+                            <img [src]="req.userPhoto || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + req.userId"
+                                [alt]="req.userName"
+                                class="w-10 h-10 rounded-full object-cover border-2 border-primary/30">
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <p class="text-white font-bold truncate">{{ req.userName }}</p>
+                            <p class="text-xs text-gray-400">Jelentkezett: {{ req.createdAt?.toDate() | date:'yyyy.MM.dd
+                                HH:mm' }}</p>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <button (click)="onApproveRequest(req)" [disabled]="isSubmitting()"
+                                class="p-2 rounded-lg bg-green-500/20 text-green-400 hover:bg-green-500/30 transition-all"
+                                title="Jóváhagyás">
+                                <span class="material-symbols-outlined">check</span>
+                            </button>
+                            <button (click)="openRejectModal(req)" [disabled]="isSubmitting()"
+                                class="p-2 rounded-lg bg-red-500/20 text-red-400 hover:bg-red-500/30 transition-all"
+                                title="Elutasítás">
+                                <span class="material-symbols-outlined">close</span>
+                            </button>
+                        </div>
+                    </div>
+                    }
+                </div>
+                }
+
                 <div class="divide-y divide-white/5">
                     @for (member of members(); track member.id) {
                     <div class="p-4 flex items-center gap-4 hover:bg-white/5 transition-colors">
@@ -350,6 +388,44 @@
                     <span class="material-symbols-outlined animate-spin text-sm">progress_activity</span>
                     } @else {
                     Mentés
+                    }
+                </button>
+            </div>
+        </div>
+    </div>
+    }
+
+    <!-- Reject Request Modal -->
+    @if (requestToReject()) {
+    <div
+        class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-background-dark/90 backdrop-blur-sm animate-fade-in">
+        <div class="w-full max-w-md bg-card-dark border border-white/10 rounded-2xl p-6 shadow-2xl animate-slide-up">
+            <div class="flex items-center gap-3 mb-4">
+                <div class="p-3 bg-red-500/20 rounded-full">
+                    <span class="material-symbols-outlined text-red-500 text-2xl">person_cancel</span>
+                </div>
+                <div>
+                    <h3 class="text-xl font-bold text-white">Jelentkezés elutasítása</h3>
+                    <p class="text-sm text-gray-400">{{ requestToReject()?.userName }}</p>
+                </div>
+            </div>
+
+            <p class="text-gray-300 mb-6">
+                Biztosan el szeretnéd utasítani <strong class="text-white">{{ requestToReject()?.userName }}</strong>
+                csatlakozási kérelmét?
+            </p>
+
+            <div class="flex gap-4">
+                <button (click)="closeRejectModal()"
+                    class="flex-1 px-4 py-2.5 border border-white/10 rounded-xl text-white font-bold hover:bg-white/5 transition-all">
+                    Mégse
+                </button>
+                <button (click)="confirmRejectRequest()" [disabled]="isSubmitting()"
+                    class="flex-1 px-4 py-2.5 bg-red-600 text-white font-bold rounded-xl hover:bg-red-700 disabled:opacity-50 transition-all shadow-[0_0_15px_rgba(220,38,38,0.2)]">
+                    @if (isSubmitting()) {
+                    <span class="material-symbols-outlined animate-spin text-sm">progress_activity</span>
+                    } @else {
+                    Elutasítás
                     }
                 </button>
             </div>

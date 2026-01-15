@@ -22,14 +22,13 @@
                 </p>
             </div>
             <div class="flex flex-wrap gap-3 w-full md:w-auto">
-                <button (click)="authService.currentUser() ? toggleCreateModal() : null"
-                    [disabled]="!authService.currentUser()"
+                <button (click)="toggleCreateModal()" [disabled]="!authService.currentUser()"
                     [title]="!authService.currentUser() ? 'Jelentkezz be a csoport létrehozásához!' : ''"
                     class="flex-1 md:flex-none flex min-w-[140px] cursor-pointer items-center justify-center rounded-xl h-10 px-5 bg-primary hover:bg-[#1fd46c] text-white text-sm font-bold leading-normal transition-transform active:scale-95 shadow-[0_0_15px_rgba(43,238,124,0.3)] disabled:opacity-50 disabled:cursor-not-allowed">
                     <span class="mr-2 material-symbols-outlined text-[20px]">add</span>
                     Új csoport
                 </button>
-                <button [disabled]="!authService.currentUser()"
+                <button (click)="toggleJoinModal()" [disabled]="!authService.currentUser()"
                     [title]="!authService.currentUser() ? 'Jelentkezz be a csatlakozáshoz!' : ''"
                     class="flex-1 md:flex-none flex min-w-[140px] cursor-pointer items-center justify-center rounded-xl h-10 px-5 bg-transparent border border-border-green hover:border-white text-white text-sm font-bold leading-normal transition-colors active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed">
                     <span class="mr-2 material-symbols-outlined text-[20px]">key</span>
@@ -134,6 +133,8 @@
     </div>
 </div>
 
+
+
 <!-- Create Group Modal -->
 @if (showCreateModal) {
 <div class="fixed inset-0 z-[100] flex items-center justify-center p-4">
@@ -204,6 +205,54 @@
                 } @else {
                 <span class="material-symbols-outlined">add_circle</span>
                 Csoport létrehozása
+                }
+            </button>
+        </form>
+    </div>
+</div>
+}
+
+<!-- Join Group Modal -->
+@if (showJoinModal) {
+<div class="fixed inset-0 z-[100] flex items-center justify-center p-4">
+    <!-- Backdrop -->
+    <div class="absolute inset-0 bg-background-dark/80 backdrop-blur-sm" (click)="toggleJoinModal()"></div>
+
+    <!-- Modal Content -->
+    <div
+        class="relative w-full max-w-lg bg-surface-card border border-border-green rounded-2xl shadow-2xl overflow-hidden animate-slide-up">
+        <div class="p-6 border-b border-border-green">
+            <div class="flex items-center justify-between">
+                <h2 class="text-2xl font-bold text-white">Csatlakozás csoporthoz</h2>
+                <button (click)="toggleJoinModal()" class="text-gray-400 hover:text-white transition-colors">
+                    <span class="material-symbols-outlined">close</span>
+                </button>
+            </div>
+        </div>
+
+        <form [formGroup]="joinForm" (ngSubmit)="onJoinGroup()" class="p-6 space-y-6">
+            <!-- Group Name -->
+            <div class="space-y-2">
+                <label class="text-sm font-medium text-gray-400">Csoport neve</label>
+                <input type="text" formControlName="groupName" placeholder="Írd be a keresett csoport nevét"
+                    class="group-creation-input w-full bg-background-dark border border-border-green rounded-xl p-3 text-white placeholder-gray-600 focus:ring-2 focus:ring-primary focus:border-transparent transition-all" />
+                @if (joinForm.get('groupName')?.touched && joinForm.get('groupName')?.errors?.['required']) {
+                <p class="text-xs text-red-500 mt-1">A csoport név megadása kötelező.</p>
+                }
+            </div>
+            <p class="text-sm text-gray-400">
+                A csatlakozáshoz a csoport adminisztrátorának jóváhagyása szükséges.
+            </p>
+
+            <!-- Submit Button -->
+            <button type="submit" [disabled]="joinForm.invalid || isSubmitting"
+                class="w-full py-4 bg-primary hover:bg-primary-hover disabled:opacity-50 disabled:cursor-not-allowed text-white font-extrabold rounded-xl shadow-lg shadow-primary/20 transition-all active:scale-95 flex items-center justify-center gap-2">
+                @if (isSubmitting) {
+                <span class="animate-spin material-symbols-outlined">sync</span>
+                Keresés...
+                } @else {
+                <span class="material-symbols-outlined">login</span>
+                Csatlakozás kérése
                 }
             </button>
         </form>

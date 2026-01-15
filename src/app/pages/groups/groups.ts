@@ -6,7 +6,7 @@ import { GroupService, Group } from '../../services/group.service';
 import { AuthService } from '../../services/auth.service';
 import { ModalService } from '../../services/modal.service';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { catchError, of } from 'rxjs';
+import { catchError, of, switchMap } from 'rxjs';
 
 @Component({
   selector: 'app-groups',
@@ -22,7 +22,19 @@ export class GroupsPage {
   protected authService = inject(AuthService);
   private modalService = inject(ModalService);
 
-  groups: Signal<Group[] | undefined> = toSignal(this.groupService.getGroups());
+  groups: Signal<Group[] | undefined> = toSignal(
+    this.authService.user$.pipe(
+      // Fetch ONLY the groups the user is a member of, not all groups
+      switchMap((user) => {
+        if (!user) return of([]);
+        return this.groupService.getUserGroups(user.uid);
+      }),
+      catchError((err) => {
+        console.error('Error loading user groups:', err);
+        return of([]);
+      })
+    )
+  );
 
   showCreateModal = false;
   groupForm: FormGroup;

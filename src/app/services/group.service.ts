@@ -94,7 +94,7 @@ export class GroupService {
     };
 
     const ownerMemberRef = doc(this.firestore, `groups/${groupRef.id}/members/${user.uid}`);
-    const userGroupRef = doc(this.firestore, `users/${user.uid}/groups/${groupRef.id}`);
+    // Removed userGroupRef - no longer syncing to users/uid/groups
     const batch = writeBatch(this.firestore);
     batch.set(groupRef, groupData);
     batch.set(ownerMemberRef, {
@@ -107,7 +107,7 @@ export class GroupService {
       skillLevel: 100,
       elo: 1200,
     });
-    batch.set(userGroupRef, this.buildGroupSummary(groupRef.id, groupData));
+    // batch.set(userGroupRef, ...) removed
     await batch.commit();
 
     const fullGroup: Group = { id: groupRef.id, ...groupData };
@@ -152,30 +152,28 @@ export class GroupService {
   getGroupsForMember(userId: string): Observable<Group[]> {
     return defer(() => {
       if (!userId) return of([]);
+
+      // Strictly query MEMBERSHIP only.
+      // If a user is owner but NOT in members (e.g. left), they should not see the group.
       const membersQuery = query(
         collectionGroup(this.firestore, 'members'),
         where('userId', '==', userId)
       );
-      const ownedQuery = query(this.groupsCollection, where('ownerId', '==', userId));
-      return from(Promise.all([getDocs(ownedQuery), getDocs(membersQuery)])).pipe(
-        switchMap(([ownedSnap, membersSnap]) => {
-          const ownedGroups = ownedSnap.docs.map((d) => {
-            const group = { id: d.id, ...(d.data() as Group) };
-            this.setCachedGroup(d.id, group);
-            return group;
-          });
-          const ownedIds = new Set(ownedGroups.map((g) => g.id));
+
+      return from(getDocs(membersQuery)).pipe(
+        switchMap((membersSnap) => {
           const ids = membersSnap.docs
-            .map((d) => d.ref.parent.parent?.id)
+            .map((d) => d.ref.parent?.parent?.id)
             .filter(Boolean) as string[];
-          const missingIds = Array.from(new Set(ids.filter((id) => !ownedIds.has(id))));
-          if (missingIds.length === 0) {
-            return of(ownedGroups.sort((a, b) => a.name.localeCompare(b.name)));
+
+          const uniqueIds = Array.from(new Set(ids));
+
+          if (uniqueIds.length === 0) {
+            return of([]);
           }
-          return from(this.fetchGroupsByIds(missingIds)).pipe(
-            map((memberGroups) =>
-              [...ownedGroups, ...memberGroups].sort((a, b) => a.name.localeCompare(b.name))
-            )
+
+          return from(this.fetchGroupsByIds(uniqueIds)).pipe(
+            map((groups) => groups.sort((a, b) => a.name.localeCompare(b.name)))
           );
         })
       );
@@ -395,7 +393,7 @@ export class GroupService {
     if (group) {
       const updatedGroup = { ...group, memberCount: (group.memberCount || 0) + 1 };
       this.setCachedGroup(groupId, updatedGroup);
-      await this.upsertUserGroupSummary(memberData.userId, groupId, updatedGroup);
+      this.invalidateUserGroupsCache(memberData.userId); // Invalidate cache so next fetch gets fresh list
     }
   }
 
@@ -410,7 +408,8 @@ export class GroupService {
     }
     const user = this.authService.currentUser();
     if (user) {
-      await this.upsertUserGroupSummary(user.uid, groupId, data);
+      // Updated group -> invalidate cache for owner/updater?
+      this.invalidateUserGroupsCache(user.uid);
     }
     return result;
   }
@@ -458,8 +457,7 @@ export class GroupService {
     }
 
     if (memberData?.userId) {
-      const userGroupRef = doc(this.firestore, `users/${memberData.userId}/groups/${groupId}`);
-      await deleteDoc(userGroupRef);
+      // Removed userGroupRef deletion
       this.invalidateUserGroupsCache(memberData.userId);
     }
   }
@@ -483,87 +481,44 @@ export class GroupService {
     return group;
   }
 
-  private async upsertUserGroupSummary(uid: string, groupId: string, group: Partial<Group>) {
-    const summary = this.buildGroupSummary(groupId, group);
-    await setDoc(doc(this.firestore, `users/${uid}/groups/${groupId}`), summary, { merge: true });
-    this.invalidateUserGroupsCache(uid);
-  }
-
-  private buildGroupSummary(groupId: string, group: Partial<Group>) {
-    const summary: any = {
-      id: groupId,
-      name: group.name,
-      type: group.type,
-      ownerId: group.ownerId,
-      ownerName: group.ownerName,
-      ownerPhoto: group.ownerPhoto ?? null,
-      createdAt: group.createdAt,
-      memberCount: group.memberCount ?? 0,
-      image: group.image,
-      description: group.description ?? '',
-    };
-    Object.keys(summary).forEach((key) => summary[key] === undefined && delete summary[key]);
-    return summary;
-  }
+  //   private async upsertUserGroupSummary... removed
+  //   private buildGroupSummary... removed
 
   private getUserGroupsInternal(uid: string): Observable<Group[]> {
     return defer(() => {
-      const cached = this.getCachedUserGroups(uid);
-      if (cached) return of(cached);
+      // Bypass cache to ensure strict consistency and fix "phantom" groups issue
+      // const cached = this.getCachedUserGroups(uid);
+      // if (cached) return of(cached);
 
-      const userGroupsRef = collection(this.firestore, `users/${uid}/groups`);
-      const q = query(userGroupsRef, orderBy('name', 'asc'));
-      return from(getDocs(q)).pipe(
-        map((snap) => snap.docs.map((d) => ({ id: d.id, ...(d.data() as Group) }))),
-        switchMap((groups) => {
-          if (groups.length > 0) {
-            this.setCachedUserGroups(uid, groups);
-            groups.forEach((g) => g.id && this.setCachedGroup(g.id, g));
-            return of(groups);
-          }
-          return from(this.loadUserGroupsFallback(uid)).pipe(
-            tap((fallback) => {
-              this.setCachedUserGroups(uid, fallback);
-              fallback.forEach((g) => g.id && this.setCachedGroup(g.id, g));
-            })
-          );
+      // Use source of truth (Owned + Member)
+      return from(this.fetchUserGroupsFromSource(uid)).pipe(
+        tap((groups) => {
+          this.setCachedUserGroups(uid, groups);
+          groups.forEach((g) => g.id && this.setCachedGroup(g.id, g));
         })
       );
     });
   }
 
-  private async loadUserGroupsFallback(uid: string): Promise<Group[]> {
-    const ownedSnap = await getDocs(query(this.groupsCollection, where('ownerId', '==', uid)));
-    const ownedGroups = ownedSnap.docs.map((d) => ({ id: d.id, ...(d.data() as Group) }));
+  private async fetchUserGroupsFromSource(uid: string): Promise<Group[]> {
+    // Strictly query MEMBERSHIP only.
+    // We do NOT query ownedGroups separately.
+    // Valid owners MUST be in the members collection.
+    // If they left, they are out.
 
     const memberSnap = await getDocs(
       query(collectionGroup(this.firestore, 'members'), where('userId', '==', uid))
     );
+
     const joinedIds = memberSnap.docs
-      .map((d) => d.ref.parent.parent?.id)
+      .map((d) => d.ref.parent?.parent?.id)
       .filter(Boolean) as string[];
-    const ownedIds = new Set(ownedGroups.map((g) => g.id));
-    const missingIds = joinedIds.filter((id) => !ownedIds.has(id));
 
-    const joinedGroups = await this.fetchGroupsByIds(missingIds);
+    // Remove duplicates
+    const uniqueIds = Array.from(new Set(joinedIds));
 
-    const allGroups = [...ownedGroups, ...joinedGroups].sort((a, b) =>
-      a.name.localeCompare(b.name)
-    );
-
-    await Promise.all(
-      allGroups.map((group) =>
-        setDoc(
-          doc(this.firestore, `users/${uid}/groups/${group.id}`),
-          this.buildGroupSummary(group.id!, group),
-          {
-            merge: true,
-          }
-        )
-      )
-    );
-
-    return allGroups;
+    const groups = await this.fetchGroupsByIds(uniqueIds);
+    return groups.sort((a, b) => a.name.localeCompare(b.name));
   }
 
   private chunkArray<T>(items: T[], size: number): T[][] {

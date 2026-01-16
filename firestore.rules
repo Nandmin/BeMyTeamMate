@@ -133,15 +133,29 @@ service cloud.firestore {
         
         // Joining or Owner Setup:
         allow create: if isSignedIn() && (
-          // Case 1: The Group Owner can set themselves as Admin/Csapatkapitanitany
-          (exists(/databases/$(database)/documents/groups/$(groupId)) && 
-           get(/databases/$(database)/documents/groups/$(groupId)).data.ownerId == request.auth.uid) ||
-          // Case 2: Regular user joining must be restricted
+          // Case 1: Self-setup or Self-join
           (
             request.auth.uid == memberId && 
             request.resource.data.userId == request.auth.uid &&
-            (!('isAdmin' in request.resource.data) || request.resource.data.isAdmin == false) &&
-            (!('role' in request.resource.data) || request.resource.data.role == 'user')
+            (
+              // 1a: The Group Owner can set themselves as Admin (e.g. initial setup batch)
+              // Note: Using existsAfter/getAfter here to support the creation batch.
+              (existsAfter(/databases/$(database)/documents/groups/$(groupId)) && 
+               getAfter(/databases/$(database)/documents/groups/$(groupId)).data.ownerId == request.auth.uid) ||
+              // 1b: Regular user joining must be restricted (Only for Open groups)
+              (
+                request.resource.data.get('isAdmin', false) == false &&
+                request.resource.data.get('role', 'user') == 'user' &&
+                exists(/databases/$(database)/documents/groups/$(groupId)) &&
+                get(/databases/$(database)/documents/groups/$(groupId)).data.type == 'open'
+              )
+            )
+          ) ||
+          // Case 2: Group Admin adding someone or approving a request
+          (
+            isGroupAdmin(groupId) &&
+            request.resource.data.userId == memberId &&
+            request.resource.data.get('role', 'user') in ['user', 'admin', 'Csapatkapitány']
           )
         );
         

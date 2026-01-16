@@ -354,7 +354,7 @@ export class GroupService {
       body: `Csatlakoztál a csoporthoz!`,
       link: `/groups/${groupId}`,
       eventId: null,
-      actorId: request.userId, // System notification essentially
+      actorId: this.authService.currentUser()?.uid,
     });
   }
 
@@ -367,7 +367,7 @@ export class GroupService {
       body: `Sajnos a(z) ${group?.name || 'csoport'} csatlakozási kérelmedet elutasították.`,
       link: `/groups`,
       eventId: null,
-      actorId: groupId,
+      actorId: this.authService.currentUser()?.uid,
       actorName: 'Rendszer',
       actorPhoto: null,
     });

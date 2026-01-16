@@ -13,9 +13,9 @@ service cloud.firestore {
     function isUserAdminOfGroup(uid, groupId) {
       let groupPath = /databases/$(database)/documents/groups/$(groupId);
       let memberPath = /databases/$(database)/documents/groups/$(groupId)/members/$(uid);
-      return exists(groupPath) && (
-        get(groupPath).data.ownerId == uid ||
-        (exists(memberPath) && get(memberPath).data.isAdmin == true)
+      return existsAfter(groupPath) && (
+        getAfter(groupPath).data.ownerId == uid ||
+        (existsAfter(memberPath) && getAfter(memberPath).data.isAdmin == true)
       );
     }
 
@@ -62,7 +62,11 @@ service cloud.firestore {
           (
             request.resource.data.get('groupId', '') is string &&
             request.resource.data.get('type', '') is string &&
-            (!('actorId' in request.resource.data) || request.resource.data.actorId == request.auth.uid) &&
+            (
+              !('actorId' in request.resource.data) || 
+              request.resource.data.actorId == request.auth.uid ||
+              isGroupAdmin(request.resource.data.groupId)
+            ) &&
             (
               // Case 1: Teammates (Both must be members of the group)
               (exists(/databases/$(database)/documents/groups/$(request.resource.data.groupId)/members/$(request.auth.uid)) &&
@@ -130,7 +134,8 @@ service cloud.firestore {
         // Joining or Owner Setup:
         allow create: if isSignedIn() && (
           // Case 1: The Group Owner can set themselves as Admin/Csapatkapitanitany
-          get(/databases/$(database)/documents/groups/$(groupId)).data.ownerId == request.auth.uid ||
+          (existsAfter(/databases/$(database)/documents/groups/$(groupId)) && 
+           getAfter(/databases/$(database)/documents/groups/$(groupId)).data.ownerId == request.auth.uid) ||
           // Case 2: Regular user joining must be restricted
           (
             request.auth.uid == memberId && 

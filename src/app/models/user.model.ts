@@ -10,6 +10,7 @@ export interface AppUser {
   formFactor: number; // 0.0 - 2.0 multiplier based on recent performance
   bio?: string;
   role?: 'user' | 'siteadmin';
+  lastGroupId?: string; // Optional field for firestore rule validation
   createdAt: Timestamp;
   lastActive: Timestamp;
 }

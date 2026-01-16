@@ -393,9 +393,12 @@ export class EventService {
     allPlayers.forEach((player) => {
       const newElo = newRatings.get(player.userId);
       if (newElo !== undefined) {
-        // A. Update Global User Document (Requires the Firestore Rule change mentioned above)
+        // A. Update Global User Document
         const userRef = doc(this.firestore, `users/${player.userId}`);
-        batch.update(userRef, { elo: newElo });
+        batch.update(userRef, {
+          elo: newElo,
+          lastGroupId: groupId,
+        });
 
         // B. Update Group Member Document
         if (player.id === 'owner-fallback') {
@@ -474,7 +477,9 @@ export class EventService {
                 map((snap) => snap.docs.map((d) => ({ id: d.id, ...(d.data() as SportEvent) }))),
                 tap((events) => {
                   this.setCachedEventsList(cacheKey, events);
-                  events.forEach((event) => event.id && this.setCachedEvent(groupId, event.id, event));
+                  events.forEach(
+                    (event) => event.id && this.setCachedEvent(groupId, event.id, event)
+                  );
                 }),
                 catchError((err: any) => {
                   console.error('getUpcomingEventsInternal error:', err);
@@ -527,7 +532,9 @@ export class EventService {
                 map((snap) => snap.docs.map((d) => ({ id: d.id, ...(d.data() as SportEvent) }))),
                 tap((events) => {
                   this.setCachedEventsList(cacheKey, events);
-                  events.forEach((event) => event.id && this.setCachedEvent(groupId, event.id, event));
+                  events.forEach(
+                    (event) => event.id && this.setCachedEvent(groupId, event.id, event)
+                  );
                 }),
                 catchError((err: any) => {
                   console.error('getPastEventsInternal error:', err);

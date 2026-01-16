@@ -5,31 +5,56 @@ service cloud.firestore {
       return request.auth != null;
     }
 
+    function isSiteAdmin() {
+      return isSignedIn() && 
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'siteadmin';
+    }
+
+    function isGroupAdmin(groupId) {
+      return isSignedIn() && (
+        isSiteAdmin() ||
+        get(/databases/$(database)/documents/groups/$(groupId)).data.ownerId == request.auth.uid ||
+        get(/databases/$(database)/documents/groups/$(groupId)/members/$(request.auth.uid)).data.isAdmin == true
+      );
+    }
+
     // 1. User documents
     match /users/{userId} {
       allow read: if isSignedIn();
-      allow create: if isSignedIn() && request.auth.uid == userId;
+      
+      // Global siteadmin role is FORBIDDEN from client side
+      allow create: if isSignedIn() && request.auth.uid == userId && 
+                    !('role' in request.resource.data);
+      
       allow update: if isSignedIn() && (
-        request.auth.uid == userId ||
-        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['elo', 'formFactor', 'fcmTokens'])
+        // Self-update: cannot touch role
+        (request.auth.uid == userId && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['role'])) ||
+        // Site Admin: can update anything
+        isSiteAdmin() ||
+        // Group Admin update: can update elo/formFactor if they prove shared membership
+        (
+          request.resource.data.diff(resource.data).affectedKeys().hasOnly(['elo', 'formFactor', 'lastGroupId']) &&
+          'lastGroupId' in request.resource.data &&
+          isGroupAdmin(request.resource.data.lastGroupId) &&
+          exists(/databases/$(database)/documents/groups/$(request.resource.data.lastGroupId)/members/$(userId))
+        )
       );
 
-      // User group summaries (users/{uid}/groups/{groupId})
+      // User group summaries
       match /groups/{groupId} {
         allow read, write: if isSignedIn() && request.auth.uid == userId;
       }
 
-      // User notifications (users/{uid}/notifications/{notificationId})
+      // User notifications
       match /notifications/{notificationId} {
-        allow create: if isSignedIn(); // Allow any signed-in user to send notifications for now
+        allow create: if isSignedIn();
         allow read, update, delete: if isSignedIn() && request.auth.uid == userId;
       }
     }
 
-    // 2. Collection group query for members
+    // 2. Collection group match for members (for queries)
     match /{path=**}/members/{memberId} {
       allow read: if isSignedIn();
-      allow write: if isSignedIn();
     }
 
     // 3. Groups
@@ -38,22 +63,36 @@ service cloud.firestore {
 
       allow update: if isSignedIn() && (
         resource.data.ownerId == request.auth.uid ||
+        isSiteAdmin() ||
         request.resource.data.diff(resource.data).affectedKeys().hasOnly(['memberCount'])
       );
 
-      allow delete: if isSignedIn() && resource.data.ownerId == request.auth.uid;
+      allow delete: if isSignedIn() && (resource.data.ownerId == request.auth.uid || isSiteAdmin());
 
       match /events/{eventId} {
         allow read, write: if isSignedIn();
       }
 
       match /members/{memberId} {
-        allow read, write: if isSignedIn();
+        allow read: if isSignedIn();
+        
+        // Joining: user can create their own member doc
+        allow create: if isSignedIn() && request.auth.uid == memberId;
+        
+        // Updating: Group Admin can change anything (role, isAdmin). 
+        // User can change their own data but NOT their role/isAdmin.
+        allow update: if isSignedIn() && (
+          isGroupAdmin(groupId) ||
+          (request.auth.uid == memberId && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['role', 'isAdmin']))
+        );
+        
+        // Leaving or Removing: User can delete own doc, Admin can delete any
+        allow delete: if isSignedIn() && (request.auth.uid == memberId || isGroupAdmin(groupId));
       }
 
       match /joinRequests/{requestId} {
         allow read: if isSignedIn();
-        allow write: if isSignedIn(); // Allow writes for now to enable admin rejection working
+        allow write: if isSignedIn();
       }
     }
   }

@@ -60,21 +60,20 @@ service cloud.firestore {
         allow create: if isSignedIn() && (
           isSiteAdmin() ||
           (
-            'groupId' in request.resource.data && 
+            request.resource.data.get('groupId', '') is string &&
+            request.resource.data.get('type', '') is string &&
+            (!('actorId' in request.resource.data) || request.resource.data.actorId == request.auth.uid) &&
             (
               // Case 1: Teammates (Both must be members of the group)
               (exists(/databases/$(database)/documents/groups/$(request.resource.data.groupId)/members/$(request.auth.uid)) &&
                exists(/databases/$(database)/documents/groups/$(request.resource.data.groupId)/members/$(userId))) ||
               
               // Case 2: Join Request (User notifying Group Admins)
-              // Requester must be the actor and have an active join request document
               (request.resource.data.type == 'group_join' && 
-               request.resource.data.actorId == request.auth.uid &&
                isUserAdminOfGroup(userId, request.resource.data.groupId) &&
                exists(/databases/$(database)/documents/groups/$(request.resource.data.groupId)/joinRequests/$(request.auth.uid))) ||
               
               // Case 3: Joined/Rejected Decision or Admin Action
-              // Admin can notify user only if user is a member or has a join request
               (isGroupAdmin(request.resource.data.groupId) && 
                (exists(/databases/$(database)/documents/groups/$(request.resource.data.groupId)/members/$(userId)) ||
                 exists(/databases/$(database)/documents/groups/$(request.resource.data.groupId)/joinRequests/$(userId))))

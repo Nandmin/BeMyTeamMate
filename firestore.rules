@@ -101,14 +101,28 @@ service cloud.firestore {
       allow delete: if isSignedIn() && (resource.data.ownerId == request.auth.uid || isSiteAdmin());
 
       match /events/{eventId} {
-        allow read, write: if isSignedIn();
+        allow read: if isSignedIn();
+        
+        // Only Group Admins can create or delete events
+        allow create, delete: if isGroupAdmin(groupId);
+        
+        // Update: Admins can update anything. Members can ONLY update RSVP fields.
+        allow update: if isSignedIn() && (
+          isGroupAdmin(groupId) || (
+            exists(/databases/$(database)/documents/groups/$(groupId)/members/$(request.auth.uid)) &&
+            request.resource.data.diff(resource.data).affectedKeys().hasOnly(['attendees', 'currentAttendees'])
+          )
+        );
       }
 
       match /members/{memberId} {
         allow read: if isSignedIn();
         
-        // Joining: user can create their own member doc
-        allow create: if isSignedIn() && request.auth.uid == memberId;
+        // Joining: user can create their own member doc, but cannot make themselves admin
+        allow create: if isSignedIn() && request.auth.uid == memberId && 
+                      request.resource.data.userId == request.auth.uid &&
+                      (!('isAdmin' in request.resource.data) || request.resource.data.isAdmin == false) &&
+                      (!('role' in request.resource.data) || request.resource.data.role == 'Tag');
         
         // Updating: Group Admin can change anything (role, isAdmin). 
         // User can change their own data but NOT their role/isAdmin.

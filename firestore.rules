@@ -68,8 +68,11 @@ service cloud.firestore {
               // Case 2: Join Request (User notifying Group Admins)
               (request.resource.data.type == 'group_join' && isUserAdminOfGroup(userId, request.resource.data.groupId)) ||
               
-              // Case 3: Joined/Rejected Decision (Admin notifying User)
-              isGroupAdmin(request.resource.data.groupId)
+              // Case 3: Joined/Rejected Decision or Admin Action
+              // Admin can notify user only if user is a member or has a join request
+              (isGroupAdmin(request.resource.data.groupId) && 
+               (exists(/databases/$(database)/documents/groups/$(request.resource.data.groupId)/members/$(userId)) ||
+                exists(/databases/$(database)/documents/groups/$(request.resource.data.groupId)/joinRequests/$(userId))))
             )
           )
         );

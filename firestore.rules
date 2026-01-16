@@ -118,11 +118,18 @@ service cloud.firestore {
       match /members/{memberId} {
         allow read: if isSignedIn();
         
-        // Joining: user can create their own member doc, but cannot make themselves admin
-        allow create: if isSignedIn() && request.auth.uid == memberId && 
-                      request.resource.data.userId == request.auth.uid &&
-                      (!('isAdmin' in request.resource.data) || request.resource.data.isAdmin == false) &&
-                      (!('role' in request.resource.data) || request.resource.data.role == 'Tag');
+        // Joining or Owner Setup:
+        allow create: if isSignedIn() && (
+          // Case 1: The Group Owner can set themselves as Admin/Csapatkapitanitany
+          get(/databases/$(database)/documents/groups/$(groupId)).data.ownerId == request.auth.uid ||
+          // Case 2: Regular user joining must be restricted
+          (
+            request.auth.uid == memberId && 
+            request.resource.data.userId == request.auth.uid &&
+            (!('isAdmin' in request.resource.data) || request.resource.data.isAdmin == false) &&
+            (!('role' in request.resource.data) || request.resource.data.role == 'user')
+          )
+        );
         
         // Updating: Group Admin can change anything (role, isAdmin). 
         // User can change their own data but NOT their role/isAdmin.

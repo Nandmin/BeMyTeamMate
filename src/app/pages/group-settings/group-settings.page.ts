@@ -147,7 +147,7 @@ export class GroupSettingsPage {
     this.errorMessage.set('');
     try {
       const isAdmin = this.selectedRole() === 'admin';
-      const role = this.selectedRole() === 'admin' ? 'Admin' : 'Tag';
+      const role = this.selectedRole() === 'admin' ? 'Admin' : 'user';
       await this.groupService.updateMemberRole(this.groupId, member.id!, { isAdmin, role });
       this.successMessage.set(`${member.name} szerepe sikeresen módosítva.`);
       this.closeRoleModal();

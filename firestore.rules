@@ -122,8 +122,18 @@ service cloud.firestore {
       }
 
       match /joinRequests/{requestId} {
-        allow read: if isSignedIn();
-        allow write: if isSignedIn();
+        // Read: Only the requester or group admins can see the request
+        allow read: if isSignedIn() && (request.auth.uid == requestId || isGroupAdmin(groupId));
+        
+        // Create: Only the user can create their own join request, ensuring identity
+        allow create: if isSignedIn() && request.auth.uid == requestId && 
+                      request.resource.data.userId == request.auth.uid;
+        
+        // Update: Only group admins can update the request (e.g., status change)
+        allow update: if isGroupAdmin(groupId);
+        
+        // Delete: Requester can cancel their own, or group admin can reject/remove it
+        allow delete: if isSignedIn() && (request.auth.uid == requestId || isGroupAdmin(groupId));
       }
     }
   }

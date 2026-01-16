@@ -14,9 +14,9 @@
             <div class="flex flex-col gap-2">
                 <div class="flex items-center gap-2">
                     <span class="material-symbols-outlined text-primary">group_add</span>
-                    <p class="text-white text-lg font-bold leading-tight">Új kaland keresése?</p>
+                    <p class="text-white text-lg font-bold leading-tight">Új kalandot keresel?</p>
                 </div>
-                <p class="text-[#92c9a9] text-sm md:text-base font-normal leading-normal max-w-lg">
+                <p class="text-[#92c9a9] text-sm md:text-base font-normal leading-normal max-w">
                     Hozz létre egy új baráti kört a sportoláshoz, vagy csatlakozz egy meglévőhöz.
                 </p>
             </div>
@@ -51,83 +51,93 @@
                     placeholder="Keresés név alapján..." type="text" />
             </div>
             <!-- View Toggles -->
-            <div class="flex items-center gap-2 self-end md:self-auto">
-                <span class="text-sm text-gray-400 mr-2 hidden sm:block">Nézet:</span>
-                <button class="p-2 rounded-lg bg-border-green text-primary hover:bg-[#2f5a42] transition-colors">
-                    <span class="material-symbols-outlined">grid_view</span>
-                </button>
-                <button
-                    class="p-2 rounded-lg bg-transparent border border-border-green text-gray-400 hover:text-white hover:border-gray-500 transition-colors">
-                    <span class="material-symbols-outlined">list</span>
-                </button>
-            </div>
+            <!-- View Toggles (Removed for Carousel Layout) -->
+            <!-- <div class="flex items-center gap-2 self-end md:self-auto">...</div> -->
         </div>
     </div>
 
-    <!-- Grid Content -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 pb-12">
-        @for (group of groups(); track group.id) {
-        <div (click)="navigateToGroup(group.id!)"
-            class="group relative flex flex-col overflow-hidden rounded-2xl bg-surface-card border border-border-green hover:border-primary/50 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-primary/10 cursor-pointer">
-            <!-- Cover Image -->
-            <div class="h-40 w-full overflow-hidden relative">
-                <img [src]="group.image" [alt]="group.name"
-                    class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110" />
-                <div
-                    class="absolute top-3 right-3 bg-black/60 backdrop-blur-md px-2 py-1 rounded-lg flex items-center gap-1">
-                    <span class="material-symbols-outlined text-primary text-[16px]">verified_user</span>
-                    <span class="text-[10px] font-bold text-white uppercase tracking-wider">Létrehozó</span>
-                </div>
-            </div>
-            <!-- Content -->
-            <div class="flex flex-1 flex-col p-5">
-                <div class="flex justify-between items-start mb-2">
-                    <h3 class="text-xl font-bold text-white group-hover:text-primary transition-colors">{{ group.name }}
-                    </h3>
-                    <button class="text-gray-400 hover:text-white transition-colors">
-                        <span class="material-symbols-outlined">more_vert</span>
-                    </button>
-                </div>
-                <p class="text-sm text-gray-400 mb-4 line-clamp-2">{{ group.description || 'Nincs leírás megadva.' }}
-                </p>
-                <div class="mt-auto flex items-center justify-between pt-4 border-t border-white/10">
-                    <div class="flex -space-x-2 overflow-hidden">
-                        <a [routerLink]="['/profile', group.ownerId]" (click)="$event.stopPropagation()"
-                            class="contents">
-                            <img [src]="group.ownerPhoto || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + group.ownerId"
-                                [alt]="group.ownerName"
-                                class="inline-block h-8 w-8 rounded-full ring-2 ring-surface-card object-cover cursor-pointer hover:ring-primary transition-all" />
-                        </a>
+    <!-- Carousel Content -->
+    <div class="relative group/carousel">
+        <!-- Left Navigation Button -->
+        <button (click)="scrollCarousel('left')"
+            class="absolute left-0 top-1/2 -translate-y-1/2 -ml-4 z-20 p-3 rounded-full bg-surface-card border border-border-green shadow-xl text-white hover:bg-primary hover:text-white transition-all duration-300 opacity-0 group-hover/carousel:opacity-100 hidden md:flex items-center justify-center scale-90 hover:scale-100 active:scale-90 ring-1 ring-white/10">
+            <span class="material-symbols-outlined">chevron_left</span>
+        </button>
+
+        <!-- Right Navigation Button -->
+        <button (click)="scrollCarousel('right')"
+            class="absolute right-0 top-1/2 -translate-y-1/2 -mr-4 z-20 p-3 rounded-full bg-surface-card border border-border-green shadow-xl text-white hover:bg-primary hover:text-white transition-all duration-300 opacity-0 group-hover/carousel:opacity-100 hidden md:flex items-center justify-center scale-90 hover:scale-100 active:scale-90 ring-1 ring-white/10">
+            <span class="material-symbols-outlined">chevron_right</span>
+        </button>
+
+        <div #carouselContainer
+            class="flex overflow-x-auto gap-4 pb-8 snap-x snap-mandatory [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] -mx-4 px-4 sm:mx-0 sm:px-0 scroll-smooth">
+            @for (group of groups(); track group.id) {
+            <div (click)="navigateToGroup(group.id!)"
+                class="min-w-[260px] w-[260px] snap-center group relative flex flex-col overflow-hidden rounded-2xl bg-surface-card border border-border-green hover:border-primary/50 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-primary/10 cursor-pointer">
+                <!-- Cover Image -->
+                <div class="h-32 w-full overflow-hidden relative">
+                    <img [src]="group.image" [alt]="group.name"
+                        class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110" />
+                    <div
+                        class="absolute top-2 right-2 backdrop-blur-md px-2 py-0.5 rounded-lg flex items-center gap-1">
+                        <span class="material-symbols-outlined text-primary text-[14px]">verified_user</span>
+                        <!-- <span class="text-[9px] font-bold text-white uppercase tracking-wider">Létrehozó</span> -->
                     </div>
-                    <div class="flex items-center gap-2">
-                        <span class="px-2 py-0.5 rounded text-[10px] uppercase font-bold"
-                            [ngClass]="group.type === 'open' ? 'bg-primary/20 text-primary' : 'bg-gray-500/20 text-gray-400'">
-                            {{ group.type === 'open' ? 'Nyílt' : 'Zárt' }}
-                        </span>
-                        <div class="flex items-center gap-1 text-xs text-gray-400">
-                            <span class="material-symbols-outlined text-[16px]">group</span>
-                            <span>{{ group.memberCount }}</span>
+                </div>
+                <!-- Content -->
+                <div class="flex flex-1 flex-col p-4">
+                    <div class="flex justify-between items-start mb-1">
+                        <h3
+                            class="text-lg font-bold text-white group-hover:text-primary transition-colors line-clamp-1">
+                            {{
+                            group.name }}
+                        </h3>
+                        <!-- <button class="text-gray-400 hover:text-white transition-colors">
+                            <span class="material-symbols-outlined text-[20px]">more_vert</span>
+                        </button> -->
+                    </div>
+                    <p class="text-xs text-gray-400 mb-3 line-clamp-2">{{ group.description || 'Nincs leírás megadva.'
+                        }}
+                    </p>
+                    <div class="mt-auto flex items-center justify-between pt-3 border-t border-white/10">
+                        <div class="flex -space-x-2 overflow-hidden">
+                            <a [routerLink]="['/profile', group.ownerId]" (click)="$event.stopPropagation()"
+                                class="contents">
+                                <img [src]="group.ownerPhoto || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + group.ownerId"
+                                    [alt]="group.ownerName"
+                                    class="inline-block h-6 w-6 rounded-full ring-2 ring-surface-card object-cover cursor-pointer hover:ring-primary transition-all" />
+                            </a>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="px-1.5 py-0.5 rounded text-[9px] uppercase font-bold"
+                                [ngClass]="group.type === 'open' ? 'bg-primary/20 text-primary' : 'bg-gray-500/20 text-gray-400'">
+                                {{ group.type === 'open' ? 'Nyílt' : 'Zárt' }}
+                            </span>
+                            <div class="flex items-center gap-1 text-[10px] text-gray-400">
+                                <span class="material-symbols-outlined text-[14px]">group</span>
+                                <span>{{ group.memberCount }}</span>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
-        }
+            }
 
-        <!-- Card 4 (Join New Suggestion) -->
-        <div (click)="authService.currentUser() ? toggleCreateModal() : null"
-            [class.opacity-50]="!authService.currentUser()" [class.cursor-not-allowed]="!authService.currentUser()"
-            class="group relative flex flex-col items-center justify-center overflow-hidden rounded-2xl border-2 border-dashed border-border-green bg-transparent p-5 hover:border-primary/50 hover:bg-surface-card/50 transition-all duration-300 cursor-pointer min-h-[340px]">
-            <div
-                class="size-16 rounded-full bg-surface-card group-hover:bg-primary/20 flex items-center justify-center mb-4 transition-colors">
-                <span
-                    class="material-symbols-outlined text-4xl text-gray-400 group-hover:text-primary transition-colors">add</span>
+            <!-- Card 4 (Join New Suggestion) -->
+            <div (click)="authService.currentUser() ? toggleCreateModal() : null"
+                [class.opacity-50]="!authService.currentUser()" [class.cursor-not-allowed]="!authService.currentUser()"
+                class="min-w-[260px] w-[260px] snap-center group relative flex flex-col items-center justify-center overflow-hidden rounded-2xl border-2 border-dashed border-border-green bg-transparent p-4 hover:border-primary/50 hover:bg-surface-card/50 transition-all duration-300 cursor-pointer">
+                <div
+                    class="size-12 rounded-full bg-surface-card group-hover:bg-primary/20 flex items-center justify-center mb-3 transition-colors">
+                    <span
+                        class="material-symbols-outlined text-3xl text-gray-400 group-hover:text-primary transition-colors">add</span>
+                </div>
+                <h3 class="text-base font-bold text-gray-300 group-hover:text-white mb-1">Új csoport</h3>
+                <p class="text-xs text-center text-gray-500 max-w-[150px]">
+                    {{ authService.currentUser() ? 'Hozz létre egy új csoportot!' : 'Jelentkezz be!' }}
+                </p>
             </div>
-            <h3 class="text-lg font-bold text-gray-300 group-hover:text-white mb-2">Új csoport</h3>
-            <p class="text-sm text-center text-gray-500 max-w-[200px]">
-                {{ authService.currentUser() ? 'Hozz létre egy új csoportot és hívd meg a barátaidat!' : 'A
-                létrehozáshoz be kell jelentkezned!' }}
-            </p>
         </div>
     </div>
 </div>

@@ -1,4 +1,4 @@
-import { Component, inject, Signal } from '@angular/core';
+import { Component, inject, Signal, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -16,6 +16,21 @@ import { catchError, of, switchMap } from 'rxjs';
   styleUrl: './groups.scss',
 })
 export class GroupsPage {
+  @ViewChild('carouselContainer') carouselContainer!: ElementRef<HTMLDivElement>;
+
+  scrollCarousel(direction: 'left' | 'right') {
+    const container = this.carouselContainer.nativeElement;
+    const scrollAmount = 300; // Adjust as needed, approx one card width + gap
+    const currentScroll = container.scrollLeft;
+    const targetScroll =
+      direction === 'left' ? currentScroll - scrollAmount : currentScroll + scrollAmount;
+
+    container.scrollTo({
+      left: targetScroll,
+      behavior: 'smooth',
+    });
+  }
+
   private groupService = inject(GroupService);
   private fb = inject(FormBuilder);
   private router = inject(Router);

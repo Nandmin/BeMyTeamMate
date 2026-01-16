@@ -54,10 +54,11 @@
 
     // Group cards
     .group.bg-surface-card {
-      background: #ffffff;
+      background: #f8fafc; // Slightly darker than pure white
       border-color: rgba(0, 0, 0, 0.08);
 
       &:hover {
+        background: #ffffff;
         border-color: rgba(34, 197, 94, 0.4);
         box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
       }
@@ -68,6 +69,44 @@
 
       p.text-gray-400 {
         color: #64748b;
+      }
+      
+      // 3-dots menu button
+      button {
+        background-color: transparent; 
+        
+        &.text-gray-400 {
+            color: #64748b;
+        }
+
+        &:hover {
+             color: #1e293b; // Dark text on hover
+        }
+      }
+
+      // Card footer border
+      .border-white\/10 {
+        border-color: rgba(0, 0, 0, 0.1);
+      }
+    }
+
+    // Carousel Navigation
+    .group\/carousel {
+      button {
+        background: #ffffff;
+        color: #1e293b;
+        border-color: rgba(0, 0, 0, 0.1);
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        
+        &:hover {
+          background: #22c55e; // Primary color
+          color: #ffffff;
+          border-color: #22c55e;
+        }
+
+        .text-white {
+            color: inherit;
+        }
       }
     }
 

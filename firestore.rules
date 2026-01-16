@@ -10,11 +10,18 @@ service cloud.firestore {
              get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'siteadmin';
     }
 
+    function isUserAdminOfGroup(uid, groupId) {
+      return exists(/databases/$(database)/documents/groups/$(groupId)) && (
+        get(/databases/$(database)/documents/groups/$(groupId)).data.ownerId == uid ||
+        (exists(/databases/$(database)/documents/groups/$(groupId)/members/$(uid)) && 
+         get(/databases/$(database)/documents/groups/$(groupId)/members/$(uid)).data.isAdmin == true)
+      );
+    }
+
     function isGroupAdmin(groupId) {
       return isSignedIn() && (
         isSiteAdmin() ||
-        get(/databases/$(database)/documents/groups/$(groupId)).data.ownerId == request.auth.uid ||
-        get(/databases/$(database)/documents/groups/$(groupId)/members/$(request.auth.uid)).data.isAdmin == true
+        isUserAdminOfGroup(request.auth.uid, groupId)
       );
     }
 
@@ -47,8 +54,25 @@ service cloud.firestore {
 
       // User notifications
       match /notifications/{notificationId} {
-        allow create: if isSignedIn();
         allow read, update, delete: if isSignedIn() && request.auth.uid == userId;
+        
+        allow create: if isSignedIn() && (
+          isSiteAdmin() ||
+          (
+            'groupId' in request.resource.data && 
+            (
+              // Case 1: Teammates (Both must be members of the group)
+              (exists(/databases/$(database)/documents/groups/$(request.resource.data.groupId)/members/$(request.auth.uid)) &&
+               exists(/databases/$(database)/documents/groups/$(request.resource.data.groupId)/members/$(userId))) ||
+              
+              // Case 2: Join Request (User notifying Group Admins)
+              (request.resource.data.type == 'group_join' && isUserAdminOfGroup(userId, request.resource.data.groupId)) ||
+              
+              // Case 3: Joined/Rejected Decision (Admin notifying User)
+              isGroupAdmin(request.resource.data.groupId)
+            )
+          )
+        );
       }
     }
 

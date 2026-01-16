@@ -63,9 +63,8 @@ service cloud.firestore {
             request.resource.data.get('groupId', '') is string &&
             request.resource.data.get('type', '') is string &&
             (
-              !('actorId' in request.resource.data) || 
-              request.resource.data.actorId == request.auth.uid ||
-              isGroupAdmin(request.resource.data.groupId)
+              request.resource.data.get('actorId', '') is string &&
+              request.resource.data.actorId == request.auth.uid
             ) &&
             (
               // Case 1: Teammates (Both must be members of the group)

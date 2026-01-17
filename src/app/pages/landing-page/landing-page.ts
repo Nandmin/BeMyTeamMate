@@ -10,5 +10,18 @@ import { RouterLink } from '@angular/router';
   styleUrl: './landing-page.scss',
 })
 export class LandingPage {
-  // Component logic can be added here as needed
+  scrollToHowItWorks() {
+    const element = document.getElementById('how-it-works');
+    const mainContent = document.querySelector('.main-content');
+    if (element && mainContent) {
+      const elementRect = element.getBoundingClientRect();
+      const containerRect = mainContent.getBoundingClientRect();
+      const scrollTarget = mainContent.scrollTop + (elementRect.top - containerRect.top);
+
+      mainContent.scrollTo({
+        top: scrollTarget,
+        behavior: 'smooth',
+      });
+    }
+  }
 }

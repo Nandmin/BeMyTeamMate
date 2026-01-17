@@ -1,4 +1,12 @@
-import { Component, inject, signal, computed, HostListener, ElementRef, ViewChild } from '@angular/core';
+import {
+  Component,
+  inject,
+  signal,
+  computed,
+  HostListener,
+  ElementRef,
+  ViewChild,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
@@ -20,6 +28,7 @@ export class HeaderComponent {
   public themeService = inject(ThemeService);
   public notificationService = inject(NotificationService);
   public isNotificationsOpen = signal(false);
+  public isMobileMenuOpen = signal(false);
   public isFilterOpen = signal(false);
   public filterEventId = signal<string | null>(null);
   @ViewChild('notifPanel') notifPanel?: ElementRef<HTMLElement>;
@@ -35,9 +44,7 @@ export class HeaderComponent {
     { initialValue: [] as AppNotification[] }
   );
 
-  public unreadCount = computed(
-    () => this.notifications().filter((n) => !n.read).length
-  );
+  public unreadCount = computed(() => this.notifications().filter((n) => !n.read).length);
 
   public filteredNotifications = computed(() => {
     const eventId = this.filterEventId();
@@ -101,20 +108,42 @@ export class HeaderComponent {
     this.isNotificationsOpen.set(false);
   }
 
+  toggleMobileMenu() {
+    this.isMobileMenuOpen.update((open) => !open);
+  }
+
+  closeMobileMenu() {
+    this.isMobileMenuOpen.set(false);
+  }
+
   @HostListener('document:click', ['$event'])
   onDocumentClick(event: MouseEvent) {
-    if (!this.isNotificationsOpen()) return;
     const target = event.target as Node | null;
-    const panelEl = this.notifPanel?.nativeElement;
-    const buttonEl = this.notifButton?.nativeElement;
-    if (panelEl?.contains(target as Node) || buttonEl?.contains(target as Node)) return;
-    this.closeNotifications();
+
+    // Handle notifications panel
+    if (this.isNotificationsOpen()) {
+      const panelEl = this.notifPanel?.nativeElement;
+      const buttonEl = this.notifButton?.nativeElement;
+      if (!panelEl?.contains(target as Node) && !buttonEl?.contains(target as Node)) {
+        this.closeNotifications();
+      }
+    }
+
+    // Handle mobile menu - only close if clicking outside the menu button/panel
+    // Note: Since menu items are links, they will trigger navigation and we should close the menu
+    if (this.isMobileMenuOpen()) {
+      const mobileMenu = document.getElementById('mobile-menu');
+      const menuBtn = document.getElementById('mobile-menu-button');
+      if (!mobileMenu?.contains(target as Node) && !menuBtn?.contains(target as Node)) {
+        this.closeMobileMenu();
+      }
+    }
   }
 
   @HostListener('document:keydown.escape')
   onEscapePress() {
-    if (!this.isNotificationsOpen()) return;
-    this.closeNotifications();
+    if (this.isNotificationsOpen()) this.closeNotifications();
+    if (this.isMobileMenuOpen()) this.closeMobileMenu();
   }
 
   formatTime(value: any) {
@@ -128,6 +157,13 @@ export class HeaderComponent {
     if (hours < 24) return `${hours} órája`;
     const days = Math.floor(hours / 24);
     return `${days} napja`;
+  }
+
+  @HostListener('window:resize', ['$event'])
+  onResize(event: any) {
+    if (window.innerWidth >= 768 && this.isMobileMenuOpen()) {
+      this.closeMobileMenu();
+    }
   }
 
   private getNotificationEventId(notification: AppNotification): string | null {

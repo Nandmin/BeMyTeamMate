@@ -94,10 +94,10 @@
       </div>
     </div>
     <!-- KPI Cards -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
       <!-- Card 1 -->
       <div
-        class="relative overflow-hidden rounded-2xl bg-gradient-to-b from-dark-accent to-background-dark p-6 border border-border-dark group hover:border-primary/50 transition-colors">
+        class="relative overflow-hidden rounded-2xl bg-gradient-to-b from-dark-accent to-background-dark p-4 sm:p-6 border border-border-dark group hover:border-primary/50 transition-colors">
         <div class="flex justify-between items-start mb-4">
           <div class="p-2 bg-[#2bee7c]/10 rounded-lg text-primary">
             <span class="material-symbols-outlined">stadium</span>
@@ -106,14 +106,14 @@
             <span class="material-symbols-outlined text-sm">trending_up</span> +2
           </span>
         </div>
-        <p class="text-[#1F3A2B] dark:text-[#92c9a9] text-sm font-medium uppercase tracking-wider">
+        <p class="text-[#1F3A2B] dark:text-[#92c9a9] text-xs sm:text-sm font-medium uppercase tracking-wider">
           Lejátszott meccsek
         </p>
-        <p class="text-white text-4xl font-bold mt-1">{{ filteredMatches().length }}</p>
+        <p class="text-white text-3xl sm:text-4xl font-bold mt-1">{{ filteredMatches().length }}</p>
       </div>
       <!-- Card 2 -->
       <div
-        class="relative overflow-hidden rounded-2xl bg-gradient-to-b from-dark-accent to-background-dark p-6 border border-border-dark group hover:border-primary/50 transition-colors">
+        class="relative overflow-hidden rounded-2xl bg-gradient-to-b from-dark-accent to-background-dark p-4 sm:p-6 border border-border-dark group hover:border-primary/50 transition-colors">
         <div class="flex justify-between items-start mb-4">
           <div class="p-2 bg-[#2bee7c]/10 rounded-lg text-primary">
             <span class="material-symbols-outlined">emoji_events</span>
@@ -122,12 +122,13 @@
             <span class="material-symbols-outlined text-sm">trending_up</span> +5%
           </span>
         </div>
-        <p class="text-[#1F3A2B] dark:text-[#92c9a9] text-sm font-medium uppercase tracking-wider">Győzelmi arány</p>
-        <p class="text-white text-4xl font-bold mt-1">{{ winRatePercent() }}%</p>
+        <p class="text-[#1F3A2B] dark:text-[#92c9a9] text-xs sm:text-sm font-medium uppercase tracking-wider">Győzelmi
+          arány</p>
+        <p class="text-white text-3xl sm:text-4xl font-bold mt-1">{{ winRatePercent() }}%</p>
       </div>
       <!-- Card 3 -->
       <div
-        class="relative overflow-hidden rounded-2xl bg-gradient-to-b from-dark-accent to-background-dark p-6 border border-border-dark group hover:border-primary/50 transition-colors">
+        class="relative overflow-hidden rounded-2xl bg-gradient-to-b from-dark-accent to-background-dark p-4 sm:p-6 border border-border-dark group hover:border-primary/50 transition-colors">
         <div class="flex justify-between items-start mb-4">
           <div class="p-2 bg-[#2bee7c]/10 rounded-lg text-primary">
             <span class="material-symbols-outlined">scoreboard</span>
@@ -136,23 +137,24 @@
             <span class="material-symbols-outlined text-sm">trending_up</span> +12
           </span>
         </div>
-        <p class="text-[#1F3A2B] dark:text-[#92c9a9] text-sm font-medium uppercase tracking-wider">Összes pont</p>
-        <p class="text-white text-4xl font-bold mt-1">{{ earnedEloTotal() }}</p>
+        <p class="text-[#1F3A2B] dark:text-[#92c9a9] text-xs sm:text-sm font-medium uppercase tracking-wider">Összes
+          pont</p>
+        <p class="text-white text-3xl sm:text-4xl font-bold mt-1">{{ earnedEloTotal() }}</p>
       </div>
     </div>
     <!-- Charts Section -->
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
       <!-- Score Evolution Chart -->
       <div
-        class="rounded-2xl bg-gradient-to-b from-dark-accent to-background-dark border border-border-dark p-6 flex flex-col">
-        <div class="flex justify-between items-start mb-6">
+        class="rounded-2xl bg-gradient-to-b from-dark-accent to-background-dark border border-border-dark p-4 sm:p-6 flex flex-col">
+        <div class="flex justify-between items-start mb-4 sm:mb-6">
           <div>
-            <h3 class="text-white text-lg font-bold">Pontszám alakulása</h3>
-            <p class="text-[#1F3A2B] dark:text-[#92c9a9] text-sm">Utolsó 6 hónap teljesítménye</p>
+            <h3 class="text-white text-base sm:text-lg font-bold">Pontszám alakulása</h3>
+            <p class="text-[#1F3A2B] dark:text-[#92c9a9] text-[10px] sm:text-sm">Utolsó 6 hónap teljesítménye</p>
           </div>
           <div class="text-right">
             <div
-              class="mt-2 flex items-center justify-end gap-3 text-xs font-semibold text-[#1F3A2B] dark:text-[#92c9a9]">
+              class="mt-1 flex flex-col sm:flex-row items-end sm:items-center justify-end gap-1 sm:gap-3 text-[10px] sm:text-xs font-semibold text-[#1F3A2B] dark:text-[#92c9a9]">
               <span class="inline-flex items-center gap-1">
                 <span class="h-2 w-2 rounded-full bg-primary"></span> Nyereség
               </span>
@@ -162,7 +164,7 @@
             </div>
           </div>
         </div>
-        <div class="relative flex-1 w-full h-56 mt-4 flex flex-col">
+        <div class="relative flex-none w-full h-56 min-h-[224px] mt-4 flex flex-col">
           <svg class="w-full flex-1 overflow-hidden" preserveAspectRatio="none" viewBox="0 0 100 50">
             <path [attr.d]="eloChart().path" fill="none" stroke="#2bee7c" stroke-linecap="round" stroke-linejoin="round"
               stroke-width="1.2"></path>
@@ -176,7 +178,7 @@
             }
           </svg>
           <div
-            class="flex justify-between text-[#1F3A2B] dark:text-[#2bee7c] text-xs font-bold mt-2 pt-2 border-t border-border-dark px-2">
+            class="flex justify-between text-[#1F3A2B] dark:text-[#2bee7c] text-[10px] sm:text-xs font-bold mt-2 pt-2 border-t border-border-dark px-1 sm:px-2">
             @for (point of eloChart().points; track point.key) {
             <span>{{ point.label }}</span>
             }
@@ -186,15 +188,16 @@
 
       <!-- Win/Loss Ratio -->
       <div
-        class="rounded-2xl bg-gradient-to-b from-dark-accent to-background-dark border border-border-dark p-6 flex flex-col">
-        <div class="flex justify-between items-start mb-6">
+        class="rounded-2xl bg-gradient-to-b from-dark-accent to-background-dark border border-border-dark p-4 sm:p-6 flex flex-col">
+        <div class="flex justify-between items-start mb-4 sm:mb-6">
           <div>
-            <h3 class="text-white text-lg font-bold">Győzelem / Vereség</h3>
-            <p class="text-[#1F3A2B] dark:text-[#92c9a9] text-sm">Utolsó 6 hónap győzelem és vereség darabszám</p>
+            <h3 class="text-white text-base sm:text-lg font-bold">Győzelem / Vereség</h3>
+            <p class="text-[#1F3A2B] dark:text-[#92c9a9] text-[10px] sm:text-sm">Utolsó 6 hónap győzelem és vereség
+              darabszám</p>
           </div>
           <div class="text-right">
             <div
-              class="mt-2 flex items-center justify-end gap-3 text-xs font-semibold text-[#1F3A2B] dark:text-[#92c9a9]">
+              class="mt-1 flex flex-col sm:flex-row items-end sm:items-center justify-end gap-1 sm:gap-3 text-[10px] sm:text-xs font-semibold text-[#1F3A2B] dark:text-[#92c9a9]">
               <span class="inline-flex items-center gap-1">
                 <span class="h-2 w-2 rounded-full bg-primary"></span> Győzelem
               </span>
@@ -204,32 +207,35 @@
             </div>
           </div>
         </div>
-        <div class="flex-1 flex gap-6 items-end justify-center h-56 mt-4 px-2 w-full">
+        <div
+          class="flex-none flex items-end justify-center h-56 min-h-[224px] mt-4 w-full gap-1.5 sm:gap-4 md:gap-6 px-1 sm:px-2">
           @for (month of winLossChart(); track month.key) {
-          <div class="flex flex-col items-center gap-2 h-full">
-            <div class="flex items-end gap-2 h-full">
-              <div class="w-[20px] rounded-t-sm relative h-full"
+          <div class="flex flex-col items-center gap-1.5 sm:gap-2 h-full flex-1 max-w-[80px]">
+            <div class="flex items-end gap-1 sm:gap-2 h-full">
+              <div class="w-3 sm:w-4 md:w-5 rounded-t-sm relative h-full"
                 [ngClass]="month.wins === 0 ? 'bg-transparent' : 'bg-gradient-to-b from-dark-accent to-background-dark'"
                 [style.--bar-height]="month.winHeight + '%'">
                 <div class="absolute bottom-0 w-full bg-primary rounded-t-sm"
                   [style.height.%]="month.wins === 0 ? 0 : month.winHeight"></div>
-                <span class="absolute left-1/2 -translate-x-1/2 text-[10px] font-semibold text-primary"
-                  style="bottom: calc(var(--bar-height) + 4px)">
+                <span class="absolute left-1/2 -translate-x-1/2 text-[9px] sm:text-[10px] font-semibold text-primary"
+                  style="bottom: calc(var(--bar-height) + 2px)">
                   {{ month.wins }}
                 </span>
               </div>
-              <div class="w-[20px] rounded-t-sm relative h-full"
+              <div class="w-3 sm:w-4 md:w-5 rounded-t-sm relative h-full"
                 [ngClass]="month.losses === 0 ? 'bg-transparent' : 'bg-gradient-to-b from-dark-accent to-background-dark'"
                 [style.--bar-height]="month.lossHeight + '%'">
                 <div class="absolute bottom-0 w-full bg-red-500 rounded-t-sm"
                   [style.height.%]="month.losses === 0 ? 0 : month.lossHeight"></div>
-                <span class="absolute left-1/2 -translate-x-1/2 text-[10px] font-semibold text-red-400"
-                  style="bottom: calc(var(--bar-height) + 4px)">
+                <span class="absolute left-1/2 -translate-x-1/2 text-[9px] sm:text-[10px] font-semibold text-red-400"
+                  style="bottom: calc(var(--bar-height) + 2px)">
                   {{ month.losses }}
                 </span>
               </div>
             </div>
-            <span class="text-center text-[#1F3A2B] dark:text-[#2bee7c] text-xs font-bold">{{ month.label }}</span>
+            <span
+              class="text-center text-[#1F3A2B] dark:text-[#2bee7c] text-[9px] sm:text-[10px] md:text-xs font-bold truncate w-full">{{
+              month.label }}</span>
           </div>
           }
         </div>

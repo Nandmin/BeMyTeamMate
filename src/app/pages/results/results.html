@@ -1,294 +1,315 @@
-<!-- <main class="flex-grow w-full px-6 lg:px-40 py-8"> -->
-<div class="max-w-[1200px] mx-auto flex flex-col gap-8 pt-6 pb-8">
-  <!-- Page Heading & Filters -->
-  <div class="flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
-    <div class="flex flex-col gap-2">
-      <h1 class="text-white text-4xl md:text-5xl font-black tracking-tight">
-        Eredmények és elemzés
-      </h1>
-      <p class="text-[#1F3A2B] dark:text-[#92c9a9] text-lg">
-        Részletes statisztikák, teljesítmény áttekintés és meccstörténet.
-      </p>
-    </div>
-    <div class="flex gap-3 flex-nowrap items-center">
-      <div class="relative shrink-0">
-        <div
-          class="flex items-center gap-1 h-10 rounded-xl bg-gradient-to-b from-dark-accent to-background-dark border border-border-dark px-3 text-white text-sm font-medium">
-          <span class="material-symbols-outlined text-[#1F3A2B] dark:text-[#92c9a9] text-lg">calendar_month</span>
-          <span class="pr-2 whitespace-nowrap">{{ selectedPeriodLabel() }}</span>
-          <span class="material-symbols-outlined text-[#1F3A2B] dark:text-[#92c9a9]">expand_more</span>
-        </div>
-        <select class="absolute inset-0 w-full h-full opacity-0 cursor-pointer results-select"
-          (change)="setPeriod($any($event.target).value)" style="color-scheme: dark">
-          @for (period of periodOptions; track period.id) {
-          <option class="bg-background-dark text-white results-option" [value]="period.id"
-            [selected]="selectedPeriod() === period.id">
-            {{ period.label }}
-          </option>
-          }
-        </select>
+<div class="w-full px-4 sm:px-6 lg:px-10 py-6">
+  <div class="max-w-[1200px] mx-auto flex flex-col gap-8">
+    <!-- Header & Filters Section -->
+    <div class="flex flex-col gap-6">
+      <div class="flex flex-col gap-2">
+        <h1
+          class="text-white text-3xl sm:text-4xl md:text-5xl font-black tracking-tight whitespace-nowrap overflow-hidden text-ellipsis">
+          Eredmények és elemzés
+        </h1>
       </div>
-      <div class="relative shrink-0">
-        <div
-          class="flex items-center gap-1 h-10 rounded-xl bg-gradient-to-b from-dark-accent to-background-dark border border-border-dark px-3 text-white text-sm font-medium">
-          <span class="material-symbols-outlined text-[#1F3A2B] dark:text-[#92c9a9] text-lg">sports</span>
-          <span class="pr-2 whitespace-nowrap">{{ selectedSportLabel() }}</span>
-          <span class="material-symbols-outlined text-[#1F3A2B] dark:text-[#92c9a9]">expand_more</span>
-        </div>
-        <select class="absolute inset-0 w-full h-full opacity-0 cursor-pointer results-select"
-          (change)="setSport($any($event.target).value)" style="color-scheme: dark">
-          <option class="bg-background-dark text-white results-option" value="all"
-            [selected]="selectedSport() === 'all'">
-            Minden sportag
-          </option>
-          @for (sport of sportOptions; track sport.id) {
-          <option class="bg-background-dark text-white results-option" [value]="sport.id"
-            [selected]="selectedSport() === sport.id">
-            {{ sport.name }}
-          </option>
-          }
-        </select>
-      </div>
-      <div class="relative shrink-0">
-        <div
-          class="flex items-center gap-1 h-10 rounded-xl bg-gradient-to-b from-dark-accent to-background-dark border border-border-dark px-3 text-white text-sm font-medium">
-          <span class="material-symbols-outlined text-[#1F3A2B] dark:text-[#92c9a9] text-lg">group</span>
-          <span class="pr-2 whitespace-nowrap">{{ selectedTeamLabel() }}</span>
-          <span class="material-symbols-outlined text-[#1F3A2B] dark:text-[#92c9a9]">expand_more</span>
-        </div>
-        <select class="absolute inset-0 w-full h-full opacity-0 cursor-pointer results-select"
-          (change)="setTeam($any($event.target).value)" style="color-scheme: dark">
-          <option class="bg-background-dark text-white results-option" value="all"
-            [selected]="selectedTeam() === 'all'">
-            Minden csapatom
-          </option>
-          @for (group of userGroups(); track group.id) {
-          <option class="bg-background-dark text-white results-option" [value]="group.id"
-            [selected]="selectedTeam() === group.id">
-            {{ group.name }}
-          </option>
-          }
-        </select>
-      </div>
-    </div>
-  </div>
-  <!-- KPI Cards -->
-  <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-    <!-- Card 1 -->
-    <div
-      class="relative overflow-hidden rounded-2xl bg-gradient-to-b from-dark-accent to-background-dark p-6 border border-border-dark group hover:border-primary/50 transition-colors">
-      <div class="flex justify-between items-start mb-4">
-        <div class="p-2 bg-[#2bee7c]/10 rounded-lg text-primary">
-          <span class="material-symbols-outlined">stadium</span>
-        </div>
-        <span class="flex items-center gap-1 text-primary text-xs font-bold bg-[#2bee7c]/10 px-2 py-1 rounded-full">
-          <span class="material-symbols-outlined text-sm">trending_up</span> +2
-        </span>
-      </div>
-      <p class="text-[#1F3A2B] dark:text-[#92c9a9] text-sm font-medium uppercase tracking-wider">
-        Lejátszott meccsek
-      </p>
-      <p class="text-white text-4xl font-bold mt-1">{{ filteredMatches().length }}</p>
-    </div>
-    <!-- Card 2 -->
-    <div
-      class="relative overflow-hidden rounded-2xl bg-gradient-to-b from-dark-accent to-background-dark p-6 border border-border-dark group hover:border-primary/50 transition-colors">
-      <div class="flex justify-between items-start mb-4">
-        <div class="p-2 bg-[#2bee7c]/10 rounded-lg text-primary">
-          <span class="material-symbols-outlined">emoji_events</span>
-        </div>
-        <span class="flex items-center gap-1 text-primary text-xs font-bold bg-[#2bee7c]/10 px-2 py-1 rounded-full">
-          <span class="material-symbols-outlined text-sm">trending_up</span> +5%
-        </span>
-      </div>
-      <p class="text-[#1F3A2B] dark:text-[#92c9a9] text-sm font-medium uppercase tracking-wider">Győzelmi arány</p>
-      <p class="text-white text-4xl font-bold mt-1">{{ winRatePercent() }}%</p>
-    </div>
-    <!-- Card 3 -->
-    <div
-      class="relative overflow-hidden rounded-2xl bg-gradient-to-b from-dark-accent to-background-dark p-6 border border-border-dark group hover:border-primary/50 transition-colors">
-      <div class="flex justify-between items-start mb-4">
-        <div class="p-2 bg-[#2bee7c]/10 rounded-lg text-primary">
-          <span class="material-symbols-outlined">scoreboard</span>
-        </div>
-        <span class="flex items-center gap-1 text-primary text-xs font-bold bg-[#2bee7c]/10 px-2 py-1 rounded-full">
-          <span class="material-symbols-outlined text-sm">trending_up</span> +12
-        </span>
-      </div>
-      <p class="text-[#1F3A2B] dark:text-[#92c9a9] text-sm font-medium uppercase tracking-wider">Összes pont</p>
-      <p class="text-white text-4xl font-bold mt-1">{{ earnedEloTotal() }}</p>
-    </div>
-  </div>
-  <!-- Charts Section -->
-  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-    <!-- Score Evolution Chart -->
-    <div
-      class="rounded-2xl bg-gradient-to-b from-dark-accent to-background-dark border border-border-dark p-6 flex flex-col">
-      <div class="flex justify-between items-start mb-6">
-        <div>
-          <h3 class="text-white text-lg font-bold">Pontszám alakulása</h3>
-          <p class="text-[#1F3A2B] dark:text-[#92c9a9] text-sm">Utolsó 6 hónap teljesítménye</p>
-        </div>
-        <div class="text-right">
-          <div
-            class="mt-2 flex items-center justify-end gap-3 text-xs font-semibold text-[#1F3A2B] dark:text-[#92c9a9]">
-            <span class="inline-flex items-center gap-1">
-              <span class="h-2 w-2 rounded-full bg-primary"></span> Nyereség
-            </span>
-            <span class="inline-flex items-center gap-1">
-              <span class="h-2 w-2 rounded-full bg-red-500"></span> Veszteség
-            </span>
-          </div>
-        </div>
-      </div>
-      <div class="relative flex-1 w-full h-56 mt-4 flex flex-col">
-        <svg class="w-full flex-1 overflow-hidden" preserveAspectRatio="none" viewBox="0 0 100 50">
-          <path [attr.d]="eloChart().path" fill="none" stroke="#2bee7c" stroke-linecap="round" stroke-linejoin="round"
-            stroke-width="1.2"></path>
-          @for (point of eloChart().points; track point.key) {
-          <circle [attr.cx]="point.x" [attr.cy]="point.y" r="1.2" fill="#0b1a13" stroke="#2bee7c" stroke-width="0.8">
-          </circle>
-          <text [attr.x]="point.x" [attr.y]="point.y - 3" text-anchor="middle" font-size="3"
-            [attr.fill]="point.value >= 0 ? '#2bee7c' : '#ef4444'">
-            {{ point.value }}
-          </text>
-          }
-        </svg>
-        <div
-          class="flex justify-between text-[#1F3A2B] dark:text-[#2bee7c] text-xs font-bold mt-2 pt-2 border-t border-border-dark px-2">
-          @for (point of eloChart().points; track point.key) {
-          <span>{{ point.label }}</span>
-          }
-        </div>
-      </div>
-    </div>
 
-    <!-- Win/Loss Ratio -->
-    <div
-      class="rounded-2xl bg-gradient-to-b from-dark-accent to-background-dark border border-border-dark p-6 flex flex-col">
-      <div class="flex justify-between items-start mb-6">
-        <div>
-          <h3 class="text-white text-lg font-bold">Győzelem / Vereség</h3>
-          <p class="text-[#1F3A2B] dark:text-[#92c9a9] text-sm">Utolsó 6 hónap győzelem és vereség darabszám</p>
-        </div>
-        <div class="text-right">
-          <div
-            class="mt-2 flex items-center justify-end gap-3 text-xs font-semibold text-[#1F3A2B] dark:text-[#92c9a9]">
-            <span class="inline-flex items-center gap-1">
-              <span class="h-2 w-2 rounded-full bg-primary"></span> Győzelem
-            </span>
-            <span class="inline-flex items-center gap-1">
-              <span class="h-2 w-2 rounded-full bg-red-500"></span> Vereség
-            </span>
+      <!-- Subtitle & Filters Row -->
+      <div class="flex flex-wrap items-center xl:flex-nowrap justify-between gap-4 w-full">
+        <p
+          class="text-[#1F3A2B] dark:text-[#92c9a9] text-sm sm:text-base md:text-lg shrink-0 max-w-full xl:max-w-[45%]">
+          Részletes statisztikák, teljesítmény áttekintés és meccstörténet.
+        </p>
+
+        <!-- Filters Container -->
+        <div class="relative w-full xl:w-auto">
+          <div class="flex flex-wrap items-center justify-start xl:justify-end gap-2 sm:gap-3">
+            <!-- Period Filter -->
+            <div class="relative shrink-0 min-w-[120px] sm:min-w-[160px] xl:min-w-0">
+              <div
+                class="flex items-center justify-center gap-1.5 sm:gap-2 h-9 sm:h-10 rounded-xl bg-gradient-to-b from-dark-accent to-background-dark border border-border-dark px-3 sm:px-4 text-white text-[11px] sm:text-xs md:text-sm font-medium hover:border-primary/50 transition-colors">
+                <span
+                  class="material-symbols-outlined text-[#1F3A2B] dark:text-[#92c9a9] text-base sm:text-lg shrink-0">calendar_month</span>
+                <span class="whitespace-nowrap">{{ selectedPeriodLabel() }}</span>
+                <span
+                  class="material-symbols-outlined text-[#1F3A2B] dark:text-[#92c9a9] text-xs sm:text-sm shrink-0">expand_more</span>
+              </div>
+              <select class="absolute inset-0 w-full h-full opacity-0 cursor-pointer results-select"
+                (change)="setPeriod($any($event.target).value)" style="color-scheme: dark">
+                @for (period of periodOptions; track period.id) {
+                <option class="bg-background-dark text-white results-option" [value]="period.id"
+                  [selected]="selectedPeriod() === period.id">
+                  {{ period.label }}
+                </option>
+                }
+              </select>
+            </div>
+
+            <!-- Sport Filter -->
+            <div class="relative shrink-0 min-w-[120px] sm:min-w-[160px] xl:min-w-0">
+              <div
+                class="flex items-center justify-center gap-1.5 sm:gap-2 h-9 sm:h-10 rounded-xl bg-gradient-to-b from-dark-accent to-background-dark border border-border-dark px-3 sm:px-4 text-white text-[11px] sm:text-xs md:text-sm font-medium hover:border-primary/50 transition-colors">
+                <span
+                  class="material-symbols-outlined text-[#1F3A2B] dark:text-[#92c9a9] text-base sm:text-lg shrink-0">sports</span>
+                <span class="whitespace-nowrap">{{ selectedSportLabel() }}</span>
+                <span
+                  class="material-symbols-outlined text-[#1F3A2B] dark:text-[#92c9a9] text-xs sm:text-sm shrink-0">expand_more</span>
+              </div>
+              <select class="absolute inset-0 w-full h-full opacity-0 cursor-pointer results-select"
+                (change)="setSport($any($event.target).value)" style="color-scheme: dark">
+                <option class="bg-background-dark text-white results-option" value="all"
+                  [selected]="selectedSport() === 'all'">
+                  Minden sportág
+                </option>
+                @for (sport of sportOptions; track sport.id) {
+                <option class="bg-background-dark text-white results-option" [value]="sport.id"
+                  [selected]="selectedSport() === sport.id">
+                  {{ sport.name }}
+                </option>
+                }
+              </select>
+            </div>
+
+            <!-- Team Filter -->
+            <div class="relative shrink-0 min-w-[120px] sm:min-w-[160px] xl:min-w-0">
+              <div
+                class="flex items-center justify-center gap-1.5 sm:gap-2 h-9 sm:h-10 rounded-xl bg-gradient-to-b from-dark-accent to-background-dark border border-border-dark px-3 sm:px-4 text-white text-[11px] sm:text-xs md:text-sm font-medium hover:border-primary/50 transition-colors">
+                <span
+                  class="material-symbols-outlined text-[#1F3A2B] dark:text-[#92c9a9] text-base sm:text-lg shrink-0">group</span>
+                <span class="whitespace-nowrap">{{ selectedTeamLabel() }}</span>
+                <span
+                  class="material-symbols-outlined text-[#1F3A2B] dark:text-[#92c9a9] text-xs sm:text-sm shrink-0">expand_more</span>
+              </div>
+              <select class="absolute inset-0 w-full h-full opacity-0 cursor-pointer results-select"
+                (change)="setTeam($any($event.target).value)" style="color-scheme: dark">
+                <option class="bg-background-dark text-white results-option" value="all"
+                  [selected]="selectedTeam() === 'all'">
+                  Minden csapatom
+                </option>
+                @for (group of userGroups(); track group.id) {
+                <option class="bg-background-dark text-white results-option" [value]="group.id"
+                  [selected]="selectedTeam() === group.id">
+                  {{ group.name }}
+                </option>
+                }
+              </select>
+            </div>
           </div>
         </div>
       </div>
-      <div class="flex-1 flex gap-6 items-end justify-center h-56 mt-4 px-2 w-full">
-        @for (month of winLossChart(); track month.key) {
-        <div class="flex flex-col items-center gap-2 h-full">
-          <div class="flex items-end gap-2 h-full">
-            <div class="w-[20px] rounded-t-sm relative h-full"
-              [ngClass]="month.wins === 0 ? 'bg-transparent' : 'bg-gradient-to-b from-dark-accent to-background-dark'"
-              [style.--bar-height]="month.winHeight + '%'">
-              <div class="absolute bottom-0 w-full bg-primary rounded-t-sm"
-                [style.height.%]="month.wins === 0 ? 0 : month.winHeight"></div>
-              <span class="absolute left-1/2 -translate-x-1/2 text-[10px] font-semibold text-primary"
-                style="bottom: calc(var(--bar-height) + 4px)">
-                {{ month.wins }}
+    </div>
+    <!-- KPI Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <!-- Card 1 -->
+      <div
+        class="relative overflow-hidden rounded-2xl bg-gradient-to-b from-dark-accent to-background-dark p-6 border border-border-dark group hover:border-primary/50 transition-colors">
+        <div class="flex justify-between items-start mb-4">
+          <div class="p-2 bg-[#2bee7c]/10 rounded-lg text-primary">
+            <span class="material-symbols-outlined">stadium</span>
+          </div>
+          <span class="flex items-center gap-1 text-primary text-xs font-bold bg-[#2bee7c]/10 px-2 py-1 rounded-full">
+            <span class="material-symbols-outlined text-sm">trending_up</span> +2
+          </span>
+        </div>
+        <p class="text-[#1F3A2B] dark:text-[#92c9a9] text-sm font-medium uppercase tracking-wider">
+          Lejátszott meccsek
+        </p>
+        <p class="text-white text-4xl font-bold mt-1">{{ filteredMatches().length }}</p>
+      </div>
+      <!-- Card 2 -->
+      <div
+        class="relative overflow-hidden rounded-2xl bg-gradient-to-b from-dark-accent to-background-dark p-6 border border-border-dark group hover:border-primary/50 transition-colors">
+        <div class="flex justify-between items-start mb-4">
+          <div class="p-2 bg-[#2bee7c]/10 rounded-lg text-primary">
+            <span class="material-symbols-outlined">emoji_events</span>
+          </div>
+          <span class="flex items-center gap-1 text-primary text-xs font-bold bg-[#2bee7c]/10 px-2 py-1 rounded-full">
+            <span class="material-symbols-outlined text-sm">trending_up</span> +5%
+          </span>
+        </div>
+        <p class="text-[#1F3A2B] dark:text-[#92c9a9] text-sm font-medium uppercase tracking-wider">Győzelmi arány</p>
+        <p class="text-white text-4xl font-bold mt-1">{{ winRatePercent() }}%</p>
+      </div>
+      <!-- Card 3 -->
+      <div
+        class="relative overflow-hidden rounded-2xl bg-gradient-to-b from-dark-accent to-background-dark p-6 border border-border-dark group hover:border-primary/50 transition-colors">
+        <div class="flex justify-between items-start mb-4">
+          <div class="p-2 bg-[#2bee7c]/10 rounded-lg text-primary">
+            <span class="material-symbols-outlined">scoreboard</span>
+          </div>
+          <span class="flex items-center gap-1 text-primary text-xs font-bold bg-[#2bee7c]/10 px-2 py-1 rounded-full">
+            <span class="material-symbols-outlined text-sm">trending_up</span> +12
+          </span>
+        </div>
+        <p class="text-[#1F3A2B] dark:text-[#92c9a9] text-sm font-medium uppercase tracking-wider">Összes pont</p>
+        <p class="text-white text-4xl font-bold mt-1">{{ earnedEloTotal() }}</p>
+      </div>
+    </div>
+    <!-- Charts Section -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <!-- Score Evolution Chart -->
+      <div
+        class="rounded-2xl bg-gradient-to-b from-dark-accent to-background-dark border border-border-dark p-6 flex flex-col">
+        <div class="flex justify-between items-start mb-6">
+          <div>
+            <h3 class="text-white text-lg font-bold">Pontszám alakulása</h3>
+            <p class="text-[#1F3A2B] dark:text-[#92c9a9] text-sm">Utolsó 6 hónap teljesítménye</p>
+          </div>
+          <div class="text-right">
+            <div
+              class="mt-2 flex items-center justify-end gap-3 text-xs font-semibold text-[#1F3A2B] dark:text-[#92c9a9]">
+              <span class="inline-flex items-center gap-1">
+                <span class="h-2 w-2 rounded-full bg-primary"></span> Nyereség
               </span>
-            </div>
-            <div class="w-[20px] rounded-t-sm relative h-full"
-              [ngClass]="month.losses === 0 ? 'bg-transparent' : 'bg-gradient-to-b from-dark-accent to-background-dark'"
-              [style.--bar-height]="month.lossHeight + '%'">
-              <div class="absolute bottom-0 w-full bg-red-500 rounded-t-sm"
-                [style.height.%]="month.losses === 0 ? 0 : month.lossHeight"></div>
-              <span class="absolute left-1/2 -translate-x-1/2 text-[10px] font-semibold text-red-400"
-                style="bottom: calc(var(--bar-height) + 4px)">
-                {{ month.losses }}
+              <span class="inline-flex items-center gap-1">
+                <span class="h-2 w-2 rounded-full bg-red-500"></span> Veszteség
               </span>
             </div>
           </div>
-          <span class="text-center text-[#1F3A2B] dark:text-[#2bee7c] text-xs font-bold">{{ month.label }}</span>
         </div>
-        }
+        <div class="relative flex-1 w-full h-56 mt-4 flex flex-col">
+          <svg class="w-full flex-1 overflow-hidden" preserveAspectRatio="none" viewBox="0 0 100 50">
+            <path [attr.d]="eloChart().path" fill="none" stroke="#2bee7c" stroke-linecap="round" stroke-linejoin="round"
+              stroke-width="1.2"></path>
+            @for (point of eloChart().points; track point.key) {
+            <circle [attr.cx]="point.x" [attr.cy]="point.y" r="1.2" fill="#0b1a13" stroke="#2bee7c" stroke-width="0.8">
+            </circle>
+            <text [attr.x]="point.x" [attr.y]="point.y - 3" text-anchor="middle" font-size="3"
+              [attr.fill]="point.value >= 0 ? '#2bee7c' : '#ef4444'">
+              {{ point.value }}
+            </text>
+            }
+          </svg>
+          <div
+            class="flex justify-between text-[#1F3A2B] dark:text-[#2bee7c] text-xs font-bold mt-2 pt-2 border-t border-border-dark px-2">
+            @for (point of eloChart().points; track point.key) {
+            <span>{{ point.label }}</span>
+            }
+          </div>
+        </div>
+      </div>
+
+      <!-- Win/Loss Ratio -->
+      <div
+        class="rounded-2xl bg-gradient-to-b from-dark-accent to-background-dark border border-border-dark p-6 flex flex-col">
+        <div class="flex justify-between items-start mb-6">
+          <div>
+            <h3 class="text-white text-lg font-bold">Győzelem / Vereség</h3>
+            <p class="text-[#1F3A2B] dark:text-[#92c9a9] text-sm">Utolsó 6 hónap győzelem és vereség darabszám</p>
+          </div>
+          <div class="text-right">
+            <div
+              class="mt-2 flex items-center justify-end gap-3 text-xs font-semibold text-[#1F3A2B] dark:text-[#92c9a9]">
+              <span class="inline-flex items-center gap-1">
+                <span class="h-2 w-2 rounded-full bg-primary"></span> Győzelem
+              </span>
+              <span class="inline-flex items-center gap-1">
+                <span class="h-2 w-2 rounded-full bg-red-500"></span> Vereség
+              </span>
+            </div>
+          </div>
+        </div>
+        <div class="flex-1 flex gap-6 items-end justify-center h-56 mt-4 px-2 w-full">
+          @for (month of winLossChart(); track month.key) {
+          <div class="flex flex-col items-center gap-2 h-full">
+            <div class="flex items-end gap-2 h-full">
+              <div class="w-[20px] rounded-t-sm relative h-full"
+                [ngClass]="month.wins === 0 ? 'bg-transparent' : 'bg-gradient-to-b from-dark-accent to-background-dark'"
+                [style.--bar-height]="month.winHeight + '%'">
+                <div class="absolute bottom-0 w-full bg-primary rounded-t-sm"
+                  [style.height.%]="month.wins === 0 ? 0 : month.winHeight"></div>
+                <span class="absolute left-1/2 -translate-x-1/2 text-[10px] font-semibold text-primary"
+                  style="bottom: calc(var(--bar-height) + 4px)">
+                  {{ month.wins }}
+                </span>
+              </div>
+              <div class="w-[20px] rounded-t-sm relative h-full"
+                [ngClass]="month.losses === 0 ? 'bg-transparent' : 'bg-gradient-to-b from-dark-accent to-background-dark'"
+                [style.--bar-height]="month.lossHeight + '%'">
+                <div class="absolute bottom-0 w-full bg-red-500 rounded-t-sm"
+                  [style.height.%]="month.losses === 0 ? 0 : month.lossHeight"></div>
+                <span class="absolute left-1/2 -translate-x-1/2 text-[10px] font-semibold text-red-400"
+                  style="bottom: calc(var(--bar-height) + 4px)">
+                  {{ month.losses }}
+                </span>
+              </div>
+            </div>
+            <span class="text-center text-[#1F3A2B] dark:text-[#2bee7c] text-xs font-bold">{{ month.label }}</span>
+          </div>
+          }
+        </div>
       </div>
     </div>
-  </div>
-  <!-- Detailed Stats Grid -->
-  <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+    <!-- Detailed Stats Grid -->
+    <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
 
-    <!-- Recent Matches Table -->
-    <div
-      class="xl:col-span-3 w-full rounded-2xl bg-gradient-to-b from-dark-accent to-background-dark border border-border-dark p-6 flex flex-col">
-      <div class="flex items-center justify-between mb-6">
-        <h3 class="text-white text-lg font-bold">Legutóbbi eredmények</h3>
-        <div class="flex gap-2">
-          <button
-            class="p-2 rounded-lg bg-gradient-to-b from-dark-accent to-background-dark text-white hover:bg-[#2c5a40]">
-            <span class="material-symbols-outlined text-lg">filter_list</span>
-          </button>
-          <button
-            class="p-2 rounded-lg bg-gradient-to-b from-dark-accent to-background-dark text-white hover:bg-[#2c5a40]">
-            <span class="material-symbols-outlined text-lg">download</span>
-          </button>
+      <!-- Recent Matches Table -->
+      <div
+        class="xl:col-span-3 w-full rounded-2xl bg-gradient-to-b from-dark-accent to-background-dark border border-border-dark p-6 flex flex-col">
+        <div class="flex items-center justify-between mb-6">
+          <h3 class="text-white text-lg font-bold">Legutóbbi eredmények</h3>
+          <div class="flex gap-2">
+            <button
+              class="p-2 rounded-lg bg-gradient-to-b from-dark-accent to-background-dark text-white hover:bg-[#2c5a40]">
+              <span class="material-symbols-outlined text-lg">filter_list</span>
+            </button>
+            <button
+              class="p-2 rounded-lg bg-gradient-to-b from-dark-accent to-background-dark text-white hover:bg-[#2c5a40]">
+              <span class="material-symbols-outlined text-lg">download</span>
+            </button>
+          </div>
         </div>
-      </div>
-      <div class="flex-1 overflow-x-auto">
-        <table class="w-full text-left border-collapse">
-          <thead>
-            <tr class="text-[#1F3A2B] dark:text-[#2bee7c] text-xs uppercase border-b border-border-dark">
-              <th class="pb-3 pl-2 font-medium">Dátum</th>
-              <th class="pb-3 font-medium">Sportág</th>
-              <th class="pb-3 font-medium">Ellenfél</th>
-              <th class="pb-3 font-medium text-center">Eredmény</th>
-              <th class="pb-3 font-medium text-right pr-2">Részletek</th>
-            </tr>
-          </thead>
-          <tbody class="text-sm">
-            @if (filteredMatches().length === 0) {
-            <tr>
-              <td class="py-6 text-center text-[#1F3A2B] dark:text-[#2bee7c]" colspan="5">
-                Nincs lej?tszott meccs.
-              </td>
-            </tr>
-            } @else {
-            @for (match of filteredMatches(); track match.eventId) {
-            <tr
-              class="group hover:bg-gradient-to-b from-dark-accent to-background-dark/50 transition-colors border-b border-border-dark/50">
-              <td class="py-4 pl-2 text-[#1F3A2B] dark:text-white font-medium">{{ match.dateLabel }}</td>
-              <td class="py-4">
-                <div class="flex items-center gap-2 text-[#1F3A2B] dark:text-[#92c9a9]">
-                  <span class="material-symbols-outlined text-lg">{{
-                    getSportIcon(match.sport)
-                    }}</span>
-                  <span>{{ match.sportLabel }}</span>
-                </div>
-              </td>
-              <td class="py-4 text-[#1F3A2B] dark:text-white">{{ match.opponent }}</td>
-              <td class="py-4 text-center">
-                <span class="inline-flex items-center justify-center px-2.5 py-0.5 rounded font-bold" [ngClass]="
+        <div class="flex-1 overflow-x-auto">
+          <table class="w-full text-left border-collapse">
+            <thead>
+              <tr class="text-[#1F3A2B] dark:text-[#2bee7c] text-xs uppercase border-b border-border-dark">
+                <th class="pb-3 pl-2 font-medium">Dátum</th>
+                <th class="pb-3 font-medium">Sportág</th>
+                <th class="pb-3 font-medium">Ellenfél</th>
+                <th class="pb-3 font-medium text-center">Eredmény</th>
+                <th class="pb-3 font-medium text-right pr-2">Részletek</th>
+              </tr>
+            </thead>
+            <tbody class="text-sm">
+              @if (filteredMatches().length === 0) {
+              <tr>
+                <td class="py-6 text-center text-[#1F3A2B] dark:text-[#2bee7c]" colspan="5">
+                  Nincs lej?tszott meccs.
+                </td>
+              </tr>
+              } @else {
+              @for (match of filteredMatches(); track match.eventId) {
+              <tr
+                class="group hover:bg-gradient-to-b from-dark-accent to-background-dark/50 transition-colors border-b border-border-dark/50">
+                <td class="py-4 pl-2 text-[#1F3A2B] dark:text-white font-medium">{{ match.dateLabel }}</td>
+                <td class="py-4">
+                  <div class="flex items-center gap-2 text-[#1F3A2B] dark:text-[#92c9a9]">
+                    <span class="material-symbols-outlined text-lg">{{
+                      getSportIcon(match.sport)
+                      }}</span>
+                    <span>{{ match.sportLabel }}</span>
+                  </div>
+                </td>
+                <td class="py-4 text-[#1F3A2B] dark:text-white">{{ match.opponent }}</td>
+                <td class="py-4 text-center">
+                  <span class="inline-flex items-center justify-center px-2.5 py-0.5 rounded font-bold" [ngClass]="
                       match.isWin === null
                         ? 'bg-gray-500/20 text-gray-300'
                         : match.isWin
                         ? 'bg-primary/20 text-primary'
                         : 'bg-red-500/20 text-red-400'
                     ">
-                  {{ match.resultLabel }}
-                </span>
-              </td>
-              <td class="py-4 text-right pr-2">
-                <button class="text-[#1F3A2B] dark:text-[#92c9a9] group-hover:text-white transition-colors"
-                  (click)="openMatch(match)">
-                  <span class="material-symbols-outlined">chevron_right</span>
-                </button>
-              </td>
-            </tr>
-            }
-            }
-          </tbody>
-        </table>
+                    {{ match.resultLabel }}
+                  </span>
+                </td>
+                <td class="py-4 text-right pr-2">
+                  <button class="text-[#1F3A2B] dark:text-[#92c9a9] group-hover:text-white transition-colors"
+                    (click)="openMatch(match)">
+                    <span class="material-symbols-outlined">chevron_right</span>
+                  </button>
+                </td>
+              </tr>
+              }
+              }
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   </div>
 </div>
-<!-- </main> -->

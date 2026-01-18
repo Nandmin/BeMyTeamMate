@@ -15,7 +15,7 @@ import { environment } from '../environments/environment';
 import { routes } from './app.routes';
 import { provideServiceWorker } from '@angular/service-worker';
 import { getApp } from 'firebase/app';
-import { initializeAppCheck, ReCaptchaV3Provider } from 'firebase/app-check';
+import { initializeAppCheck, ReCaptchaEnterpriseProvider } from 'firebase/app-check';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -38,7 +38,7 @@ export const appConfig: ApplicationConfig = {
                 environment.firebase.appCheckDebugToken;
             }
             return initializeAppCheck(getApp(), {
-              provider: new ReCaptchaV3Provider(environment.firebase.appCheckSiteKey),
+              provider: new ReCaptchaEnterpriseProvider(environment.firebase.appCheckSiteKey),
               isTokenAutoRefreshEnabled: true,
             });
           }),

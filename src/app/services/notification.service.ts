@@ -297,18 +297,42 @@ export class NotificationService {
     }
     const messaging = getMessaging();
 
-    // Wait for the service worker to be ready (already registered in app.config.ts)
+    // Wait for the service worker to be ready
     const registration = await navigator.serviceWorker.ready;
 
     if (!registration.active) {
       throw new Error('Push service worker registration failed to activate.');
     }
 
-    const token = await getToken(messaging, {
-      vapidKey: environment.firebase.vapidKey,
-      serviceWorkerRegistration: registration,
-    });
-    return token || null;
+    try {
+      const token = await getToken(messaging, {
+        vapidKey: environment.firebase.vapidKey,
+        serviceWorkerRegistration: registration,
+      });
+      return token || null;
+    } catch (err: any) {
+      // If we get an error about unsubscribing or invalid registration, try to clear and retry
+      if (
+        err?.code === 'messaging/invalid-registration-token' ||
+        err?.message?.includes('unsubscribe') ||
+        err?.message?.includes('registration')
+      ) {
+        console.warn('Stale push registration detected, attempting to reset:', err.message);
+        try {
+          await deleteToken(messaging);
+          const newToken = await getToken(messaging, {
+            vapidKey: environment.firebase.vapidKey,
+            serviceWorkerRegistration: registration,
+          });
+          return newToken || null;
+        } catch (retryErr) {
+          console.error('Failed to recover from stale push registration:', retryErr);
+          // If retry fails, throw the original error or the new one
+          throw err;
+        }
+      }
+      throw err;
+    }
   }
 
   private canUsePush() {

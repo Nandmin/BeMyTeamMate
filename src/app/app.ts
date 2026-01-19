@@ -32,8 +32,16 @@ export class App {
   protected showNav = signal(true);
   protected showFooter = signal(true);
   protected showHeader = signal(true);
+  private isMobile = signal(false);
 
   constructor() {
+    const mediaQuery = window.matchMedia('(max-width: 768px)');
+    this.isMobile.set(mediaQuery.matches);
+    mediaQuery.addEventListener('change', (event) => {
+      this.isMobile.set(event.matches);
+      this.updateFooterVisibility(this.router.url);
+    });
+
     this.authService.user$.subscribe((user) => {
       if (!user?.uid) return;
       this.notificationService.syncTokenForCurrentUser();
@@ -47,10 +55,7 @@ export class App {
         this.showNav.set(
           event.urlAfterRedirects !== '/login' && event.urlAfterRedirects !== '/register'
         );
-        // Hide footer on login page to prevent scrolling
-        this.showFooter.set(
-          event.urlAfterRedirects !== '/login' && event.urlAfterRedirects !== '/register'
-        );
+        this.updateFooterVisibility(event.urlAfterRedirects);
 
         // Header visibility logic
         this.showHeader.set(true); // Always show header as requested, or adjust if needed
@@ -61,5 +66,20 @@ export class App {
           mainContent.scrollTop = 0;
         }
       });
+  }
+
+  private updateFooterVisibility(url: string) {
+    const path = url.split('?')[0];
+    if (path === '/login' || path === '/register') {
+      this.showFooter.set(false);
+      return;
+    }
+
+    if (this.isMobile()) {
+      this.showFooter.set(path === '/' || path === '');
+      return;
+    }
+
+    this.showFooter.set(true);
   }
 }

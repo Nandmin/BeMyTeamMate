@@ -1,4 +1,14 @@
-import { Component, inject, Signal, ViewChild, ElementRef } from '@angular/core';
+import {
+  Component,
+  inject,
+  Signal,
+  ViewChild,
+  ElementRef,
+  AfterViewInit,
+  OnDestroy,
+  effect,
+  afterNextRender,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -15,8 +25,10 @@ import { catchError, of, switchMap } from 'rxjs';
   templateUrl: './groups.html',
   styleUrl: './groups.scss',
 })
-export class GroupsPage {
+export class GroupsPage implements AfterViewInit, OnDestroy {
   @ViewChild('carouselContainer') carouselContainer!: ElementRef<HTMLDivElement>;
+  private didInitialCarouselReset = false;
+  private previousScrollRestoration: History['scrollRestoration'] | null = null;
 
   scrollCarousel(direction: 'left' | 'right') {
     const container = this.carouselContainer.nativeElement;
@@ -29,6 +41,34 @@ export class GroupsPage {
       left: targetScroll,
       behavior: 'smooth',
     });
+  }
+
+  ngAfterViewInit() {
+    if ('scrollRestoration' in history) {
+      this.previousScrollRestoration = history.scrollRestoration;
+      history.scrollRestoration = 'manual';
+    }
+
+    effect(() => {
+      const groups = this.groups();
+      if (this.didInitialCarouselReset || !this.carouselContainer || groups === undefined) return;
+
+      afterNextRender(() => {
+        const container = this.carouselContainer.nativeElement;
+        const previousBehavior = container.style.scrollBehavior;
+        container.style.scrollBehavior = 'auto';
+        container.scrollLeft = 0;
+        container.style.scrollBehavior = previousBehavior;
+        this.didInitialCarouselReset = true;
+      });
+    });
+  }
+
+  ngOnDestroy() {
+    if (this.previousScrollRestoration) {
+      history.scrollRestoration = this.previousScrollRestoration;
+      this.previousScrollRestoration = null;
+    }
   }
 
   private groupService = inject(GroupService);

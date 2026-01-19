@@ -4,6 +4,10 @@
   background-color: var(--bg-primary);
   transition: background-color 0.3s ease;
 
+  .carousel-container {
+    overflow-anchor: none;
+  }
+
   /* Custom scrollbar for webkit */
   &::-webkit-scrollbar {
     width: 8px;

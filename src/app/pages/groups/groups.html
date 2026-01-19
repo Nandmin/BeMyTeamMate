@@ -70,8 +70,9 @@
             <span class="material-symbols-outlined">chevron_right</span>
         </button>
 
+        @if (groups() !== undefined) {
         <div #carouselContainer
-            class="flex overflow-x-auto gap-4 pb-8 snap-x snap-mandatory [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] -mx-4 px-4 sm:mx-0 sm:px-0 scroll-smooth">
+            class="carousel-container flex overflow-x-auto gap-4 pb-8 snap-x snap-mandatory [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] -mx-4 px-4 sm:mx-0 sm:px-0 scroll-smooth">
             @for (group of groups(); track group.id) {
             <div (click)="navigateToGroup(group.id!)"
                 class="min-w-[260px] w-[260px] snap-center group relative flex flex-col overflow-hidden rounded-2xl bg-surface-card border border-border-green hover:border-primary/50 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-primary/10 cursor-pointer">
@@ -139,6 +140,14 @@
                 </p>
             </div>
         </div>
+        } @else {
+        <div class="-mx-4 px-4 sm:mx-0 sm:px-0">
+            <div
+                class="h-[220px] rounded-2xl bg-surface-card/60 border border-border-green animate-pulse flex items-center justify-center text-xs text-gray-500">
+                Betoltes...
+            </div>
+        </div>
+        }
     </div>
 </div>
 

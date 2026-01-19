@@ -29,10 +29,10 @@
                             alatt, szervezz eseményeket és kövesd a statisztikákat egy helyen.
                         </p>
                         <div class="flex flex-col sm:flex-row gap-4 mt-4">
-                            <button routerLink="/register"
+                            <!-- <button routerLink="/register"
                                 class="flex items-center justify-center rounded-xl h-12 px-8 bg-primary hover:bg-primary-hover text-white text-base font-bold transition-all duration-200 shadow-lg shadow-primary/25 hover:scale-105">
                                 Ingyenes Regisztráció
-                            </button>
+                            </button> -->
                             <button (click)="scrollToHowItWorks()"
                                 class="flex items-center justify-center rounded-xl h-12 px-8 bg-card-dark border border-border-dark hover:bg-border-dark text-white text-base font-bold transition-all duration-200">
                                 <!-- <span class="material-symbols-outlined mr-2 text-[20px]">play_circle</span> -->
@@ -134,10 +134,12 @@
                             class="absolute inset-0 bg-gradient-to-b from-primary/5 to-transparent rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity">
                         </div>
                         <div class="relative z-10 flex flex-col items-start gap-4">
-                            <div class="p-3 rounded-xl bg-primary/10 text-primary">
+                            <div class="flex items-center gap-3">
+                                <div class="p-3 rounded-xl bg-primary/10 text-primary">
                                 <span class="material-symbols-outlined text-[32px]">balance</span>
                             </div>
-                            <h3 class="text-xl font-bold text-slate-900 dark:text-white">Okos Csapatelosztás</h3>
+                            <h3 class="text-xl font-bold text-slate-900 dark:text-white">Okos csapatelosztás</h3>
+                            </div>
                             <p class=" leading-relaxed">
                                 Algoritmusunk figyelembe veszi a játékosok korábbi teljesítményét és képességeit, így
                                 mindig
@@ -152,14 +154,16 @@
                             class="absolute inset-0 bg-gradient-to-b from-primary/5 to-transparent rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity">
                         </div>
                         <div class="relative z-10 flex flex-col items-start gap-4">
-                            <div class="p-3 rounded-xl bg-primary/10 text-primary">
+                            <div class="flex items-center gap-3">
+                                <div class="p-3 rounded-xl bg-primary/10 text-primary">
                                 <span class="material-symbols-outlined text-[32px]">calendar_month</span>
                             </div>
                             <h3 class="text-xl font-bold text-slate-900 dark:text-white">Eseménykezelés</h3>
+                            </div>
                             <p class=" leading-relaxed">
-                                Hozd létre a következő focit, küldj automatikus emlékeztetőket, és kezeld a "ráérek/nem
-                                érek
-                                rá" válaszokat egyetlen felületen.
+                                Hozd létre a következő focit, küldj automatikus emlékeztetőket, és kezeld az "Ott leszek/Nem
+                                leszek
+                                ott" válaszokat egyetlen felületen.
                             </p>
                         </div>
                     </div>
@@ -170,10 +174,12 @@
                             class="absolute inset-0 bg-gradient-to-b from-primary/5 to-transparent rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity">
                         </div>
                         <div class="relative z-10 flex flex-col items-start gap-4">
-                            <div class="p-3 rounded-xl bg-primary/10 text-primary">
+                            <div class="flex items-center gap-3">
+                                <div class="p-3 rounded-xl bg-primary/10 text-primary">
                                 <span class="material-symbols-outlined text-[32px]">trophy</span>
                             </div>
-                            <h3 class="text-xl font-bold text-slate-900 dark:text-white">Közösségi Élmény</h3>
+                            <h3 class="text-xl font-bold text-slate-900 dark:text-white">Közösségi élmény</h3>
+                            </div>
                             <p class=" leading-relaxed">
                                 Rögzítsétek a gólokat, szavazzatok a meccs legjobbjára (MVP), és vezessetek ranglistát a
                                 baráti társaságon belül.
@@ -214,9 +220,7 @@
                                 <div>
                                     <h4 class="text-xl font-bold text-slate-900 dark:text-white mb-2">Vedd fel a
                                         játékosokat</h4>
-                                    <p class="">Add hozzá a játékosokat és állítsd be az erősségüket
-                                        (1-10
-                                        skálán) a pontosabb sorsoláshoz.</p>
+                                    <p class="">A visszajelzések alapján láthatod kik lesznek jelen a mérkőzésen.</p>
                                 </div>
                             </div>
                             <!-- Step 3 -->
@@ -227,8 +231,7 @@
                                 <div>
                                     <h4 class="text-xl font-bold text-slate-900 dark:text-white mb-2">Indítsd a
                                         generálást</h4>
-                                    <p class="">Válaszd ki, ki van jelen, és hagyd, hogy az app egy
-                                        gombnyomásra elossza a csapatokat.</p>
+                                    <p class="">Az alkalmazás az elért teljesítmények alapján létrehozza csapatokat.</p>
                                 </div>
                             </div>
                             <!-- Step 4 -->
@@ -239,7 +242,7 @@
                                 <div>
                                     <h4 class="text-xl font-bold text-slate-900 dark:text-white mb-2">Rögzítsd az
                                         eredményt</h4>
-                                    <p class="">Az algoritmus újraértékeli a teljesítményeket.</p>
+                                    <p class="">Az algoritmus értékeli a teljesítményeket.</p>
                                 </div>
                             </div>
                         </div>

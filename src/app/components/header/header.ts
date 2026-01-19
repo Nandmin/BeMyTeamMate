@@ -39,9 +39,9 @@ export class HeaderComponent {
       switchMap((user) => {
         if (!user?.uid) return of([] as AppNotification[]);
         return this.notificationService.watchNotifications(user.uid);
-      })
+      }),
     ),
-    { initialValue: [] as AppNotification[] }
+    { initialValue: [] as AppNotification[] },
   );
 
   public unreadCount = computed(() => this.notifications().filter((n) => !n.read).length);
@@ -51,7 +51,7 @@ export class HeaderComponent {
     const all = this.notifications();
     if (!eventId) return all;
     return all.filter(
-      (n) => this.isRsvpNotification(n) && this.getNotificationFilterKey(n) === eventId
+      (n) => this.isRsvpNotification(n) && this.getNotificationFilterKey(n) === eventId,
     );
   });
 
@@ -161,7 +161,7 @@ export class HeaderComponent {
 
   @HostListener('window:resize', ['$event'])
   onResize(event: any) {
-    if (window.innerWidth >= 768 && this.isMobileMenuOpen()) {
+    if (window.innerWidth >= 436 && this.isMobileMenuOpen()) {
       this.closeMobileMenu();
     }
   }

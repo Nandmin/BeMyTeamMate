@@ -79,6 +79,100 @@ main {
   }
 }
 
+// Event card layout tweaks for small screens
+.group-event-card {
+  .event-card__body {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .event-card__summary {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    width: 100%;
+  }
+
+  .event-card__attendees {
+    width: 100%;
+    align-items: flex-start;
+  }
+
+  .event-attendance-bar {
+    width: 100%;
+  }
+
+  .event-card__action {
+    align-self: center;
+    white-space: nowrap;
+  }
+}
+
+@media (max-width: 639px) {
+  .group-event-card {
+    .event-card__body {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      grid-template-areas:
+        "summary summary"
+        "attendees action";
+      column-gap: 0.75rem;
+      row-gap: 0.75rem;
+    }
+
+    .event-card__summary {
+      grid-area: summary;
+    }
+
+    .event-card__attendees {
+      grid-area: attendees;
+      align-items: flex-start;
+      min-width: 0;
+    }
+
+    .event-card__action {
+      grid-area: action;
+      align-self: center;
+      justify-self: end;
+    }
+
+    .event-attendance-bar {
+      width: 100%;
+      max-width: none;
+    }
+  }
+}
+
+@media (min-width: 640px) {
+  .group-event-card {
+    .event-card__body {
+      flex-direction: row;
+      align-items: center;
+      gap: 1.25rem;
+    }
+
+    .event-card__summary {
+      align-items: center;
+      gap: 1.25rem;
+      flex: 1 1 auto;
+    }
+
+    .event-card__attendees {
+      width: auto;
+      align-items: flex-end;
+    }
+
+    .event-attendance-bar {
+      width: 6rem;
+    }
+
+    .event-card__action {
+      align-self: center;
+    }
+  }
+}
+
 // Light mode overrides
 // Light mode overrides
 :host-context(html.light) {

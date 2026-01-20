@@ -33,7 +33,7 @@
 
                 <!-- Group Details -->
                 <div class="flex-1 space-y-4">
-                    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div class="flex flex-col xl:flex-row xl:items-center justify-between gap-4">
                         <div>
                             <h1 class="text-3xl md:text-4xl font-extrabold text-white tracking-tight mb-2">
                                 {{ group()?.name }}
@@ -51,10 +51,10 @@
                             </div>
                         </div>
                         <!-- Action Buttons -->
-                        <div class="flex gap-3">
+                        <div class="flex flex-nowrap gap-2 sm:gap-3">
                             @if (!isMember()) {
                             <button (click)="onJoinGroup()" [disabled]="isSubmitting()"
-                                class="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary text-white font-bold text-sm hover:bg-primary-hover transition-all shadow-[0_0_15px_rgba(43,238,124,0.3)] hover:scale-105 active:scale-95 disabled:opacity-50">
+                                class="flex items-center gap-2 px-4 sm:px-5 py-2 sm:py-2.5 rounded-xl bg-primary text-white font-bold text-xs sm:text-sm hover:bg-primary-hover transition-all shadow-[0_0_15px_rgba(43,238,124,0.3)] hover:scale-105 active:scale-95 disabled:opacity-50 min-w-0 text-center whitespace-normal leading-tight">
                                 <span class="material-symbols-outlined text-lg">{{ isSubmitting() ? 'sync' :
                                     'person_add' }}</span>
                                 <span>{{ isSubmitting() ? 'Csatlakozás...' : 'Csatlakozás' }}</span>
@@ -62,19 +62,19 @@
                             }
                             @if (isAdmin()) {
                             <a [routerLink]="['/groups', group()?.id, 'settings']"
-                                class="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white font-bold text-sm hover:bg-white/10 transition-all hover:scale-105 active:scale-95">
+                                class="flex items-center gap-2 px-4 sm:px-5 py-2 sm:py-2.5 rounded-xl bg-white/5 border border-white/10 text-white font-bold text-xs sm:text-sm hover:bg-white/10 transition-all hover:scale-105 active:scale-95 min-w-0 text-center whitespace-normal leading-tight">
                                 <span class="material-symbols-outlined text-lg">settings</span>
                                 <span>Beállítások</span>
                             </a>
                             }
                             @if (isMember()) {
                             <button
-                                class="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary text-white font-bold text-sm hover:bg-primary-hover transition-all shadow-[0_0_15px_rgba(43,238,124,0.3)] hover:scale-105 active:scale-95 keep-white">
+                                class="flex items-center gap-2 px-4 sm:px-5 py-2 sm:py-2.5 rounded-xl bg-primary text-white font-bold text-xs sm:text-sm hover:bg-primary-hover transition-all shadow-[0_0_15px_rgba(43,238,124,0.3)] hover:scale-105 active:scale-95 keep-white min-w-0 text-center whitespace-normal leading-tight">
                                 <span class="material-symbols-outlined text-lg">person_add</span>
                                 <span>Tag meghívása</span>
                             </button>
                             <button [routerLink]="['/groups', group()?.id, 'create-event']"
-                                class="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary text-white font-bold text-sm hover:bg-primary-hover transition-all shadow-[0_0_15px_rgba(43,238,124,0.3)] hover:scale-105 active:scale-95 keep-white">
+                                class="flex items-center gap-2 px-4 sm:px-5 py-2 sm:py-2.5 rounded-xl bg-primary text-white font-bold text-xs sm:text-sm hover:bg-primary-hover transition-all shadow-[0_0_15px_rgba(43,238,124,0.3)] hover:scale-105 active:scale-95 keep-white min-w-0 text-center whitespace-normal leading-tight">
                                 <span class="material-symbols-outlined text-lg">event</span>
                                 <span>Esemény létrehozása</span>
                             </button>
@@ -174,7 +174,7 @@
                     <!-- Event Cards -->
                     @for (event of paginatedEvents(); track event.id) {
                     <div (click)="openAttendeesModal(event)"
-                        class="group relative overflow-hidden rounded-2xl bg-white/5 border border-white/10 p-5 hover:border-primary/50 transition-all duration-300 hover:shadow-lg hover:-translate-y-1 cursor-pointer">
+                        class="group group-event-card relative overflow-hidden rounded-2xl bg-white/5 border border-white/10 p-5 hover:border-primary/50 transition-all duration-300 hover:shadow-lg hover:-translate-y-1 cursor-pointer">
                         <div class="absolute top-0 right-0 p-0 flex gap-2">
                             @if (event.creatorId === authService.currentUser()?.uid && !isEventPast(event)) {
                             @if(!event.recurrenceId) {
@@ -192,30 +192,33 @@
                             </a>
                             }
                         </div>
-                        <div class="flex flex-col sm:flex-row gap-5 items-start sm:items-center">
-                            <!-- Date Box -->
-                            <div
-                                class="flex-shrink-0 flex flex-col items-center justify-center w-16 h-16 rounded-xl bg-white/5 border border-primary/20 text-center">
-                                <span class="text-xs font-bold text-primary uppercase">{{
-                                    formatEventDate(event.date).month }}</span>
-                                <span class="text-2xl font-bold text-white">{{ formatEventDate(event.date).day }}</span>
-                            </div>
-                            <!-- Content -->
-                            <div class="flex-1 min-w-0">
-                                <h4 class="text-lg font-bold text-white mb-1 truncate">{{ event.title }}</h4>
-                                <div class="flex flex-wrap items-center gap-4 text-sm text-gray-400">
-                                    <div class="flex items-center gap-1">
-                                        <span class="material-symbols-outlined text-base">schedule</span>
-                                        {{ event.time }} ({{ event.duration }} perc)
-                                    </div>
-                                    <div class="flex items-center gap-1">
-                                        <span class="material-symbols-outlined text-base">location_on</span>
-                                        {{ event.location }}
+                        <div class="event-card__body">
+                            <div class="event-card__summary">
+                                <!-- Date Box -->
+                                <div
+                                    class="flex-shrink-0 flex flex-col items-center justify-center w-16 h-16 rounded-xl bg-white/5 border border-primary/20 text-center">
+                                    <span class="text-xs font-bold text-primary uppercase">{{
+                                        formatEventDate(event.date).month }}</span>
+                                    <span class="text-2xl font-bold text-white">{{ formatEventDate(event.date).day }}</span>
+                                </div>
+                                <!-- Content -->
+                                <div class="flex-1 min-w-0">
+                                    <h4 class="text-lg font-bold text-white mb-1 truncate">{{ event.title }}</h4>
+                                    <div
+                                        class="flex flex-col gap-1 text-sm text-gray-400 sm:flex-row sm:items-center sm:gap-4">
+                                        <div class="flex items-center gap-1">
+                                            <span class="material-symbols-outlined text-base">schedule</span>
+                                            {{ event.time }} ({{ event.duration }} perc)
+                                        </div>
+                                        <div class="flex items-center gap-1">
+                                            <span class="material-symbols-outlined text-base">location_on</span>
+                                            {{ event.location }}
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                             <!-- Attendees -->
-                            <div class="flex flex-col items-end gap-2">
+                            <div class="event-card__attendees flex flex-col gap-2">
                                 <div class="flex -space-x-2">
                                     @for (member of getAttendingMembersForEvent(event).slice(0, 4); track member.userId)
                                     {
@@ -240,22 +243,23 @@
                                     </div>
                                     }
                                 </div>
-                                <div class="w-24 bg-white/5 rounded-full h-1.5 overflow-hidden">
+                                <div class="event-attendance-bar bg-white/5 rounded-full h-1.5 overflow-hidden">
                                     <div class="bg-primary h-full rounded-full"
                                         [style.width.%]="(event.currentAttendees / event.maxAttendees) * 100"></div>
                                 </div>
                                 <span class="text-xs text-primary font-medium">{{ event.currentAttendees }}/{{
                                     event.maxAttendees
-                                    }} fő</span>
+                                    }} f&#337;</span>
                             </div>
                             <!-- Action -->
                             @if (selectedView() === 'upcoming') {
                             <button (click)="$event.stopPropagation(); onToggleRSVP(event)"
-                                [class.bg-red-600]="isUserAttending(event)" [class.text-white]="isUserAttending(event)"
+                                [class.bg-red-600]="isUserAttending(event)"
+                                [class.text-white]="isUserAttending(event)"
                                 [class.border-red-600]="isUserAttending(event)"
                                 [class.hover:bg-red-700]="isUserAttending(event)"
-                                class="sm:self-center px-4 py-2 rounded-lg bg-primary/10 text-primary font-bold text-sm hover:bg-primary hover:text-white transition-colors border border-primary/20 rsvp-button">
-                                {{ isUserAttending(event) ? 'Lemondás' : 'Jelentkezés' }}
+                                class="event-card__action sm:self-center px-4 py-2 rounded-lg bg-primary/10 text-primary font-bold text-sm hover:bg-primary hover:text-white transition-colors border border-primary/20 rsvp-button">
+                                {{ isUserAttending(event) ? 'Lemond&aacute;s' : 'Jelentkez&eacute;s' }}
                             </button>
                             }
                         </div>

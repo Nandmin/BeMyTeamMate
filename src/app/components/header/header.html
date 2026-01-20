@@ -30,6 +30,10 @@
                 class="relative flex h-8 items-center px-4 text-base font-semibold text-gray-400 hover:text-white transition-all">
                 Eredmények
             </a>
+            <a routerLink="/contact" routerLinkActive="active-link"
+                class="relative flex h-8 items-center px-4 text-base font-semibold text-gray-400 hover:text-white transition-all">
+                Kapcsolat
+            </a>
         </nav>
 
         <!-- Right: Auth Section -->
@@ -188,6 +192,11 @@
                 class="flex items-center gap-3 px-4 py-3 rounded-xl text-base font-semibold text-gray-400 hover:text-white hover:bg-white/5 transition-all">
                 <span class="material-symbols-outlined">leaderboard</span>
                 Eredmények
+            </a>
+            <a routerLink="/contact" routerLinkActive="active-link-mobile" (click)="closeMobileMenu()"
+                class="flex items-center gap-3 px-4 py-3 rounded-xl text-base font-semibold text-gray-400 hover:text-white hover:bg-white/5 transition-all">
+                <span class="material-symbols-outlined">contact_support</span>
+                Kapcsolat
             </a>
             @if (authService.fullCurrentUser()?.role === 'siteadmin') {
             <a routerLink="/admin" routerLinkActive="active-link-mobile" (click)="closeMobileMenu()"

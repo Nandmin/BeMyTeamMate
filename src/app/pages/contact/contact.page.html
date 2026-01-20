@@ -1,0 +1,131 @@
+<div class="font-lexend min-h-[calc(100vh-4rem)] text-white relative overflow-hidden">
+  <div class="fixed inset-0 z-0">
+    <img
+      alt="Soft focus stadium lights"
+      class="h-full w-full object-cover opacity-20"
+      src="https://lh3.googleusercontent.com/aida-public/AB6AXuB19b4mhq5e-7q4qaD9kuXU2BOpYQfZ0BK7knbf7ylfhyxYH0kyNXktA2e7rQd6b3hJz6WueQQzghAuwpQCoPKPbaZ2rJ8b9iKTkDBa_RH_A7d7s7z1PLZ8kJrLyviUcUOtdTURnP9I4nobEGayx5mqlOT1PhsT1wXj_Vf0bnwD4m4r1YuVgk5vEIS6t2kPjJ0rfr0iQv7G6Sxgduf3m0MOG6ehEtIMgrKZbGvlc0FZw8T9_Ba9rM0qg0C9N9Psw"
+    />
+    <div class="absolute inset-0 bg-gradient-to-b from-background-dark/95 via-background-dark/85 to-background-dark/95"></div>
+    <div class="absolute -top-20 -left-24 h-[420px] w-[420px] rounded-full bg-primary/10 blur-[120px]"></div>
+    <div class="absolute -bottom-16 -right-20 h-[360px] w-[360px] rounded-full bg-emerald-400/10 blur-[120px]"></div>
+  </div>
+
+  <section class="relative z-10 mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8 py-12">
+    <div class="grid gap-8 lg:grid-cols-[1.05fr,0.95fr] items-start min-w-0">
+      <div class="space-y-6 min-w-0">
+        <div class="inline-flex items-center gap-3 rounded-full border border-white/10 bg-white/5 px-4 py-1.5 text-xs uppercase tracking-[0.2em] text-white/70">
+          Kapcsolat
+        </div>
+        <h1 class="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight text-white">
+          Üzenj a csapatnak, mi itt vagyunk.
+        </h1>
+        <p class="text-base sm:text-lg text-white/70 max-w-xl">
+          Írj röviden, miben segíthetünk. Legyen szó kérdésről, javaslatról vagy visszajelzésről, örömmel hallunk felőled!
+        </p>
+
+        <div class="grid gap-4 sm:grid-cols-1 min-w-0">
+          <div class="w-full min-w-0 rounded-2xl border border-white/10 bg-white/5 p-4">
+            <div class="flex items-center gap-3 text-sm font-semibold text-white">
+              <span class="material-symbols-outlined text-primary">support_agent</span>
+              Gyors visszajelzés
+            </div>
+            <p class="mt-2 text-sm text-white/70">
+              Átlátható üzenetkezelés, hamarosan jelentkezünk.
+            </p>
+          </div>
+          <!-- <div class="rounded-2xl border border-white/10 bg-white/5 p-4">
+            <div class="flex items-center gap-3 text-sm font-semibold text-white">
+              <span class="material-symbols-outlined text-primary">security</span>
+              Vedett uzenetkuldes
+            </div>
+            <p class="mt-2 text-sm text-white/70">
+              Turnstile captcha, honeypot es rate limit vedelmet hasznalunk.
+            </p>
+          </div> -->
+        </div>
+      </div>
+
+      <div class="w-full min-w-0 rounded-2xl border border-white/10 bg-card-dark/70 p-6 shadow-2xl backdrop-blur">
+        <h2 class="text-xl font-bold text-white">Üzenet küldése</h2>
+        <p class="mt-1 text-sm text-white/60">A *-gal jelölt mezők kitöltése kötelező.</p>
+
+        @if (errorMessage()) {
+          <div class="mt-4 rounded-xl border border-red-500/40 bg-red-500/10 px-4 py-3 text-sm text-red-200">
+            {{ errorMessage() }}
+          </div>
+        }
+
+        @if (successMessage()) {
+          <div class="mt-4 rounded-xl border border-primary bg-primary px-4 py-3 text-sm font-semibold text-white shadow-[0_0_18px_rgba(34,197,94,0.45)]">
+            {{ successMessage() }}
+          </div>
+        }
+
+        <form class="mt-6 space-y-5" [formGroup]="contactForm" (ngSubmit)="onSubmit()">
+          <div>
+            <label for="contact-email" class="block text-xs font-semibold uppercase tracking-wide text-white/60">
+              E-mail *
+            </label>
+            <div class="mt-2">
+              <input
+                id="contact-email"
+                type="email"
+                formControlName="email"
+                placeholder="pelda@email.hu"
+                class="h-11 w-full rounded-xl border border-white/10 bg-dark-accent/50 px-4 text-sm text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-primary"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label for="contact-message" class="block text-xs font-semibold uppercase tracking-wide text-white/60">
+              Üzenet *
+            </label>
+            <div class="mt-2">
+              <textarea
+                id="contact-message"
+                formControlName="message"
+                rows="6"
+                placeholder="Írd ide a kérdésed vagy javaslatod..."
+                class="w-full rounded-xl border border-white/10 bg-dark-accent/50 px-4 py-3 text-sm text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-primary"
+              ></textarea>
+            </div>
+            <div class="mt-2 flex items-center justify-between text-xs text-white/50">
+              <span>Minimum 10 karakter.</span>
+              <span>{{ messageCount }}/2000</span>
+            </div>
+          </div>
+
+          <div class="absolute left-[-9999px] top-auto h-px w-px overflow-hidden" aria-hidden="true">
+            <label for="contact-website">Website</label>
+            <input id="contact-website" type="text" formControlName="honeypot" autocomplete="off" tabindex="-1" />
+          </div>
+
+          <div class="max-w-full rounded-xl border border-white/10 bg-white/5 p-4 overflow-x-auto">
+            <div #turnstileContainer class="turnstile-container"></div>
+            @if (turnstileError()) {
+              <p class="mt-2 text-xs text-red-300">{{ turnstileError() }}</p>
+            }
+          </div>
+
+          <button
+            type="submit"
+            [disabled]="isLoading()"
+            class="group relative flex w-full items-center justify-center overflow-hidden rounded-xl bg-primary px-5 py-3 text-base font-bold text-white transition-all hover:shadow-[0_0_20px_rgba(34,197,94,0.4)] disabled:cursor-not-allowed disabled:opacity-70"
+          >
+            <span class="relative z-10 flex items-center gap-2">
+              @if (isLoading()) {
+                <span class="material-symbols-outlined animate-spin">progress_activity</span>
+                Küldés folyamatban...
+              } @else {
+                Küldés
+                <span class="material-symbols-outlined text-[18px] transition-transform group-hover:translate-x-1">send</span>
+              }
+            </span>
+            <span class="absolute inset-0 -translate-y-full bg-white/20 transition-transform duration-500 group-hover:translate-y-0"></span>
+          </button>
+        </form>
+      </div>
+    </div>
+  </section>
+</div>

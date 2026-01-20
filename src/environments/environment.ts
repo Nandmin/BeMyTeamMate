@@ -15,4 +15,6 @@ export const environment = {
     appCheckDebugToken: '8daf3178-779f-44a8-a930-c5ff6b83e63c', // Debug token for localhost development
   },
   cloudflareWorkerUrl: 'https://bemyteammate-push.andras78-nemeth.workers.dev/send-notification',
+  contactWorkerUrl: 'https://bemyteammate-push.andras78-nemeth.workers.dev/contact-message',
+  turnstileSiteKey: '0x4AAAAAACNoKvz8XnmPqgaq',
 };

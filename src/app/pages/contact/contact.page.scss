@@ -1,0 +1,40 @@
+:host {
+  display: block;
+  min-height: 100%;
+}
+
+:host-context(html.light) {
+  .bg-card-dark\/70 {
+    background-color: rgba(255, 255, 255, 0.9);
+    border-color: rgba(0, 0, 0, 0.1);
+  }
+
+  .bg-dark-accent\/50 {
+    background-color: rgba(255, 255, 255, 0.9);
+    border-color: rgba(0, 0, 0, 0.1);
+  }
+
+  .text-white {
+    color: #1e293b !important;
+  }
+
+  .text-white\/70,
+  .text-white\/60,
+  .text-white\/50,
+  .text-white\/40 {
+    color: #64748b !important;
+  }
+
+  .from-background-dark\/95,
+  .via-background-dark\/85,
+  .to-background-dark\/95 {
+    --tw-gradient-from: rgba(248, 250, 252, 0.85) !important;
+    --tw-gradient-to: rgba(248, 250, 252, 0.95) !important;
+    --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to) !important;
+  }
+}
+
+.turnstile-container {
+  min-height: 72px;
+  max-width: 100%;
+}

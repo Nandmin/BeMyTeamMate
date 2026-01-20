@@ -14,4 +14,6 @@ export const environment = {
     appCheckDebugToken: false,
   },
   cloudflareWorkerUrl: 'https://your-worker.workers.dev/send-notification',
+  contactWorkerUrl: 'https://your-worker.workers.dev/contact-message',
+  turnstileSiteKey: 'YOUR_TURNSTILE_SITE_KEY',
 };

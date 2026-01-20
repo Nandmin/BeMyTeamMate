@@ -15,4 +15,6 @@ export const environment = {
     appCheckDebugToken: undefined,
   },
   cloudflareWorkerUrl: 'https://bemyteammate-push.andras78-nemeth.workers.dev/send-notification',
+  contactWorkerUrl: 'https://bemyteammate-push.andras78-nemeth.workers.dev/contact-message',
+  turnstileSiteKey: '0x4AAAAAACNoKvz8XnmPqgaq',
 };

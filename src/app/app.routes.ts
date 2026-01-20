@@ -8,6 +8,11 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/landing-page/landing-page').then((m) => m.LandingPage),
   },
   {
+    path: 'contact',
+    canActivate: [authGuard],
+    loadComponent: () => import('./pages/contact/contact.page').then((m) => m.ContactPage),
+  },
+  {
     path: 'login',
     loadComponent: () => import('./pages/login/login').then((m) => m.LoginPage),
   },

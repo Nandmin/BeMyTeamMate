@@ -12,20 +12,16 @@ export default {
       });
     }
 
-    // Only allow specific endpoint
-    if (url.pathname !== '/send-notification') {
-      return jsonResponse({ error: 'Endpoint not found. Use /send-notification' }, 404);
-    }
-
     if (!ALLOWED_METHODS.includes(request.method)) {
       return jsonResponse({ error: 'Method not allowed' }, 405);
     }
 
-    // 1. Authentication Check
-    const authResult = await verifyAuth(request, env);
-    if (!authResult.authorized) {
-      return jsonResponse({ error: 'Unauthorized', detail: authResult.error }, 401);
-    }
+    if (url.pathname === '/send-notification') {
+      // 1. Authentication Check
+      const authResult = await verifyAuth(request, env);
+      if (!authResult.authorized) {
+        return jsonResponse({ error: 'Unauthorized', detail: authResult.error }, 401);
+      }
 
     // 2. Rate Limiting (Basic)
     // Authenticated users are less likely to spam.
@@ -58,7 +54,11 @@ export default {
     // 3. Get FCM Refresh Token / Access Token
     let accessToken;
     try {
-      accessToken = await getAccessToken(clientEmail, privateKey);
+      accessToken = await getAccessToken(
+        clientEmail,
+        privateKey,
+        'https://www.googleapis.com/auth/firebase.messaging'
+      );
     } catch (error) {
       console.error('Token generation failed:', error);
       return jsonResponse(
@@ -67,24 +67,31 @@ export default {
       );
     }
 
-    // 4. Send Notifications
-    const result = await sendToFcm(
-      tokens,
-      { title: notification.title, body: notification.body },
-      data,
-      accessToken,
-      projectId
-    );
+      // 4. Send Notifications
+      const result = await sendToFcm(
+        tokens,
+        { title: notification.title, body: notification.body },
+        data,
+        accessToken,
+        projectId
+      );
 
-    // Log the result (Cloudflare logs)
-    return jsonResponse(
-      {
-        success: result.success,
-        failure: result.failure,
-        errors: result.errors,
-      },
-      result.failure > 0 ? 207 : 200
-    );
+      // Log the result (Cloudflare logs)
+      return jsonResponse(
+        {
+          success: result.success,
+          failure: result.failure,
+          errors: result.errors,
+        },
+        result.failure > 0 ? 207 : 200
+      );
+    }
+
+    if (url.pathname === '/contact-message') {
+      return handleContactMessage(request, env);
+    }
+
+    return jsonResponse({ error: 'Endpoint not found' }, 404);
   },
 };
 
@@ -110,6 +117,240 @@ function normalizePrivateKey(value) {
   if (!value) return value;
   // Handle escaped newlines from env vars (common issue)
   return value.replace(/\\n/g, '\n').replace(/"/g, '');
+}
+
+async function handleContactMessage(request, env) {
+  let body;
+  try {
+    body = await request.json();
+  } catch {
+    return jsonResponse({ error: 'Invalid JSON body' }, 400);
+  }
+
+  const honeypot = typeof body.honeypot === 'string' ? body.honeypot.trim() : '';
+  if (honeypot) {
+    return jsonResponse({ ok: true }, 200);
+  }
+
+  const message = typeof body.message === 'string' ? body.message.trim() : '';
+  if (!message || message.length < 10 || message.length > 2000) {
+    return jsonResponse({ error: 'Invalid message length' }, 400);
+  }
+
+  const contactEmail = typeof body.contactEmail === 'string' ? body.contactEmail.trim() : '';
+  if (contactEmail && !isValidEmail(contactEmail)) {
+    return jsonResponse({ error: 'Invalid email' }, 400);
+  }
+
+  const token = typeof body.turnstileToken === 'string' ? body.turnstileToken.trim() : '';
+  if (!token) {
+    return jsonResponse({ error: 'Missing captcha token' }, 400);
+  }
+
+  if (!env.TURNSTILE_SECRET_KEY) {
+    return jsonResponse({ error: 'Turnstile secret missing' }, 500);
+  }
+
+  const turnstileOk = await verifyTurnstileToken(token, request, env.TURNSTILE_SECRET_KEY);
+  if (!turnstileOk) {
+    return jsonResponse({ error: 'Captcha verification failed' }, 403);
+  }
+
+  const rateLimited = await applyContactRateLimit(request, env);
+  if (rateLimited) {
+    return jsonResponse({ error: 'Rate limited' }, 429);
+  }
+
+  const projectId = env.FCM_PROJECT_ID;
+  const clientEmail = env.FCM_CLIENT_EMAIL;
+  const privateKey = normalizePrivateKey(env.FCM_PRIVATE_KEY);
+
+  if (!projectId || !clientEmail || !privateKey) {
+    console.error('Missing Firestore configuration in secrets');
+    return jsonResponse({ error: 'Server configuration error' }, 500);
+  }
+
+  let accessToken;
+  try {
+    accessToken = await getAccessToken(
+      clientEmail,
+      privateKey,
+      'https://www.googleapis.com/auth/datastore'
+    );
+  } catch (error) {
+    console.error('Firestore token generation failed:', error);
+    return jsonResponse({ error: 'Failed to obtain Firestore access token' }, 500);
+  }
+
+  const user = body.user && typeof body.user === 'object' ? body.user : null;
+  const userId = typeof user?.uid === 'string' ? user.uid : '';
+  const userEmail = typeof user?.email === 'string' ? user.email : '';
+  const userName = typeof user?.displayName === 'string' ? user.displayName : '';
+
+  const nowIso = new Date().toISOString();
+  const fields = {
+    message: { stringValue: message },
+    createdAt: { timestampValue: nowIso },
+    source: { stringValue: 'contact-page' },
+  };
+
+  if (contactEmail) fields.contactEmail = { stringValue: contactEmail };
+  if (userId) fields.userId = { stringValue: userId };
+  if (userEmail) fields.userEmail = { stringValue: userEmail };
+  if (userName) fields.userName = { stringValue: userName };
+
+  const userAgent = request.headers.get('User-Agent');
+  if (userAgent) fields.userAgent = { stringValue: userAgent };
+
+  try {
+    await createFirestoreDocument(projectId, accessToken, 'contactMessages', fields);
+  } catch (error) {
+    console.error('Failed to write contact message:', error);
+    return jsonResponse({ error: 'Failed to store message' }, 500);
+  }
+
+  try {
+    // Contact push disabled for now. Uncomment to re-enable.
+    /*
+    const adminTokens = await fetchSiteAdminTokens(projectId, accessToken);
+    console.log('Contact admin tokens found:', adminTokens.length);
+    if (adminTokens.length > 0) {
+      const messagingToken = await getAccessToken(
+        clientEmail,
+        privateKey,
+        'https://www.googleapis.com/auth/firebase.messaging'
+      );
+      const title = 'Uj kapcsolat uzenet';
+      const body = contactEmail ? `${contactEmail}: ${message}` : message;
+      const pushResult = await sendToFcm(
+        adminTokens,
+        { title, body },
+        { type: 'contact_message' },
+        messagingToken,
+        projectId
+      );
+      console.log('Contact push result:', pushResult);
+    } else {
+      console.log('No siteadmin tokens found for contact push');
+    }
+    */
+  } catch (error) {
+    console.error('Failed to notify site admins:', error);
+  }
+
+  return jsonResponse({ ok: true }, 200);
+}
+
+async function verifyTurnstileToken(token, request, secret) {
+  const ip = getClientIp(request);
+  const form = new URLSearchParams();
+  form.set('secret', secret);
+  form.set('response', token);
+  if (ip) {
+    form.set('remoteip', ip);
+  }
+
+  try {
+    const response = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: form.toString(),
+    });
+
+    if (!response.ok) {
+      console.error('Turnstile verify failed:', response.status);
+      return false;
+    }
+
+    const data = await response.json();
+    return Boolean(data.success);
+  } catch (error) {
+    console.error('Turnstile verify error:', error);
+    return false;
+  }
+}
+
+async function applyContactRateLimit(request, env) {
+  const kv = env.CONTACT_RATE_LIMIT;
+  if (!kv) return false;
+  const ip = getClientIp(request);
+  if (!ip) return false;
+  const key = `contact:${ip}`;
+  const existing = await kv.get(key);
+  if (existing) return true;
+  await kv.put(key, '1', { expirationTtl: 60 });
+  return false;
+}
+
+function getClientIp(request) {
+  const header = request.headers.get('CF-Connecting-IP');
+  if (header) return header;
+  const forwarded = request.headers.get('X-Forwarded-For');
+  if (!forwarded) return '';
+  return forwarded.split(',')[0].trim();
+}
+
+function isValidEmail(value) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+}
+
+async function createFirestoreDocument(projectId, accessToken, collection, fields) {
+  const url = `https://firestore.googleapis.com/v1/projects/${projectId}/databases/(default)/documents/${collection}`;
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ fields }),
+  });
+
+  if (!response.ok) {
+    const detail = await response.text();
+    throw new Error(`Firestore write failed: ${response.status} ${detail}`);
+  }
+}
+
+async function fetchSiteAdminTokens(projectId, accessToken) {
+  const url = `https://firestore.googleapis.com/v1/projects/${projectId}/databases/(default)/documents:runQuery`;
+  const body = {
+    structuredQuery: {
+      from: [{ collectionId: 'users' }],
+      where: {
+        fieldFilter: {
+          field: { fieldPath: 'role' },
+          op: 'EQUAL',
+          value: { stringValue: 'siteadmin' },
+        },
+      },
+    },
+  };
+
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(body),
+  });
+
+  if (!response.ok) {
+    const detail = await response.text();
+    throw new Error(`Firestore query failed: ${response.status} ${detail}`);
+  }
+
+  const data = await response.json();
+  const tokens = [];
+  for (const row of data || []) {
+    const doc = row?.document;
+    if (!doc?.fields?.fcmTokens?.arrayValue?.values) continue;
+    for (const value of doc.fields.fcmTokens.arrayValue.values) {
+      if (value?.stringValue) tokens.push(value.stringValue);
+    }
+  }
+
+  return Array.from(new Set(tokens));
 }
 
 /**
@@ -244,11 +485,11 @@ function chunkArray(array, size) {
   return chunks;
 }
 
-async function getAccessToken(clientEmail, privateKey) {
+async function getAccessToken(clientEmail, privateKey, scope) {
   const now = Math.floor(Date.now() / 1000);
   const payload = {
     iss: clientEmail,
-    scope: 'https://www.googleapis.com/auth/firebase.messaging',
+    scope,
     aud: 'https://oauth2.googleapis.com/token',
     iat: now,
     exp: now + 3600,

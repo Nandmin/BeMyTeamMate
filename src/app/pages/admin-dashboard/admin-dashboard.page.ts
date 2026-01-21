@@ -8,4 +8,10 @@ import { CommonModule } from '@angular/common';
   templateUrl: './admin-dashboard.page.html',
   styleUrl: './admin-dashboard.page.scss',
 })
-export class AdminDashboardPage {}
+export class AdminDashboardPage {
+  isSidebarCollapsed = false;
+
+  toggleSidebar(): void {
+    this.isSidebarCollapsed = !this.isSidebarCollapsed;
+  }
+}

@@ -65,14 +65,14 @@ export class ContactPage implements AfterViewInit {
 
     const honeypot = this.contactForm.get('honeypot')?.value || '';
     if (typeof honeypot === 'string' && honeypot.trim().length > 0) {
-      this.successMessage.set('Köszonjük, az üzenetet rögzítettük.');
+      this.successMessage.set('Köszönjük, az üzenetet rögzítettük.');
       this.contactForm.reset();
       return;
     }
 
     const token = this.turnstileToken();
     if (!token) {
-      this.errorMessage.set('Kérlek igazold, hogy nem vagy robot.');
+      this.errorMessage.set('Kérlek igazold, hogy nem vagy robot!');
       return;
     }
 

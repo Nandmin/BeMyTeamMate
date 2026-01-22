@@ -90,6 +90,7 @@ export class CreateEventPage implements OnInit {
         duration: event.duration,
         location: event.location,
         maxAttendees: event.maxAttendees,
+        mvpVotingEnabled: event.mvpVotingEnabled ?? false,
         isRecurring: false, // We don't support converting existing to recurring here yet
         frequency: 'weekly',
         recurringUntil: '',
@@ -109,6 +110,7 @@ export class CreateEventPage implements OnInit {
     duration: 60,
     location: 'Budapest, Margit-sziget',
     maxAttendees: 10,
+    mvpVotingEnabled: false,
     isRecurring: false,
     frequency: 'weekly' as 'daily' | 'weekly' | 'monthly',
     recurringUntil: '',
@@ -133,6 +135,7 @@ export class CreateEventPage implements OnInit {
         duration: this.eventData.duration,
         location: this.eventData.location,
         maxAttendees: this.eventData.maxAttendees,
+        mvpVotingEnabled: this.eventData.mvpVotingEnabled,
       };
 
       if (this.isEditMode) {

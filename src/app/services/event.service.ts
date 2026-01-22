@@ -49,6 +49,7 @@ export interface SportEvent {
   location: string;
   locationDetails?: string;
   maxAttendees: number;
+  mvpVotingEnabled?: boolean;
   currentAttendees: number;
   attendees: string[];
   creatorId: string;

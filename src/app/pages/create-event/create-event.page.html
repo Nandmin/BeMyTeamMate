@@ -223,7 +223,34 @@
             </div>
             }
 
-            <!-- Section 4: Attendees -->
+            <!-- Section 4: MVP Voting -->
+            <div class="bg-white dark:bg-white/5 rounded-2xl p-6 md:p-8 border border-light-border dark:border-white/10 animate-slide-up shadow-xl"
+                style="animation-delay: 0.28s">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="flex items-center gap-2">
+                        <span class="material-symbols-outlined text-primary">trophy</span>
+                        <h3 class="text-xl font-bold text-slate-900 dark:text-white">MVP szavazás</h3>
+                    </div>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" name="mvpVotingEnabled" [(ngModel)]="eventData.mvpVotingEnabled"
+                            class="sr-only peer">
+                        <div
+                            class="w-11 h-6 bg-slate-200 dark:bg-white/10 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary">
+                        </div>
+                    </label>
+                </div>
+                @if (eventData.mvpVotingEnabled) {
+                <p class="text-sm text-slate-600 dark:text-gray-400">
+                    A meccs után a résztvevők szavazhatnak a mérkőzés legjobbjára.
+                </p>
+                } @else {
+                <p class="text-sm text-slate-600 dark:text-gray-400">
+                    Az MVP szavazás ki van kapcsolva ennél az eseménynél.
+                </p>
+                }
+            </div>
+
+            <!-- Section 5: Attendees -->
             <div class="bg-white dark:bg-white/5 rounded-2xl p-6 md:p-8 border border-light-border dark:border-white/10 animate-slide-up shadow-xl"
                 style="animation-delay: 0.3s">
                 <div class="flex justify-between items-center mb-6">

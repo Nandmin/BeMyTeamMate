@@ -8,3 +8,59 @@ select option {
   color: #e2e8f0;
   background-color: #0f172a;
 }
+
+@media (max-width: 640px) {
+  :host {
+    display: block;
+  }
+
+  .admin-groups-header {
+    padding: 1rem;
+  }
+
+  .admin-groups-meta {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .admin-groups-actions {
+    width: 100%;
+    flex-direction: row;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .admin-groups-actions button {
+    width: auto;
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+  }
+
+  .admin-groups-table-wrap {
+    display: none;
+  }
+
+  .admin-groups-cards {
+    display: grid;
+  }
+
+  .admin-groups-card {
+    padding: 1rem;
+  }
+
+  .admin-groups-controls {
+    flex-direction: row;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+  }
+}
+
+@media (min-width: 641px) {
+  .admin-groups-cards {
+    display: none;
+  }
+}

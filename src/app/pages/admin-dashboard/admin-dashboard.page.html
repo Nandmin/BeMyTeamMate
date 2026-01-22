@@ -110,7 +110,9 @@
     </aside>
 
     <div class="admin-main pt-10 pr-4 sm:pr-6 lg:pr-8">
-      <div class="mx-auto flex max-w-7xl flex-col gap-6">
+      <div
+        class="admin-main-container mx-auto flex flex-col gap-6"
+        [class.max-w-7xl]="!isSidebarCollapsed">
         <ng-container *ngIf="activeSection === 'overview'">
       <div
         class="rounded-3xl border border-white/10 bg-white/5 p-6 shadow-[0_0_40px_rgba(0,0,0,0.25)] backdrop-blur-xl sm:p-8">

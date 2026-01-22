@@ -8,18 +8,40 @@
 .admin-layout {
   grid-template-columns: minmax(72px, 300px) minmax(0, 1fr);
   align-items: start;
+  position: relative;
 }
 
 @media (min-width: 1024px) {
   .admin-layout {
     grid-template-columns: minmax(72px, 300px) minmax(0, 1fr);
   }
-
-  .admin-layout.sidebar-collapsed {
-    grid-template-columns: 72px minmax(0, 1fr);
-  }
 }
 
+.admin-layout.sidebar-collapsed {
+  grid-template-columns: 72px minmax(0, 1fr);
+}
+
+@media (max-width: 768px) {
+  .admin-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .admin-layout.sidebar-collapsed {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .admin-layout.sidebar-collapsed .sidebar-panel {
+    position: absolute;
+    left: 0;
+    top: 0;
+    z-index: 20;
+  }
+
+  .admin-layout.sidebar-collapsed .admin-main {
+    width: 100%;
+    padding-left: 72px;
+  }
+}
 .sidebar-panel {
   width: 100%;
   max-width: 300px;
@@ -144,6 +166,17 @@
 
 .admin-main {
   min-width: 0;
+}
+
+.admin-layout.sidebar-collapsed .admin-main .max-w-7xl {
+  max-width: 100%;
+}
+
+.admin-layout.sidebar-collapsed .admin-main .admin-main-container {
+  max-width: 100% !important;
+  width: 100%;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
 }
 
 .sidebar-scroll {

@@ -1,0 +1,66 @@
+select {
+  color: #e2e8f0;
+  background-color: rgba(15, 23, 42, 0.9);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+select option {
+  color: #e2e8f0;
+  background-color: #0f172a;
+}
+
+@media (max-width: 640px) {
+  :host {
+    display: block;
+  }
+
+  .admin-messages-header {
+    padding: 1rem;
+  }
+
+  .admin-messages-meta {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .admin-messages-actions {
+    width: 100%;
+    flex-direction: row;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .admin-messages-actions button {
+    width: auto;
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+  }
+
+  .admin-messages-table-wrap {
+    display: none;
+  }
+
+  .admin-messages-cards {
+    display: grid;
+  }
+
+  .admin-messages-card {
+    padding: 1rem;
+  }
+
+  .admin-messages-controls {
+    flex-direction: row;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+  }
+}
+
+@media (min-width: 641px) {
+  .admin-messages-cards {
+    display: none;
+  }
+}

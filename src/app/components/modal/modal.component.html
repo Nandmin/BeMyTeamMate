@@ -9,6 +9,15 @@
 
         <!-- Decoration/Icon Header -->
         <div class="pt-8 pb-4 flex justify-center">
+            @if (isDeleteConfirm()) {
+            <div class="relative">
+                <div class="absolute inset-0 rounded-full blur-xl opacity-50 bg-red-500"></div>
+                <div
+                    class="relative w-20 h-20 rounded-full flex items-center justify-center bg-red-500/10 border-2 border-red-500 text-4xl text-red-500">
+                    <span class="material-symbols-outlined">close</span>
+                </div>
+            </div>
+            } @else {
             <div class="relative">
                 <div class="absolute inset-0 rounded-full blur-xl opacity-50" [ngClass]="getIconColorClass()"></div>
                 <div
@@ -16,6 +25,7 @@
                     <span class="material-symbols-outlined" [ngClass]="getTextColorClass()">{{ getIcon() }}</span>
                 </div>
             </div>
+            }
         </div>
 
         <!-- Text Content -->
@@ -31,6 +41,16 @@
             <button (click)="cancel()"
                 class="flex-1 py-3 px-4 rounded-xl font-bold text-gray-400 hover:text-white hover:bg-white/5 transition-all text-sm uppercase tracking-wide">
                 {{ config()?.cancelText || 'Mégse' }}
+            </button>
+            }
+            @if (config()?.extraActionText) {
+            <button (click)="extraAction()"
+                class="flex-1 py-3 px-4 rounded-xl font-bold text-amber-100 bg-amber-500/80 hover:bg-amber-400 transition-all text-sm uppercase tracking-wide flex items-center justify-center gap-2"
+                [ngClass]="config()?.extraActionClass">
+                @if (config()?.extraActionIcon) {
+                <span class="material-symbols-outlined text-[18px]">{{ config()?.extraActionIcon }}</span>
+                }
+                {{ config()?.extraActionText }}
             </button>
             }
             <button (click)="confirm()"

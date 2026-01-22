@@ -6,6 +6,10 @@ export interface ModalConfig {
   type?: 'info' | 'success' | 'warning' | 'error' | 'confirm';
   confirmText?: string;
   cancelText?: string;
+  extraActionText?: string;
+  extraActionIcon?: string;
+  extraActionClass?: string;
+  onExtraAction?: (() => void) | null;
 }
 
 @Injectable({
@@ -48,6 +52,10 @@ export class ModalService {
       confirmText,
       cancelText,
     });
+  }
+
+  openWithAction(config: ModalConfig): Promise<boolean> {
+    return this.open(config);
   }
 
   private open(config: ModalConfig): Promise<boolean> {

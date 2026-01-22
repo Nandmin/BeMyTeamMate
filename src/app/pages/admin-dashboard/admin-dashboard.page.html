@@ -76,15 +76,12 @@
               </span>
               <span class="sidebar-chevron material-symbols-outlined text-[18px] text-gray-400">chevron_right</span>
             </button>
-            <button
-              class="sidebar-item mt-2 flex w-full items-center justify-between rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-left text-sm font-semibold text-gray-200 transition hover:border-primary/40 hover:bg-white/10 hover:text-white"
-              type="button">
-              <span class="flex items-center gap-3">
-                <span class="material-symbols-outlined text-[20px] text-primary">chat_bubble</span>
-                <span class="sidebar-label">Üzenetek</span>
-              </span>
-              <span class="sidebar-chevron material-symbols-outlined text-[18px] text-gray-400">chevron_right</span>
-            </button>
+            <app-admin-sidebar-item
+              class="mt-2 block"
+              icon="chat_bubble"
+              label="Üzenetek"
+              [active]="activeSection === 'messages'"
+              (selected)="setSection('messages')"></app-admin-sidebar-item>
             <!-- <div class="sidebar-card mt-4 rounded-2xl border border-white/10 bg-white/5 p-4">
               <div class="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.2em] text-gray-400">
                 <span class="material-symbols-outlined text-[14px] text-primary/80">note_alt</span>
@@ -109,7 +106,7 @@
       </div>
     </aside>
 
-    <div class="admin-main pt-10 pr-4 sm:pr-6 lg:pr-8">
+    <div class="admin-main pt-5 pr-4 sm:pr-6 lg:pr-8">
       <div
         class="admin-main-container mx-auto flex flex-col gap-6"
         [class.max-w-7xl]="!isSidebarCollapsed">
@@ -208,6 +205,9 @@
         </ng-container>
         <ng-container *ngIf="activeSection === 'groups'">
           <app-admin-groups-section (backToOverview)="setSection('overview')"></app-admin-groups-section>
+        </ng-container>
+        <ng-container *ngIf="activeSection === 'messages'">
+          <app-admin-messages-section (backToOverview)="setSection('overview')"></app-admin-messages-section>
         </ng-container>
       </div>
     </div>

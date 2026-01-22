@@ -13,8 +13,21 @@ export class ModalComponent {
   modalService = inject(ModalService);
 
   config = computed(() => this.modalService.modalState().config);
+  isDeleteConfirm = computed(() => {
+    const cfg = this.config();
+    if (!cfg || cfg.type !== 'confirm') return false;
+    const fields = [
+      cfg.title || '',
+      cfg.message || '',
+      cfg.confirmText || '',
+    ]
+      .join(' ')
+      .toLowerCase();
+    return fields.includes('torl') || fields.includes('delete');
+  });
 
   getIcon() {
+    if (this.isDeleteConfirm()) return 'close';
     switch (this.config()?.type) {
       case 'success':
         return 'check_circle';
@@ -30,6 +43,7 @@ export class ModalComponent {
   }
 
   getIconColorClass() {
+    if (this.isDeleteConfirm()) return 'bg-red-500';
     switch (this.config()?.type) {
       case 'success':
         return 'bg-primary';
@@ -45,6 +59,7 @@ export class ModalComponent {
   }
 
   getTextColorClass() {
+    if (this.isDeleteConfirm()) return 'text-red-500';
     switch (this.config()?.type) {
       case 'success':
         return 'text-primary';
@@ -60,6 +75,7 @@ export class ModalComponent {
   }
 
   getButtonClass() {
+    if (this.isDeleteConfirm()) return 'bg-red-500 hover:bg-red-400 text-white';
     switch (this.config()?.type) {
       case 'success':
         return 'bg-primary hover:bg-primary-hover';
@@ -72,6 +88,12 @@ export class ModalComponent {
       default:
         return 'bg-white hover:bg-gray-200';
     }
+  }
+
+  extraAction() {
+    const handler = this.config()?.onExtraAction;
+    this.modalService.close(false);
+    handler?.();
   }
 
   confirm() {

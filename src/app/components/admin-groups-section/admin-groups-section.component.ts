@@ -31,6 +31,7 @@ export class AdminGroupsSectionComponent {
     name: string;
     creator: string;
     createdAt: string;
+    createdAtMs: number;
     memberCount: number;
     eventCount: number;
     lastEventAt: string;
@@ -72,10 +73,10 @@ export class AdminGroupsSectionComponent {
     }
 
     const confirmed = await this.modalService.confirm(
-      `Biztosan torlod a(z) \"${group.name}\" csoportot?`,
-      'Torles megerositese',
-      'Torles',
-      'Megse'
+      `Biztosan törlöd a(z) \"${group.name}\" csoportot?`,
+      'Törlés megerősítése',
+      'Törlés',
+      'Mégse'
     );
     if (!confirmed) {
       return;
@@ -147,6 +148,7 @@ export class AdminGroupsSectionComponent {
             name: group.name,
             creator: group.ownerName || 'Ismeretlen',
             createdAt: this.formatDate(group.createdAt),
+            createdAtMs: this.toDate(group.createdAt)?.getTime() ?? 0,
             memberCount: group.memberCount ?? 0,
             eventCount: events.length,
             lastEventAt: lastEventDate ? this.formatDateTime(lastEventDate) : '--',
@@ -154,7 +156,7 @@ export class AdminGroupsSectionComponent {
         })
     );
 
-    return rows;
+    return rows.sort((a, b) => b.createdAtMs - a.createdAtMs);
   }
 
   private async fetchGroupEvents(groupId: string, forceRefresh: boolean): Promise<SportEvent[]> {
@@ -215,3 +217,4 @@ export class AdminGroupsSectionComponent {
     return Number.isNaN(parsed.getTime()) ? null : parsed;
   }
 }
+

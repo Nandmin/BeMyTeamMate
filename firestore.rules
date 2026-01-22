@@ -86,6 +86,16 @@ service cloud.firestore {
       }
     }
 
+    // 1b. Contact messages (site admin only)
+    match /contactMessages/{messageId} {
+      allow read, update, delete: if isSiteAdmin();
+      allow create: if isSignedIn();
+    }
+
+    match /contactMessages_Archived/{messageId} {
+      allow read, write: if isSiteAdmin();
+    }
+
     // 2. Collection group match for members (for queries)
     match /{path=**}/members/{memberId} {
       allow read: if isSignedIn();

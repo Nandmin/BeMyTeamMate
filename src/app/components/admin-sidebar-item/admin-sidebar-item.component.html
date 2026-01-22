@@ -1,0 +1,11 @@
+<button
+  class="sidebar-item flex w-full items-center justify-between rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-left text-sm font-semibold text-gray-200 transition hover:border-primary/40 hover:bg-white/10 hover:text-white"
+  type="button"
+  [class.is-active]="active"
+  (click)="selected.emit()">
+  <span class="flex items-center gap-3">
+    <span class="material-symbols-outlined text-[20px] text-primary">{{ icon }}</span>
+    <span class="sidebar-label">{{ label }}</span>
+  </span>
+  <span class="sidebar-chevron material-symbols-outlined text-[18px] text-gray-400">chevron_right</span>
+</button>

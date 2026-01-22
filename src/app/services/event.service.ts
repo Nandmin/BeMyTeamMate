@@ -668,4 +668,9 @@ export class EventService {
   private emitEventChange(groupId: string, eventId: string) {
     this.eventChange$.next({ groupId, eventId });
   }
+
+  refreshGroupEvents(groupId: string) {
+    this.invalidateEventCaches(groupId);
+    this.emitEventsChange(groupId);
+  }
 }

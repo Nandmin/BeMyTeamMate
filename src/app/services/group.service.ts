@@ -117,11 +117,14 @@ export class GroupService {
     return groupRef;
   }
 
-  getGroups(): Observable<Group[]> {
+  getGroups(forceRefresh = false): Observable<Group[]> {
     return defer(() =>
       this.authService.user$.pipe(
         switchMap((user) => {
           if (!user) return of([]);
+          if (forceRefresh) {
+            this.invalidateGroupsListCache();
+          }
           const cached = this.getCachedGroupsList();
           if (cached) return of(cached);
           const q = query(this.groupsCollection, orderBy('createdAt', 'desc'));

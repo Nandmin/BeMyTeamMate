@@ -108,6 +108,16 @@
   transition: gap 0.2s ease;
 }
 
+.sidebar-item.is-active {
+  border-color: rgba(129, 140, 248, 0.45);
+  background: rgba(255, 255, 255, 0.12);
+  color: #ffffff;
+}
+
+.sidebar-item.is-active .sidebar-chevron {
+  color: rgba(248, 250, 252, 0.9);
+}
+
 .sidebar-panel.is-collapsed .sidebar-item > span {
   gap: 0;
 }
@@ -162,6 +172,17 @@
 
 .sidebar-scroll-content {
   direction: ltr;
+}
+
+.admin-main select {
+  color: #e2e8f0;
+  background-color: rgba(15, 23, 42, 0.9);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.admin-main select option {
+  color: #e2e8f0;
+  background-color: #0f172a;
 }
 
 // Light mode overrides

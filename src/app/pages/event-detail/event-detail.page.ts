@@ -202,6 +202,13 @@ export class EventDetailPage {
     return true;
   });
 
+  mvpCandidates = computed(() => {
+    const user = this.authService.currentUser();
+    const attendees = this.attendingMembers();
+    if (!user) return attendees;
+    return attendees.filter((member) => member.userId !== user.uid);
+  });
+
   async onToggleRSVP() {
     const event = this.event();
     if (!this.groupId || !event?.id) return;

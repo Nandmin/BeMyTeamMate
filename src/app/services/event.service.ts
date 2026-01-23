@@ -16,6 +16,7 @@ import {
   getDoc,
   limit,
   startAfter,
+  increment,
 } from '@angular/fire/firestore';
 import { AuthService } from './auth.service';
 import { EloService } from './elo.service';
@@ -50,6 +51,10 @@ export interface SportEvent {
   locationDetails?: string;
   maxAttendees: number;
   mvpVotingEnabled?: boolean;
+  mvpVotingStartedAt?: any;
+  mvpVotes?: { [voterId: string]: string };
+  mvpWinnerId?: string | null;
+  mvpEloAwarded?: boolean;
   currentAttendees: number;
   attendees: string[];
   creatorId: string;
@@ -382,12 +387,18 @@ export class EventService {
 
     // 2. Update Event
     const eventRef = doc(this.firestore, `groups/${groupId}/events/${eventId}`);
+    const eventSnap = await getDoc(eventRef);
+    const existingEvent = eventSnap.exists() ? (eventSnap.data() as SportEvent) : null;
+    const shouldStartMvpVoting =
+      !!existingEvent?.mvpVotingEnabled && !existingEvent?.mvpVotingStartedAt;
+
     batch.update(eventRef, {
       playerStats: statsWithElo,
       goalsA,
       goalsB,
       status: 'finished',
       endedAt: serverTimestamp(),
+      ...(shouldStartMvpVoting ? { mvpVotingStartedAt: serverTimestamp() } : {}),
     });
 
     // 3. Update Member Docs and Global User Docs
@@ -427,6 +438,123 @@ export class EventService {
     this.emitEventsChange(groupId);
     this.emitEventChange(groupId, eventId);
     return result;
+  }
+
+  async submitMvpVote(groupId: string, eventId: string, votedForId: string) {
+    const user = this.authService.currentUser();
+    if (!user) throw new Error('User must be logged in');
+
+    const eventRef = doc(this.firestore, `groups/${groupId}/events/${eventId}`);
+    const snap = await getDoc(eventRef);
+    if (!snap.exists()) throw new Error('Event not found');
+    const event = { id: snap.id, ...(snap.data() as SportEvent) } as SportEvent;
+
+    if (!event.mvpVotingEnabled) throw new Error('Az MVP szavazás nem aktív ennél az eseménynél.');
+    if (event.status !== 'finished') throw new Error('Még nem lehet MVP-re szavazni.');
+    if (!event.mvpVotingStartedAt) throw new Error('Az MVP szavazás még nem indult el.');
+
+    const voterId = user.uid;
+    const attendees = event.attendees || [];
+    if (!attendees.includes(voterId)) {
+      throw new Error('Csak a résztvevők szavazhatnak.');
+    }
+    if (!attendees.includes(votedForId)) {
+      throw new Error('Csak résztvevő játékosra lehet szavazni.');
+    }
+    if (voterId === votedForId) {
+      throw new Error('Magadra nem szavazhatsz.');
+    }
+    if (event.mvpVotes && event.mvpVotes[voterId]) {
+      throw new Error('Már leadtad a szavazatodat.');
+    }
+
+    const start = this.coerceDate(event.mvpVotingStartedAt);
+    if (Number.isNaN(start.getTime())) throw new Error('Érvénytelen szavazási időpont.');
+    const end = new Date(start.getTime() + 24 * 60 * 60 * 1000);
+    if (new Date() > end) {
+      throw new Error('Lejárt a szavazási időszak.');
+    }
+
+    const updatedVotes = { ...(event.mvpVotes || {}), [voterId]: votedForId };
+    await updateDoc(eventRef, {
+      mvpVotes: updatedVotes,
+    });
+
+    this.invalidateEventCaches(groupId, eventId);
+    this.emitEventsChange(groupId);
+    this.emitEventChange(groupId, eventId);
+  }
+
+  async finalizeMvpVotingIfNeeded(groupId: string, eventId: string) {
+    const eventRef = doc(this.firestore, `groups/${groupId}/events/${eventId}`);
+    const snap = await getDoc(eventRef);
+    if (!snap.exists()) throw new Error('Event not found');
+    const event = { id: snap.id, ...(snap.data() as SportEvent) } as SportEvent;
+
+    if (!event.mvpVotingEnabled) return;
+    if (event.status !== 'finished') return;
+    if (event.mvpEloAwarded) return;
+    if (!event.mvpVotingStartedAt) return;
+
+    const start = this.coerceDate(event.mvpVotingStartedAt);
+    if (Number.isNaN(start.getTime())) return;
+    const end = new Date(start.getTime() + 24 * 60 * 60 * 1000);
+    if (new Date() < end) return;
+
+    const votes = event.mvpVotes || {};
+    const tally = new Map<string, number>();
+    Object.values(votes).forEach((playerId) => {
+      tally.set(playerId, (tally.get(playerId) || 0) + 1);
+    });
+
+    let winnerId: string | null = null;
+    let topVotes = 0;
+    let tie = false;
+    for (const [playerId, count] of tally.entries()) {
+      if (count > topVotes) {
+        topVotes = count;
+        winnerId = playerId;
+        tie = false;
+      } else if (count === topVotes && count > 0) {
+        tie = true;
+      }
+    }
+
+    if (tie) {
+      winnerId = null;
+    }
+
+    const batch = writeBatch(this.firestore);
+    batch.update(eventRef, {
+      mvpWinnerId: winnerId,
+      mvpEloAwarded: true,
+    });
+
+    if (winnerId) {
+      const userRef = doc(this.firestore, `users/${winnerId}`);
+      batch.update(userRef, { elo: increment(5) });
+
+      const membersCollection = collection(this.firestore, `groups/${groupId}/members`);
+      const memberQuery = query(membersCollection, where('userId', '==', winnerId), limit(1));
+      const memberSnap = await getDocs(memberQuery);
+      const memberDoc = memberSnap.docs[0];
+      if (memberDoc) {
+        batch.update(memberDoc.ref, { elo: increment(5) });
+      }
+    }
+
+    await batch.commit();
+    this.invalidateEventCaches(groupId, eventId);
+    this.emitEventsChange(groupId);
+    this.emitEventChange(groupId, eventId);
+  }
+
+  private coerceDate(value: any): Date {
+    if (!value) return new Date(NaN);
+    if (value instanceof Date) return value;
+    if (typeof value?.toDate === 'function') return value.toDate();
+    if (typeof value?.seconds === 'number') return new Date(value.seconds * 1000);
+    return new Date(value);
   }
 
   // Server-side filtered queries to reduce client data transfer

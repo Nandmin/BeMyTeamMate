@@ -192,6 +192,15 @@
                             </a>
                             }
                         </div>
+                        @if (event.mvpWinnerId) {
+                        <div class="absolute top-0 left-0 p-0">
+                            <div
+                                class="flex items-center gap-1 px-2 py-1 rounded-br-lg bg-primary/20 text-primary border border-primary/30 text-[10px] font-bold uppercase tracking-widest">
+                                <span class="material-symbols-outlined text-[12px]">trophy</span>
+                                MVP
+                            </div>
+                        </div>
+                        }
                         <div class="event-card__body">
                             <div class="event-card__summary">
                                 <!-- Date Box -->

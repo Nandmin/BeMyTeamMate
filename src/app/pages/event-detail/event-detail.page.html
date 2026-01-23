@@ -442,6 +442,94 @@
         </div>
         }
 
+        <!-- MVP Voting Section -->
+        @if (event()?.status === 'finished' && event()?.mvpVotingEnabled) {
+        <div
+            class="bg-card-dark/60 backdrop-blur-xl border border-card-border rounded-3xl p-6 shadow-2xl flex flex-col gap-6 ring-1 ring-white/10 border-t-white/10">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div class="flex items-center gap-4">
+                    <div class="size-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary">
+                        <span class="material-symbols-outlined text-3xl font-bold">trophy</span>
+                    </div>
+                    <div>
+                        <h2 class="text-white font-black text-xl tracking-tight">MVP szavazás</h2>
+                        <p class="text-text-secondary text-xs font-medium uppercase tracking-widest">
+                            Szavazhatsz a mérkőzés legjobbjára
+                        </p>
+                    </div>
+                </div>
+                <div class="text-xs text-text-secondary font-bold uppercase tracking-widest">
+                    Szavazás vége:
+                    <span class="text-white">
+                        {{ mvpVotingEndAt() ? (mvpVotingEndAt() | date:'yyyy.MM.dd. HH:mm') : '--' }}
+                    </span>
+                </div>
+            </div>
+
+            @if (mvpWinnerMember()) {
+            <div class="flex items-center gap-4 p-4 rounded-2xl bg-primary/10 border border-primary/20">
+                <div class="size-12 rounded-2xl bg-primary/20 text-primary flex items-center justify-center">
+                    <span class="material-symbols-outlined text-2xl">military_tech</span>
+                </div>
+                <div class="flex-1">
+                    <p class="text-sm text-text-secondary font-bold uppercase tracking-widest">Győztes</p>
+                    <p class="text-white text-lg font-black">{{ mvpWinnerMember()?.name }}</p>
+                </div>
+                <div class="text-primary font-black text-sm">+5 ELO</div>
+            </div>
+            } @else {
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="space-y-3">
+                    <p class="text-sm text-text-secondary">
+                        Csak a résztvevők szavazhatnak, és egyetlen játékosra lehet szavazni.
+                    </p>
+                    @if (mvpUserVote()) {
+                    <div class="text-xs text-primary font-black uppercase tracking-widest">
+                        Leadott szavazat: {{ mvpUserVotedMember()?.name || '---' }}
+                    </div>
+                    }
+                    @if (!mvpVotingOpen()) {
+                    <div class="text-xs text-red-400 font-black uppercase tracking-widest">
+                        A szavazási időszak lezárult.
+                    </div>
+                    }
+                </div>
+                <form (submit)="$event.preventDefault(); submitMvpVote()" class="space-y-4">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        @for (member of attendingMembers(); track member.userId) {
+                        <label
+                            class="flex items-center gap-3 p-3 rounded-2xl border border-card-border bg-card-dark/40 transition-all cursor-pointer"
+                            [class.opacity-50]="member.userId === authService.currentUser()?.uid || !canVoteMvp()"
+                            [class.border-primary/50]="selectedMvpId() === member.userId">
+                            <input type="radio" name="mvpVote" [checked]="selectedMvpId() === member.userId"
+                                (change)="selectedMvpId.set(member.userId)"
+                                [disabled]="member.userId === authService.currentUser()?.uid || !canVoteMvp()"
+                                class="accent-primary" />
+                            <img [src]="member.photo || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + member.userId"
+                                class="size-9 rounded-xl object-cover border border-white/10">
+                            <span class="text-white font-bold text-sm truncate flex-1">{{ member.name }}</span>
+                            @if (member.userId === authService.currentUser()?.uid) {
+                            <span class="text-[10px] text-text-secondary font-black uppercase tracking-widest">Te</span>
+                            }
+                        </label>
+                        }
+                    </div>
+
+                    <button type="submit" [disabled]="isSubmitting() || !canVoteMvp() || !selectedMvpId()"
+                        class="h-12 px-6 rounded-2xl bg-primary text-background-dark font-black hover:bg-primary-dark transition-all flex items-center justify-center gap-2 shadow-lg shadow-primary/20 disabled:opacity-50">
+                        @if (isSubmitting()) {
+                        <span class="material-symbols-outlined animate-spin">sync</span>
+                        } @else {
+                        <span class="material-symbols-outlined">how_to_vote</span>
+                        }
+                        Szavazás leadása
+                    </button>
+                </form>
+            </div>
+            }
+        </div>
+        }
+
         <!-- RSVP Status / User List Section (as requested) -->
         <div class="space-y-8 pt-10 border-t border-card-border/50">
             <h2 class="text-2xl font-black text-white  tracking-tighter italic">Visszajelzések

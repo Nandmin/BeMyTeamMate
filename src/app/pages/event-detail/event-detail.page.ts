@@ -49,6 +49,8 @@ export class EventDetailPage {
   goalsMap = signal<{ [userId: string]: number }>({});
   assistsMap = signal<{ [userId: string]: number }>({});
   isEditingResults = signal(false);
+  selectedMvpId = signal<string | null>(null);
+  isFinalizingMvp = signal(false);
 
   constructor() {
     effect(() => {
@@ -75,6 +77,21 @@ export class EventDetailPage {
           this.assistsMap.set(assists);
         }
       }
+    });
+
+    effect(() => {
+      const event = this.event();
+      if (!event?.mvpVotingEnabled || event.status !== 'finished') return;
+      if (event.mvpEloAwarded || this.isFinalizingMvp()) return;
+      const end = this.mvpVotingEndAt();
+      if (!end) return;
+      if (new Date() < end) return;
+
+      this.isFinalizingMvp.set(true);
+      this.eventService
+        .finalizeMvpVotingIfNeeded(this.groupId, event.id!)
+        .catch((error) => console.error('Error finalizing MVP vote:', error))
+        .finally(() => this.isFinalizingMvp.set(false));
     });
   }
 
@@ -137,6 +154,53 @@ export class EventDetailPage {
     return eventDate < new Date();
   });
 
+  mvpVotingEndAt = computed(() => {
+    const event = this.event();
+    if (!event?.mvpVotingStartedAt) return null;
+    const start = this.coerceDate(event.mvpVotingStartedAt);
+    if (Number.isNaN(start.getTime())) return null;
+    return new Date(start.getTime() + 24 * 60 * 60 * 1000);
+  });
+
+  mvpVotingOpen = computed(() => {
+    const event = this.event();
+    if (!event?.mvpVotingEnabled) return false;
+    if (event.status !== 'finished') return false;
+    const end = this.mvpVotingEndAt();
+    if (!end) return false;
+    return new Date() < end;
+  });
+
+  mvpUserVote = computed(() => {
+    const event = this.event();
+    const user = this.authService.currentUser();
+    if (!event || !user) return null;
+    return event.mvpVotes?.[user.uid] || null;
+  });
+
+  mvpWinnerMember = computed(() => {
+    const event = this.event();
+    const members = this.members();
+    if (!event?.mvpWinnerId || !members) return null;
+    return members.find((m) => m.userId === event.mvpWinnerId) || null;
+  });
+
+  mvpUserVotedMember = computed(() => {
+    const votedFor = this.mvpUserVote();
+    const members = this.members();
+    if (!votedFor || !members) return null;
+    return members.find((m) => m.userId === votedFor) || null;
+  });
+
+  canVoteMvp = computed(() => {
+    const user = this.authService.currentUser();
+    if (!user) return false;
+    if (!this.isUserAttending()) return false;
+    if (!this.mvpVotingOpen()) return false;
+    if (this.mvpUserVote()) return false;
+    return true;
+  });
+
   async onToggleRSVP() {
     const event = this.event();
     if (!this.groupId || !event?.id) return;
@@ -172,6 +236,23 @@ export class EventDetailPage {
       await this.eventService.toggleRSVP(this.groupId, event.id);
     } catch (error: any) {
       console.error('Error toggling RSVP:', error);
+      await this.modalService.alert(error.message || 'Hiba történt.', 'Hiba', 'error');
+    } finally {
+      this.isSubmitting.set(false);
+    }
+  }
+
+  async submitMvpVote() {
+    const event = this.event();
+    const selected = this.selectedMvpId();
+    if (!this.groupId || !event?.id || !selected) return;
+
+    this.isSubmitting.set(true);
+    try {
+      await this.eventService.submitMvpVote(this.groupId, event.id, selected);
+      await this.modalService.alert('Szavazat rögzítve!', 'Siker', 'success');
+    } catch (error: any) {
+      console.error('Error submitting MVP vote:', error);
       await this.modalService.alert(error.message || 'Hiba történt.', 'Hiba', 'error');
     } finally {
       this.isSubmitting.set(false);

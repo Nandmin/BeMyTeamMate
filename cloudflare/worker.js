@@ -93,6 +93,10 @@ export default {
 
     return jsonResponse({ error: 'Endpoint not found' }, 404);
   },
+  async scheduled(event, env, ctx) {
+    console.log('MVP cron triggered', { scheduledTime: event.scheduledTime });
+    ctx.waitUntil(handleMvpCron(env));
+  },
 };
 
 function corsHeaders() {
@@ -558,4 +562,323 @@ function base64UrlEncode(input) {
     binary += String.fromCharCode(b);
   });
   return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+}
+
+async function handleMvpCron(env) {
+  console.log('MVP cron start');
+  const startedAt = Date.now();
+  if (!shouldRunBudapestCron(new Date())) {
+    console.log('MVP cron skipped: not 00:30 in Europe/Budapest');
+    return;
+  }
+
+  const projectId = env.FCM_PROJECT_ID;
+  const clientEmail = env.FCM_CLIENT_EMAIL;
+  const privateKey = normalizePrivateKey(env.FCM_PRIVATE_KEY);
+
+  if (!projectId || !clientEmail || !privateKey) {
+    console.error('Missing Firestore configuration in secrets');
+    return;
+  }
+
+  let accessToken;
+  try {
+    accessToken = await getAccessToken(
+      clientEmail,
+      privateKey,
+      'https://www.googleapis.com/auth/datastore'
+    );
+  } catch (error) {
+    console.error('Firestore token generation failed:', error);
+    return;
+  }
+
+  const cutoff = getBudapestStartOfTodayUtc();
+  const cutoffIso = cutoff.toISOString();
+  console.log('MVP cron cutoff', { cutoffIso });
+
+  const groupIds = await fetchAllGroupIds(projectId, accessToken);
+  console.log('MVP cron groups found', { count: groupIds.length });
+  let totalEvents = 0;
+  let totalFinalized = 0;
+  for (const groupId of groupIds) {
+    try {
+      const events = await fetchEligibleMvpEvents(projectId, accessToken, groupId, cutoffIso);
+      if (events.length > 0) {
+        console.log('MVP cron events found', { groupId, count: events.length });
+      }
+      totalEvents += events.length;
+      for (const eventDoc of events) {
+        await finalizeMvpEvent(projectId, accessToken, groupId, eventDoc);
+        totalFinalized += 1;
+      }
+    } catch (error) {
+      console.error(`MVP cron failed for group ${groupId}:`, error);
+    }
+  }
+
+  const durationMs = Date.now() - startedAt;
+  if (totalEvents === 0) {
+    console.log('MVP cron finished with no operations', { durationMs });
+  } else {
+    console.log('MVP cron finished', { totalEvents, totalFinalized, durationMs });
+  }
+
+  console.log('MVP cron done');
+}
+
+function shouldRunBudapestCron(now) {
+  const parts = getZonedParts(now, 'Europe/Budapest');
+  return parts.hour === 0 && parts.minute === 30;
+}
+
+function getBudapestStartOfTodayUtc() {
+  const now = new Date();
+  const parts = getZonedParts(now, 'Europe/Budapest');
+  return getUtcDateForZonedDate(parts.year, parts.month, parts.day, 0, 0, 0, 'Europe/Budapest');
+}
+
+function getZonedParts(date, timeZone) {
+  const formatter = new Intl.DateTimeFormat('en-US', {
+    timeZone,
+    hour12: false,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+  });
+  const parts = formatter.formatToParts(date);
+  const lookup = (type) => Number(parts.find((p) => p.type === type)?.value || 0);
+  return {
+    year: lookup('year'),
+    month: lookup('month'),
+    day: lookup('day'),
+    hour: lookup('hour'),
+    minute: lookup('minute'),
+    second: lookup('second'),
+  };
+}
+
+function getUtcDateForZonedDate(year, month, day, hour, minute, second, timeZone) {
+  const utcGuess = new Date(Date.UTC(year, month - 1, day, hour, minute, second, 0));
+  const offsetMs = getTimeZoneOffsetMs(utcGuess, timeZone);
+  return new Date(utcGuess.getTime() - offsetMs);
+}
+
+function getTimeZoneOffsetMs(date, timeZone) {
+  const parts = getZonedParts(date, timeZone);
+  const asIfUtc = Date.UTC(parts.year, parts.month - 1, parts.day, parts.hour, parts.minute, parts.second);
+  return asIfUtc - date.getTime();
+}
+
+async function fetchAllGroupIds(projectId, accessToken) {
+  const ids = [];
+  let pageToken = '';
+  do {
+    const url = new URL(
+      `https://firestore.googleapis.com/v1/projects/${projectId}/databases/(default)/documents/groups`
+    );
+    url.searchParams.set('pageSize', '200');
+    if (pageToken) url.searchParams.set('pageToken', pageToken);
+
+    const response = await fetch(url.toString(), {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    });
+
+    if (!response.ok) {
+      const detail = await response.text();
+      throw new Error(`Groups fetch failed: ${response.status} ${detail}`);
+    }
+
+    const data = await response.json();
+    const docs = data.documents || [];
+    for (const doc of docs) {
+      const id = doc.name?.split('/').pop();
+      if (id) ids.push(id);
+    }
+
+    pageToken = data.nextPageToken || '';
+  } while (pageToken);
+
+  return ids;
+}
+
+async function fetchEligibleMvpEvents(projectId, accessToken, groupId, cutoffIso) {
+  const url = `https://firestore.googleapis.com/v1/projects/${projectId}/databases/(default)/documents:runQuery`;
+  const body = {
+    structuredQuery: {
+      from: [{ collectionId: 'events' }],
+      where: {
+        compositeFilter: {
+          op: 'AND',
+          filters: [
+            {
+              fieldFilter: {
+                field: { fieldPath: 'mvpVotingEnabled' },
+                op: 'EQUAL',
+                value: { booleanValue: true },
+              },
+            },
+            {
+              fieldFilter: {
+                field: { fieldPath: 'status' },
+                op: 'EQUAL',
+                value: { stringValue: 'finished' },
+              },
+            },
+            {
+              fieldFilter: {
+                field: { fieldPath: 'date' },
+                op: 'LESS_THAN',
+                value: { timestampValue: cutoffIso },
+              },
+            },
+          ],
+        },
+      },
+      orderBy: [{ field: { fieldPath: 'date' }, direction: 'DESCENDING' }],
+    },
+    parent: `projects/${projectId}/databases/(default)/documents/groups/${groupId}`,
+  };
+
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(body),
+  });
+
+  if (!response.ok) {
+    const detail = await response.text();
+    throw new Error(`Events query failed: ${response.status} ${detail}`);
+  }
+
+  const data = await response.json();
+  const events = [];
+  for (const row of data || []) {
+    const doc = row?.document;
+    if (!doc) continue;
+    const fields = doc.fields || {};
+    if (fields.mvpEloAwarded?.booleanValue) continue;
+    events.push(doc);
+  }
+  return events;
+}
+
+async function finalizeMvpEvent(projectId, accessToken, groupId, eventDoc) {
+  const eventId = eventDoc.name?.split('/').pop() || 'unknown';
+  const fields = eventDoc.fields || {};
+  const votes = fields.mvpVotes?.mapValue?.fields || {};
+
+  const tally = new Map();
+  for (const value of Object.values(votes)) {
+    const votedFor = value?.stringValue;
+    if (!votedFor) continue;
+    tally.set(votedFor, (tally.get(votedFor) || 0) + 1);
+  }
+
+  let winnerId = null;
+  let topVotes = 0;
+  let tie = false;
+  for (const [playerId, count] of tally.entries()) {
+    if (count > topVotes) {
+      topVotes = count;
+      winnerId = playerId;
+      tie = false;
+    } else if (count === topVotes && count > 0) {
+      tie = true;
+    }
+  }
+  if (tie) winnerId = null;
+  console.log('MVP cron winner computed', { groupId, eventId, winnerId, topVotes, tie });
+
+  const writes = [
+    {
+      update: {
+        name: eventDoc.name,
+        fields: {
+          mvpWinnerId: winnerId ? { stringValue: winnerId } : { nullValue: null },
+          mvpEloAwarded: { booleanValue: true },
+        },
+      },
+      updateMask: { fieldPaths: ['mvpWinnerId', 'mvpEloAwarded'] },
+    },
+  ];
+
+  if (winnerId) {
+    const userDocName = `projects/${projectId}/databases/(default)/documents/users/${winnerId}`;
+    writes.push({
+      update: { name: userDocName, fields: {} },
+      updateTransforms: [{ fieldPath: 'elo', increment: { integerValue: '5' } }],
+    });
+
+    const memberDoc = await findGroupMemberDoc(projectId, accessToken, groupId, winnerId);
+    if (memberDoc) {
+      writes.push({
+        update: { name: memberDoc, fields: {} },
+        updateTransforms: [{ fieldPath: 'elo', increment: { integerValue: '5' } }],
+      });
+    }
+  }
+
+  await commitWrites(projectId, accessToken, writes);
+}
+
+async function findGroupMemberDoc(projectId, accessToken, groupId, userId) {
+  const url = `https://firestore.googleapis.com/v1/projects/${projectId}/databases/(default)/documents:runQuery`;
+  const body = {
+    structuredQuery: {
+      from: [{ collectionId: 'members' }],
+      where: {
+        fieldFilter: {
+          field: { fieldPath: 'userId' },
+          op: 'EQUAL',
+          value: { stringValue: userId },
+        },
+      },
+      limit: 1,
+    },
+    parent: `projects/${projectId}/databases/(default)/documents/groups/${groupId}`,
+  };
+
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(body),
+  });
+
+  if (!response.ok) {
+    const detail = await response.text();
+    throw new Error(`Member query failed: ${response.status} ${detail}`);
+  }
+
+  const data = await response.json();
+  for (const row of data || []) {
+    if (row?.document?.name) return row.document.name;
+  }
+  return null;
+}
+
+async function commitWrites(projectId, accessToken, writes) {
+  const url = `https://firestore.googleapis.com/v1/projects/${projectId}/databases/(default)/documents:commit`;
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ writes }),
+  });
+
+  if (!response.ok) {
+    const detail = await response.text();
+    throw new Error(`Commit failed: ${response.status} ${detail}`);
+  }
 }

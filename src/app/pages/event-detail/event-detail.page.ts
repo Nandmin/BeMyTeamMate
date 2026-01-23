@@ -156,10 +156,11 @@ export class EventDetailPage {
 
   mvpVotingEndAt = computed(() => {
     const event = this.event();
-    if (!event?.mvpVotingStartedAt) return null;
-    const start = this.coerceDate(event.mvpVotingStartedAt);
-    if (Number.isNaN(start.getTime())) return null;
-    return new Date(start.getTime() + 24 * 60 * 60 * 1000);
+    if (!event?.date) return null;
+    const eventDate = this.coerceDate(event.date);
+    if (Number.isNaN(eventDate.getTime())) return null;
+    eventDate.setHours(23, 59, 59, 999);
+    return eventDate;
   });
 
   mvpVotingOpen = computed(() => {

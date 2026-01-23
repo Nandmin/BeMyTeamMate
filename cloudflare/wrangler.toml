@@ -5,3 +5,6 @@ compatibility_date = "2025-01-01"
 [vars]
 # Set in Cloudflare as secrets instead of here:
 # FCM_PROJECT_ID, FCM_CLIENT_EMAIL, FCM_PRIVATE_KEY
+
+[triggers]
+crons = ["30 22 * * *", "30 23 * * *"]

@@ -70,3 +70,23 @@ A frontend automatikusan csatolja a bejelentkezett felhasználó ID tokenjét a 
 - **401 Unauthorized**: Nincs vagy érvénytelen Auth header. Jelentkezz be újra.
 - **500 Server Error**: Hiányzó Secrets vagy hibás FCM config. Ellenőrizd a Cloudflare logokat.
 - **Token Verification Failed**: A Firebase ID token lejárt vagy érvénytelen.
+
+## 7. MVP Cron Trigger (00:30, Europe/Budapest)
+
+Az MVP szavazások automatikus lezárásához a Worker tartalmaz egy Cron trigger-t.
+Alapértelmezetten a `cloudflare/wrangler.toml` fájlban ez van beállítva:
+
+```
+crons = ["30 22 * * *", "30 23 * * *"]
+```
+
+Ez **UTC** idő szerint fut. A Worker belül ellenőrzi a Budapest időt, és csak akkor fut,
+amikor ott 00:30 van (DST-t is kezeli).
+
+## 8. Szükséges jogosultságok
+
+Az MVP cron ugyanazokat a Firebase Service Account adatokat használja, mint az értesítések küldése:
+
+- `FCM_PROJECT_ID`
+- `FCM_CLIENT_EMAIL`
+- `FCM_PRIVATE_KEY`

@@ -451,7 +451,6 @@ export class EventService {
 
     if (!event.mvpVotingEnabled) throw new Error('Az MVP szavazás nem aktív ennél az eseménynél.');
     if (event.status !== 'finished') throw new Error('Még nem lehet MVP-re szavazni.');
-    if (!event.mvpVotingStartedAt) throw new Error('Az MVP szavazás még nem indult el.');
 
     const voterId = user.uid;
     const attendees = event.attendees || [];
@@ -468,9 +467,10 @@ export class EventService {
       throw new Error('Már leadtad a szavazatodat.');
     }
 
-    const start = this.coerceDate(event.mvpVotingStartedAt);
-    if (Number.isNaN(start.getTime())) throw new Error('Érvénytelen szavazási időpont.');
-    const end = new Date(start.getTime() + 24 * 60 * 60 * 1000);
+    const eventDate = this.coerceDate(event.date);
+    if (Number.isNaN(eventDate.getTime())) throw new Error('Érvénytelen esemény dátum.');
+    eventDate.setHours(23, 59, 59, 999);
+    const end = eventDate;
     if (new Date() > end) {
       throw new Error('Lejárt a szavazási időszak.');
     }
@@ -494,11 +494,10 @@ export class EventService {
     if (!event.mvpVotingEnabled) return;
     if (event.status !== 'finished') return;
     if (event.mvpEloAwarded) return;
-    if (!event.mvpVotingStartedAt) return;
-
-    const start = this.coerceDate(event.mvpVotingStartedAt);
-    if (Number.isNaN(start.getTime())) return;
-    const end = new Date(start.getTime() + 24 * 60 * 60 * 1000);
+    const eventDate = this.coerceDate(event.date);
+    if (Number.isNaN(eventDate.getTime())) return;
+    eventDate.setHours(23, 59, 59, 999);
+    const end = eventDate;
     if (new Date() < end) return;
 
     const votes = event.mvpVotes || {};

@@ -13,6 +13,10 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/contact/contact.page').then((m) => m.ContactPage),
   },
   {
+    path: 'faq',
+    loadComponent: () => import('./pages/faq/faq.page').then((m) => m.FaqPage),
+  },
+  {
     path: 'login',
     loadComponent: () => import('./pages/login/login').then((m) => m.LoginPage),
   },

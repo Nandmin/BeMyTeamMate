@@ -36,8 +36,8 @@ export class UserProfilePage {
           return this.authService.getUserProfile(id);
         }
         return this.authService.userData$;
-      })
-    )
+      }),
+    ),
   );
 
   isOwnProfile = computed(() => {
@@ -79,8 +79,8 @@ export class UserProfilePage {
                   return aDate - bDate;
                 })[0];
               return { ...group, nextEvent };
-            })
-          )
+            }),
+          ),
         );
 
         return combineLatest(enrichedGroups$);
@@ -88,8 +88,8 @@ export class UserProfilePage {
       catchError((error) => {
         console.warn('Failed to load user groups:', error);
         return of([]);
-      })
-    )
+      }),
+    ),
   );
 
   viewerGroups = toSignal(
@@ -101,8 +101,8 @@ export class UserProfilePage {
       catchError((error) => {
         console.warn('Failed to load viewer groups:', error);
         return of([]);
-      })
-    )
+      }),
+    ),
   );
 
   // Edit profile state
@@ -187,7 +187,7 @@ export class UserProfilePage {
       await this.authService.updateProfile(
         this.profileData.displayName,
         photoUrl || undefined,
-        this.profileData.bio
+        this.profileData.bio,
       );
       await this.modalService.alert('Profilkép frissítve.', 'Siker', 'success');
     } catch (error) {
@@ -210,7 +210,7 @@ export class UserProfilePage {
         await this.authService.updateProfile(
           this.profileData.displayName,
           this.profileUser()?.photoURL,
-          this.profileData.bio
+          this.profileData.bio,
         );
         results.push('Profil mentve');
       }
@@ -280,7 +280,7 @@ export class UserProfilePage {
 
       // Find nearest scrollable ancestor
       const getScrollParent = (
-        node: HTMLElement | null
+        node: HTMLElement | null,
       ): HTMLElement | (Element & { scrollTo?: any }) => {
         let parent = node?.parentElement;
         while (parent) {
@@ -375,7 +375,7 @@ export class UserProfilePage {
     return time ? `${dateStr} ${time}` : dateStr;
   }
 
-  private toDate(value: any): Date | null {
+  protected toDate(value: any): Date | null {
     if (!value) return null;
     if (value instanceof Date) return value;
     if (typeof value?.toDate === 'function') return value.toDate();

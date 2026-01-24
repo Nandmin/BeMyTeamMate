@@ -57,7 +57,7 @@ export class AuthService {
         } else {
           return of(null);
         }
-      })
+      }),
     );
     this.fullCurrentUser = toSignal(this.userData$, { initialValue: null });
   }
@@ -189,8 +189,17 @@ export class AuthService {
   async updateProfile(displayName: string, photoURL?: string, bio?: string) {
     const u = this.auth.currentUser;
     if (u) {
+      const modifiedFields: string[] = ['displayName'];
+      if (photoURL !== undefined) modifiedFields.push('photoURL');
+      if (bio !== undefined) modifiedFields.push('bio');
+
       await updateProfile(u, { displayName, photoURL });
-      await this.updateUserData(u, { bio, photoURL }); // Sync to Firestore
+      await this.updateUserData(u, {
+        bio,
+        photoURL,
+        profileUpdatedAt: serverTimestamp(),
+        lastModifiedFields: modifiedFields,
+      }); // Sync to Firestore
     }
   }
 
@@ -204,7 +213,7 @@ export class AuthService {
         map((snap) => (snap.exists() ? ({ ...(snap.data() as AppUser), uid } as AppUser) : null)),
         tap((data) => {
           if (data) this.setCachedProfile(uid, data);
-        })
+        }),
       );
     });
   }

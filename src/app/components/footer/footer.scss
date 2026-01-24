@@ -1,26 +1,31 @@
-/* Footer specific styles can act here if needed, mostly Tailwind */
+/* Footer specific styles */
+:host {
+  display: block;
+  /* Gradient from Landing content (primary) to Admin Dashboard look (secondary/accent) */
+  background: linear-gradient(180deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
+  position: relative;
+}
 
 :host-context(html.light) {
-  .bg-background-dark {
-    background-color: #e2e8f0; // Darker shade for footer in light mode
-  }
+  background: linear-gradient(180deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
 
   .text-white {
     color: #1e293b;
+  }
+  
+  .text-gray-400 {
+    color: #64748b;
+  }
+  
+  .text-gray-500 {
+    color: #94a3b8;
   }
 
   .border-border-dark {
     border-color: rgba(0, 0, 0, 0.1);
   }
-
-  p {
-    color: #475569;
-  }
-
-  a {
-    color: #475569;
-    &:hover {
-      color: #22c55e; // Primary color
-    }
+  
+  .border-white\/5 {
+      border-color: rgba(0, 0, 0, 0.1);
   }
 }

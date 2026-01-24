@@ -23,15 +23,15 @@ export class GroupSettingsPage {
   protected authService = inject(AuthService);
 
   group = toSignal(
-    this.route.params.pipe(switchMap((params) => this.groupService.getGroup(params['id'])))
+    this.route.params.pipe(switchMap((params) => this.groupService.getGroup(params['id']))),
   );
 
   members = toSignal(
-    this.route.params.pipe(switchMap((params) => this.groupService.getGroupMembers(params['id'])))
+    this.route.params.pipe(switchMap((params) => this.groupService.getGroupMembers(params['id']))),
   );
 
   joinRequests = toSignal(
-    this.route.params.pipe(switchMap((params) => this.groupService.getJoinRequests(params['id'])))
+    this.route.params.pipe(switchMap((params) => this.groupService.getJoinRequests(params['id']))),
   );
 
   // Check if current user is owner or admin
@@ -74,6 +74,35 @@ export class GroupSettingsPage {
 
   // Request to reject
   requestToReject = signal<any>(null);
+
+  // Available cover images
+  availableCoverImages = [
+    'assets/groupPictures/1636475245-untgRIFep_md.jpg',
+    'assets/groupPictures/ball-7610545_640.jpg',
+    'assets/groupPictures/ball-9856638_640.jpg',
+    'assets/groupPictures/basketball-2258650_640.jpg',
+    'assets/groupPictures/basketball-3571730_640.jpg',
+    'assets/groupPictures/basketball-7121617_640.jpg',
+    'assets/groupPictures/basketball-7605637_640.jpg',
+    'assets/groupPictures/football-1406106_640.jpg',
+    'assets/groupPictures/football-257489_640.png',
+    'assets/groupPictures/football-3024154_640.jpg',
+    'assets/groupPictures/football-488714_640.jpg',
+    'assets/groupPictures/football-6616819_640.jpg',
+    'assets/groupPictures/football-8266065_640.jpg',
+    'assets/groupPictures/football_grass_play_football_games_soccer_garden_summer_activity-623521.jpg',
+    'assets/groupPictures/grass-2616911_640.jpg',
+    'assets/groupPictures/kormend-3430879_640.jpg',
+    'assets/groupPictures/moon-4919501_640.jpg',
+    'assets/groupPictures/res_9280ed553018260e8c2df6b33786d17e.webp',
+    'assets/groupPictures/soccer-4586282_640.jpg',
+    'assets/groupPictures/soccer-5506110_640.jpg',
+    'assets/groupPictures/soccer-698553_640.jpg',
+    'assets/groupPictures/stafion.webp',
+  ];
+
+  // Image selector modal state
+  showImageSelector = signal(false);
 
   constructor() {
     // Initialize edit form when group loads
@@ -187,6 +216,20 @@ export class GroupSettingsPage {
 
   updateFormField(field: 'name' | 'description' | 'type' | 'image', value: string) {
     this.editGroupForm.update((form) => ({ ...form, [field]: value }));
+  }
+
+  // --- Image Selector ---
+  openImageSelector() {
+    this.showImageSelector.set(true);
+  }
+
+  closeImageSelector() {
+    this.showImageSelector.set(false);
+  }
+
+  selectCoverImage(imagePath: string) {
+    this.updateFormField('image', imagePath);
+    this.closeImageSelector();
   }
 
   goBack() {

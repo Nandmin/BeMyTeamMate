@@ -28,7 +28,7 @@
                         <span class="material-symbols-outlined text-primary text-3xl">settings</span>
                         Csoport beállítások
                     </h1>
-                    <p class="text-gray-400 mt-1">{{ group()?.name }} - tagok és beállítások kezelése</p>
+                    <p class="text-gray-400 mt-1">{{ group()?.name }} - Tagok és beállítások kezelése</p>
                 </div>
                 <button (click)="goBack()"
                     class="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-white font-medium text-sm hover:bg-white/10 transition-all">
@@ -244,13 +244,31 @@
                         </div>
                     </div>
 
-                    <!-- Image URL -->
+                    <!-- Image Selection -->
                     <div class="flex flex-col gap-2">
-                        <label class="text-sm font-medium text-gray-300">Borítókép URL</label>
-                        <input type="url" [value]="editGroupForm().image"
-                            (input)="updateFormField('image', $any($event.target).value)"
-                            class="w-full bg-white/5 border border-white/10 rounded-xl py-3 px-4 text-white placeholder:text-gray-500 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all"
-                            placeholder="https://example.com/image.jpg">
+                        <label class="text-sm font-medium text-gray-300">Borítókép</label>
+
+                        @if (editGroupForm().image) {
+                        <div
+                            class="relative w-full aspect-video rounded-xl overflow-hidden group border border-white/10">
+                            <img [src]="editGroupForm().image" class="w-full h-full object-cover" alt="Borítókép">
+                            <div
+                                class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                <button (click)="openImageSelector()"
+                                    class="px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-lg backdrop-blur-sm border border-white/20 transition-all font-medium flex items-center gap-2">
+                                    <span class="material-symbols-outlined">edit</span>
+                                    Módosítás
+                                </button>
+                            </div>
+                        </div>
+                        } @else {
+                        <button (click)="openImageSelector()"
+                            class="w-full h-32 rounded-xl border-2 border-dashed border-white/10 hover:border-primary/50 hover:bg-white/5 transition-all flex flex-col items-center justify-center gap-2 text-gray-400 hover:text-primary group">
+                            <span
+                                class="material-symbols-outlined text-3xl group-hover:scale-110 transition-transform">add_photo_alternate</span>
+                            <span class="font-medium">Borítókép kiválasztása</span>
+                        </button>
+                        }
                     </div>
 
                     <!-- Save Button -->
@@ -429,6 +447,54 @@
                     } @else {
                     Elutasítás
                     }
+                </button>
+            </div>
+        </div>
+    </div>
+    }
+    <!-- Image Selector Modal -->
+    @if (showImageSelector()) {
+    <div class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-background-dark/90 backdrop-blur-sm animate-fade-in"
+        (click)="closeImageSelector()">
+        <div class="w-full max-w-4xl bg-card-dark border border-white/10 rounded-2xl p-6 shadow-2xl animate-slide-up flex flex-col max-h-[85vh]"
+            (click)="$event.stopPropagation()">
+
+            <div class="flex items-center justify-between mb-6">
+                <div>
+                    <h3 class="text-xl font-bold text-white">Borítókép kiválasztása</h3>
+                    <p class="text-sm text-gray-400">Válassz egy képet a galériából</p>
+                </div>
+                <button (click)="closeImageSelector()"
+                    class="p-2 rounded-lg hover:bg-white/5 text-gray-400 hover:text-white transition-colors">
+                    <span class="material-symbols-outlined">close</span>
+                </button>
+            </div>
+
+            <div
+                class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-x-1 gap-y-8 overflow-y-auto custom-scrollbar pr-1 pb-4">
+                @for (img of availableCoverImages; track img) {
+                <button (click)="selectCoverImage(img)"
+                    class="relative aspect-video rounded-xl overflow-hidden group border-2 transition-all hover:scale-[1.02]"
+                    [class.border-primary]="editGroupForm().image === img"
+                    [class.border-transparent]="editGroupForm().image !== img">
+                    <img [src]="img" class="w-full h-full object-cover" loading="lazy">
+                    <div
+                        class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                        <span class="material-symbols-outlined text-white text-3xl">check_circle</span>
+                    </div>
+                    @if (editGroupForm().image === img) {
+                    <div class="absolute inset-0 bg-primary/20 flex items-center justify-center">
+                        <span class="material-symbols-outlined text-white text-3xl drop-shadow-md">check_circle</span>
+                    </div>
+                    }
+                </button>
+                }
+            </div>
+
+            <div class="mt-6 pt-4 border-t border-white/10 flex justify-end">
+                <button (click)="closeImageSelector()"
+                    class="px-6 py-2.5 border border-white/10 rounded-xl text-white font-bold hover:bg-white/5 transition-all">
+                    Mégse
                 </button>
             </div>
         </div>

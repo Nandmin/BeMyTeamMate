@@ -288,4 +288,28 @@ export class GroupSettingsPage {
       this.isSubmitting.set(false);
     }
   }
+
+  // --- Group Deletion ---
+  showDeleteGroupModal = signal(false);
+
+  openDeleteGroupModal() {
+    this.showDeleteGroupModal.set(true);
+  }
+
+  closeDeleteGroupModal() {
+    this.showDeleteGroupModal.set(false);
+  }
+
+  async confirmDeleteGroup() {
+    this.isSubmitting.set(true);
+    try {
+      await this.groupService.deleteGroup(this.groupId);
+      this.router.navigate(['/groups']);
+    } catch (error: any) {
+      console.error('Delete group error:', error);
+      this.errorMessage.set('Hiba történt a csoport törlésekor.');
+      this.isSubmitting.set(false);
+      this.closeDeleteGroupModal();
+    }
+  }
 }

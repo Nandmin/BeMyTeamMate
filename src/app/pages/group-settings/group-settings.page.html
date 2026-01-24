@@ -300,7 +300,7 @@
                         <p class="text-white font-medium">Csoport törlése</p>
                         <p class="text-sm text-gray-400">A csoport és minden hozzá tartozó adat véglegesen törlődik.</p>
                     </div>
-                    <button
+                    <button (click)="openDeleteGroupModal()"
                         class="shrink-0 px-4 py-2 rounded-lg bg-red-600 text-white font-bold text-sm hover:bg-red-700 transition-colors shadow-[0_0_15px_rgba(220,38,38,0.2)]">
                         Csoport törlése
                     </button>
@@ -495,6 +495,50 @@
                 <button (click)="closeImageSelector()"
                     class="px-6 py-2.5 border border-white/10 rounded-xl text-white font-bold hover:bg-white/5 transition-all">
                     Mégse
+                </button>
+            </div>
+        </div>
+    </div>
+    }
+
+    <!-- Delete Group Modal -->
+    @if (showDeleteGroupModal()) {
+    <div
+        class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-background-dark/90 backdrop-blur-sm animate-fade-in">
+        <div
+            class="w-full max-w-md bg-card-dark border border-white/10 rounded-2xl p-6 shadow-2xl animate-slide-up border-t-4 border-t-red-600">
+            <div class="flex flex-col items-center justify-center gap-4 mb-6 text-center">
+                <div class="p-6 bg-red-600/10 rounded-full border border-red-600/20">
+                    <span class="material-symbols-outlined text-red-600 text-5xl">warning</span>
+                </div>
+
+                <div>
+                    <h3 class="text-2xl font-bold text-white mb-2">Csoport törlése</h3>
+                    <p class="text-gray-400">Biztosan törölni szeretnéd a csoportot?</p>
+                </div>
+            </div>
+
+            <p class="text-gray-300 text-center mb-8 bg-red-600/5 p-4 rounded-xl border border-red-600/10">
+                A művelet <strong class="text-red-400">végleges és nem visszavonható</strong>!
+                <br><br>
+                A csoport minden adata, bejegyzése és eseménye törlődni fog.
+                <br><br>
+                <span class="text-sm text-gray-400">(A felhasználói fiókokat ez a művelet nem érinti.)</span>
+            </p>
+
+            <div class="flex gap-4">
+                <button (click)="closeDeleteGroupModal()"
+                    class="flex-1 px-4 py-3 border border-white/10 rounded-xl text-white font-bold hover:bg-white/5 transition-all">
+                    Mégse
+                </button>
+                <button (click)="confirmDeleteGroup()" [disabled]="isSubmitting()"
+                    class="flex-1 px-4 py-3 bg-red-600 text-white font-bold rounded-xl hover:bg-red-700 disabled:opacity-50 transition-all shadow-[0_0_15px_rgba(220,38,38,0.3)]">
+                    @if (isSubmitting()) {
+                    <span class="material-symbols-outlined animate-spin align-middle mr-2">progress_activity</span>
+                    Törlés folyamatban...
+                    } @else {
+                    Végleges törlés
+                    }
                 </button>
             </div>
         </div>

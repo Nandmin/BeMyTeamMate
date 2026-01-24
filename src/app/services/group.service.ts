@@ -134,10 +134,10 @@ export class GroupService {
             catchError((err: any) => {
               console.error('getGroups error:', err);
               return of([]);
-            })
+            }),
           );
-        })
-      )
+        }),
+      ),
     );
   }
 
@@ -148,7 +148,7 @@ export class GroupService {
       switchMap((user: any) => {
         if (!user?.uid) return of([]);
         return this.getUserGroupsInternal(user.uid);
-      })
+      }),
     );
   }
 
@@ -160,7 +160,7 @@ export class GroupService {
       // If a user is owner but NOT in members (e.g. left), they should not see the group.
       const membersQuery = query(
         collectionGroup(this.firestore, 'members'),
-        where('userId', '==', userId)
+        where('userId', '==', userId),
       );
 
       return from(getDocs(membersQuery)).pipe(
@@ -176,9 +176,9 @@ export class GroupService {
           }
 
           return from(this.fetchGroupsByIds(uniqueIds)).pipe(
-            map((groups) => groups.sort((a, b) => a.name.localeCompare(b.name)))
+            map((groups) => groups.sort((a, b) => a.name.localeCompare(b.name))),
           );
-        })
+        }),
       );
     });
   }
@@ -190,11 +190,11 @@ export class GroupService {
       const docRef = doc(this.firestore, `groups/${id}`);
       return from(getDoc(docRef)).pipe(
         map((snap) =>
-          snap.exists() ? ({ id: snap.id, ...(snap.data() as Group) } as Group) : undefined
+          snap.exists() ? ({ id: snap.id, ...(snap.data() as Group) } as Group) : undefined,
         ),
         tap((group) => {
           if (group) this.setCachedGroup(id, group);
-        })
+        }),
       );
     });
   }
@@ -223,9 +223,9 @@ export class GroupService {
                 skillLevel: 100,
               };
               return [ownerMember, ...members];
-            })
+            }),
           );
-        })
+        }),
       );
     });
   }
@@ -250,14 +250,14 @@ export class GroupService {
         {
           type: 'group_join',
           groupId,
-          title: `${group.name} - ?j tag`,
+          title: `${group.name} - Taglétszám változás`,
           body: `${user.displayName || 'Ismeretlen'} csatlakozott a csoporthoz.`,
           link: `/groups/${groupId}`,
           actorId: user.uid,
           actorName: user.displayName || 'Ismeretlen',
           actorPhoto: user.photoURL || null,
         },
-        [user.uid]
+        [user.uid],
       );
     }
   }
@@ -418,6 +418,51 @@ export class GroupService {
   }
 
   // --- Member Management ---
+  async deleteGroup(groupId: string) {
+    const user = this.authService.currentUser();
+    if (!user) throw new Error('User must be logged in');
+
+    // Clean up subcollections first (client-side best effort)
+    try {
+      // Delete members
+      const membersRef = collection(this.firestore, `groups/${groupId}/members`);
+      const membersSnap = await getDocs(membersRef);
+      const membersBatch = writeBatch(this.firestore);
+      membersSnap.docs.forEach((doc) => membersBatch.delete(doc.ref));
+      await membersBatch.commit();
+
+      // Delete join requests
+      const requestsRef = collection(this.firestore, `groups/${groupId}/joinRequests`);
+      const requestsSnap = await getDocs(requestsRef);
+      const requestsBatch = writeBatch(this.firestore);
+      requestsSnap.docs.forEach((doc) => requestsBatch.delete(doc.ref));
+      await requestsBatch.commit();
+
+      // Delete events
+      const eventsRef = collection(this.firestore, `groups/${groupId}/events`);
+      const eventsSnap = await getDocs(eventsRef);
+      const eventsBatch = writeBatch(this.firestore);
+      eventsSnap.docs.forEach((doc) => eventsBatch.delete(doc.ref));
+      await eventsBatch.commit();
+    } catch (error) {
+      console.warn('Error cleaning up subcollections:', error);
+    }
+
+    // Delete group document
+    const groupRef = doc(this.firestore, `groups/${groupId}`);
+    await deleteDoc(groupRef);
+
+    // Clear caches
+    this.invalidateGroupsListCache();
+    this.invalidateUserGroupsCache(user.uid);
+    this.groupCache.delete(groupId);
+    try {
+      if (typeof window !== 'undefined' && window.localStorage) {
+        window.localStorage.removeItem(this.groupStorageKey(groupId));
+      }
+    } catch {}
+  }
+
   async removeMember(groupId: string, memberId: string) {
     const user = this.authService.currentUser();
     if (!user) throw new Error('User must be logged in');
@@ -433,14 +478,14 @@ export class GroupService {
         {
           type: 'group_leave',
           groupId,
-          title: `${group.name} - tag kilepett`,
-          body: `${memberData.name || 'Ismeretlen'} kilepett a csoportbol.`,
+          title: `${group.name} - Taglétszám változás`,
+          body: `${memberData.name || 'Ismeretlen'} kilépett a csoportból.`,
           link: `/groups/${groupId}`,
           actorId: memberData.userId,
           actorName: memberData.name || 'Ismeretlen',
           actorPhoto: memberData.photo || null,
         },
-        [memberData.userId]
+        [memberData.userId],
       );
     }
 
@@ -468,7 +513,7 @@ export class GroupService {
   async updateMemberRole(
     groupId: string,
     memberId: string,
-    data: { isAdmin: boolean; role: string }
+    data: { isAdmin: boolean; role: string },
   ) {
     const memberRef = doc(this.firestore, `groups/${groupId}/members/${memberId}`);
     return updateDoc(memberRef, data);
@@ -498,7 +543,7 @@ export class GroupService {
         tap((groups) => {
           this.setCachedUserGroups(uid, groups);
           groups.forEach((g) => g.id && this.setCachedGroup(g.id, g));
-        })
+        }),
       );
     });
   }
@@ -510,7 +555,7 @@ export class GroupService {
     // If they left, they are out.
 
     const memberSnap = await getDocs(
-      query(collectionGroup(this.firestore, 'members'), where('userId', '==', uid))
+      query(collectionGroup(this.firestore, 'members'), where('userId', '==', uid)),
     );
 
     const joinedIds = memberSnap.docs
@@ -539,7 +584,7 @@ export class GroupService {
     const groups: Group[] = [];
     for (const chunk of chunks) {
       const chunkSnap = await getDocs(
-        query(this.groupsCollection, where(documentId(), 'in', chunk))
+        query(this.groupsCollection, where(documentId(), 'in', chunk)),
       );
       for (const docSnap of chunkSnap.docs) {
         const group = { id: docSnap.id, ...(docSnap.data() as Group) };

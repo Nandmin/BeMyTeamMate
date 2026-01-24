@@ -203,4 +203,8 @@ export class HeaderComponent {
   private isRsvpNotification(notification: AppNotification) {
     return notification.type === 'event_rsvp_yes' || notification.type === 'event_rsvp_no';
   }
+  getAvatarUrl(user: any): string {
+    if (user?.photoURL) return user.photoURL;
+    return `https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.uid || 'default'}`;
+  }
 }

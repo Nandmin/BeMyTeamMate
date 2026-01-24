@@ -395,4 +395,10 @@ export class UserProfilePage {
     if (!groupId || !this.canOpenGroup(groupId)) return;
     this.router.navigate(['/groups', groupId]);
   }
+
+  getAvatarUrl(user: AppUser | null | undefined): string {
+    if (user?.photoURL) return user.photoURL;
+    return `https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.uid || 'default'}`;
+    // return `https://api.dicebear.com/7.x/adventurer/svg?seed=${user?.uid || 'default'}`;
+  }
 }

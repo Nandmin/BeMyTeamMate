@@ -130,8 +130,8 @@
                     </div>
                     <div
                         class="h-9 w-9 overflow-hidden rounded-full border border-white/10 p-0.5 group-hover/user:border-primary transition-colors">
-                        <img [src]="user.photoURL || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + user.uid"
-                            class="h-full w-full rounded-full object-cover" [alt]="user.displayName" />
+                        <img [src]="getAvatarUrl(user)" class="h-full w-full rounded-full object-cover"
+                            [alt]="user.displayName" />
                     </div>
                 </div>
 

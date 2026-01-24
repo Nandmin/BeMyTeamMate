@@ -6,7 +6,7 @@
                 style="top: 2rem;">
                 <div class="flex items-center gap-3 p-2 mb-2">
                     <div class="bg-center bg-no-repeat bg-cover rounded-full size-12 border-2 border-primary"
-                        [style.backgroundImage]="'url(' + (profileUser()?.photoURL || 'https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y') + ')'">
+                        [style.backgroundImage]="'url(' + getAvatarUrl(profileUser()) + ')'">
                     </div>
                     <div class="flex flex-col overflow-hidden">
                         <h1 class="text-white text-base font-bold leading-normal truncate">
@@ -93,7 +93,7 @@
                     class="flex flex-col md:flex-row items-center md:items-start gap-6 mb-10 pb-10 border-b border-[#234833]">
                     <div class="relative group cursor-pointer" (click)="isOwnProfile() && fileInput.click()">
                         <div class="bg-center bg-no-repeat bg-cover rounded-full size-32 border-4 border-[#234833] group-hover:border-primary transition-colors duration-300"
-                            [style.backgroundImage]="'url(' + (profileUser()?.photoURL || 'https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y') + ')'">
+                            [style.backgroundImage]="'url(' + getAvatarUrl(profileUser()) + ')'">
                         </div>
                         <input #fileInput type="file" class="hidden" accept="image/*" (change)="onFileSelected($event)">
                         @if (isOwnProfile()) {
@@ -131,7 +131,7 @@
                             </p>
                             }
                         </div>
-                        @if (isOwnProfile()) {
+                        <!-- @if (isOwnProfile()) {
                         <div class="flex gap-4 mt-2 justify-center md:justify-start">
                             <button (click)="fileInput.click()"
                                 class="upload-btn flex items-center justify-center rounded-xl h-10 px-6 bg-primary text-white text-sm font-bold hover:bg-primary-hover transition-colors shadow-[0_0_15px_rgba(43,238,124,0.3)]">
@@ -142,7 +142,7 @@
                                 Törlés
                             </button>
                         </div>
-                        }
+                        } -->
                     </div>
                 </div>
                 <!-- Global Stats Row -->

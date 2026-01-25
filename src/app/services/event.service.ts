@@ -506,21 +506,56 @@ export class EventService {
       tally.set(playerId, (tally.get(playerId) || 0) + 1);
     });
 
+    const DEFAULT_ELO = 1200;
     let winnerId: string | null = null;
     let topVotes = 0;
-    let tie = false;
+    let topCandidates: string[] = [];
     for (const [playerId, count] of tally.entries()) {
       if (count > topVotes) {
         topVotes = count;
-        winnerId = playerId;
-        tie = false;
+        topCandidates = count > 0 ? [playerId] : [];
       } else if (count === topVotes && count > 0) {
-        tie = true;
+        topCandidates.push(playerId);
       }
     }
 
-    if (tie) {
-      winnerId = null;
+    if (topCandidates.length === 1) {
+      winnerId = topCandidates[0];
+    } else if (topCandidates.length > 1) {
+      const membersCollection = collection(this.firestore, `groups/${groupId}/members`);
+      const eloByUser = new Map<string, number>();
+      let foundEloCount = 0;
+      for (let i = 0; i < topCandidates.length; i += 10) {
+        const chunk = topCandidates.slice(i, i + 10);
+        const memberQuery = query(membersCollection, where('userId', 'in', chunk));
+        const memberSnap = await getDocs(memberQuery);
+        memberSnap.docs.forEach((docSnap) => {
+          const data = docSnap.data() as GroupMember;
+          if (data?.userId) {
+            eloByUser.set(data.userId, data.elo ?? DEFAULT_ELO);
+            if (data.elo !== undefined && data.elo !== null) foundEloCount += 1;
+          }
+        });
+      }
+
+      if (foundEloCount === 0) {
+        winnerId = null;
+        topCandidates = [];
+      }
+
+      let lowestElo = Number.POSITIVE_INFINITY;
+      let lowestIds: string[] = [];
+      for (const candidateId of topCandidates) {
+        const elo = eloByUser.get(candidateId) ?? DEFAULT_ELO;
+        if (elo < lowestElo) {
+          lowestElo = elo;
+          lowestIds = [candidateId];
+        } else if (elo === lowestElo) {
+          lowestIds.push(candidateId);
+        }
+      }
+
+      winnerId = lowestIds.length > 0 ? lowestIds.sort()[0] : null;
     }
 
     const batch = writeBatch(this.firestore);

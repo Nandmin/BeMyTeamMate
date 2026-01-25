@@ -141,8 +141,13 @@
                             <span class="text-xl text-white italic tracking-tighter">"A" csapat</span>
                         </div>
                         <div class="flex flex-col items-end">
-                            <span
-                                class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Átlag</span>
+                            <span class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+                                @if (event()?.status === 'active' || event()?.status === 'finished') {
+                                Átlag (kezdéskor)
+                                } @else {
+                                Átlag
+                                }
+                            </span>
                             <span class="text-white font-black">{{ teamAAverge() }}</span>
                         </div>
                     </div>
@@ -165,7 +170,7 @@
                                     <span class="text-primary material-symbols-outlined text-[14px]">star</span>
                                     <p class="text-gray-400 text-[10px] font-black uppercase tracking-widest">
                                         {{ player.role }} ({{ (player.skillLevel || 50) / 10 | number:'1.1-1' }}) • Elo:
-                                        {{ player.elo || 1200 }}
+                                        {{ (event()?.status === 'active' || event()?.status === 'finished') && (event()?.playerRatingSnapshot?.[player.userId] ?? null) !== null ? event()?.playerRatingSnapshot?.[player.userId] : (player.elo || 1200) }}
                                     </p>
                                 </div>
                             </div>
@@ -282,8 +287,13 @@
                             <span class="text-xl text-white italic tracking-tighter">"B" csapat</span>
                         </div>
                         <div class="flex flex-col items-end">
-                            <span
-                                class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Átlag</span>
+                            <span class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+                                @if (event()?.status === 'active' || event()?.status === 'finished') {
+                                Átlag (kezdéskor)
+                                } @else {
+                                Átlag
+                                }
+                            </span>
                             <span class="text-white font-black">{{ teamBAverge() }}</span>
                         </div>
                     </div>
@@ -306,7 +316,7 @@
                                     <span class="text-blue-400 material-symbols-outlined text-[14px]">star</span>
                                     <p class="text-gray-400 text-[10px] font-black uppercase tracking-widest">
                                         {{ player.role }} ({{ (player.skillLevel || 50) / 10 | number:'1.1-1' }}) • Elo:
-                                        {{ player.elo || 1200 }}
+                                        {{ (event()?.status === 'active' || event()?.status === 'finished') && (event()?.playerRatingSnapshot?.[player.userId] ?? null) !== null ? event()?.playerRatingSnapshot?.[player.userId] : (player.elo || 1200) }}
                                     </p>
                                 </div>
                             </div>

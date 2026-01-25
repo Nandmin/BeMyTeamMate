@@ -283,9 +283,11 @@ export class EventDetailPage {
   });
 
   teamBAverge = computed(() => {
-    // If event has stored Elo averages, use them
+    // Use stored snapshot only once the match is active/finished
     const event = this.event();
-    if (event?.teamBEloAvg) return Math.round(event.teamBEloAvg).toString();
+    if ((event?.status === 'active' || event?.status === 'finished') && event?.teamBEloAvg) {
+      return Math.round(event.teamBEloAvg).toString();
+    }
 
     const b = this.teamB();
     if (b.length === 0) return '0';
@@ -293,9 +295,11 @@ export class EventDetailPage {
   });
 
   teamAAverge = computed(() => {
-    // If event has stored Elo averages, use them
+    // Use stored snapshot only once the match is active/finished
     const event = this.event();
-    if (event?.teamAEloAvg) return Math.round(event.teamAEloAvg).toString();
+    if ((event?.status === 'active' || event?.status === 'finished') && event?.teamAEloAvg) {
+      return Math.round(event.teamAEloAvg).toString();
+    }
 
     const a = this.teamA();
     if (a.length === 0) return '0';
@@ -364,6 +368,10 @@ export class EventDetailPage {
       // Save current averages
       const teamAAvg = parseFloat(this.teamAAverge());
       const teamBAvg = parseFloat(this.teamBAverge());
+      const playerRatingSnapshot: { [userId: string]: number } = {};
+      [...this.teamA(), ...this.teamB()].forEach((member) => {
+        playerRatingSnapshot[member.userId] = this.getPlayerRating(member);
+      });
 
       await this.eventService.startEvent(
         this.groupId,
@@ -371,7 +379,8 @@ export class EventDetailPage {
         teamAIds,
         teamBIds,
         teamAAvg,
-        teamBAvg
+        teamBAvg,
+        playerRatingSnapshot
       );
     } catch (error: any) {
       console.error('Error starting game:', error);

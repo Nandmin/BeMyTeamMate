@@ -65,6 +65,7 @@ export interface SportEvent {
   teamB?: string[];
   teamAEloAvg?: number;
   teamBEloAvg?: number;
+  playerRatingSnapshot?: { [userId: string]: number };
   goalsA?: number;
   goalsB?: number;
   startedAt?: any;
@@ -325,7 +326,8 @@ export class EventService {
     teamA: string[],
     teamB: string[],
     teamAEloAvg: number,
-    teamBEloAvg: number
+    teamBEloAvg: number,
+    playerRatingSnapshot?: { [userId: string]: number }
   ) {
     const docRef = doc(this.firestore, `groups/${groupId}/events/${eventId}`);
     const result = await updateDoc(docRef, {
@@ -334,6 +336,7 @@ export class EventService {
       teamB,
       teamAEloAvg,
       teamBEloAvg,
+      ...(playerRatingSnapshot ? { playerRatingSnapshot } : {}),
       startedAt: serverTimestamp(),
       goalsA: 0,
       goalsB: 0,

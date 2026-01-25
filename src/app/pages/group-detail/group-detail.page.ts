@@ -9,11 +9,12 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { switchMap, combineLatest, map } from 'rxjs';
 import { EventService, SportEvent } from '../../services/event.service';
 import { ModalService } from '../../services/modal.service';
+import { CoverImageSelectorComponent } from '../../components/cover-image-selector/cover-image-selector.component';
 
 @Component({
   selector: 'app-group-detail',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule],
+  imports: [CommonModule, RouterModule, FormsModule, CoverImageSelectorComponent],
   templateUrl: './group-detail.page.html',
   styleUrl: './group-detail.page.scss',
 })
@@ -179,6 +180,32 @@ export class GroupDetailPage {
   });
 
   isSubmitting = signal(false);
+  showImageSelector = signal(false);
+
+  availableCoverImages = [
+    'assets/groupPictures/1636475245-untgRIFep_md.jpg',
+    'assets/groupPictures/ball-7610545_640.jpg',
+    'assets/groupPictures/ball-9856638_640.jpg',
+    'assets/groupPictures/basketball-2258650_640.jpg',
+    'assets/groupPictures/basketball-3571730_640.jpg',
+    'assets/groupPictures/basketball-7121617_640.jpg',
+    'assets/groupPictures/basketball-7605637_640.jpg',
+    'assets/groupPictures/football-1406106_640.jpg',
+    'assets/groupPictures/football-257489_640.png',
+    'assets/groupPictures/football-3024154_640.jpg',
+    'assets/groupPictures/football-488714_640.jpg',
+    'assets/groupPictures/football-6616819_640.jpg',
+    'assets/groupPictures/football-8266065_640.jpg',
+    'assets/groupPictures/football_grass_play_football_games_soccer_garden_summer_activity-623521.jpg',
+    'assets/groupPictures/grass-2616911_640.jpg',
+    'assets/groupPictures/kormend-3430879_640.jpg',
+    'assets/groupPictures/moon-4919501_640.jpg',
+    'assets/groupPictures/res_9280ed553018260e8c2df6b33786d17e.webp',
+    'assets/groupPictures/soccer-4586282_640.jpg',
+    'assets/groupPictures/soccer-5506110_640.jpg',
+    'assets/groupPictures/soccer-698553_640.jpg',
+    'assets/groupPictures/stafion.webp',
+  ];
 
   // Recurrence for existing event
   selectedEventForRecurrence = signal<SportEvent | null>(null);
@@ -186,6 +213,34 @@ export class GroupDetailPage {
     frequency: 'weekly' as 'daily' | 'weekly' | 'monthly',
     until: '',
   };
+
+  get groupId(): string {
+    return this.route.snapshot.params['id'];
+  }
+
+  openImageSelector() {
+    if (!this.isAdmin()) return;
+    this.showImageSelector.set(true);
+  }
+
+  closeImageSelector() {
+    this.showImageSelector.set(false);
+  }
+
+  async selectCoverImage(imagePath: string) {
+    if (!this.isAdmin() || !this.groupId) return;
+
+    this.isSubmitting.set(true);
+    try {
+      await this.groupService.updateGroup(this.groupId, { image: imagePath });
+      this.showImageSelector.set(false);
+    } catch (error) {
+      console.error('Error updating group image:', error);
+      await this.modalService.alert('Hiba tĂ¶rtĂ©nt a borĂ­tĂłkĂ©p mentĂ©sekor.', 'Hiba', 'error');
+    } finally {
+      this.isSubmitting.set(false);
+    }
+  }
 
   openRecurrenceModal(event: SportEvent) {
     this.selectedEventForRecurrence.set(event);

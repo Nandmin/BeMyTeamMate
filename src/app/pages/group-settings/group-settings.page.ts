@@ -6,13 +6,14 @@ import { GroupService, Group, GroupMember } from '../../services/group.service';
 import { AuthService } from '../../services/auth.service';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { switchMap } from 'rxjs';
+import { CoverImageSelectorComponent } from '../../components/cover-image-selector/cover-image-selector.component';
 
 export type MemberRole = 'owner' | 'admin' | 'member';
 
 @Component({
   selector: 'app-group-settings',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule],
+  imports: [CommonModule, RouterModule, FormsModule, CoverImageSelectorComponent],
   templateUrl: './group-settings.page.html',
   styleUrl: './group-settings.page.scss',
 })

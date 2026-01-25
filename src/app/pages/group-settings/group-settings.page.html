@@ -452,54 +452,9 @@
         </div>
     </div>
     }
-    <!-- Image Selector Modal -->
-    @if (showImageSelector()) {
-    <div class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-background-dark/90 backdrop-blur-sm animate-fade-in"
-        (click)="closeImageSelector()">
-        <div class="w-full max-w-4xl bg-card-dark border border-white/10 rounded-2xl p-6 shadow-2xl animate-slide-up flex flex-col max-h-[85vh]"
-            (click)="$event.stopPropagation()">
-
-            <div class="flex items-center justify-between mb-6">
-                <div>
-                    <h3 class="text-xl font-bold text-white">Borítókép kiválasztása</h3>
-                    <p class="text-sm text-gray-400">Válassz egy képet a galériából</p>
-                </div>
-                <button (click)="closeImageSelector()"
-                    class="p-2 rounded-lg hover:bg-white/5 text-gray-400 hover:text-white transition-colors">
-                    <span class="material-symbols-outlined">close</span>
-                </button>
-            </div>
-
-            <div
-                class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-x-1 gap-y-8 overflow-y-auto custom-scrollbar pr-1 pb-4">
-                @for (img of availableCoverImages; track img) {
-                <button (click)="selectCoverImage(img)"
-                    class="relative aspect-video rounded-xl overflow-hidden group border-2 transition-all hover:scale-[1.02]"
-                    [class.border-primary]="editGroupForm().image === img"
-                    [class.border-transparent]="editGroupForm().image !== img">
-                    <img [src]="img" class="w-full h-full object-cover" loading="lazy">
-                    <div
-                        class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                        <span class="material-symbols-outlined text-white text-3xl">check_circle</span>
-                    </div>
-                    @if (editGroupForm().image === img) {
-                    <div class="absolute inset-0 bg-primary/20 flex items-center justify-center">
-                        <span class="material-symbols-outlined text-white text-3xl drop-shadow-md">check_circle</span>
-                    </div>
-                    }
-                </button>
-                }
-            </div>
-
-            <div class="mt-6 pt-4 border-t border-white/10 flex justify-end">
-                <button (click)="closeImageSelector()"
-                    class="px-6 py-2.5 border border-white/10 rounded-xl text-white font-bold hover:bg-white/5 transition-all">
-                    Mégse
-                </button>
-            </div>
-        </div>
-    </div>
-    }
+    <app-cover-image-selector [show]="showImageSelector()" [images]="availableCoverImages"
+        [selectedImage]="editGroupForm().image || null" [disabled]="isSubmitting()" (close)="closeImageSelector()"
+        (select)="selectCoverImage($event)"></app-cover-image-selector>
 
     <!-- Delete Group Modal -->
     @if (showDeleteGroupModal()) {

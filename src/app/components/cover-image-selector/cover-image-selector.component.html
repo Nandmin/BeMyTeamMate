@@ -17,10 +17,10 @@
         </div>
 
         <div
-            class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-x-1 gap-y-8 overflow-y-auto custom-scrollbar pr-1 pb-4">
+            class="cover-image-grid grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 overflow-y-auto custom-scrollbar pr-1 pb-4">
             @for (img of images; track img) {
             <button (click)="onSelect(img)" [disabled]="disabled"
-                class="relative aspect-video rounded-xl overflow-hidden group border-2 transition-all hover:scale-[1.02]"
+                class="relative w-full aspect-video rounded-xl overflow-hidden group border-2 transition-all hover:scale-[1.02]"
                 [class.border-primary]="selectedImage === img"
                 [class.border-transparent]="selectedImage !== img">
                 <img [src]="img" class="w-full h-full object-cover" loading="lazy">

@@ -134,7 +134,7 @@
                     id="teamA" cdkDropList [cdkDropListData]="teamA()" (cdkDropListDropped)="drop($event)"
                     [cdkDropListDisabled]="event()?.status === 'active' || event()?.status === 'finished'">
 
-                    <div class="flex justify-between items-center pt-2">
+                    <div class="team-card-header team-card-header-a flex justify-between items-center pt-2">
                         <div class="flex items-center gap-3">
                             <span
                                 class="material-symbols-outlined text-primary text-2xl font-bold">local_fire_department</span>
@@ -155,7 +155,7 @@
                     <div class="flex flex-col gap-3 min-h-[150px] custom-scrollbar">
                         @for (player of teamA(); track player.userId) {
                         <div cdkDrag
-                            class="group flex items-center gap-3 bg-card-dark border border-card-border hover:border-primary/50 text-white rounded-2xl p-4 shadow-sm transition-all hover:translate-y-[-2px] hover:shadow-lg hover:shadow-primary/5">
+                            class="team-player-card group flex items-center gap-3 bg-card-dark border border-card-border hover:border-primary/50 text-white rounded-2xl p-4 shadow-sm transition-all hover:translate-y-[-2px] hover:shadow-lg hover:shadow-primary/5">
                             <span cdkDragHandle
                                 class="material-symbols-outlined text-gray-500 drag-handle">drag_indicator</span>
                             <div [routerLink]="['/profile', player.userId]"
@@ -281,7 +281,7 @@
                     id="teamB" cdkDropList [cdkDropListData]="teamB()" (cdkDropListDropped)="drop($event)"
                     [cdkDropListDisabled]="event()?.status === 'active' || event()?.status === 'finished'">
 
-                    <div class="flex justify-between items-center pt-2">
+                    <div class="team-card-header team-card-header-b flex justify-between items-center pt-2">
                         <div class="flex items-center gap-3">
                             <span class="material-symbols-outlined text-blue-400 text-2xl font-bold">nights_stay</span>
                             <span class="text-xl text-white italic tracking-tighter">"B" csapat</span>
@@ -301,7 +301,7 @@
                     <div class="flex flex-col gap-3 min-h-[150px] custom-scrollbar">
                         @for (player of teamB(); track player.userId) {
                         <div cdkDrag
-                            class="group flex items-center gap-3 bg-card-dark border border-card-border hover:border-primary/50 text-white rounded-2xl p-4 shadow-sm transition-all hover:translate-y-[-2px] hover:shadow-lg hover:shadow-primary/5">
+                            class="team-player-card group flex items-center gap-3 bg-card-dark border border-card-border hover:border-primary/50 text-white rounded-2xl p-4 shadow-sm transition-all hover:translate-y-[-2px] hover:shadow-lg hover:shadow-primary/5">
                             <span cdkDragHandle
                                 class="material-symbols-outlined text-gray-500 drag-handle">drag_indicator</span>
                             <div [routerLink]="['/profile', player.userId]"
@@ -389,14 +389,14 @@
         <!-- Management Actions Section -->
         @if (isAdmin()) {
         <div
-            class="bg-card-dark/60 backdrop-blur-xl border border-card-border rounded-3xl p-6 shadow-2xl flex flex-col sm:flex-row justify-between items-center gap-6 ring-1 ring-white/10 border-t-white/10">
+            class="card-gradient bg-card-dark/60 backdrop-blur-xl border border-card-border rounded-3xl p-6 shadow-2xl flex flex-col sm:flex-row justify-between items-center gap-6 ring-1 ring-white/10 border-t-white/10">
             <div class="flex items-center gap-4">
                 <div class="size-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary">
                     <span class="material-symbols-outlined text-3xl font-bold">casino</span>
                 </div>
                 <div>
                     <h2 class="text-white font-black text-xl tracking-tight">Kezelés</h2>
-                    <p class="text-gray-400 text-xs font-medium tracking-widest">Csapatok és
+                    <p class="text-gray-400 text-md font-medium">Csapatok és
                         sorsolás
                         vezérlése</p>
                 </div>
@@ -455,7 +455,7 @@
         <!-- MVP Voting Section -->
         @if (event()?.status === 'finished' && event()?.mvpVotingEnabled) {
         <div
-            class="bg-card-dark/60 backdrop-blur-xl border border-card-border rounded-3xl p-6 shadow-2xl flex flex-col gap-6 ring-1 ring-white/10 border-t-white/10">
+            class="card-gradient bg-card-dark/60 backdrop-blur-xl border border-card-border rounded-3xl p-6 shadow-2xl flex flex-col gap-6 ring-1 ring-white/10 border-t-white/10">
             <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div class="flex items-center gap-4">
                     <div class="size-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary">
@@ -477,13 +477,20 @@
             </div>
 
             @if (mvpWinnerMember()) {
-            <div class="flex items-center gap-4 p-4 rounded-2xl bg-primary/10 border border-primary/20">
-                <div class="size-12 rounded-2xl bg-primary/20 text-primary flex items-center justify-center">
-                    <span class="material-symbols-outlined text-2xl">military_tech</span>
-                </div>
-                <div class="flex-1">
-                    <p class="text-sm text-gray-400 font-bold uppercase tracking-widest">Győztes</p>
-                    <p class="text-white text-lg font-black">{{ mvpWinnerMember()?.name }}</p>
+            <div class="flex flex-col items-center justify-center text-center gap-3 rounded-2xl">
+                <div>
+                    <div class="flex items-center justify-center gap-2">
+                        <div
+                            class="size-8 rounded-xl bg-primary/20 text-primary flex items-center justify-center">
+                            <span class="material-symbols-outlined text-[18px]">military_tech</span>
+                        </div>
+                        <p class="text-sm text-gray-400 font-bold uppercase tracking-widest">Győztes</p>
+                    </div>
+                    <div class="flex items-center justify-center gap-3">
+                        <p class="text-white text-2xl sm:text-4xl font-black tracking-tight">
+                            {{ mvpWinnerMember()?.name }}
+                        </p>
+                    </div>
                 </div>
                 <div class="text-primary font-black text-sm">+5 ELO</div>
             </div>
@@ -499,8 +506,10 @@
                     </div>
                     }
                     @if (!mvpVotingOpen()) {
-                    <div class="text-xs text-red-400 font-black uppercase tracking-widest">
-                        A szavazási időszak lezárult.
+                    <div class="flex justify-end" style="padding-left: 25%;">
+                        <div class="text-base text-red-600 font-black uppercase tracking-widest text-right">
+                            A szavazási időszak lezárult.
+                        </div>
                     </div>
                     }
                 </div>
@@ -544,6 +553,7 @@
                         }
                     </div>
 
+                    @if (mvpVotingOpen()) {
                     <div class="flex justify-center">
                         <button type="submit" [disabled]="isSubmitting() || !canVoteMvp() || !selectedMvpId()"
                             class="h-12 px-8 rounded-2xl bg-primary text-background-dark font-black hover:bg-primary-dark transition-all flex items-center justify-center gap-2 shadow-lg shadow-primary/20 disabled:opacity-50">
@@ -555,6 +565,7 @@
                             Szavazat leadása
                         </button>
                     </div>
+                    }
                 </form>
             </div>
             }
@@ -583,7 +594,7 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-4">
                         @for (member of attendingMembers(); track member.userId) {
                         <div [routerLink]="['/profile', member.userId]"
-                            class="flex items-center gap-4 p-4 rounded-3xl bg-card-dark/40 border border-card-border hover:border-primary/40 transition-all group/member backdrop-blur-sm cursor-pointer">
+                            class="card-gradient flex items-center gap-4 p-4 rounded-3xl bg-card-dark/40 border border-card-border hover:border-primary/40 transition-all group/member backdrop-blur-sm cursor-pointer">
                             <div
                                 class="w-14 h-14 rounded-[1.25rem] bg-background-dark/50 overflow-hidden border border-white/5 shadow-xl group-hover/member:border-primary/50 transition-all">
                                 <img [src]="member.photo || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + member.userId"
@@ -593,7 +604,7 @@
                                 <p
                                     class="font-bold text-white group-hover/member:text-primary transition-colors text-lg tracking-tight">
                                     {{ member.name }}</p>
-                                <p class="text-[10px] text-gray-400 font-black uppercase tracking-[0.15em]">
+                                <p class="text-[10px] text-gray-400 font-black text-sm">
                                     {{
                                     member.role }}</p>
                             </div>
@@ -629,7 +640,7 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-4 opacity-50">
                         @for (member of notRespondingMembers(); track member.userId) {
                         <div [routerLink]="['/profile', member.userId]"
-                            class="flex items-center gap-4 p-4 rounded-3xl bg-background-dark/30 border border-card-border hover:bg-card-dark/40 transition-all grayscale opacity-70 group cursor-pointer hover:grayscale-0 hover:opacity-100">
+                            class="card-gradient flex items-center gap-4 p-4 rounded-3xl bg-background-dark/30 border border-card-border hover:bg-card-dark/40 transition-all grayscale opacity-70 group cursor-pointer hover:grayscale-0 hover:opacity-100">
                             <div
                                 class="w-14 h-14 rounded-[1.25rem] bg-background-dark overflow-hidden border border-white/5">
                                 <img [src]="member.photo || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + member.userId"

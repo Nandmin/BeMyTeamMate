@@ -30,6 +30,41 @@
     color: #2bee7c;
 }
 
+.team-card-header {
+  position: relative;
+  margin: -1.5rem -1.5rem 1rem;
+  padding: 1.1rem 1.5rem 1rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.06) 0%, rgba(255, 255, 255, 0.02) 65%, rgba(255, 255, 255, 0) 100%);
+  border-radius: 2rem 2rem 1.4rem 1.4rem;
+}
+
+.team-card-header::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -1px;
+  height: 2px;
+  opacity: 0.7;
+}
+
+.team-card-header-a::after {
+  background: linear-gradient(90deg, rgba(43, 238, 124, 0.85), rgba(43, 238, 124, 0.1), transparent);
+}
+
+.team-card-header-b::after {
+  background: linear-gradient(90deg, rgba(96, 165, 250, 0.85), rgba(96, 165, 250, 0.1), transparent);
+}
+
+.team-player-card {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.06) 0%, rgba(255, 255, 255, 0.02) 65%, rgba(255, 255, 255, 0) 100%);
+}
+
+.card-gradient {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.06) 0%, rgba(255, 255, 255, 0.02) 65%, rgba(255, 255, 255, 0) 100%);
+}
+
 :host {
     display: block;
     background-color: var(--bg-primary); 
@@ -173,4 +208,18 @@ h1, h2, h3 {
                 0 8px 10px 1px rgba(0, 0, 0, 0.06),
                 0 3px 14px 2px rgba(0, 0, 0, 0.05);
   }
+
+  .team-card-header {
+    border-bottom-color: rgba(15, 23, 42, 0.08);
+    background: linear-gradient(180deg, rgba(15, 23, 42, 0.05) 0%, rgba(15, 23, 42, 0.02) 65%, rgba(15, 23, 42, 0) 100%);
+  }
+
+  .team-player-card {
+    background: linear-gradient(180deg, rgba(15, 23, 42, 0.05) 0%, rgba(15, 23, 42, 0.02) 65%, rgba(15, 23, 42, 0) 100%);
+  }
+
+  .card-gradient {
+    background: linear-gradient(180deg, rgba(15, 23, 42, 0.05) 0%, rgba(15, 23, 42, 0.02) 65%, rgba(15, 23, 42, 0) 100%);
+  }
+
 }

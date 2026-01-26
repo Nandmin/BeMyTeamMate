@@ -276,10 +276,35 @@ export class EventDetailPage {
   }
 
   teamABalance = computed(() => {
-    const a = this.teamA().reduce((acc, m) => acc + this.getPlayerRating(m), 0);
-    const b = this.teamB().reduce((acc, m) => acc + this.getPlayerRating(m), 0);
-    if (a + b === 0) return 50;
-    return Math.round((a / (a + b)) * 100);
+    const liveA = this.teamA();
+    const liveB = this.teamB();
+    if (liveA.length > 0 || liveB.length > 0) {
+      const a = liveA.reduce((acc, m) => acc + this.getPlayerRating(m), 0);
+      const b = liveB.reduce((acc, m) => acc + this.getPlayerRating(m), 0);
+      if (a + b === 0) return 50;
+      return Math.round((a / (a + b)) * 100);
+    }
+
+    const event = this.event();
+    if (
+      (event?.status === 'active' || event?.status === 'finished') &&
+      event?.playerRatingSnapshot &&
+      event?.teamA?.length &&
+      event?.teamB?.length
+    ) {
+      const sumA = event.teamA.reduce(
+        (acc, userId) => acc + (event.playerRatingSnapshot?.[userId] || 0),
+        0
+      );
+      const sumB = event.teamB.reduce(
+        (acc, userId) => acc + (event.playerRatingSnapshot?.[userId] || 0),
+        0
+      );
+      if (sumA + sumB > 0) {
+        return Math.round((sumA / (sumA + sumB)) * 100);
+      }
+    }
+    return 50;
   });
 
   teamBAverge = computed(() => {

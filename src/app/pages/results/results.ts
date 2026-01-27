@@ -20,6 +20,7 @@ export class Results {
   private groupService = inject(GroupService);
   private router = inject(Router);
 
+  user = toSignal(this.authService.user$, { initialValue: null });
   userGroups = toSignal(this.groupService.getUserGroups(), { initialValue: [] });
 
   periodOptions = [
@@ -90,6 +91,12 @@ export class Results {
     }
 
     return matches;
+  });
+
+  mvpWinsCount = computed(() => {
+    const userId = this.user()?.uid;
+    if (!userId) return 0;
+    return this.filteredMatches().filter((match) => match.mvpWinnerId === userId).length;
   });
 
   setPeriod(periodId: string) {
@@ -382,6 +389,7 @@ export class Results {
       resultLabel,
       isWin,
       eloDelta,
+      mvpWinnerId: event.mvpWinnerId ?? null,
       sortTime: date.getTime(),
     };
   }
@@ -405,5 +413,6 @@ interface RecentMatchRow {
   resultLabel: string;
   isWin: boolean | null;
   eloDelta: number;
+  mvpWinnerId: string | null;
   sortTime: number;
 }

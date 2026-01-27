@@ -94,52 +94,75 @@
       </div>
     </div>
     <!-- KPI Cards -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
       <!-- Card 1 -->
       <div
-        class="relative overflow-hidden rounded-2xl bg-gradient-to-b from-dark-accent to-background-dark p-4 sm:p-6 border border-border-dark group hover:border-primary/50 transition-colors">
-        <div class="flex justify-between items-start mb-4">
-          <div class="p-2 bg-[#2bee7c]/10 rounded-lg text-primary">
-            <span class="material-symbols-outlined">stadium</span>
+        class="relative overflow-hidden rounded-2xl bg-gradient-to-b from-dark-accent to-background-dark p-4 sm:p-6 border border-border-dark group hover:border-primary/50 transition-colors flex flex-col items-center text-center">
+        <div class="flex justify-center mb-4 w-full">
+          <div class="flex items-center justify-center gap-3">
+            <div class="p-2 bg-[#2bee7c]/10 rounded-lg text-primary">
+              <span class="material-symbols-outlined">stadium</span>
+            </div>
+            <p class="text-[#1F3A2B] dark:text-[#92c9a9] text-xs sm:text-sm font-medium uppercase tracking-wider">
+              Lejátszott meccsek
+            </p>
           </div>
-          <span class="flex items-center gap-1 text-primary text-xs font-bold bg-[#2bee7c]/10 px-2 py-1 rounded-full">
+          <!-- <span class="flex items-center gap-1 text-primary text-xs font-bold bg-[#2bee7c]/10 px-2 py-1 rounded-full">
             <span class="material-symbols-outlined text-sm">trending_up</span> +2
-          </span>
+          </span> -->
         </div>
-        <p class="text-[#1F3A2B] dark:text-[#92c9a9] text-xs sm:text-sm font-medium uppercase tracking-wider">
-          Lejátszott meccsek
-        </p>
-        <p class="text-white text-3xl sm:text-4xl font-bold mt-1">{{ filteredMatches().length }}</p>
+        <p class="text-white text-3xl sm:text-4xl font-bold">{{ filteredMatches().length }}</p>
       </div>
       <!-- Card 2 -->
       <div
-        class="relative overflow-hidden rounded-2xl bg-gradient-to-b from-dark-accent to-background-dark p-4 sm:p-6 border border-border-dark group hover:border-primary/50 transition-colors">
-        <div class="flex justify-between items-start mb-4">
-          <div class="p-2 bg-[#2bee7c]/10 rounded-lg text-primary">
-            <span class="material-symbols-outlined">emoji_events</span>
+        class="relative overflow-hidden rounded-2xl bg-gradient-to-b from-dark-accent to-background-dark p-4 sm:p-6 border border-border-dark group hover:border-primary/50 transition-colors flex flex-col items-center text-center">
+        <div class="flex justify-center mb-4 w-full">
+          <div class="flex items-center justify-center gap-3">
+            <div class="p-2 bg-[#2bee7c]/10 rounded-lg text-primary">
+              <span class="material-symbols-outlined">emoji_events</span>
+            </div>
+            <p class="text-[#1F3A2B] dark:text-[#92c9a9] text-xs sm:text-sm font-medium uppercase tracking-wider">
+              Győzelmi arány
+            </p>
           </div>
-          <span class="flex items-center gap-1 text-primary text-xs font-bold bg-[#2bee7c]/10 px-2 py-1 rounded-full">
+          <!-- <span class="flex items-center gap-1 text-primary text-xs font-bold bg-[#2bee7c]/10 px-2 py-1 rounded-full">
             <span class="material-symbols-outlined text-sm">trending_up</span> +5%
-          </span>
+          </span> -->
         </div>
-        <p class="text-[#1F3A2B] dark:text-[#92c9a9] text-xs sm:text-sm font-medium uppercase tracking-wider">Győzelmi
-          arány</p>
-        <p class="text-white text-3xl sm:text-4xl font-bold mt-1">{{ winRatePercent() }}%</p>
+        <p class="text-white text-3xl sm:text-4xl font-bold">{{ winRatePercent() }}%</p>
       </div>
       <!-- Card 3 -->
       <div
-        class="relative overflow-hidden rounded-2xl bg-gradient-to-b from-dark-accent to-background-dark p-4 sm:p-6 border border-border-dark group hover:border-primary/50 transition-colors">
-        <div class="flex justify-between items-start mb-4">
-          <div class="p-2 bg-[#2bee7c]/10 rounded-lg text-primary">
-            <span class="material-symbols-outlined">scoreboard</span>
+        class="relative overflow-hidden rounded-2xl bg-gradient-to-b from-dark-accent to-background-dark p-4 sm:p-6 border border-border-dark group hover:border-primary/50 transition-colors flex flex-col items-center text-center">
+        <div class="flex justify-center mb-4 w-full">
+          <div class="flex items-center justify-center gap-3">
+            <div class="p-2 bg-[#2bee7c]/10 rounded-lg text-primary">
+              <span class="material-symbols-outlined">scoreboard</span>
+            </div>
+            <p class="text-[#1F3A2B] dark:text-[#92c9a9] text-xs sm:text-sm font-medium uppercase tracking-wider">
+              Összes pont
+            </p>
           </div>
-          <span class="flex items-center gap-1 text-primary text-xs font-bold bg-[#2bee7c]/10 px-2 py-1 rounded-full">
+          <!-- <span class="flex items-center gap-1 text-primary text-xs font-bold bg-[#2bee7c]/10 px-2 py-1 rounded-full">
             <span class="material-symbols-outlined text-sm">trending_up</span> +12
-          </span>
+          </span> -->
         </div>
-        <p class="text-[#1F3A2B] dark:text-[#92c9a9] text-xs sm:text-sm font-medium uppercase tracking-wider">Összes
-          pont</p>
-        <p class="text-white text-3xl sm:text-4xl font-bold mt-1">{{ earnedEloTotal() }}</p>
+        <p class="text-white text-3xl sm:text-4xl font-bold">{{ earnedEloTotal() }}</p>
+      </div>
+      <!-- Card 4 -->
+      <div
+        class="relative overflow-hidden rounded-2xl bg-gradient-to-b from-dark-accent to-background-dark p-4 sm:p-6 border border-border-dark group hover:border-primary/50 transition-colors flex flex-col items-center text-center">
+        <div class="flex justify-center mb-4 w-full">
+          <div class="flex items-center justify-center gap-3">
+            <div class="p-2 bg-[#2bee7c]/10 rounded-lg text-primary">
+              <span class="material-symbols-outlined">military_tech</span>
+            </div>
+            <p class="text-[#1F3A2B] dark:text-[#92c9a9] text-xs sm:text-sm font-medium uppercase tracking-wider">
+              MVP győztes
+            </p>
+          </div>
+        </div>
+        <p class="text-white text-3xl sm:text-4xl font-bold">{{ mvpWinsCount() }}</p>
       </div>
     </div>
     <!-- Charts Section -->

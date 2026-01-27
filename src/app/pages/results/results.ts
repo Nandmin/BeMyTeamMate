@@ -1,4 +1,4 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, computed, effect, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
@@ -48,6 +48,10 @@ export class Results {
   selectedPeriod = signal('1m');
   selectedSport = signal('all');
   selectedTeam = signal('all');
+  recentTableOpen = signal(true);
+  pageSizeOptions = [10, 20, 30, 50] as const;
+  pageSize = signal<number>(10);
+  currentPage = signal<number>(1);
 
   recentMatches = toSignal(
     combineLatest([this.authService.user$, this.groupService.getUserGroups()]).pipe(
@@ -94,22 +98,88 @@ export class Results {
     return matches;
   });
 
+  totalPages = computed(() => {
+    const total = this.filteredMatches().length;
+    const size = Math.max(1, this.pageSize());
+    return Math.max(1, Math.ceil(total / size));
+  });
+
+  pagedMatches = computed(() => {
+    const matches = this.filteredMatches();
+    const size = Math.max(1, this.pageSize());
+    const totalPages = Math.max(1, Math.ceil(matches.length / size));
+    const safePage = Math.min(this.currentPage(), totalPages);
+    const start = (safePage - 1) * size;
+    return matches.slice(start, start + size);
+  });
+
+  pageStart = computed(() => {
+    const total = this.filteredMatches().length;
+    if (total === 0) return 0;
+    return (this.currentPage() - 1) * this.pageSize() + 1;
+  });
+
+  pageEnd = computed(() => {
+    const total = this.filteredMatches().length;
+    if (total === 0) return 0;
+    return Math.min(this.currentPage() * this.pageSize(), total);
+  });
+
   mvpWinsCount = computed(() => {
     const userId = this.user()?.uid;
     if (!userId) return 0;
     return this.filteredMatches().filter((match) => match.mvpWinnerId === userId).length;
   });
 
+  private clampPaginationEffect = effect(() => {
+    const totalPages = this.totalPages();
+    const current = this.currentPage();
+    if (current > totalPages) {
+      this.currentPage.set(totalPages);
+    }
+    if (current < 1) {
+      this.currentPage.set(1);
+    }
+  });
+
   setPeriod(periodId: string) {
     this.selectedPeriod.set(periodId);
+    this.currentPage.set(1);
   }
 
   setSport(sportId: string) {
     this.selectedSport.set(sportId);
+    this.currentPage.set(1);
   }
 
   setTeam(teamId: string) {
     this.selectedTeam.set(teamId);
+    this.currentPage.set(1);
+  }
+
+  toggleRecentTable() {
+    this.recentTableOpen.update((open) => !open);
+  }
+
+  setPageSize(size: string | number) {
+    const numericSize = typeof size === 'number' ? size : Number(size);
+    const safeSize = Number.isFinite(numericSize) && numericSize > 0 ? numericSize : 10;
+    this.pageSize.set(safeSize);
+    this.currentPage.set(1);
+  }
+
+  goToPage(page: number) {
+    const total = this.totalPages();
+    const safePage = Math.min(Math.max(1, page), total);
+    this.currentPage.set(safePage);
+  }
+
+  nextPage() {
+    this.goToPage(this.currentPage() + 1);
+  }
+
+  prevPage() {
+    this.goToPage(this.currentPage() - 1);
   }
 
   selectedPeriodLabel(): string {
@@ -487,6 +557,3 @@ interface RecentMatchRow {
   mvpWinnerId: string | null;
   sortTime: number;
 }
-
-
-

@@ -291,16 +291,18 @@
               <tr class="text-[#1F3A2B] dark:text-[#2bee7c] text-xs uppercase border-b border-border-dark">
                 <th class="pb-3 pl-2 font-medium">Dátum</th>
                 <th class="pb-3 font-medium">Sportág</th>
-                <th class="pb-3 font-medium">Ellenfél</th>
                 <th class="pb-3 font-medium text-center">Eredmény</th>
+                <th class="pb-3 font-medium text-center">Szerzett gólok</th>
+                <th class="pb-3 font-medium text-center">Assists</th>
+                <th class="pb-3 font-medium text-right">ELO változás</th>
                 <th class="pb-3 font-medium text-right pr-2">Részletek</th>
               </tr>
             </thead>
             <tbody class="text-sm">
               @if (filteredMatches().length === 0) {
               <tr>
-                <td class="py-6 text-center text-[#1F3A2B] dark:text-[#2bee7c]" colspan="5">
-                  Nincs lej?tszott meccs.
+                <td class="py-6 text-center text-[#1F3A2B] dark:text-[#2bee7c]" colspan="7">
+                  Nincs lejátszott meccs.
                 </td>
               </tr>
               } @else {
@@ -316,7 +318,6 @@
                     <span>{{ match.sportLabel }}</span>
                   </div>
                 </td>
-                <td class="py-4 text-[#1F3A2B] dark:text-white">{{ match.opponent }}</td>
                 <td class="py-4 text-center">
                   <span class="inline-flex items-center justify-center px-2.5 py-0.5 rounded font-bold" [ngClass]="
                       match.isWin === null
@@ -328,6 +329,18 @@
                     {{ match.resultLabel }}
                   </span>
                 </td>
+                <td class="py-4 text-center text-[#1F3A2B] dark:text-white font-semibold">{{ match.goals }}</td>
+                <td class="py-4 text-center text-[#1F3A2B] dark:text-white font-semibold">{{ match.assists }}</td>
+                
+                <td class="py-4 text-right font-semibold" [ngClass]="
+    match.eloDelta > 0
+      ? 'text-primary'
+      : match.eloDelta < 0
+      ? 'text-red-400'
+      : 'text-[#1F3A2B] dark:text-white'
+  ">
+  {{ match.eloDelta > 0 ? '+' : '' }}{{ match.eloDelta }}
+</td>
                 <td class="py-4 text-right pr-2">
                   <button class="text-[#1F3A2B] dark:text-[#92c9a9] group-hover:text-white transition-colors"
                     (click)="openMatch(match)">
@@ -344,3 +357,6 @@
     </div>
   </div>
 </div>
+
+
+

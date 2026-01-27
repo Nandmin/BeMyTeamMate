@@ -97,7 +97,7 @@ export class CreateEventPage implements OnInit {
       };
     } catch (error) {
       console.error('Error loading event:', error);
-      await this.modalService.alert('Hiba tortent az esemeny betolteseakor.', 'Hiba', 'error');
+      await this.modalService.alert('Hiba törtent az esemény betöltésekor.', 'Hiba', 'error');
       this.router.navigate(['/groups', this.groupId]);
     }
   }
@@ -159,7 +159,7 @@ export class CreateEventPage implements OnInit {
       this.router.navigate(['/groups', this.groupId]);
     } catch (error) {
       console.error('Error saving event:', error);
-      await this.modalService.alert('Hiba tortent az esemeny mentesekor.', 'Hiba', 'error');
+      await this.modalService.alert('Hiba törtent az esemény mentésekor.', 'Hiba', 'error');
     } finally {
       this.isSubmitting.set(false);
     }
@@ -180,7 +180,7 @@ export class CreateEventPage implements OnInit {
         this.router.navigate(['/groups', this.groupId]);
       } catch (error) {
         console.error('Error deleting event:', error);
-        await this.modalService.alert('Hiba tortent az esemeny torlesekor.', 'Hiba', 'error');
+        await this.modalService.alert('Hiba törtent az esemény törlésekor.', 'Hiba', 'error');
       } finally {
         this.isSubmitting.set(false);
       }

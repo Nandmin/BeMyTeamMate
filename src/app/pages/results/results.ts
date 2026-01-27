@@ -137,29 +137,72 @@ export class Results {
     const matches = this.filteredMatches();
     if (matches.length === 0) return;
 
-    const XLSX = await import('xlsx');
+    // Angular dev server (Vite) can choke on dynamic CJS imports; the minified build works reliably.
+    const ExcelJS = (await import('exceljs/dist/exceljs.min.js')) as any;
 
     const rows = matches.map((match) => ({
-      Dátum: match.dateLabel,
-      Csapat: this.getGroupName(match.groupId),
-      Sportág: match.sportLabel,
-      Ellenfél: match.opponent,
-      Eredmény: match.resultLabel,
-      'ELO változás': match.eloDelta,
-      Kimenetel: match.isWin === null ? 'Ismeretlen' : match.isWin ? 'Győzelem' : 'Vereség',
+      datum: match.dateLabel,
+      csapat: this.getGroupName(match.groupId),
+      sportag: match.sportLabel,
+      eredmeny: match.resultLabel,
+      szerzettGolok: match.goals,
+      assists: match.assists,
+      eloValtozas: match.eloDelta,
+      kimenetel: match.isWin === null ? 'Ismeretlen' : match.isWin ? 'Győzelem' : 'Vereség',
     }));
 
-    const worksheet = XLSX.utils.json_to_sheet(rows);
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, 'Legutóbbi_eredmények');
+    const workbook = new ExcelJS.Workbook();
+    const sheet = workbook.addWorksheet('Legutóbbi_eredmények', {
+      views: [{ state: 'frozen', ySplit: 1 }],
+    });
 
-    const buffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
+    const columns = [
+      { header: 'Dátum', key: 'datum', width: 12 },
+      { header: 'Csapat', key: 'csapat', width: 22 },
+      { header: 'Sportág', key: 'sportag', width: 16 },
+      { header: 'Eredmény', key: 'eredmeny', width: 12 },
+      { header: 'Szerzett gólok', key: 'szerzettGolok', width: 16 },
+      { header: 'Assists', key: 'assists', width: 10 },
+      { header: 'ELO változás', key: 'eloValtozas', width: 14 },
+      { header: 'Kimenetel', key: 'kimenetel', width: 14 },
+    ] as const;
+
+    sheet.columns = columns.map((col) => ({
+      header: col.header,
+      key: col.key,
+      width: col.width,
+    }));
+
+    sheet.addRows(rows);
+
+    const lastColumnLetter = sheet.getColumn(columns.length).letter;
+    sheet.autoFilter = {
+      from: 'A1',
+      to: `${lastColumnLetter}1`,
+    };
+
+    const headerRow = sheet.getRow(1);
+    headerRow.height = 18;
+    headerRow.eachCell((cell: any) => {
+      cell.font = { bold: true, color: { argb: 'FF000000' } };
+      cell.alignment = { vertical: 'middle', horizontal: 'center' };
+      cell.fill = {
+        type: 'pattern',
+        pattern: 'solid',
+        fgColor: { argb: 'FFD9D9D9' },
+      };
+    });
+
+    sheet.getColumn('G').numFmt = '+0;-0;0';
+
+    const buffer = await workbook.xlsx.writeBuffer();
     const blob = new Blob([buffer], {
       type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
     });
 
     const timestamp = new Date().toISOString().slice(0, 10).replace(/-/g, '');
-    const filename = `Legutóbbi_eredményeim_${timestamp}.xlsx`;
+    const safeName = (this.user()?.displayName || 'user').replace(/[^a-zA-Z0-9_-]/g, '_');
+    const filename = `Legutóbbi_eredmények_${safeName}_${timestamp}.xlsx`;
     const url = URL.createObjectURL(blob);
     const anchor = document.createElement('a');
     anchor.href = url;
@@ -395,7 +438,10 @@ export class Results {
       month: '2-digit',
       day: '2-digit',
     });
-    const baseEloDelta = event.playerStats?.[userId]?.eloDelta ?? 0;
+    const playerStats = event.playerStats?.[userId];
+    const goals = playerStats?.goals ?? 0;
+    const assists = playerStats?.assists ?? 0;
+    const baseEloDelta = playerStats?.eloDelta ?? 0;
     const mvpBonus =
       event.mvpEloAwarded && event.mvpWinnerId && event.mvpWinnerId === userId ? 5 : 0;
     const eloDelta = baseEloDelta + mvpBonus;
@@ -409,6 +455,8 @@ export class Results {
       opponent,
       resultLabel,
       isWin,
+      goals,
+      assists,
       eloDelta,
       mvpWinnerId: event.mvpWinnerId ?? null,
       sortTime: date.getTime(),
@@ -433,7 +481,12 @@ interface RecentMatchRow {
   opponent: string;
   resultLabel: string;
   isWin: boolean | null;
+  goals: number;
+  assists: number;
   eloDelta: number;
   mvpWinnerId: string | null;
   sortTime: number;
 }
+
+
+

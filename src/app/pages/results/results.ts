@@ -1,6 +1,6 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router, RouterModule } from '@angular/router';
+import { Router } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { combineLatest, map, of, switchMap } from 'rxjs';
 import { AuthService } from '../../services/auth.service';
@@ -10,7 +10,7 @@ import { GroupMember, GroupService } from '../../services/group.service';
 @Component({
   selector: 'app-results',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule],
   templateUrl: './results.html',
   styleUrl: './results.scss',
 })
@@ -123,6 +123,41 @@ export class Results {
 
   openMatch(match: RecentMatchRow) {
     this.router.navigate(['/groups', match.groupId, 'events', match.eventId]);
+  }
+
+  async exportRecentResults(): Promise<void> {
+    const matches = this.filteredMatches();
+    if (matches.length === 0) return;
+
+    const XLSX = await import('xlsx');
+
+    const rows = matches.map((match) => ({
+      Dátum: match.dateLabel,
+      Csapat: this.getGroupName(match.groupId),
+      Sportág: match.sportLabel,
+      Ellenfél: match.opponent,
+      Eredmény: match.resultLabel,
+      'ELO változás': match.eloDelta,
+      Kimenetel: match.isWin === null ? 'Ismeretlen' : match.isWin ? 'Győzelem' : 'Vereség',
+    }));
+
+    const worksheet = XLSX.utils.json_to_sheet(rows);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Legutóbbi_eredmények');
+
+    const buffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
+    const blob = new Blob([buffer], {
+      type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    });
+
+    const timestamp = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+    const filename = `Legutóbbi_eredményeim_${timestamp}.xlsx`;
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement('a');
+    anchor.href = url;
+    anchor.download = filename;
+    anchor.click();
+    URL.revokeObjectURL(url);
   }
 
   getSportIcon(sport?: string): string {
@@ -265,6 +300,10 @@ export class Results {
     const id = sport.toLowerCase();
     const match = this.sportOptions.find((opt) => opt.id === id);
     return match?.name || sport;
+  }
+
+  private getGroupName(groupId: string): string {
+    return this.userGroups().find((group) => group.id === groupId)?.name || groupId;
   }
 
   private mapGroupMatches(

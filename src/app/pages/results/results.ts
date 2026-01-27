@@ -21,6 +21,7 @@ export class Results {
   private router = inject(Router);
 
   user = toSignal(this.authService.user$, { initialValue: null });
+  fullUser = this.authService.fullCurrentUser;
   userGroups = toSignal(this.groupService.getUserGroups(), { initialValue: [] });
 
   periodOptions = [
@@ -183,7 +184,24 @@ export class Results {
   }
 
   earnedEloTotal(): number {
-    return this.filteredMatches().reduce((sum, match) => sum + match.eloDelta, 0);
+    const sumOfDeltas = this.filteredMatches().reduce((sum, match) => sum + match.eloDelta, 0);
+
+    const period = this.periodOptions.find((p) => p.id === this.selectedPeriod());
+    const hasPeriodCutoff = typeof period?.days === 'number';
+    const noExtraFilters = this.selectedSport() === 'all' && this.selectedTeam() === 'all';
+    const createdAt = this.fullUser()?.createdAt;
+    const currentElo = this.fullUser()?.elo;
+
+    if (hasPeriodCutoff && noExtraFilters && createdAt && typeof currentElo === 'number') {
+      const createdAtTime = this.coerceDate(createdAt).getTime();
+      const cutoff = Date.now() - period!.days! * 24 * 60 * 60 * 1000;
+      const createdWithinPeriod = !Number.isNaN(createdAtTime) && createdAtTime >= cutoff;
+      if (createdWithinPeriod) {
+        return Math.round(currentElo - 1200);
+      }
+    }
+
+    return sumOfDeltas;
   }
 
   winLossChart = computed(() => {
@@ -377,7 +395,10 @@ export class Results {
       month: '2-digit',
       day: '2-digit',
     });
-    const eloDelta = event.playerStats?.[userId]?.eloDelta ?? 0;
+    const baseEloDelta = event.playerStats?.[userId]?.eloDelta ?? 0;
+    const mvpBonus =
+      event.mvpEloAwarded && event.mvpWinnerId && event.mvpWinnerId === userId ? 5 : 0;
+    const eloDelta = baseEloDelta + mvpBonus;
 
     return {
       eventId: event.id || '',

@@ -11,7 +11,9 @@ import { RouterLink } from '@angular/router';
 })
 export class CookieConsentComponent {
   private analyticsService = inject(AnalyticsService);
-  protected showBanner = computed(() => this.analyticsService.consent() === 'unknown');
+  protected showBanner = computed(
+    () => this.analyticsService.consent() === 'unknown' && !this.analyticsService.isNativeApp()
+  );
 
   accept() {
     this.analyticsService.grantConsent();

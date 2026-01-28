@@ -6,8 +6,6 @@ import { environment } from '../../environments/environment';
 type ConsentState = 'unknown' | 'granted' | 'denied';
 
 const CONSENT_STORAGE_KEY = 'bmt_analytics_consent';
-const CONSENT_DAY_KEY = 'bmt_analytics_consent_day';
-
 @Injectable({ providedIn: 'root' })
 export class AnalyticsService {
   private readonly measurementId = environment.firebase.measurementId;
@@ -15,9 +13,11 @@ export class AnalyticsService {
   private readonly router: Router;
   private scriptLoaded = false;
   readonly consent = signal<ConsentState>('unknown');
+  readonly isNativeWebView = signal(false);
 
   constructor(router: Router) {
     this.router = router;
+    this.isNativeWebView.set(this.detectNativeWebView());
     this.restoreConsent();
   }
 
@@ -31,6 +31,9 @@ export class AnalyticsService {
       });
 
     this.loadGtag();
+    if (this.isNativeWebView()) {
+      this.setConsent('granted');
+    }
     this.applyConsent();
     if (this.consent() === 'granted') {
       this.trackPageView(this.router.url);
@@ -146,5 +149,17 @@ export class AnalyticsService {
     gtag('consent', 'update', {
       analytics_storage: this.consent() === 'granted' ? 'granted' : 'denied',
     });
+  }
+
+  private detectNativeWebView() {
+    if (typeof window === 'undefined' || typeof navigator === 'undefined') return false;
+    const w = window as any;
+    if (w.__BMT_NATIVE_APP === true) return true;
+    const ua = navigator.userAgent?.toLowerCase?.() ?? '';
+    return ua.includes('dotnetmaui') || ua.includes('maui');
+  }
+
+  isNativeApp() {
+    return this.isNativeWebView();
   }
 }

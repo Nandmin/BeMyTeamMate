@@ -1,16 +1,19 @@
 import { Component, signal, inject } from '@angular/core';
-import { RouterOutlet, RouterLink, RouterLinkActive, Router, NavigationEnd } from '@angular/router';
+import { Router, NavigationEnd, RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
 import { filter } from 'rxjs/operators';
 import { FooterComponent } from './components/footer/footer';
 import { HeaderComponent } from './components/header/header';
 import { ModalComponent } from './components/modal/modal.component';
+import { CookieConsentComponent } from './components/cookie-consent/cookie-consent';
 
 import { ThemeService } from './services/theme.service';
 import { NotificationService } from './services/notification.service';
 import { AuthService } from './services/auth.service';
+import { AnalyticsService } from './services/analytics.service';
 
 @Component({
   selector: 'app-root',
+  standalone: true,
   imports: [
     RouterOutlet,
     RouterLink,
@@ -18,6 +21,7 @@ import { AuthService } from './services/auth.service';
     FooterComponent,
     HeaderComponent,
     ModalComponent,
+    CookieConsentComponent,
   ],
   templateUrl: './app.html',
   styleUrl: './app.scss',
@@ -28,6 +32,7 @@ export class App {
   private themeService = inject(ThemeService);
   private notificationService = inject(NotificationService);
   private authService = inject(AuthService);
+  private analyticsService = inject(AnalyticsService);
   protected readonly title = signal('BeMyTeamMate');
   protected showNav = signal(true);
   protected showFooter = signal(true);
@@ -35,6 +40,7 @@ export class App {
   private isMobile = signal(false);
 
   constructor() {
+    this.analyticsService.init();
     const mediaQuery = window.matchMedia('(max-width: 768px)');
     this.isMobile.set(mediaQuery.matches);
     mediaQuery.addEventListener('change', (event) => {

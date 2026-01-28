@@ -1,0 +1,45 @@
+@if (showBanner()) {
+  <!-- <div class="cookie-consent">
+    <div class="cookie-consent__content">
+      <div class="cookie-consent__title">Sütik és analitika</div>
+      <p class="cookie-consent__text">
+        A Google Analytics csak hozzájárulás után indul el. Elfogadod az analitikai sütiket?
+      </p>
+    </div>
+    <div class="cookie-consent__actions">
+      <button class="cookie-consent__btn cookie-consent__btn--secondary" (click)="decline()">
+        Elutasítom
+      </button>
+      <button class="cookie-consent__btn cookie-consent__btn--primary" (click)="accept()">
+        Elfogadom
+      </button>
+    </div>
+  </div> -->
+  <div class="cookie-banner">
+      <div class="cookie-content">
+        <div class="cookie-icon">
+          <span class="material-symbols-outlined">cookie</span>
+        </div>
+        <div class="cookie-text">
+          <h3>Süti (Cookie) Tájékoztató</h3>
+          <p>
+            Az oldal használatával elfogadja, hogy sütiket (cookie-kat) használunk a felhasználói
+            élmény javítása és az oldal látogatottságának mérése érdekében, a Google Analytics
+            segítségével anonim statisztikákat gyűjtünk. Részletes információk az
+            <a routerLink="/privacy-policy" class="privacy-link">Adatvédelmi irányelvek</a> oldalon.
+          </p>
+        </div>
+        <div class="cookie-actions">
+          <button class="btn-accept" (click)="accept()">
+            <span class="material-symbols-outlined">check_circle</span>
+            Elfogadom
+          </button>
+          <button class="btn-decline" (click)="decline()">
+            <span class="material-symbols-outlined">cancel</span>
+            Elutasítom
+          </button>
+        </div>
+      </div>
+    </div>
+
+}

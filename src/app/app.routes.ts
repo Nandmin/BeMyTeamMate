@@ -17,9 +17,9 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/faq/faq.page').then((m) => m.FaqPage),
   },
   {
-    path: 'privaty-policy',
+    path: 'privacy-policy',
     loadComponent: () =>
-      import('./pages/privaty-policy/privaty-policy.page').then((m) => m.PrivatyPolicyPage),
+      import('./pages/privacy-policy/privacy-policy.page').then((m) => m.PrivacyPolicyPage),
   },
   {
     path: 'login',

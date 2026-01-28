@@ -123,7 +123,7 @@ service cloud.firestore {
         // Only Group Admins can create or delete events
         allow create, delete: if isGroupAdmin(groupId);
         
-        // Update: Admins can update anything. Members can ONLY update RSVP fields with validation.
+        // Update: Admins can update anything. Members can ONLY update RSVP fields or submit their MVP vote with validation.
         allow update: if isSignedIn() && (
           isGroupAdmin(groupId) || (
             exists(/databases/$(database)/documents/groups/$(groupId)/members/$(request.auth.uid)) &&
@@ -133,6 +133,21 @@ service cloud.firestore {
             request.resource.data.currentAttendees >= 0 &&
             (!('maxAttendees' in resource.data) || request.resource.data.currentAttendees <= resource.data.maxAttendees) &&
             (!('groupId' in request.resource.data) || request.resource.data.groupId == groupId)
+          ) || (
+            exists(/databases/$(database)/documents/groups/$(groupId)/members/$(request.auth.uid)) &&
+            request.resource.data.diff(resource.data).affectedKeys().hasOnly(['mvpVotes']) &&
+            request.resource.data.get('mvpVotes', {}) is map &&
+            resource.data.get('mvpVotes', {}) is map &&
+            // Voter can only add their own vote once
+            request.resource.data.get('mvpVotes', {}).keys().hasAny([request.auth.uid]) &&
+            !resource.data.get('mvpVotes', {}).keys().hasAny([request.auth.uid]) &&
+            resource.data.mvpVotingEnabled == true &&
+            resource.data.status == 'finished' &&
+            (!('mvpVotingEndsAt' in resource.data) || request.time < resource.data.mvpVotingEndsAt) &&
+            (request.resource.data.get('mvpVotes', {})[request.auth.uid] is string) &&
+            resource.data.attendees.hasAny([request.auth.uid]) &&
+            resource.data.attendees.hasAny([request.resource.data.get('mvpVotes', {})[request.auth.uid]]) &&
+            request.auth.uid != request.resource.data.get('mvpVotes', {})[request.auth.uid]
           )
         );
       }

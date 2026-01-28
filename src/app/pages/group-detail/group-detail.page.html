@@ -95,7 +95,7 @@
                             </div>
                             <div class="flex items-center gap-2">
                                 <p class="text-xl font-bold text-white">{{ group()?.memberCount || 0 }}</p>
-                                <p class="text-xs text-gray-400 uppercase tracking-wider">Tag</p>
+                                <p class="text-xs text-gray-400 uppercase tracking-wider">Csapattag</p>
                             </div>
                         </div>
                         <div class="flex items-center gap-3 bg-white/5 px-3 py-2 rounded-lg border border-white/10">
@@ -329,7 +329,7 @@
                                 </p>
                                 <p class="text-xs font-medium"
                                     [ngClass]="member.isAdmin ? 'text-primary' : 'text-gray-400'">{{
-                                    member.role }}</p>
+                                    member.role | roleLabel }}</p>
                                 <div class="w-full bg-white/5 rounded-full h-1 mt-2">
                                     <div class="bg-primary h-full rounded-full"
                                         [style.width.%]="member.skillLevel || 50">

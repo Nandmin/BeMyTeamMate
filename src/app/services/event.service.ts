@@ -17,6 +17,7 @@ import {
   limit,
   startAfter,
   increment,
+  docData,
 } from '@angular/fire/firestore';
 import { AuthService } from './auth.service';
 import { EloService } from './elo.service';
@@ -737,11 +738,8 @@ export class EventService {
   }
 
   watchEvent(groupId: string, eventId: string): Observable<SportEvent> {
-    return this.eventChange$.pipe(
-      startWith({ groupId, eventId }),
-      filter((changed) => changed.groupId === groupId && changed.eventId === eventId),
-      switchMap(() => from(this.getEvent(groupId, eventId)))
-    );
+    const docRef = doc(this.firestore, `groups/${groupId}/events/${eventId}`);
+    return docData(docRef, { idField: 'id' }) as Observable<SportEvent>;
   }
 
   private getCachedEvent(groupId: string, eventId: string): SportEvent | null {

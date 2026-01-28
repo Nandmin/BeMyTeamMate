@@ -19,6 +19,8 @@ A Worker működéséhez a következő környezeti változókat **titkosítottk�
 | `ADMIN_SECRET`     | (Opcionális) Titkos kulcs adminisztratív hozzáféréshez. | Generálj egy erős véletlenszerű stringet.                                                                     |
 
 > **Megjegyzés:** A `FCM_PRIVATE_KEY` bemásolásakor ügyelj arra, hogy a sortörések (`\n`) helyesen kerüljenek átadásra. A kód automatikusan kezeli a `\n` karaktert, ha szövegként másolod be.
+>
+> **Kulcsrotáció:** Ha új Service Account keypárt generálsz, frissítsd a Cloudflare Worker secrets értékeket (`FCM_CLIENT_EMAIL`, `FCM_PRIVATE_KEY`, szükség esetén `FCM_PROJECT_ID`), majd töröld/revokáld a régi kulcsot a Google Cloud Console-ban.
 
 ## 3. Worker Telepítése
 

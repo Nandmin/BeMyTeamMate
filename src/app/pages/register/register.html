@@ -79,7 +79,13 @@
                                 placeholder="pl. KovácsJános" type="text" formControlName="username" />
                         </div>
                         @if (registerForm.get('username')?.invalid && registerForm.get('username')?.touched) {
-                        <span class="text-red-400 text-xs mt-1">A felhasználónév megadása kötelező.</span>
+                        <span class="text-red-400 text-xs mt-1">
+                            @if (registerForm.get('username')?.errors?.['required']) {
+                            A felhasználónév megadása kötelező.
+                            } @else if (registerForm.get('username')?.errors?.['noAccents']) {
+                            A felhasználónév nem tartalmazhat ékezetes karaktereket.
+                            }
+                        </span>
                         }
                     </div>
                     <!-- Email -->

@@ -233,8 +233,8 @@ export class AuthService {
         additionalData.username ||
         'Névtelen',
       photoURL: firebaseUser.photoURL || existingData['photoURL'] || null,
+      role: existingData['role'] ?? 'user',
       lastLogin: serverTimestamp(),
-      // role: removed - managed only via Firebase Console/Admin SDK
       // Alapértelmezett értékek, ha még nem léteznek:
       elo: existingData['elo'] ?? 1200,
       formFactor: existingData['formFactor'] ?? 1.0,

@@ -113,7 +113,7 @@
                         <div class="flex-1 min-w-0">
                             <p class="text-white font-bold truncate hover:text-primary cursor-pointer transition-colors"
                                 [routerLink]="['/profile', member.userId]">{{ member.name }}</p>
-                            <p class="text-sm text-gray-400">{{ member.role }}</p>
+                            <p class="text-sm text-gray-400">{{ member.role | roleLabel }}</p>
                         </div>
 
                         <!-- Role Badge -->
@@ -322,7 +322,7 @@
                     <span class="material-symbols-outlined text-red-500 text-2xl">person_remove</span>
                 </div>
                 <div>
-                    <h3 class="text-xl font-bold text-white">Tag eltávolítása</h3>
+                    <h3 class="text-xl font-bold text-white">Csapattag eltávolítása</h3>
                     <p class="text-sm text-gray-400">Ez a művelet nem vonható vissza.</p>
                 </div>
             </div>
@@ -388,7 +388,7 @@
                     <span class="material-symbols-outlined text-2xl"
                         [class.text-primary]="selectedRole() === 'member'">person</span>
                     <div>
-                        <p class="font-bold text-white">Tag</p>
+                        <p class="font-bold text-white">Csapattag</p>
                         <p class="text-xs text-gray-400">Részt vehet eseményeken</p>
                     </div>
                 </button>

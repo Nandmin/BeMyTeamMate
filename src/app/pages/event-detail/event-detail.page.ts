@@ -5,6 +5,7 @@ import { GroupService, Group, GroupMember } from '../../services/group.service';
 import { EventService, SportEvent } from '../../services/event.service';
 import { AuthService } from '../../services/auth.service';
 import { ModalService } from '../../services/modal.service';
+import { RoleLabelPipe } from '../../pipes/role-label.pipe';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { switchMap } from 'rxjs';
 import {
@@ -17,7 +18,7 @@ import {
 @Component({
   selector: 'app-event-detail',
   standalone: true,
-  imports: [CommonModule, RouterModule, DragDropModule],
+  imports: [CommonModule, RouterModule, DragDropModule, RoleLabelPipe],
   templateUrl: './event-detail.page.html',
   styleUrl: './event-detail.page.scss',
 })

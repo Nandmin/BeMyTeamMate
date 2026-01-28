@@ -7,13 +7,14 @@ import { AuthService } from '../../services/auth.service';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { switchMap } from 'rxjs';
 import { CoverImageSelectorComponent } from '../../components/cover-image-selector/cover-image-selector.component';
+import { RoleLabelPipe } from '../../pipes/role-label.pipe';
 
 export type MemberRole = 'owner' | 'admin' | 'member';
 
 @Component({
   selector: 'app-group-settings',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, CoverImageSelectorComponent],
+  imports: [CommonModule, RouterModule, FormsModule, CoverImageSelectorComponent, RoleLabelPipe],
   templateUrl: './group-settings.page.html',
   styleUrl: './group-settings.page.scss',
 })
@@ -240,7 +241,7 @@ export class GroupSettingsPage {
   getRoleBadge(member: GroupMember): string {
     if (member.userId === this.group()?.ownerId) return 'Tulajdonos';
     if (member.isAdmin) return 'Admin';
-    return 'Tag';
+    return 'Csapattag';
   }
 
   getRoleBadgeClass(member: GroupMember): string {

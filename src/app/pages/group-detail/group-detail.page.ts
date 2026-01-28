@@ -10,11 +10,12 @@ import { switchMap, combineLatest, map } from 'rxjs';
 import { EventService, SportEvent } from '../../services/event.service';
 import { ModalService } from '../../services/modal.service';
 import { CoverImageSelectorComponent } from '../../components/cover-image-selector/cover-image-selector.component';
+import { RoleLabelPipe } from '../../pipes/role-label.pipe';
 
 @Component({
   selector: 'app-group-detail',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, CoverImageSelectorComponent],
+  imports: [CommonModule, RouterModule, FormsModule, CoverImageSelectorComponent, RoleLabelPipe],
   templateUrl: './group-detail.page.html',
   styleUrl: './group-detail.page.scss',
 })
@@ -62,7 +63,10 @@ export class GroupDetailPage {
             daysAhead: 3650,
             limit: 500,
           }),
-          this.eventService.getPastEventsInternal(params['id'], { daysBack: 3650, limit: 500 }),
+          this.eventService.getPastEventsInternal(params['id'], {
+            daysBack: 3650,
+            limit: 500,
+          }),
         ]).pipe(map(([upcoming, past]) => [...upcoming, ...past]))
       )
     )

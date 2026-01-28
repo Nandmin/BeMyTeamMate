@@ -170,7 +170,7 @@
                                 <div class="flex items-center gap-1">
                                     <span class="text-primary material-symbols-outlined text-[14px]">star</span>
                                     <p class="text-gray-400 text-[10px] font-black uppercase tracking-widest">
-                                        {{ player.role }} ({{ (player.skillLevel || 50) / 10 | number:'1.1-1' }}) • Elo:
+                                        {{ player.role | roleLabel }} ({{ (player.skillLevel || 50) / 10 | number:'1.1-1' }}) • Elo:
                                         {{ (event()?.status === 'active' || event()?.status === 'finished') && (event()?.playerRatingSnapshot?.[player.userId] ?? null) !== null ? event()?.playerRatingSnapshot?.[player.userId] : (player.elo || 1200) }}
                                     </p>
                                 </div>
@@ -317,7 +317,7 @@
                                 <div class="flex items-center gap-1">
                                     <span class="text-blue-400 material-symbols-outlined text-[14px]">star</span>
                                     <p class="text-gray-400 text-[10px] font-black uppercase tracking-widest">
-                                        {{ player.role }} ({{ (player.skillLevel || 50) / 10 | number:'1.1-1' }}) • Elo:
+                                        {{ player.role | roleLabel }} ({{ (player.skillLevel || 50) / 10 | number:'1.1-1' }}) • Elo:
                                         {{ (event()?.status === 'active' || event()?.status === 'finished') && (event()?.playerRatingSnapshot?.[player.userId] ?? null) !== null ? event()?.playerRatingSnapshot?.[player.userId] : (player.elo || 1200) }}
                                     </p>
                                 </div>
@@ -540,7 +540,7 @@
                                     {{ member.name }}
                                 </p>
                                 <p class="text-[10px] text-gray-400 font-black uppercase tracking-widest">
-                                    {{ member.role }}
+                                    {{ member.role | roleLabel }}
                                 </p>
                             </div>
                             <span
@@ -608,7 +608,7 @@
                                     {{ member.name }}</p>
                                 <p class="text-[10px] text-gray-400 font-black text-sm">
                                     {{
-                                    member.role }}</p>
+                                    member.role | roleLabel }}</p>
                             </div>
                             <div
                                 class="size-10 rounded-2xl bg-primary/20 text-primary flex items-center justify-center shadow-lg shadow-primary/10 border border-primary/20">
@@ -653,7 +653,7 @@
                                     class="font-bold text-white/80 text-lg tracking-tight group-hover:text-primary transition-colors">
                                     {{ member.name }}</p>
                                 <p class="text-[10px] text-gray-600 font-black uppercase tracking-[0.15em]">{{
-                                    member.role }}</p>
+                                    member.role | roleLabel }}</p>
                             </div>
                         </div>
                         } @empty {

@@ -1,7 +1,7 @@
 import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { AbstractControl, FormBuilder, ReactiveFormsModule, ValidationErrors, Validators } from '@angular/forms';
 import { AuthService } from '../../services/auth.service';
 
 @Component({
@@ -15,8 +15,16 @@ export class RegisterPage {
   private authService = inject(AuthService);
   private fb = inject(FormBuilder);
 
+  private readonly noAccentsValidator = (control: AbstractControl): ValidationErrors | null => {
+    const value = (control.value ?? '') as string;
+    if (!value) return null;
+    const normalized = value.normalize('NFD');
+    const withoutDiacritics = normalized.replace(/[\u0300-\u036f]/g, '');
+    return value === withoutDiacritics ? null : { noAccents: true };
+  };
+
   registerForm = this.fb.group({
-    username: ['', [Validators.required]],
+    username: ['', [Validators.required, this.noAccentsValidator]],
     email: ['', [Validators.required, Validators.email]],
     password: ['', [Validators.required, Validators.minLength(6)]],
     confirmPassword: ['', [Validators.required]],

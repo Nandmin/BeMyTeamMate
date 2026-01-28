@@ -107,7 +107,7 @@
                         <span
                             class="text-[20px] font-black text-primary uppercase tracking-widest whitespace-nowrap" style="font-family: 'Newsreader';">"A"
                             CSAPAT</span>
-                        <span class="text-lg text-center font-bold text-white">{{ teamABalance() }}%</span>
+                        <span class="text-lg text-center font-bold text-white">{{ teamABalance() | number: '1.2-2' }}%</span>
                     </div>
                     <div
                         class="relative flex-1 h-3 bg-card-dark rounded-full overflow-hidden border border-card-border">
@@ -120,7 +120,7 @@
                         <span
                             class="text-[20px] font-black text-white uppercase tracking-widest whitespace-nowrap" style="font-family: 'Newsreader';">"B"
                             CSAPAT</span>
-                        <span class="text-lg font-bold text-primary">{{ 100 - teamABalance() }}%</span>
+                        <span class="text-lg font-bold text-primary">{{ (100 - teamABalance()) | number: '1.2-2' }}%</span>
                     </div>
                 </div>
                 <p class="text-[20px] text-white uppercase font-black tracking-[0.3em]" style="font-family: 'Newsreader';">Erőegyensúly mutató</p>

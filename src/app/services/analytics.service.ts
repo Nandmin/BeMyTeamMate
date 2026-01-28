@@ -6,6 +6,7 @@ import { environment } from '../../environments/environment';
 type ConsentState = 'unknown' | 'granted' | 'denied';
 
 const CONSENT_STORAGE_KEY = 'bmt_analytics_consent';
+const CONSENT_DAY_KEY = 'bmt_analytics_consent_day';
 
 @Injectable({ providedIn: 'root' })
 export class AnalyticsService {
@@ -52,16 +53,41 @@ export class AnalyticsService {
   private setConsent(state: ConsentState) {
     this.consent.set(state);
     if (typeof window !== 'undefined') {
-      window.localStorage.setItem(CONSENT_STORAGE_KEY, state);
+      const payload = JSON.stringify({ state, day: this.currentDayKey() });
+      window.localStorage.setItem(CONSENT_STORAGE_KEY, payload);
     }
   }
 
   private restoreConsent() {
     if (typeof window === 'undefined') return;
-    const stored = window.localStorage.getItem(CONSENT_STORAGE_KEY) as ConsentState | null;
-    if (stored === 'granted' || stored === 'denied') {
-      this.consent.set(stored);
+    const stored = window.localStorage.getItem(CONSENT_STORAGE_KEY);
+    if (!stored) return;
+    try {
+      const parsed = JSON.parse(stored) as { state?: ConsentState; day?: string };
+      const state = parsed.state;
+      const day = parsed.day;
+      if ((state === 'granted' || state === 'denied') && typeof day === 'string') {
+        if (day === this.currentDayKey()) {
+          this.consent.set(state);
+          return;
+        }
+      }
+    } catch {
+      const legacy = stored as ConsentState;
+      if (legacy === 'granted' || legacy === 'denied') {
+        this.consent.set(legacy);
+        return;
+      }
     }
+    window.localStorage.removeItem(CONSENT_STORAGE_KEY);
+  }
+
+  private currentDayKey() {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    return `${year}${month}${day}`;
   }
 
   private loadGtag() {

@@ -179,7 +179,12 @@ export class EventDetailPage {
 
   mvpVotingEndAt = computed(() => {
     const event = this.event();
-    if (!event?.date) return null;
+    if (!event) return null;
+    if (event.mvpVotingEndsAt) {
+      const endDate = this.coerceDate(event.mvpVotingEndsAt);
+      return Number.isNaN(endDate.getTime()) ? null : endDate;
+    }
+    if (!event.date) return null;
     const eventDate = this.coerceDate(event.date);
     if (Number.isNaN(eventDate.getTime())) return null;
     eventDate.setHours(23, 59, 59, 999);

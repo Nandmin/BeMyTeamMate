@@ -52,6 +52,7 @@ export interface SportEvent {
   maxAttendees: number;
   mvpVotingEnabled?: boolean;
   mvpVotingStartedAt?: any;
+  mvpVotingEndsAt?: Timestamp;
   mvpVotes?: { [voterId: string]: string };
   mvpWinnerId?: string | null;
   mvpEloAwarded?: boolean;
@@ -92,6 +93,14 @@ export class EventService {
     return collection(this.firestore, `groups/${groupId}/events`);
   }
 
+  private computeMvpVotingEndsAt(date: Timestamp) {
+    if (!date) return null;
+    const end = date.toDate();
+    if (Number.isNaN(end.getTime())) return null;
+    end.setHours(23, 59, 59, 999);
+    return Timestamp.fromDate(end);
+  }
+
   async createEvent(
     groupId: string,
     eventData: Omit<
@@ -102,6 +111,10 @@ export class EventService {
     const user = this.authService.currentUser();
     if (!user) throw new Error('User must be logged in to create an event');
 
+    const mvpVotingEndsAt = eventData.mvpVotingEnabled
+      ? this.computeMvpVotingEndsAt(eventData.date)
+      : null;
+
     const data: Omit<SportEvent, 'id'> = {
       ...eventData,
       groupId,
@@ -110,6 +123,7 @@ export class EventService {
       currentAttendees: 1, // Creator is the first attendee? Or just set it to 1 and add creator to list
       attendees: [user.uid],
       status: eventData.status ?? 'planned',
+      ...(mvpVotingEndsAt ? { mvpVotingEndsAt } : {}),
     };
 
     const docRef = await addDoc(this.getEventsCollection(groupId), data);
@@ -155,9 +169,14 @@ export class EventService {
     let currentDate = new Date(startDate);
 
     while (currentDate <= end) {
+      const eventDate = new Date(currentDate);
+      const mvpVotingEndsAt = eventData.mvpVotingEnabled
+        ? this.computeMvpVotingEndsAt(Timestamp.fromDate(eventDate))
+        : null;
+
       eventsToCreate.push({
         ...eventData,
-        date: Timestamp.fromDate(new Date(currentDate)),
+        date: Timestamp.fromDate(eventDate),
         groupId,
         creatorId: user.uid,
         createdAt: serverTimestamp(),
@@ -165,6 +184,7 @@ export class EventService {
         attendees: [user.uid],
         recurrenceId,
         status: (eventData as any).status ?? 'planned',
+        ...(mvpVotingEndsAt ? { mvpVotingEndsAt } : {}),
       });
 
       if (frequency === 'daily') {
@@ -472,8 +492,9 @@ export class EventService {
 
     const eventDate = this.coerceDate(event.date);
     if (Number.isNaN(eventDate.getTime())) throw new Error('Érvénytelen esemény dátum.');
-    eventDate.setHours(23, 59, 59, 999);
-    const end = eventDate;
+    const end = event.mvpVotingEndsAt
+      ? this.coerceDate(event.mvpVotingEndsAt)
+      : (eventDate.setHours(23, 59, 59, 999), eventDate);
     if (new Date() > end) {
       throw new Error('Lejárt a szavazási időszak.');
     }
@@ -499,8 +520,9 @@ export class EventService {
     if (event.mvpEloAwarded) return;
     const eventDate = this.coerceDate(event.date);
     if (Number.isNaN(eventDate.getTime())) return;
-    eventDate.setHours(23, 59, 59, 999);
-    const end = eventDate;
+    const end = event.mvpVotingEndsAt
+      ? this.coerceDate(event.mvpVotingEndsAt)
+      : (eventDate.setHours(23, 59, 59, 999), eventDate);
     if (new Date() < end) return;
 
     const votes = event.mvpVotes || {};

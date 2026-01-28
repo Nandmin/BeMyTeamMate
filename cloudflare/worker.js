@@ -567,7 +567,8 @@ function base64UrlEncode(input) {
 async function handleMvpCron(env) {
   console.log('MVP cron start');
   const startedAt = Date.now();
-  if (!shouldRunBudapestCron(new Date())) {
+  const now = new Date();
+  if (!shouldRunBudapestCron(now)) {
     console.log('MVP cron skipped: not 00:30 in Europe/Budapest');
     return;
   }
@@ -593,9 +594,8 @@ async function handleMvpCron(env) {
     return;
   }
 
-  const cutoff = getBudapestStartOfTodayUtc();
-  const cutoffIso = cutoff.toISOString();
-  console.log('MVP cron cutoff', { cutoffIso });
+  const cutoffIso = now.toISOString();
+  console.log('MVP cron now', { nowIso: cutoffIso });
 
   const groupIds = await fetchAllGroupIds(projectId, accessToken);
   console.log('MVP cron groups found', { count: groupIds.length });
@@ -604,11 +604,19 @@ async function handleMvpCron(env) {
   for (const groupId of groupIds) {
     try {
       const events = await fetchEligibleMvpEvents(projectId, accessToken, groupId, cutoffIso);
-      if (events.length > 0) {
-        console.log('MVP cron events found', { groupId, count: events.length });
+      const eligibleEvents = events.filter((eventDoc) => {
+        const fields = eventDoc?.fields || {};
+        const endAtUtc = fields.mvpVotingEndsAt?.timestampValue
+          ? new Date(fields.mvpVotingEndsAt.timestampValue)
+          : getEventVotingEndUtc(fields);
+        if (!endAtUtc) return false;
+        return now >= endAtUtc;
+      });
+      if (eligibleEvents.length > 0) {
+        console.log('MVP cron events found', { groupId, count: eligibleEvents.length });
       }
-      totalEvents += events.length;
-      for (const eventDoc of events) {
+      totalEvents += eligibleEvents.length;
+      for (const eventDoc of eligibleEvents) {
         await finalizeMvpEvent(projectId, accessToken, groupId, eventDoc);
         totalFinalized += 1;
       }
@@ -630,12 +638,6 @@ async function handleMvpCron(env) {
 function shouldRunBudapestCron(now) {
   const parts = getZonedParts(now, 'Europe/Budapest');
   return parts.hour === 0 && parts.minute === 30;
-}
-
-function getBudapestStartOfTodayUtc() {
-  const now = new Date();
-  const parts = getZonedParts(now, 'Europe/Budapest');
-  return getUtcDateForZonedDate(parts.year, parts.month, parts.day, 0, 0, 0, 'Europe/Budapest');
 }
 
 function getZonedParts(date, timeZone) {
@@ -671,6 +673,30 @@ function getTimeZoneOffsetMs(date, timeZone) {
   const parts = getZonedParts(date, timeZone);
   const asIfUtc = Date.UTC(parts.year, parts.month - 1, parts.day, parts.hour, parts.minute, parts.second);
   return asIfUtc - date.getTime();
+}
+
+function getEventVotingEndUtc(fields) {
+  const dateField = fields.date;
+  if (!dateField) return null;
+
+  let baseDate = null;
+  if (dateField.timestampValue) {
+    baseDate = new Date(dateField.timestampValue);
+  } else if (dateField.stringValue) {
+    const raw = dateField.stringValue.trim();
+    if (/^\d{4}-\d{2}-\d{2}$/.test(raw)) {
+      const [year, month, day] = raw.split('-').map(Number);
+      baseDate = getUtcDateForZonedDate(year, month, day, 0, 0, 0, 'Europe/Budapest');
+    } else {
+      baseDate = new Date(raw);
+    }
+  }
+
+  if (!baseDate || Number.isNaN(baseDate.getTime())) return null;
+  const parts = getZonedParts(baseDate, 'Europe/Budapest');
+  const endUtc = getUtcDateForZonedDate(parts.year, parts.month, parts.day, 23, 59, 59, 'Europe/Budapest');
+  endUtc.setMilliseconds(999);
+  return endUtc;
 }
 
 async function fetchAllGroupIds(projectId, accessToken) {
@@ -730,15 +756,15 @@ async function fetchEligibleMvpEvents(projectId, accessToken, groupId, cutoffIso
             },
             {
               fieldFilter: {
-                field: { fieldPath: 'date' },
-                op: 'LESS_THAN',
+                field: { fieldPath: 'mvpVotingEndsAt' },
+                op: 'LESS_THAN_OR_EQUAL',
                 value: { timestampValue: cutoffIso },
               },
             },
           ],
         },
       },
-      orderBy: [{ field: { fieldPath: 'date' }, direction: 'DESCENDING' }],
+      orderBy: [{ field: { fieldPath: 'mvpVotingEndsAt' }, direction: 'DESCENDING' }],
     },
     parent: `projects/${projectId}/databases/(default)/documents/groups/${groupId}`,
   };

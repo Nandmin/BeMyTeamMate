@@ -138,6 +138,10 @@ export class CreateEventPage implements OnInit {
         mvpVotingEnabled: this.eventData.mvpVotingEnabled,
       };
 
+      if (this.eventData.mvpVotingEnabled) {
+        commonData.mvpVotingEndsAt = this.computeMvpVotingEndsAt(startDate);
+      }
+
       if (this.isEditMode) {
         await this.eventService.updateEvent(this.groupId, this.eventId, commonData);
       } else {
@@ -237,6 +241,12 @@ export class CreateEventPage implements OnInit {
       this.mapZoom -= 1;
       this.cachedMapUrl = null;
     }
+  }
+
+  private computeMvpVotingEndsAt(date: Date) {
+    const end = new Date(date);
+    end.setHours(23, 59, 59, 999);
+    return Timestamp.fromDate(end);
   }
 
   private toDate(value: any): Date | null {

@@ -15,6 +15,8 @@ export class RegisterPage {
   private authService = inject(AuthService);
   private fb = inject(FormBuilder);
 
+  currentYear = new Date().getFullYear();
+
   private readonly noAccentsValidator = (control: AbstractControl): ValidationErrors | null => {
     const value = (control.value ?? '') as string;
     if (!value) return null;

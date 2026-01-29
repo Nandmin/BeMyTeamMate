@@ -15,6 +15,8 @@ export class LoginPage implements OnInit {
   private authService = inject(AuthService);
   private fb = inject(FormBuilder);
 
+  currentYear = new Date().getFullYear();
+
   loginForm = this.fb.group({
     email: ['', [Validators.required, Validators.email]],
     password: ['', [Validators.required]],

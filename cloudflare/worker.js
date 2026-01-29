@@ -1,7 +1,7 @@
 const ALLOWED_METHODS = ['POST', 'OPTIONS'];
 
 export default {
-  async fetch(request, env) {
+  async fetch(request, env, ctx) {
     const url = new URL(request.url);
 
     // Handle CORS preflight
@@ -85,6 +85,21 @@ export default {
         },
         result.failure > 0 ? 207 : 200
       );
+    }
+
+    if (url.pathname === '/mvp-cron-run-now') {
+      const authResult = await verifyAuth(request, env);
+      if (!authResult.authorized) {
+        return jsonResponse({ error: 'Unauthorized', detail: authResult.error }, 401);
+      }
+
+      if (ctx?.waitUntil) {
+        ctx.waitUntil(handleMvpCron(env, { force: true, trigger: 'manual' }));
+        return jsonResponse({ ok: true, queued: true }, 202);
+      }
+
+      await handleMvpCron(env, { force: true, trigger: 'manual' });
+      return jsonResponse({ ok: true, queued: false }, 200);
     }
 
     if (url.pathname === '/contact-message') {
@@ -564,13 +579,17 @@ function base64UrlEncode(input) {
   return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 }
 
-async function handleMvpCron(env) {
+async function handleMvpCron(env, options = {}) {
   console.log('MVP cron start');
   const startedAt = Date.now();
+  const { force = false, trigger = 'scheduled' } = options || {};
   const now = new Date();
-  if (!shouldRunBudapestCron(now)) {
+  if (!force && !shouldRunBudapestCron(now)) {
     console.log('MVP cron skipped: not 00:30 in Europe/Budapest');
     return;
+  }
+  if (force) {
+    console.log('MVP cron forced run', { trigger });
   }
 
   const projectId = env.FCM_PROJECT_ID;
@@ -604,7 +623,11 @@ async function handleMvpCron(env) {
   for (const groupId of groupIds) {
     try {
       const events = await fetchEligibleMvpEvents(projectId, accessToken, groupId, cutoffIso);
-      const eligibleEvents = events.filter((eventDoc) => {
+      const legacyEvents = force
+        ? await fetchLegacyMvpEvents(projectId, accessToken, groupId)
+        : [];
+      const mergedEvents = mergeEventDocs(events, legacyEvents);
+      const eligibleEvents = mergedEvents.filter((eventDoc) => {
         const fields = eventDoc?.fields || {};
         const endAtUtc = fields.mvpVotingEndsAt?.timestampValue
           ? new Date(fields.mvpVotingEndsAt.timestampValue)
@@ -612,6 +635,12 @@ async function handleMvpCron(env) {
         if (!endAtUtc) return false;
         return now >= endAtUtc;
       });
+      if (mergedEvents.length !== events.length) {
+        const legacyCount = mergedEvents.length - events.length;
+        if (legacyCount > 0) {
+          console.log('MVP cron legacy events detected', { groupId, legacyCount });
+        }
+      }
       if (eligibleEvents.length > 0) {
         console.log('MVP cron events found', { groupId, count: eligibleEvents.length });
       }
@@ -795,6 +824,81 @@ async function fetchEligibleMvpEvents(projectId, accessToken, groupId, cutoffIso
   return events;
 }
 
+async function fetchLegacyMvpEvents(projectId, accessToken, groupId) {
+  const url = `https://firestore.googleapis.com/v1/projects/${projectId}/databases/(default)/documents:runQuery`;
+  const body = {
+    structuredQuery: {
+      from: [{ collectionId: 'events' }],
+      where: {
+        compositeFilter: {
+          op: 'AND',
+          filters: [
+            {
+              fieldFilter: {
+                field: { fieldPath: 'mvpVotingEnabled' },
+                op: 'EQUAL',
+                value: { booleanValue: true },
+              },
+            },
+            {
+              fieldFilter: {
+                field: { fieldPath: 'status' },
+                op: 'EQUAL',
+                value: { stringValue: 'finished' },
+              },
+            },
+            {
+              fieldFilter: {
+                field: { fieldPath: 'mvpVotingEndsAt' },
+                op: 'EQUAL',
+                value: { nullValue: null },
+              },
+            },
+          ],
+        },
+      },
+    },
+    parent: `projects/${projectId}/databases/(default)/documents/groups/${groupId}`,
+  };
+
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(body),
+  });
+
+  if (!response.ok) {
+    const detail = await response.text();
+    throw new Error(`Legacy events query failed: ${response.status} ${detail}`);
+  }
+
+  const data = await response.json();
+  const events = [];
+  for (const row of data || []) {
+    const doc = row?.document;
+    if (!doc) continue;
+    const fields = doc.fields || {};
+    if (fields.mvpEloAwarded?.booleanValue) continue;
+    events.push(doc);
+  }
+  return events;
+}
+
+function mergeEventDocs(primary, secondary) {
+  if (!secondary?.length) return primary;
+  const seen = new Set(primary.map((doc) => doc?.name).filter(Boolean));
+  const merged = [...primary];
+  for (const doc of secondary) {
+    if (!doc?.name || seen.has(doc.name)) continue;
+    merged.push(doc);
+    seen.add(doc.name);
+  }
+  return merged;
+}
+
 async function finalizeMvpEvent(projectId, accessToken, groupId, eventDoc) {
   const eventId = eventDoc.name?.split('/').pop() || 'unknown';
   const fields = eventDoc.fields || {};
@@ -822,16 +926,27 @@ async function finalizeMvpEvent(projectId, accessToken, groupId, eventDoc) {
   if (tie) winnerId = null;
   console.log('MVP cron winner computed', { groupId, eventId, winnerId, topVotes, tie });
 
+  const computedEndUtc = !fields.mvpVotingEndsAt?.timestampValue
+    ? getEventVotingEndUtc(fields)
+    : null;
+  const computedEndIso =
+    computedEndUtc && !Number.isNaN(computedEndUtc.getTime()) ? computedEndUtc.toISOString() : null;
+
+  const updateFields = {
+    mvpWinnerId: winnerId ? { stringValue: winnerId } : { nullValue: null },
+    mvpEloAwarded: { booleanValue: true },
+    ...(computedEndIso ? { mvpVotingEndsAt: { timestampValue: computedEndIso } } : {}),
+  };
+  const updateMask = ['mvpWinnerId', 'mvpEloAwarded'];
+  if (computedEndIso) updateMask.push('mvpVotingEndsAt');
+
   const writes = [
     {
       update: {
         name: eventDoc.name,
-        fields: {
-          mvpWinnerId: winnerId ? { stringValue: winnerId } : { nullValue: null },
-          mvpEloAwarded: { booleanValue: true },
-        },
+        fields: updateFields,
       },
-      updateMask: { fieldPaths: ['mvpWinnerId', 'mvpEloAwarded'] },
+      updateMask: { fieldPaths: updateMask },
     },
   ];
 

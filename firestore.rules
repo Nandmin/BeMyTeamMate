@@ -31,12 +31,16 @@ service cloud.firestore {
       allow read: if isSignedIn();
       
       // Global siteadmin role is FORBIDDEN from client side
-      allow create: if isSignedIn() && request.auth.uid == userId && 
-                    !('role' in request.resource.data);
+      // Allow role only if it's the default "user" (to let initial profile creation succeed).
+      allow create: if isSignedIn() && request.auth.uid == userId && (
+                    !('role' in request.resource.data) || request.resource.data.role == 'user');
       
       allow update: if isSignedIn() && (
-        // Self-update: cannot touch role
-        (request.auth.uid == userId && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['role'])) ||
+        // Self-update: cannot touch role (except adding default role if it was missing)
+        (request.auth.uid == userId && (
+          !request.resource.data.diff(resource.data).affectedKeys().hasAny(['role']) ||
+          (!('role' in resource.data) && request.resource.data.role == 'user')
+        )) ||
         // Site Admin: can update anything
         isSiteAdmin() ||
         // Group Admin update: can update elo/formFactor if they prove shared membership

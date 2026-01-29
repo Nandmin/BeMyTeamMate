@@ -102,6 +102,237 @@ export default {
       return jsonResponse({ ok: true, queued: false }, 200);
     }
 
+    if (url.pathname === '/mvp-cron-list-group') {
+      const authResult = await verifyAuth(request, env);
+      if (!authResult.authorized) {
+        return jsonResponse({ error: 'Unauthorized', detail: authResult.error }, 401);
+      }
+
+      const body = await readJsonBody(request);
+      if (!body.ok) return jsonResponse({ error: body.error }, 400);
+      const groupId = typeof body.data?.groupId === 'string' ? body.data.groupId.trim() : '';
+      if (!groupId) return jsonResponse({ error: 'Missing groupId' }, 400);
+
+      const config = await getFirestoreAuth(env);
+      if (!config.ok) return jsonResponse({ error: config.error }, 500);
+
+      const now = new Date();
+      const cutoffIso = now.toISOString();
+      const events = await fetchEligibleMvpEvents(
+        config.projectId,
+        config.accessToken,
+        groupId,
+        cutoffIso
+      );
+      const legacyEvents = await fetchLegacyMvpEvents(
+        config.projectId,
+        config.accessToken,
+        groupId
+      );
+      const mergedEvents = mergeEventDocs(events, legacyEvents);
+      const items = mergedEvents.map((doc) =>
+        summarizeMvpEventDoc(doc, now)
+      );
+      const eligible = items.filter((item) => item.eligible);
+      return jsonResponse(
+        { ok: true, groupId, total: items.length, eligible: eligible.length, items },
+        200
+      );
+    }
+
+    if (url.pathname === '/mvp-cron-run-group') {
+      const authResult = await verifyAuth(request, env);
+      if (!authResult.authorized) {
+        return jsonResponse({ error: 'Unauthorized', detail: authResult.error }, 401);
+      }
+
+      const body = await readJsonBody(request);
+      if (!body.ok) return jsonResponse({ error: body.error }, 400);
+      const groupId = typeof body.data?.groupId === 'string' ? body.data.groupId.trim() : '';
+      const dryRun = Boolean(body.data?.dryRun);
+      if (!groupId) return jsonResponse({ error: 'Missing groupId' }, 400);
+
+      const config = await getFirestoreAuth(env);
+      if (!config.ok) return jsonResponse({ error: config.error }, 500);
+
+      const now = new Date();
+      const cutoffIso = now.toISOString();
+      const events = await fetchEligibleMvpEvents(
+        config.projectId,
+        config.accessToken,
+        groupId,
+        cutoffIso
+      );
+      const legacyEvents = await fetchLegacyMvpEvents(
+        config.projectId,
+        config.accessToken,
+        groupId
+      );
+      const mergedEvents = mergeEventDocs(events, legacyEvents);
+      const mergedCount = mergedEvents.length;
+      let total = mergedCount;
+      let eligible = mergedEvents.filter((doc) => summarizeMvpEventDoc(doc, now).eligible);
+      if (eligible.length === 0 && mergedEvents.length === 0) {
+        const allEvents = await listGroupEvents(config.projectId, config.accessToken, groupId);
+        const fallbackEvents = allEvents.filter(
+          (doc) => doc?.fields?.mvpVotingEnabled?.booleanValue
+        );
+        total = fallbackEvents.length;
+        eligible = fallbackEvents.filter((doc) => summarizeMvpEventDoc(doc, now).eligible);
+      }
+      if (!dryRun) {
+        for (const eventDoc of eligible) {
+          await finalizeMvpEvent(config.projectId, config.accessToken, groupId, eventDoc);
+        }
+      }
+
+      return jsonResponse(
+        {
+          ok: true,
+          groupId,
+          dryRun,
+          total,
+          eligible: eligible.length,
+        },
+        200
+      );
+    }
+
+    if (url.pathname === '/mvp-cron-get-event') {
+      const authResult = await verifyAuth(request, env);
+      if (!authResult.authorized) {
+        return jsonResponse({ error: 'Unauthorized', detail: authResult.error }, 401);
+      }
+
+      const body = await readJsonBody(request);
+      if (!body.ok) return jsonResponse({ error: body.error }, 400);
+      const groupId = typeof body.data?.groupId === 'string' ? body.data.groupId.trim() : '';
+      const eventId = typeof body.data?.eventId === 'string' ? body.data.eventId.trim() : '';
+      if (!groupId || !eventId) {
+        return jsonResponse({ error: 'Missing groupId or eventId' }, 400);
+      }
+
+      const config = await getFirestoreAuth(env);
+      if (!config.ok) return jsonResponse({ error: config.error }, 500);
+
+      const docName = `projects/${config.projectId}/databases/(default)/documents/groups/${groupId}/events/${eventId}`;
+      const url = `https://firestore.googleapis.com/v1/${docName}`;
+      const response = await fetch(url, {
+        headers: { Authorization: `Bearer ${config.accessToken}` },
+      });
+      if (!response.ok) {
+        const detail = await response.text();
+        return jsonResponse({ error: `Event fetch failed: ${response.status} ${detail}` }, 500);
+      }
+
+      const doc = await response.json();
+      const summary = summarizeMvpEventDoc(doc, new Date());
+      return jsonResponse({ ok: true, groupId, eventId, summary, raw: doc }, 200);
+    }
+
+    if (url.pathname === '/mvp-cron-list-events') {
+      const authResult = await verifyAuth(request, env);
+      if (!authResult.authorized) {
+        return jsonResponse({ error: 'Unauthorized', detail: authResult.error }, 401);
+      }
+
+      const body = await readJsonBody(request);
+      if (!body.ok) return jsonResponse({ error: body.error }, 400);
+      const groupId = typeof body.data?.groupId === 'string' ? body.data.groupId.trim() : '';
+      const pageSizeRaw = Number(body.data?.pageSize ?? 50);
+      const pageSize = Number.isFinite(pageSizeRaw) ? Math.min(Math.max(pageSizeRaw, 1), 200) : 50;
+      const pageToken = typeof body.data?.pageToken === 'string' ? body.data.pageToken.trim() : '';
+      if (!groupId) return jsonResponse({ error: 'Missing groupId' }, 400);
+
+      const config = await getFirestoreAuth(env);
+      if (!config.ok) return jsonResponse({ error: config.error }, 500);
+
+      const listUrl = new URL(
+        `https://firestore.googleapis.com/v1/projects/${config.projectId}/databases/(default)/documents/groups/${groupId}/events`
+      );
+      listUrl.searchParams.set('pageSize', String(pageSize));
+      if (pageToken) listUrl.searchParams.set('pageToken', pageToken);
+
+      const response = await fetch(listUrl.toString(), {
+        headers: { Authorization: `Bearer ${config.accessToken}` },
+      });
+      if (!response.ok) {
+        const detail = await response.text();
+        return jsonResponse({ error: `Events list failed: ${response.status} ${detail}` }, 500);
+      }
+
+      const data = await response.json();
+      const docs = data.documents || [];
+      const now = new Date();
+      const items = docs.map((doc) => summarizeMvpEventDoc(doc, now));
+      return jsonResponse(
+        {
+          ok: true,
+          groupId,
+          total: items.length,
+          items,
+          nextPageToken: data.nextPageToken || null,
+        },
+        200
+      );
+    }
+
+    if (url.pathname === '/mvp-cron-normalize-group') {
+      const authResult = await verifyAuth(request, env);
+      if (!authResult.authorized) {
+        return jsonResponse({ error: 'Unauthorized', detail: authResult.error }, 401);
+      }
+
+      const body = await readJsonBody(request);
+      if (!body.ok) return jsonResponse({ error: body.error }, 400);
+      const groupId = typeof body.data?.groupId === 'string' ? body.data.groupId.trim() : '';
+      if (!groupId) return jsonResponse({ error: 'Missing groupId' }, 400);
+
+      const config = await getFirestoreAuth(env);
+      if (!config.ok) return jsonResponse({ error: config.error }, 500);
+
+      const now = new Date();
+      const result = await normalizeMvpEventsForGroup(
+        config.projectId,
+        config.accessToken,
+        groupId,
+        now
+      );
+      return jsonResponse({ ok: true, groupId, ...result }, 200);
+    }
+
+    if (url.pathname === '/mvp-cron-report-group') {
+      const authResult = await verifyAuth(request, env);
+      if (!authResult.authorized) {
+        return jsonResponse({ error: 'Unauthorized', detail: authResult.error }, 401);
+      }
+
+      const body = await readJsonBody(request);
+      if (!body.ok) return jsonResponse({ error: body.error }, 400);
+      const groupId = typeof body.data?.groupId === 'string' ? body.data.groupId.trim() : '';
+      if (!groupId) return jsonResponse({ error: 'Missing groupId' }, 400);
+
+      const config = await getFirestoreAuth(env);
+      if (!config.ok) return jsonResponse({ error: config.error }, 500);
+
+      const docs = await listGroupEvents(config.projectId, config.accessToken, groupId);
+      const items = docs
+        .filter((doc) => doc?.fields?.mvpVotingEnabled?.booleanValue)
+        .map((doc) => {
+          const fields = doc.fields || {};
+          return {
+            id: doc.name?.split('/').pop() || 'unknown',
+            status: fields.status?.stringValue || null,
+            mvpEloAwarded: Boolean(fields.mvpEloAwarded?.booleanValue),
+            mvpWinnerId: fields.mvpWinnerId?.stringValue || null,
+            endedAt: fields.endedAt?.timestampValue || null,
+            updateTime: doc.updateTime || null,
+          };
+        });
+
+      return jsonResponse({ ok: true, groupId, total: items.length, items }, 200);
+    }
+
     if (url.pathname === '/contact-message') {
       return handleContactMessage(request, env);
     }
@@ -130,6 +361,15 @@ function jsonResponse(payload, status = 200) {
       ...corsHeaders(),
     },
   });
+}
+
+async function readJsonBody(request) {
+  try {
+    const data = await request.json();
+    return { ok: true, data };
+  } catch {
+    return { ok: false, error: 'Invalid JSON body' };
+  }
 }
 
 function normalizePrivateKey(value) {
@@ -622,12 +862,16 @@ async function handleMvpCron(env, options = {}) {
   let totalFinalized = 0;
   for (const groupId of groupIds) {
     try {
+      const normalization = await normalizeMvpEventsForGroup(projectId, accessToken, groupId, now);
+      if (normalization.updatedCount > 0) {
+        console.log('MVP cron normalization', { groupId, ...normalization });
+      }
       const events = await fetchEligibleMvpEvents(projectId, accessToken, groupId, cutoffIso);
       const legacyEvents = force
         ? await fetchLegacyMvpEvents(projectId, accessToken, groupId)
         : [];
       const mergedEvents = mergeEventDocs(events, legacyEvents);
-      const eligibleEvents = mergedEvents.filter((eventDoc) => {
+      let eligibleEvents = mergedEvents.filter((eventDoc) => {
         const fields = eventDoc?.fields || {};
         const endAtUtc = fields.mvpVotingEndsAt?.timestampValue
           ? new Date(fields.mvpVotingEndsAt.timestampValue)
@@ -635,6 +879,28 @@ async function handleMvpCron(env, options = {}) {
         if (!endAtUtc) return false;
         return now >= endAtUtc;
       });
+      if (eligibleEvents.length === 0 && mergedEvents.length === 0) {
+        const allEvents = await listGroupEvents(projectId, accessToken, groupId);
+        const fallbackEvents = allEvents.filter(
+          (doc) => doc?.fields?.mvpVotingEnabled?.booleanValue
+        );
+        eligibleEvents = fallbackEvents.filter((eventDoc) => {
+          const fields = eventDoc?.fields || {};
+          if (fields.status?.stringValue !== 'finished') return false;
+          if (fields.mvpEloAwarded?.booleanValue) return false;
+          const endAtUtc = fields.mvpVotingEndsAt?.timestampValue
+            ? new Date(fields.mvpVotingEndsAt.timestampValue)
+            : getEventVotingEndUtc(fields);
+          if (!endAtUtc) return false;
+          return now >= endAtUtc;
+        });
+        if (eligibleEvents.length > 0) {
+          console.log('MVP cron fallback eligible events found', {
+            groupId,
+            count: eligibleEvents.length,
+          });
+        }
+      }
       if (mergedEvents.length !== events.length) {
         const legacyCount = mergedEvents.length - events.length;
         if (legacyCount > 0) {
@@ -702,6 +968,29 @@ function getTimeZoneOffsetMs(date, timeZone) {
   const parts = getZonedParts(date, timeZone);
   const asIfUtc = Date.UTC(parts.year, parts.month - 1, parts.day, parts.hour, parts.minute, parts.second);
   return asIfUtc - date.getTime();
+}
+
+async function getFirestoreAuth(env) {
+  const projectId = env.FCM_PROJECT_ID;
+  const clientEmail = env.FCM_CLIENT_EMAIL;
+  const privateKey = normalizePrivateKey(env.FCM_PRIVATE_KEY);
+
+  if (!projectId || !clientEmail || !privateKey) {
+    console.error('Missing Firestore configuration in secrets');
+    return { ok: false, error: 'Server configuration error' };
+  }
+
+  try {
+    const accessToken = await getAccessToken(
+      clientEmail,
+      privateKey,
+      'https://www.googleapis.com/auth/datastore'
+    );
+    return { ok: true, projectId, accessToken };
+  } catch (error) {
+    console.error('Firestore token generation failed:', error);
+    return { ok: false, error: 'Failed to obtain Firestore access token' };
+  }
 }
 
 function getEventVotingEndUtc(fields) {
@@ -899,6 +1188,199 @@ function mergeEventDocs(primary, secondary) {
   return merged;
 }
 
+function summarizeMvpEventDoc(eventDoc, now) {
+  const name = eventDoc?.name || '';
+  const id = name.split('/').pop() || 'unknown';
+  const fields = eventDoc?.fields || {};
+  const status = fields.status?.stringValue || null;
+  const mvpVotingEnabled = Boolean(fields.mvpVotingEnabled?.booleanValue);
+  const mvpEloAwarded = Boolean(fields.mvpEloAwarded?.booleanValue);
+  const mvpVotingEndsAt = fields.mvpVotingEndsAt?.timestampValue || null;
+  const eventDateRaw = fields.date?.timestampValue || fields.date?.stringValue || null;
+  const endAtUtc = mvpVotingEndsAt
+    ? new Date(mvpVotingEndsAt)
+    : getEventVotingEndUtc(fields);
+  const endIso =
+    endAtUtc && !Number.isNaN(endAtUtc.getTime()) ? endAtUtc.toISOString() : null;
+  const eligible =
+    mvpVotingEnabled &&
+    status === 'finished' &&
+    !mvpEloAwarded &&
+    endAtUtc &&
+    now >= endAtUtc;
+
+  return {
+    id,
+    status,
+    mvpVotingEnabled,
+    mvpEloAwarded,
+    mvpVotingEndsAt,
+    computedEndIso: endIso,
+    date: eventDateRaw,
+    eligible,
+  };
+}
+
+function hasEventResults(fields) {
+  if (!fields) return false;
+  if (fields.playerStats?.mapValue?.fields) return true;
+  if (fields.goalsA || fields.goalsB) return true;
+  if (fields.endedAt?.timestampValue) return true;
+  return false;
+}
+
+function computeNormalizedStatus(fields, now) {
+  if (fields.status?.stringValue) return null;
+  const dateValue = fields.date?.timestampValue || fields.date?.stringValue;
+  if (!dateValue) return null;
+  const date = new Date(dateValue);
+  if (Number.isNaN(date.getTime())) return null;
+  if (date > now) return 'planned';
+  if (hasEventResults(fields)) return 'finished';
+  if (fields.startedAt?.timestampValue) return 'active';
+  return 'planned';
+}
+
+async function normalizeMvpEventsForGroup(projectId, accessToken, groupId, now) {
+  const docs = await fetchMvpEvents(projectId, accessToken, groupId);
+  let updatedCount = 0;
+  let statusUpdated = 0;
+  let mvpEndsUpdated = 0;
+  let finishedUpdated = 0;
+
+  const writes = [];
+  for (const doc of docs) {
+    const fields = doc?.fields || {};
+    const updateFields = {};
+    const updateMask = [];
+
+    const normalizedStatus = computeNormalizedStatus(fields, now);
+    if (normalizedStatus && fields.status?.stringValue !== normalizedStatus) {
+      updateFields.status = { stringValue: normalizedStatus };
+      updateMask.push('status');
+      if (normalizedStatus === 'finished' && !fields.endedAt?.timestampValue) {
+        updateFields.endedAt = { timestampValue: now.toISOString() };
+        updateMask.push('endedAt');
+      }
+      if (normalizedStatus === 'finished') finishedUpdated += 1;
+      statusUpdated += 1;
+    }
+
+    if (
+      fields.mvpVotingEnabled?.booleanValue &&
+      !fields.mvpVotingEndsAt?.timestampValue
+    ) {
+      const endUtc = getEventVotingEndUtc(fields);
+      if (endUtc && !Number.isNaN(endUtc.getTime())) {
+        updateFields.mvpVotingEndsAt = { timestampValue: endUtc.toISOString() };
+        updateMask.push('mvpVotingEndsAt');
+        mvpEndsUpdated += 1;
+      }
+    }
+
+    if (updateMask.length > 0) {
+      writes.push({
+        update: {
+          name: doc.name,
+          fields: updateFields,
+        },
+        updateMask: { fieldPaths: updateMask },
+      });
+    }
+
+    if (writes.length >= 400) {
+      const batch = writes.splice(0, writes.length);
+      await commitWrites(projectId, accessToken, batch);
+      updatedCount += batch.length;
+    }
+  }
+
+  if (writes.length > 0) {
+    await commitWrites(projectId, accessToken, writes);
+    updatedCount += writes.length;
+  }
+
+  return {
+    foundCount: docs.length,
+    updatedCount,
+    statusUpdated,
+    mvpEndsUpdated,
+    finishedUpdated,
+  };
+}
+
+async function fetchMvpEvents(projectId, accessToken, groupId) {
+  const url = `https://firestore.googleapis.com/v1/projects/${projectId}/databases/(default)/documents:runQuery`;
+  const body = {
+    structuredQuery: {
+      from: [{ collectionId: 'events' }],
+      where: {
+        fieldFilter: {
+          field: { fieldPath: 'mvpVotingEnabled' },
+          op: 'EQUAL',
+          value: { booleanValue: true },
+        },
+      },
+    },
+    parent: `projects/${projectId}/databases/(default)/documents/groups/${groupId}`,
+  };
+
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(body),
+  });
+
+  if (!response.ok) {
+    const detail = await response.text();
+    throw new Error(`MVP events query failed: ${response.status} ${detail}`);
+  }
+
+  const data = await response.json();
+  const events = [];
+  for (const row of data || []) {
+    const doc = row?.document;
+    if (doc) events.push(doc);
+  }
+  if (events.length > 0) return events;
+
+  // Fallback: list all group events and filter client-side if query returns empty.
+  console.warn('MVP events query returned empty; falling back to list events', { groupId });
+  const allEvents = await listGroupEvents(projectId, accessToken, groupId);
+  return allEvents.filter((doc) => doc?.fields?.mvpVotingEnabled?.booleanValue);
+}
+
+async function listGroupEvents(projectId, accessToken, groupId) {
+  const events = [];
+  let pageToken = '';
+  do {
+    const listUrl = new URL(
+      `https://firestore.googleapis.com/v1/projects/${projectId}/databases/(default)/documents/groups/${groupId}/events`
+    );
+    listUrl.searchParams.set('pageSize', '200');
+    if (pageToken) listUrl.searchParams.set('pageToken', pageToken);
+
+    const response = await fetch(listUrl.toString(), {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    });
+
+    if (!response.ok) {
+      const detail = await response.text();
+      throw new Error(`Events list failed: ${response.status} ${detail}`);
+    }
+
+    const data = await response.json();
+    const docs = data.documents || [];
+    events.push(...docs);
+    pageToken = data.nextPageToken || '';
+  } while (pageToken);
+
+  return events;
+}
+
 async function finalizeMvpEvent(projectId, accessToken, groupId, eventDoc) {
   const eventId = eventDoc.name?.split('/').pop() || 'unknown';
   const fields = eventDoc.fields || {};
@@ -913,18 +1395,40 @@ async function finalizeMvpEvent(projectId, accessToken, groupId, eventDoc) {
 
   let winnerId = null;
   let topVotes = 0;
-  let tie = false;
+  let topCandidates = [];
   for (const [playerId, count] of tally.entries()) {
     if (count > topVotes) {
       topVotes = count;
-      winnerId = playerId;
-      tie = false;
+      topCandidates = count > 0 ? [playerId] : [];
     } else if (count === topVotes && count > 0) {
-      tie = true;
+      topCandidates.push(playerId);
     }
   }
-  if (tie) winnerId = null;
-  console.log('MVP cron winner computed', { groupId, eventId, winnerId, topVotes, tie });
+  if (topCandidates.length === 1) {
+    winnerId = topCandidates[0];
+  } else if (topCandidates.length > 1) {
+    const eloByUser = await fetchMemberElos(projectId, accessToken, groupId, topCandidates);
+    const DEFAULT_ELO = 1200;
+    let lowestElo = Number.POSITIVE_INFINITY;
+    let lowestIds = [];
+    for (const candidateId of topCandidates) {
+      const elo = eloByUser.get(candidateId) ?? DEFAULT_ELO;
+      if (elo < lowestElo) {
+        lowestElo = elo;
+        lowestIds = [candidateId];
+      } else if (elo === lowestElo) {
+        lowestIds.push(candidateId);
+      }
+    }
+    winnerId = lowestIds.length > 0 ? lowestIds.sort()[0] : null;
+  }
+  console.log('MVP cron winner computed', {
+    groupId,
+    eventId,
+    winnerId,
+    topVotes,
+    tie: topCandidates.length > 1,
+  });
 
   const computedEndUtc = !fields.mvpVotingEndsAt?.timestampValue
     ? getEventVotingEndUtc(fields)
@@ -974,6 +1478,58 @@ async function finalizeMvpEvent(projectId, accessToken, groupId, eventDoc) {
   }
 
   await commitWrites(projectId, accessToken, writes);
+}
+
+async function fetchMemberElos(projectId, accessToken, groupId, userIds) {
+  const eloByUser = new Map();
+  if (!Array.isArray(userIds) || userIds.length === 0) return eloByUser;
+  const url = `https://firestore.googleapis.com/v1/projects/${projectId}/databases/(default)/documents:runQuery`;
+  for (let i = 0; i < userIds.length; i += 10) {
+    const chunk = userIds.slice(i, i + 10);
+    const body = {
+      structuredQuery: {
+        from: [{ collectionId: 'members' }],
+        where: {
+          fieldFilter: {
+            field: { fieldPath: 'userId' },
+            op: 'IN',
+            value: {
+              arrayValue: { values: chunk.map((id) => ({ stringValue: id })) },
+            },
+          },
+        },
+      },
+      parent: `projects/${projectId}/databases/(default)/documents/groups/${groupId}`,
+    };
+
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(body),
+    });
+
+    if (!response.ok) {
+      const detail = await response.text();
+      throw new Error(`Member elo query failed: ${response.status} ${detail}`);
+    }
+
+    const data = await response.json();
+    for (const row of data || []) {
+      const doc = row?.document;
+      const fields = doc?.fields || {};
+      const userId = fields.userId?.stringValue;
+      if (!userId) continue;
+      const eloRaw = fields.elo?.integerValue ?? fields.elo?.doubleValue;
+      const elo = eloRaw !== undefined && eloRaw !== null ? Number(eloRaw) : undefined;
+      if (Number.isFinite(elo)) {
+        eloByUser.set(userId, elo);
+      }
+    }
+  }
+  return eloByUser;
 }
 
 async function findGroupMemberDoc(projectId, accessToken, groupId, userId) {

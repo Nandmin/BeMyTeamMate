@@ -67,7 +67,7 @@ export class CreateEventPage implements OnInit {
       const user = this.authService.currentUser();
       if (event.creatorId !== user?.uid) {
         await this.modalService.alert(
-          'Nincs jogosultsagod az esemeny szerkesztesehez.',
+          'Nincs jogosultságod az esemény szerkesztéséhez.',
           'Hiba',
           'error'
         );
@@ -77,7 +77,7 @@ export class CreateEventPage implements OnInit {
 
       const eventDate = this.toDate(event.date);
       if (!eventDate) {
-        await this.modalService.alert('Hibas esemeny datum.', 'Hiba', 'error');
+        await this.modalService.alert('Hibás esemény dátum.', 'Hiba', 'error');
         this.router.navigate(['/groups', this.groupId]);
         return;
       }
@@ -97,7 +97,7 @@ export class CreateEventPage implements OnInit {
       };
     } catch (error) {
       console.error('Error loading event:', error);
-      await this.modalService.alert('Hiba törtent az esemény betöltésekor.', 'Hiba', 'error');
+      await this.modalService.alert('Hiba történt az esemény betöltésekor.', 'Hiba', 'error');
       this.router.navigate(['/groups', this.groupId]);
     }
   }
@@ -163,7 +163,7 @@ export class CreateEventPage implements OnInit {
       this.router.navigate(['/groups', this.groupId]);
     } catch (error) {
       console.error('Error saving event:', error);
-      await this.modalService.alert('Hiba törtent az esemény mentésekor.', 'Hiba', 'error');
+      await this.modalService.alert('Hiba történt az esemény mentésekor.', 'Hiba', 'error');
     } finally {
       this.isSubmitting.set(false);
     }
@@ -176,7 +176,7 @@ export class CreateEventPage implements OnInit {
   async onDeleteEvent() {
     if (!this.groupId || !this.eventId) return;
 
-    const shouldDelete = await this.modalService.confirm('Biztosan torolni szeretned ezt az esemenyt?');
+    const shouldDelete = await this.modalService.confirm('Biztosan törölni szeretnéd ezt az eseményt?');
     if (shouldDelete) {
       this.isSubmitting.set(true);
       try {
@@ -184,7 +184,7 @@ export class CreateEventPage implements OnInit {
         this.router.navigate(['/groups', this.groupId]);
       } catch (error) {
         console.error('Error deleting event:', error);
-        await this.modalService.alert('Hiba törtent az esemény törlésekor.', 'Hiba', 'error');
+        await this.modalService.alert('Hiba történt az esemény törlésekor.', 'Hiba', 'error');
       } finally {
         this.isSubmitting.set(false);
       }

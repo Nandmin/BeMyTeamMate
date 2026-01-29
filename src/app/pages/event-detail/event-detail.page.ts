@@ -264,7 +264,7 @@ export class EventDetailPage {
     this.isSubmitting.set(true);
     try {
       await this.eventService.submitMvpVote(this.groupId, event.id, selected);
-      await this.modalService.alert('Szavazat rögzítve!', 'Siker', 'success');
+      await this.modalService.alert('Szavazatodat rögzítettük!', 'Siker', 'success');
     } catch (error: any) {
       console.error('Error submitting MVP vote:', error);
       await this.modalService.alert(error.message || 'Hiba történt.', 'Hiba', 'error');

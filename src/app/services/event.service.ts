@@ -492,7 +492,7 @@ export class EventService {
     }
 
     const eventDate = this.coerceDate(event.date);
-    if (Number.isNaN(eventDate.getTime())) throw new Error('Érvénytelen esemény dátum.');
+    if (Number.isNaN(eventDate.getTime())) throw new Error('Érvénytelen esemény dátum!');
     const end = event.mvpVotingEndsAt
       ? this.coerceDate(event.mvpVotingEndsAt)
       : (eventDate.setHours(23, 59, 59, 999), eventDate);

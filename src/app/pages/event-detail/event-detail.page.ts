@@ -531,23 +531,7 @@ export class EventDetailPage {
     // I will implement the Strict User Rule as requested: User Assists <= User Goals.
     // If they hate it, I can remove it.
 
-    const userGoals = currentGoalsMap[userId] || 0;
-    const userAssists = currentAssistsMap[userId] || 0;
-
-    // Strict User Check: User cannot have more assists than goals?
-    // "Se user" -> "Neither for the user".
-    // I will apply: UserAssists <= UserGoals.
-    if (userAssists > userGoals) {
-      // Allow decrementing assists even if goal is low? No, we are checking the RESULTING state.
-      // If we just decremented a goal, we might be in violation.
-      // If we incremented an assist, we might be in violation.
-
-      // Exception: If we are decrementing a goal, we should block it if assists exist?
-      // Let's just block the action.
-      return;
-    }
-
-    // Validate: 2. Team Assists <= Team Goals (Global)
+    // Validate: Team Assists <= Team Goals (per-team total)
     const teamGoals = teamMembers.reduce((sum, m) => sum + (currentGoalsMap[m.userId] || 0), 0);
     const teamAssists = teamMembers.reduce((sum, m) => sum + (currentAssistsMap[m.userId] || 0), 0);
 

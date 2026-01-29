@@ -22,7 +22,8 @@
       "fields": [
         { "fieldPath": "mvpVotingEnabled", "order": "ASCENDING" },
         { "fieldPath": "status", "order": "ASCENDING" },
-        { "fieldPath": "mvpVotingEndsAt", "order": "DESCENDING" }
+        { "fieldPath": "mvpVotingEndsAt", "order": "DESCENDING" },
+        { "fieldPath": "__name__", "order": "DESCENDING" }
       ]
     }
   ],

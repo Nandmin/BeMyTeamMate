@@ -22,6 +22,10 @@ export const routes: Routes = [
       import('./pages/privacy-policy/privacy-policy.page').then((m) => m.PrivacyPolicyPage),
   },
   {
+    path: 'termofuse',
+    loadComponent: () => import('./pages/termofuse/termofuse.page').then((m) => m.TermOfUsePage),
+  },
+  {
     path: 'login',
     loadComponent: () => import('./pages/login/login').then((m) => m.LoginPage),
   },

@@ -138,17 +138,21 @@ export class GroupsPage implements AfterViewInit, OnDestroy {
   showJoinModal = false;
   joinForm = this.fb.group({
     groupName: ['', [Validators.required]],
+    joinConsent: [false, [Validators.requiredTrue]],
   });
 
   toggleJoinModal() {
     this.showJoinModal = !this.showJoinModal;
     if (!this.showJoinModal) {
-      this.joinForm.reset();
+      this.joinForm.reset({ joinConsent: false });
     }
   }
 
   async onJoinGroup() {
-    if (this.joinForm.invalid) return;
+    if (this.joinForm.invalid) {
+      this.joinForm.markAllAsTouched();
+      return;
+    }
 
     this.isSubmitting = true;
     const { groupName } = this.joinForm.value;

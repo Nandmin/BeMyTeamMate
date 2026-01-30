@@ -6,11 +6,28 @@
   position: relative;
 }
 
+footer {
+  background: #141212;
+}
+
 :host-context(html.light) {
   background: linear-gradient(180deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
 
+  footer {
+    background: var(--bg-secondary);
+  }
+
   .text-white {
-    color: #1e293b;
+    // color: #1e293b;
+    color: gray;
+  }
+
+  .text-neon {
+    color: rgb(30, 255, 0);
+  }
+
+  .footer-brand {
+    color: #16a34a;
   }
   
   .text-gray-400 {

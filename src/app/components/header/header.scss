@@ -397,6 +397,7 @@ header {
       border-color: #22c55e;
     }
   }
+
 }
 
 // Logo text color for light mode
@@ -408,4 +409,8 @@ header {
   white-space: nowrap;
   font-size: clamp(0.95rem, 4.5vw, 1.25rem);
   line-height: 1;
+}
+
+:host-context(html.light) header .header-brand {
+  color: #16a34a;
 }

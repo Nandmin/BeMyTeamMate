@@ -54,6 +54,12 @@
   .text-gray-200 {
     color: #64748b !important;
   }
+
+  // Keep primary button text white in light mode
+  button.bg-primary,
+  a.bg-primary {
+    color: #ffffff !important;
+  }
   
   // Inputs
   input, textarea {

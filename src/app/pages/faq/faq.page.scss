@@ -2,6 +2,13 @@
   display: block;
   min-height: 100%;
   background-color: var(--bg-primary);
+  font-family: 'Lora', serif;
+}
+
+.faq-title,
+.faq-summary,
+.faq-question {
+  font-family: 'Playfair Display', serif;
 }
 
 .faq-summary {
@@ -64,6 +71,35 @@
 }
 
 :host-context(html.light) {
+  .text-white {
+    color: #0f172a !important;
+  }
+
+  .text-white\/70 {
+    color: rgba(15, 23, 42, 0.7) !important;
+  }
+
+  .border-white\/10 {
+    border-color: rgba(15, 23, 42, 0.12);
+  }
+
+  .bg-white\/5 {
+    background-color: #ffffff;
+  }
+
+  .from-background-dark\/95 {
+    --tw-gradient-from: rgba(248, 250, 252, 0.95);
+    --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to, rgba(248, 250, 252, 0));
+  }
+
+  .via-background-dark\/85 {
+    --tw-gradient-stops: var(--tw-gradient-from), rgba(248, 250, 252, 0.85), var(--tw-gradient-to);
+  }
+
+  .to-background-dark\/95 {
+    --tw-gradient-to: rgba(248, 250, 252, 0.95);
+  }
+
   .faq-summary {
     color: #0f172a;
   }

@@ -77,6 +77,12 @@
     }
   }
 
+  // Primary CTA button text should stay white in light mode
+  button.bg-primary,
+  a.bg-primary {
+    color: #ffffff !important;
+  }
+
   // Step numbers
   .bg-card-dark.size-10 {
     background-color: #ffffff;

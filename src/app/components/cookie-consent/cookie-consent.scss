@@ -8,6 +8,7 @@
         box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.15);
         z-index: 9999;
         animation: slideUp 0.4s ease-out;
+        font-family: 'Lora', serif;
       }
 
       @keyframes slideUp {
@@ -47,6 +48,7 @@
           font-weight: 700;
           color: #1f2937;
           margin: 0 0 0.5rem 0;
+          font-family: 'Playfair Display', serif;
         }
 
         p {

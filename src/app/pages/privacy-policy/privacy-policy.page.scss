@@ -11,6 +11,7 @@
   padding: 2.5rem 2.25rem 3rem;
   box-shadow: 0 30px 80px rgba(0, 0, 0, 0.35);
   backdrop-filter: blur(14px);
+  font-family: 'Lora', serif;
 }
 
 .privacy-header h1 {
@@ -19,6 +20,7 @@
   letter-spacing: -0.02em;
   margin: 0 0 1rem;
   color: #ffffff;
+  font-family: 'Playfair Display', serif;
 }
 
 .privacy-divider {
@@ -49,6 +51,7 @@
   align-items: flex-start;
   gap: 0.75rem;
   color: #ffffff;
+  font-family: 'Playfair Display', serif;
 }
 
 .privacy-section-number {
@@ -63,6 +66,7 @@
   font-weight: 700;
   font-size: 0.95rem;
   position: relative;
+  font-family: 'Playfair Display', serif;
 }
 
 .privacy-section-number::before {
@@ -81,6 +85,7 @@
   font-weight: 600;
   margin: 0;
   color: #ffffff;
+  font-family: 'Playfair Display', serif;
 }
 
 .privacy-section h3 {
@@ -88,6 +93,7 @@
   font-weight: 600;
   margin: 1rem 0 0.5rem;
   color: rgba(255, 255, 255, 0.9);
+  font-family: 'Playfair Display', serif;
 }
 
 .privacy-subsection {

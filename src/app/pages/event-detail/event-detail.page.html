@@ -1,4 +1,4 @@
-<main class="flex-grow min-h-screen bg-sport-background text-white pb-16 pt-8">
+﻿<main class="flex-grow min-h-screen bg-sport-background text-white pb-16 pt-8">
     <!-- Hero / Breadcrumbs Area -->
     <!-- Hero / Breadcrumbs Area -->
     <div class="relative w-full border-b border-card-border bg-card-dark/30 shadow-2xl overflow-hidden event-header">
@@ -36,7 +36,7 @@
                             <h1 class="text-white text-3xl md:text-5xl font-black tracking-tight leading-tight mb-2">
                                 {{ event()?.title }}
                             </h1>
-                            <!-- <p class="text-gray-400 font-medium">Csapatok összeállítása és jelentkezők kezelése</p> -->
+                            <!-- <p class="text-gray-400 font-medium">Csapatok Ă¶sszeĂˇllĂ­tĂˇsa Ă©s jelentkezĹ‘k kezelĂ©se</p> -->
                         </div>
 
                         <!-- Action Buttons -->
@@ -123,7 +123,9 @@
                         <span class="text-lg font-bold text-primary">{{ (100 - teamABalance()) | number: '1.2-2' }}%</span>
                     </div>
                 </div>
-                <p class="text-[20px] text-white uppercase font-black tracking-[0.3em]" style="font-family: 'Newsreader';">Erőegyensúly mutató</p>
+                <div class="w-full flex justify-center">
+                    <p class="text-[20px] text-white uppercase font-black tracking-[0.3em] text-center" style="font-family: 'Newsreader';">Erőegyensúly mutató</p>
+                </div>
             </div>
 
             <!-- Teams Grid -->
@@ -500,10 +502,10 @@
             <div class="space-y-6">
                 <div class="space-y-3">
                     <p class="text-sm text-gray-400">
-                        Csak a résztvevők szavazhatnak és csak egyetlen játékosra.
+                        Csak a résztvevĹők szavazhatnak és csak egyetlen játékosra.
                     </p>
                     @if (mvpUserVote()) {
-                    <div class="text-xs text-primary font-black uppercase tracking-widest">
+                    <div class="text-md text-primary text-center font-black uppercase tracking-widest">
                         Leadott szavazat: {{ mvpUserVotedMember()?.name || '---' }}
                     </div>
                     }

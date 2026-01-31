@@ -30,7 +30,13 @@ export class GroupSettingsPage {
   group = toSignal(
     this.route.params.pipe(
       switchMap((params) =>
-        this.groupService.getGroup(params['id']).pipe(catchError(() => of(undefined))),
+        this.groupService.getGroup(params['id']).pipe(
+          catchError((err) => {
+            console.error('Group load error:', err);
+            this.errorMessage.set('Hiba a csoport betöltésekor: ' + (err.message || err));
+            return of(undefined);
+          }),
+        ),
       ),
     ),
   );
@@ -38,7 +44,13 @@ export class GroupSettingsPage {
   members = toSignal(
     this.route.params.pipe(
       switchMap((params) =>
-        this.groupService.getGroupMembers(params['id']).pipe(catchError(() => of([]))),
+        this.groupService.getGroupMembers(params['id']).pipe(
+          catchError((err) => {
+            console.error('Members load error:', err);
+            // Don't block page, just log
+            return of([]);
+          }),
+        ),
       ),
     ),
   );
@@ -46,7 +58,13 @@ export class GroupSettingsPage {
   joinRequests = toSignal(
     this.route.params.pipe(
       switchMap((params) =>
-        this.groupService.getJoinRequests(params['id']).pipe(catchError(() => of([]))),
+        this.groupService.getJoinRequests(params['id']).pipe(
+          catchError((err) => {
+            console.error('Join requests load error:', err);
+            // Don't block page, just log
+            return of([]);
+          }),
+        ),
       ),
     ),
   );

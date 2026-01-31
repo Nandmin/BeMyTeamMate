@@ -1,11 +1,12 @@
-import { Component, inject, signal, computed } from '@angular/core';
+import { Component, inject, signal, computed, effect, untracked } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { GroupService, Group, GroupMember } from '../../services/group.service';
 import { AuthService } from '../../services/auth.service';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { switchMap } from 'rxjs';
+import { switchMap, catchError } from 'rxjs/operators';
+import { of } from 'rxjs';
 import { CoverImageSelectorComponent } from '../../components/cover-image-selector/cover-image-selector.component';
 import { RoleLabelPipe } from '../../pipes/role-label.pipe';
 import { SeoService } from '../../services/seo.service';
@@ -27,15 +28,27 @@ export class GroupSettingsPage {
   private seo = inject(SeoService);
 
   group = toSignal(
-    this.route.params.pipe(switchMap((params) => this.groupService.getGroup(params['id']))),
+    this.route.params.pipe(
+      switchMap((params) =>
+        this.groupService.getGroup(params['id']).pipe(catchError(() => of(undefined))),
+      ),
+    ),
   );
 
   members = toSignal(
-    this.route.params.pipe(switchMap((params) => this.groupService.getGroupMembers(params['id']))),
+    this.route.params.pipe(
+      switchMap((params) =>
+        this.groupService.getGroupMembers(params['id']).pipe(catchError(() => of([]))),
+      ),
+    ),
   );
 
   joinRequests = toSignal(
-    this.route.params.pipe(switchMap((params) => this.groupService.getJoinRequests(params['id']))),
+    this.route.params.pipe(
+      switchMap((params) =>
+        this.groupService.getJoinRequests(params['id']).pipe(catchError(() => of([]))),
+      ),
+    ),
   );
 
   // Check if current user is owner or admin
@@ -115,26 +128,26 @@ export class GroupSettingsPage {
       path: '/groups',
       noindex: true,
     });
+
     // Initialize edit form when group loads
-    const checkGroup = setInterval(() => {
+    effect(() => {
       const group = this.group();
       if (group) {
-        this.editGroupForm.set({
-          name: group.name || '',
-          description: group.description || '',
-          type: group.type || 'open',
-          image: group.image || '',
+        untracked(() => {
+          this.editGroupForm.set({
+            name: group.name || '',
+            description: group.description || '',
+            type: group.type || 'open',
+            image: group.image || '',
+          });
         });
-        clearInterval(checkGroup);
       }
-    }, 100);
+    });
   }
 
   get groupId(): string {
     return this.route.snapshot.params['id'];
   }
-
-  // --- Member Management ---
   openDeleteModal(member: GroupMember) {
     if (member.userId === this.group()?.ownerId) {
       this.errorMessage.set('A csoport tulajdonosát nem lehet törölni.');

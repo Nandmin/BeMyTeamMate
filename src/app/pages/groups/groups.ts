@@ -15,6 +15,7 @@ import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { GroupService, Group } from '../../services/group.service';
 import { AuthService } from '../../services/auth.service';
 import { ModalService } from '../../services/modal.service';
+import { SeoService } from '../../services/seo.service';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { catchError, of, switchMap } from 'rxjs';
 
@@ -76,6 +77,7 @@ export class GroupsPage implements AfterViewInit, OnDestroy {
   private router = inject(Router);
   protected authService = inject(AuthService);
   private modalService = inject(ModalService);
+  private seo = inject(SeoService);
 
   groups: Signal<Group[] | undefined> = toSignal(
     this.authService.user$.pipe(
@@ -96,6 +98,12 @@ export class GroupsPage implements AfterViewInit, OnDestroy {
   isSubmitting = false;
 
   constructor() {
+    this.seo.setPageMeta({
+      title: 'Csoportok kezelése – BeMyTeamMate',
+      description: 'Hozz létre csoportokat, kezeld a tagságot, és szervezd a közös meccseket.',
+      path: '/groups',
+      noindex: true,
+    });
     this.groupForm = this.fb.group({
       name: ['', [Validators.required, Validators.minLength(3)]],
       type: ['closed', Validators.required],

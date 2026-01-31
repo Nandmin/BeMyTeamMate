@@ -8,6 +8,7 @@ import { ModalService } from '../../services/modal.service';
 import { RoleLabelPipe } from '../../pipes/role-label.pipe';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { switchMap } from 'rxjs';
+import { SeoService } from '../../services/seo.service';
 import {
   DragDropModule,
   CdkDragDrop,
@@ -28,6 +29,7 @@ export class EventDetailPage {
   private eventService = inject(EventService);
   protected authService = inject(AuthService);
   private modalService = inject(ModalService);
+  private seo = inject(SeoService);
 
   groupId = this.route.snapshot.params['id'];
   eventId = this.route.snapshot.params['eventId'];
@@ -54,6 +56,12 @@ export class EventDetailPage {
   isFinalizingMvp = signal(false);
 
   constructor() {
+    this.seo.setPageMeta({
+      title: 'Esemény részletei – BeMyTeamMate',
+      description: 'Csapatok, részvétel, eredmények és MVP szavazás egy nézetben.',
+      path: '/groups',
+      noindex: true,
+    });
     effect(() => {
       const event = this.event();
       const members = this.members();

@@ -11,6 +11,7 @@ import { EventService, SportEvent } from '../../services/event.service';
 import { ModalService } from '../../services/modal.service';
 import { CoverImageSelectorComponent } from '../../components/cover-image-selector/cover-image-selector.component';
 import { RoleLabelPipe } from '../../pipes/role-label.pipe';
+import { SeoService } from '../../services/seo.service';
 
 @Component({
   selector: 'app-group-detail',
@@ -28,11 +29,18 @@ export class GroupDetailPage {
   private modalService = inject(ModalService);
   private renderer = inject(Renderer2);
   private document = inject(DOCUMENT);
+  private seo = inject(SeoService);
   protected math = Math;
 
   selectedView = signal<'upcoming' | 'previous'>('upcoming');
 
   constructor() {
+    this.seo.setPageMeta({
+      title: 'Csoport részletei – BeMyTeamMate',
+      description: 'Csoport események, tagok és statisztikák egy helyen.',
+      path: '/groups',
+      noindex: true,
+    });
     effect(() => {
       const isModalOpen = !!this.selectedEventForRecurrence();
       const mainContent = this.document.querySelector('.main-content');

@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { AuthService } from '../../services/auth.service';
 import { environment } from '../../../environments/environment';
+import { SeoService } from '../../services/seo.service';
 
 @Component({
   selector: 'app-contact-page',
@@ -14,6 +15,7 @@ import { environment } from '../../../environments/environment';
 export class ContactPage implements AfterViewInit {
   private authService = inject(AuthService);
   private fb = inject(FormBuilder);
+  private seo = inject(SeoService);
 
   @ViewChild('turnstileContainer', { static: false })
   turnstileContainer?: ElementRef<HTMLDivElement>;
@@ -33,6 +35,15 @@ export class ContactPage implements AfterViewInit {
   private turnstileWidgetId: string | null = null;
   private readonly cooldownMs = 60 * 1000;
   private readonly cooldownKey = 'contact:lastSentAt';
+
+  constructor() {
+    this.seo.setPageMeta({
+      title: 'Kapcsolat – BeMyTeamMate',
+      description: 'Vedd fel velünk a kapcsolatot, és írj üzenetet a csapatnak.',
+      path: '/contact',
+      noindex: true,
+    });
+  }
 
   ngAfterViewInit() {
     this.loadTurnstile();

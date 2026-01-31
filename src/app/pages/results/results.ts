@@ -6,6 +6,7 @@ import { combineLatest, map, of, switchMap } from 'rxjs';
 import { AuthService } from '../../services/auth.service';
 import { EventService, SportEvent } from '../../services/event.service';
 import { GroupMember, GroupService } from '../../services/group.service';
+import { SeoService } from '../../services/seo.service';
 
 @Component({
   selector: 'app-results',
@@ -19,10 +20,20 @@ export class Results {
   private eventService = inject(EventService);
   private groupService = inject(GroupService);
   private router = inject(Router);
+  private seo = inject(SeoService);
 
   user = toSignal(this.authService.user$, { initialValue: null });
   fullUser = this.authService.fullCurrentUser;
   userGroups = toSignal(this.groupService.getUserGroups(), { initialValue: [] });
+
+  constructor() {
+    this.seo.setPageMeta({
+      title: 'Eredmények – BeMyTeamMate',
+      description: 'Legutóbbi meccsek, statisztikák és ELO változások áttekintése.',
+      path: '/results',
+      noindex: true,
+    });
+  }
 
   periodOptions = [
     { id: 'all', label: 'Teljes időszak', days: null },

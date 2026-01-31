@@ -8,6 +8,7 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { switchMap } from 'rxjs';
 import { CoverImageSelectorComponent } from '../../components/cover-image-selector/cover-image-selector.component';
 import { RoleLabelPipe } from '../../pipes/role-label.pipe';
+import { SeoService } from '../../services/seo.service';
 
 export type MemberRole = 'owner' | 'admin' | 'member';
 
@@ -23,6 +24,7 @@ export class GroupSettingsPage {
   private router = inject(Router);
   private groupService = inject(GroupService);
   protected authService = inject(AuthService);
+  private seo = inject(SeoService);
 
   group = toSignal(
     this.route.params.pipe(switchMap((params) => this.groupService.getGroup(params['id']))),
@@ -107,6 +109,12 @@ export class GroupSettingsPage {
   showImageSelector = signal(false);
 
   constructor() {
+    this.seo.setPageMeta({
+      title: 'Csoport beállítások – BeMyTeamMate',
+      description: 'Kezeld a csoport adatait, tagokat és jogosultságokat.',
+      path: '/groups',
+      noindex: true,
+    });
     // Initialize edit form when group loads
     const checkGroup = setInterval(() => {
       const group = this.group();

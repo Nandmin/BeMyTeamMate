@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { AuthService } from '../../services/auth.service';
+import { SeoService } from '../../services/seo.service';
 
 @Component({
   selector: 'app-login',
@@ -14,6 +15,7 @@ import { AuthService } from '../../services/auth.service';
 export class LoginPage implements OnInit {
   private authService = inject(AuthService);
   private fb = inject(FormBuilder);
+  private seo = inject(SeoService);
 
   currentYear = new Date().getFullYear();
 
@@ -32,6 +34,11 @@ export class LoginPage implements OnInit {
   }
 
   ngOnInit() {
+    this.seo.setPageMeta({
+      title: 'Bejelentkezés – BeMyTeamMate',
+      description: 'Lépj be, szervezd a következő meccset és kezeld a csapatodat egy helyen.',
+      path: '/login',
+    });
     // Check if we arrived here via a magic link
     this.authService.verifyMagicLink().catch((err) => {
       console.error('Magic link verify failed', err);

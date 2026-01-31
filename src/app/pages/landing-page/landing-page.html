@@ -1,7 +1,7 @@
 <div
     class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-white font-display antialiased selection:bg-primary selection:text-white min-h-screen flex flex-col">
 
-    <div class="flex-grow">
+    <main class="flex-grow" role="main">
         <!-- Hero Section -->
         <section class="relative w-full pt-12 pb-20 lg:pt-20 lg:pb-32 overflow-hidden">
             <div class="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
@@ -71,8 +71,10 @@
                                 <div class="size-3 rounded-full bg-green-500/50"></div>
                             </div>
                             <!-- Image -->
-                            <div class="w-full h-full bg-contain bg-no-repeat bg-top"
-                                style="background-image: url('assets/images/soccer-349821_640.jpg')">
+                            <div class="w-full h-full relative">
+                                <img src="assets/images/soccer-349821_640.jpg"
+                                    alt="Baráti focimeccs a pályán, kiegyensúlyozott csapatokkal"
+                                    class="w-full h-full object-cover object-top" loading="eager" decoding="async">
                                 <div
                                     class="absolute inset-0 bg-gradient-to-t from-background-dark via-transparent to-transparent opacity-80">
                                 </div>
@@ -253,7 +255,9 @@
                             <div
                                 class="aspect-video bg-gradient-to-br from-primary/30 to-secondary/30 transition-transform duration-700 group-hover:scale-105 flex items-center justify-center">
                                 <!-- <span class="material-symbols-outlined text-[80px] text-white/30">groups</span> -->
-                                <img src="assets/images/team-7278739_640.jpg" alt="" class="w-full h-full object-cover">
+                                <img src="assets/images/team-7278739_640.jpg"
+                                    alt="Örömteli csapat a pályán, közösségi élmény a sport körül"
+                                    class="w-full h-full object-cover" loading="lazy" decoding="async">
                             </div>
                         </div>
                     </div>
@@ -285,6 +289,6 @@
                 </div>
             </div>
         </section>
-    </div>
+    </main>
 
 </div>

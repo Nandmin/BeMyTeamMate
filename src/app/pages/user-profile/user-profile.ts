@@ -10,6 +10,7 @@ import { NotificationService } from '../../services/notification.service';
 import { AppUser } from '../../models/user.model';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { switchMap, map, of, from, take, combineLatest, catchError } from 'rxjs';
+import { SeoService } from '../../services/seo.service';
 
 @Component({
   selector: 'app-user-profile',
@@ -26,6 +27,7 @@ export class UserProfilePage {
   private notificationService = inject(NotificationService);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
+  private seo = inject(SeoService);
 
   // Viewed user data
   profileUser = toSignal<AppUser | null>(
@@ -128,6 +130,12 @@ export class UserProfilePage {
   };
 
   constructor() {
+    this.seo.setPageMeta({
+      title: 'Profil – BeMyTeamMate',
+      description: 'Felhasználói profil, statisztikák és csoportok áttekintése.',
+      path: '/profile',
+      noindex: true,
+    });
     effect(() => {
       const u = this.profileUser();
       if (u && this.isOwnProfile() && !this.isEditing()) {

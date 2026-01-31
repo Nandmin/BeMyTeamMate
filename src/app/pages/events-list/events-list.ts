@@ -4,6 +4,7 @@ import { RouterModule } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { GroupService } from '../../services/group.service';
 import { EventService, SportEvent } from '../../services/event.service';
+import { SeoService } from '../../services/seo.service';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { combineLatest, map, of, switchMap } from 'rxjs';
 
@@ -17,6 +18,7 @@ export class EventsList implements OnDestroy {
   private authService = inject(AuthService);
   private groupService = inject(GroupService);
   private eventService = inject(EventService);
+  private seo = inject(SeoService);
 
   visibleMonth = signal(this.getMonthAnchor(new Date()));
   selectedDate = signal(new Date());
@@ -204,6 +206,12 @@ export class EventsList implements OnDestroy {
   private timerId: ReturnType<typeof setInterval> | null = null;
 
   constructor() {
+    this.seo.setPageMeta({
+      title: 'Események és meccsek – BeMyTeamMate',
+      description: 'Kövesd a közelgő eseményeket, nézd meg a következő meccset és kezeld a részvételt.',
+      path: '/events',
+      noindex: true,
+    });
     this.timerId = setInterval(() => this.now.set(new Date()), 1000);
   }
 

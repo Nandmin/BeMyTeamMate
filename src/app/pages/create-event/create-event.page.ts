@@ -7,6 +7,7 @@ import { EventService } from '../../services/event.service';
 import { AuthService } from '../../services/auth.service';
 import { ModalService } from '../../services/modal.service';
 import { Timestamp } from '@angular/fire/firestore';
+import { SeoService } from '../../services/seo.service';
 
 @Component({
   selector: 'app-create-event',
@@ -22,6 +23,7 @@ export class CreateEventPage implements OnInit {
   private eventService = inject(EventService);
   private authService = inject(AuthService);
   private modalService = inject(ModalService);
+  private seo = inject(SeoService);
 
   groupId = this.route.snapshot.params['id'];
   eventId = this.route.snapshot.params['eventId'];
@@ -41,6 +43,14 @@ export class CreateEventPage implements OnInit {
   ];
 
   async ngOnInit() {
+    this.seo.setPageMeta({
+      title: this.isEditMode ? 'Esemény szerkesztése – BeMyTeamMate' : 'Új esemény – BeMyTeamMate',
+      description: this.isEditMode
+        ? 'Szerkeszd az esemény részleteit, időpontot, helyszínt és résztvevőket.'
+        : 'Hozz létre új eseményt, állítsd be az időpontot és a részleteket.',
+      path: '/groups',
+      noindex: true,
+    });
     this.today = new Date().toISOString().split('T')[0];
     this.eventData.date = this.today;
 

@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { AbstractControl, FormBuilder, ReactiveFormsModule, ValidationErrors, Validators } from '@angular/forms';
 import { AuthService } from '../../services/auth.service';
+import { SeoService } from '../../services/seo.service';
 
 @Component({
   selector: 'app-register',
@@ -14,6 +15,7 @@ import { AuthService } from '../../services/auth.service';
 export class RegisterPage {
   private authService = inject(AuthService);
   private fb = inject(FormBuilder);
+  private seo = inject(SeoService);
 
   currentYear = new Date().getFullYear();
 
@@ -44,6 +46,14 @@ export class RegisterPage {
   errorMessage = '';
   successMessage = signal('');
   isLoading = signal(false);
+
+  constructor() {
+    this.seo.setPageMeta({
+      title: 'Ingyenes regisztráció – BeMyTeamMate',
+      description: 'Hozz létre fiókot 1 perc alatt, és kezdj el kiegyensúlyozott csapatokat generálni.',
+      path: '/register',
+    });
+  }
 
   toggleSport(sportId: string) {
     if (this.selectedSports.has(sportId)) {

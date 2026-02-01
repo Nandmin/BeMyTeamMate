@@ -1,9 +1,19 @@
-import { Component, inject, signal, effect, computed } from '@angular/core';
+import {
+  Component,
+  inject,
+  signal,
+  effect,
+  computed,
+  AfterViewInit,
+  ViewChild,
+  ElementRef,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule, ActivatedRoute, Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { GroupService } from '../../services/group.service';
+import { environment } from '../../../environments/environment';
 import { ModalService } from '../../services/modal.service';
 import { EventService, SportEvent } from '../../services/event.service';
 import { NotificationService } from '../../services/notification.service';
@@ -19,7 +29,7 @@ import { SeoService } from '../../services/seo.service';
   templateUrl: './user-profile.html',
   styleUrl: './user-profile.scss',
 })
-export class UserProfilePage {
+export class UserProfilePage implements AfterViewInit {
   protected authService = inject(AuthService);
   protected modalService = inject(ModalService);
   private groupService = inject(GroupService);
@@ -28,6 +38,13 @@ export class UserProfilePage {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private seo = inject(SeoService);
+
+  @ViewChild('turnstileContainer', { static: false })
+  turnstileContainer?: ElementRef<HTMLDivElement>;
+
+  turnstileToken = signal('');
+  turnstileError = signal('');
+  private turnstileWidgetId: string | null = null;
 
   // Viewed user data
   profileUser = toSignal<AppUser | null>(
@@ -112,6 +129,7 @@ export class UserProfilePage {
   activeSection = signal('personal');
   pushEnabled = signal(this.notificationService.isPushEnabled());
   pushBusy = signal(false);
+  isLoading = signal(false);
 
   // Form fields
   profileData = {
@@ -136,6 +154,7 @@ export class UserProfilePage {
       path: '/profile',
       noindex: true,
     });
+
     effect(() => {
       const u = this.profileUser();
       if (u && this.isOwnProfile() && !this.isEditing()) {
@@ -143,7 +162,100 @@ export class UserProfilePage {
         this.profileData.email = u.email || '';
         this.profileData.bio = u.bio || '';
       }
+
+      // Re-load turnstile if we switch back to profile section
+      if (this.isOwnProfile() && !this.isEditing()) {
+        setTimeout(() => this.loadTurnstile(), 100);
+      }
     });
+  }
+
+  ngAfterViewInit() {
+    this.loadTurnstile();
+  }
+
+  private loadTurnstile() {
+    if (!environment.turnstileSiteKey) return;
+
+    // Robust retry logic to deal with race conditions and slow loading
+    let attempts = 0;
+    const maxAttempts = 10;
+
+    // Reset any previous state if needed
+    // if (this.turnstileWidgetId) return; // Wait, if we want to re-render we might need to be careful
+
+    const tryRender = () => {
+      // 1. Check if container element is available in DOM
+      if (!this.turnstileContainer?.nativeElement) {
+        if (attempts++ < maxAttempts) {
+          setTimeout(tryRender, 500);
+        }
+        return;
+      }
+
+      // 2. Check if Turnstile script is loaded globally
+      if (!(window as any).turnstile) {
+        if (attempts++ < maxAttempts) {
+          setTimeout(tryRender, 500);
+        }
+        return;
+      }
+
+      // 3. Check if already rendered (has children that are not text nodes or we have token)
+      // If we have token, we assume it's good.
+      if (this.turnstileToken()) return;
+
+      // If the container has content but it is just our "Loading..." text, clear it
+      // Note: Turnstile iframe might be added.
+      if (this.turnstileContainer.nativeElement.querySelector('iframe')) return; // Already has iframe
+
+      // Clear text content (Loading...)
+      this.turnstileContainer.nativeElement.textContent = '';
+
+      try {
+        this.turnstileWidgetId = (window as any).turnstile.render(
+          this.turnstileContainer.nativeElement,
+          {
+            sitekey: environment.turnstileSiteKey,
+            theme: 'auto',
+            callback: (token: string) => {
+              this.turnstileToken.set(token);
+              this.turnstileError.set('');
+            },
+            'expired-callback': () => {
+              this.turnstileToken.set('');
+              this.resetTurnstile();
+            },
+            'error-callback': () => {
+              this.turnstileToken.set('');
+              // Retry reset after a short delay to recover from transient errors
+              setTimeout(() => this.resetTurnstile(), 1000);
+            },
+          },
+        );
+      } catch (e) {
+        console.warn('Turnstile render error', e);
+      }
+    };
+
+    if (document.getElementById('cf-turnstile-script')) {
+      tryRender();
+      return;
+    }
+
+    const script = document.createElement('script');
+    script.id = 'cf-turnstile-script';
+    script.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';
+    script.async = true;
+    script.defer = true;
+    script.onload = () => tryRender();
+    document.head.appendChild(script);
+  }
+
+  private resetTurnstile() {
+    if (this.turnstileWidgetId && (window as any).turnstile) {
+      (window as any).turnstile.reset(this.turnstileWidgetId);
+    }
   }
 
   async onFileSelected(event: any) {
@@ -408,5 +520,74 @@ export class UserProfilePage {
     if (user?.photoURL) return user.photoURL;
     return `https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.uid || 'default'}`;
     // return `https://api.dicebear.com/7.x/adventurer/svg?seed=${user?.uid || 'default'}`;
+  }
+
+  async onDeleteRegistration() {
+    const confirmed = await this.modalService.confirm(
+      'Biztosan törölni szeretnéd a regisztrációdat? A művelet nem vonható vissza, és minden adatod véglegesen törlésre kerül.',
+      'Regisztráció törlése',
+      'Végleges törlés',
+      'Mégse',
+    );
+
+    if (!confirmed) return;
+
+    if (environment.turnstileSiteKey && !this.turnstileToken()) {
+      await this.modalService.alert(
+        'Kérlek igazold, hogy nem vagy robot! (Töltsd ki a Captchát a gomb közelében)',
+        'Hiba',
+        'error',
+      );
+      return;
+    }
+
+    const user = this.authService.currentUser();
+    if (!user) return;
+
+    this.isLoading.set(true);
+
+    try {
+      const payload = {
+        message: `DELETE_ACCOUNT_REQUEST: A felhasználó (UID: ${user.uid}) kezdeményezte a fiókja törlését a profil oldalon keresztül.`,
+        contactEmail: user.email || 'unknown@user.com',
+        honeypot: '',
+        turnstileToken: this.turnstileToken(),
+        user: {
+          uid: user.uid,
+          email: user.email || '',
+          displayName: user.displayName || '',
+        },
+      };
+
+      const response = await fetch(environment.contactWorkerUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        const detail = await response.text();
+        console.error('Delete request failed details:', response.status, detail);
+        throw new Error(`Sikertelen kérelem: ${detail || response.statusText}`);
+      }
+
+      await this.modalService.alert(
+        'A törlési kérelmedet fogadtuk. A fiókod hamarosan törlésre kerül.',
+        'Kérelem elküldve',
+        'success',
+      );
+
+      this.resetTurnstile();
+      this.turnstileToken.set('');
+    } catch (error: any) {
+      console.error('Delete registration request failed:', error);
+      await this.modalService.alert(
+        `Nem sikerült elküldeni a kérelmet: ${error.message}`,
+        'Hiba',
+        'error',
+      );
+    } finally {
+      this.isLoading.set(false);
+    }
   }
 }

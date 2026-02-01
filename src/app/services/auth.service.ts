@@ -218,6 +218,14 @@ export class AuthService {
     });
   }
 
+  async getIdToken(): Promise<string | null> {
+    const u = this.auth.currentUser;
+    if (u) {
+      return u.getIdToken();
+    }
+    return null;
+  }
+
   // --- Firestore User Data Logic ---
   private async updateUserData(firebaseUser: any, additionalData: any = {}) {
     const userRef = doc(this.firestore, `users/${firebaseUser.uid}`);

@@ -362,7 +362,8 @@
                             kell kérned.</p>
                     </div>
                     <button
-                        class="shrink-0 px-4 py-2 rounded-lg bg-transparent border border-red-500/50 text-red-500 font-bold text-sm hover:bg-red-500 hover:text-white transition-colors">
+                        (click)="onLeaveGroup()" [disabled]="isSubmitting()"
+                        class="shrink-0 px-4 py-2 rounded-lg bg-red-600 border border-red-500/50 text-white keep-white font-bold text-sm hover:bg-red-500 hover:text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
                         Kilépés a csoportból
                     </button>
                 </div>
@@ -415,3 +416,4 @@
     }
 
 </main>
+

@@ -248,7 +248,7 @@ export class GroupDetailPage {
       this.showImageSelector.set(false);
     } catch (error) {
       console.error('Error updating group image:', error);
-      await this.modalService.alert('Hiba tĂ¶rtĂ©nt a borĂ­tĂłkĂ©p mentĂ©sekor.', 'Hiba', 'error');
+      await this.modalService.alert('Hiba történt a borítókép mentésekor.', 'Hiba', 'error');
     } finally {
       this.isSubmitting.set(false);
     }
@@ -322,7 +322,44 @@ export class GroupDetailPage {
     }
   }
 
-  formatEventDate(timestamp: any) {
+  async onLeaveGroup() {
+    const groupId = this.route.snapshot.params['id'];
+    if (!groupId) return;
+
+    const user = this.authService.currentUser();
+    const group = this.group();
+    if (group?.ownerId && user?.uid && group.ownerId === user.uid) {
+      await this.modalService.alert(
+        `A csoport tulajdonosa nem léphet ki.\nElőbb add át a tulajdonjogot, vagy töröld a csoportot.`,
+        'Nem lehetséges',
+        'warning'
+      );
+      return;
+    }
+
+    const confirmed = await this.modalService.confirm(
+      'Biztosan kilépsz a csoportból? Ezután nem láthatod az eseményeket.',
+      'Kilépés'
+    );
+    if (!confirmed) return;
+
+    this.isSubmitting.set(true);
+    try {
+      await this.groupService.leaveGroup(groupId);
+      await this.modalService.alert('Sikeresen kiléptél a csoportból.', 'Kész', 'success');
+      await this.router.navigate(['/groups']);
+    } catch (error: any) {
+      console.error('Error leaving group:', error);
+      await this.modalService.alert(
+        error?.message || 'Hiba történt a kilépés során.',
+        'Hiba',
+        'error'
+      );
+    } finally {
+      this.isSubmitting.set(false);
+    }
+  }
+formatEventDate(timestamp: any) {
     const date = this.coerceDate(timestamp);
     if (isNaN(date.getTime())) return { month: '---', day: '--' };
     const months = [
@@ -414,3 +451,7 @@ export class GroupDetailPage {
     return members.filter((m) => attendeeIds.includes(m.userId));
   }
 }
+
+
+
+

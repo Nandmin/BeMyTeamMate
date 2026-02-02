@@ -505,6 +505,22 @@ export class GroupService {
     this.bumpGroupItemCacheVersion();
   }
 
+  async leaveGroup(groupId: string) {
+    const user = this.authService.currentUser();
+    if (!user) throw new Error('User must be logged in');
+
+    const group = await this.getGroupOnce(groupId);
+    if (group?.ownerId === user.uid) {
+      throw new Error('A csoport tulajdonosa nem lĂ©phet ki.');
+    }
+
+    const memberRef = doc(this.firestore, `groups/${groupId}/members/${user.uid}`);
+    const memberSnap = await getDoc(memberRef);
+    if (!memberSnap.exists()) return;
+
+    await this.removeMember(groupId, user.uid);
+  }
+
   async removeMember(groupId: string, memberId: string) {
     const user = this.authService.currentUser();
     if (!user) throw new Error('User must be logged in');
@@ -512,6 +528,7 @@ export class GroupService {
     // Delete the member document
     const memberRef = doc(this.firestore, `groups/${groupId}/members/${memberId}`);
     const memberSnap = await getDoc(memberRef);
+    if (!memberSnap.exists()) return;
     const memberData = memberSnap.exists() ? (memberSnap.data() as GroupMember) : null;
 
     const group = await this.getGroupOnce(groupId);

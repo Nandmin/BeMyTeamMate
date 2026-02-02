@@ -4,3 +4,6 @@
   Cache-Control: no-cache
 /firebase-messaging-sw.js
   Cache-Control: no-cache
+/mobile-config.json
+  Content-Type: application/json
+  Cache-Control: max-age=300

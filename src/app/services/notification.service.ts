@@ -45,6 +45,7 @@ export class NotificationService {
   private notificationCacheTtlMs = 60 * 1000;
   private memberCacheTtlMs = 2 * 60 * 1000;
   private tokenCacheTtlMs = 5 * 60 * 1000;
+  private readonly maxCacheEntries = 100;
   private notificationCache = new Map<string, { data: AppNotification[]; ts: number }>();
   private memberIdsCache = new Map<string, { data: string[]; ts: number }>();
   private tokenCache = new Map<string, { data: string[]; ts: number }>();
@@ -64,7 +65,7 @@ export class NotificationService {
   isPushEnabled() {
     if (!this.canUsePush()) return false;
     return (
-      Notification.permission === 'granted' && !!window.localStorage.getItem(this.tokenStorageKey)
+      Notification.permission === 'granted' && !!this.safeGetItem(this.tokenStorageKey)
     );
   }
 
@@ -110,7 +111,7 @@ export class NotificationService {
     await updateDoc(doc(this.firestore, `users/${user.uid}`), {
       fcmTokens: arrayUnion(token),
     });
-    window.localStorage.setItem(this.tokenStorageKey, token);
+    this.safeSetItem(this.tokenStorageKey, token);
     return token;
   }
 
@@ -119,7 +120,7 @@ export class NotificationService {
     if (!user) throw new Error('User must be logged in');
     if (!this.canUsePush()) return;
 
-    const token = window.localStorage.getItem(this.tokenStorageKey);
+    const token = this.safeGetItem(this.tokenStorageKey);
     if (!token) return;
 
     const messaging = getMessaging();
@@ -127,7 +128,7 @@ export class NotificationService {
     await updateDoc(doc(this.firestore, `users/${user.uid}`), {
       fcmTokens: arrayRemove(token),
     });
-    window.localStorage.removeItem(this.tokenStorageKey);
+    this.safeRemoveItem(this.tokenStorageKey);
   }
 
   async syncTokenForCurrentUser() {
@@ -135,7 +136,7 @@ export class NotificationService {
     if (!user) return;
     if (!this.canUsePush()) return;
 
-    const stored = window.localStorage.getItem(this.tokenStorageKey);
+    const stored = this.safeGetItem(this.tokenStorageKey);
     if (stored) {
       await updateDoc(doc(this.firestore, `users/${user.uid}`), {
         fcmTokens: arrayUnion(stored),
@@ -149,7 +150,7 @@ export class NotificationService {
     await updateDoc(doc(this.firestore, `users/${user.uid}`), {
       fcmTokens: arrayUnion(token),
     });
-    window.localStorage.setItem(this.tokenStorageKey, token);
+    this.safeSetItem(this.tokenStorageKey, token);
   }
 
   listenForForegroundMessages() {
@@ -290,7 +291,7 @@ export class NotificationService {
   }
 
   private async getOrCreateToken() {
-    const existing = window.localStorage.getItem(this.tokenStorageKey);
+    const existing = this.safeGetItem(this.tokenStorageKey);
     if (existing) return existing;
     if (!environment.firebase.vapidKey || environment.firebase.vapidKey === 'YOUR_VAPID_KEY') {
       throw new Error('Missing VAPID key configuration');
@@ -366,12 +367,7 @@ export class NotificationService {
   private setCachedNotifications(uid: string, items: AppNotification[]) {
     const entry = { data: items, ts: Date.now() };
     this.notificationCache.set(uid, entry);
-    try {
-      if (typeof window === 'undefined' || !window.localStorage) return;
-      window.localStorage.setItem(this.notificationStorageKey(uid), JSON.stringify(entry));
-    } catch {
-      // ignore cache errors
-    }
+    this.safeSetCacheItem(this.notificationStorageKey(uid), entry);
   }
 
   private notificationStorageKey(uid: string) {
@@ -425,6 +421,92 @@ export class NotificationService {
       return url.protocol === 'https:';
     } catch {
       return false;
+    }
+  }
+
+  private storageAvailable() {
+    return typeof window !== 'undefined' && !!window.localStorage;
+  }
+
+  private safeGetItem(key: string) {
+    if (!this.storageAvailable()) return null;
+    try {
+      return window.localStorage.getItem(key);
+    } catch (err) {
+      console.warn('LocalStorage read failed:', err);
+      return null;
+    }
+  }
+
+  private safeSetItem(key: string, value: string) {
+    if (!this.storageAvailable()) return false;
+    try {
+      window.localStorage.setItem(key, value);
+      return true;
+    } catch (err) {
+      console.warn('LocalStorage write failed:', err);
+      return false;
+    }
+  }
+
+  private safeRemoveItem(key: string) {
+    if (!this.storageAvailable()) return;
+    try {
+      window.localStorage.removeItem(key);
+    } catch (err) {
+      console.warn('LocalStorage remove failed:', err);
+    }
+  }
+
+  private safeSetCacheItem(key: string, entry: { data: AppNotification[]; ts: number }) {
+    if (!this.storageAvailable()) return;
+    try {
+      this.enforceStorageQuota();
+      window.localStorage.setItem(key, JSON.stringify(entry));
+    } catch (err) {
+      console.warn('LocalStorage write failed, using memory-only cache:', err);
+      this.evictOldestCacheEntries(1);
+      try {
+        window.localStorage.setItem(key, JSON.stringify(entry));
+      } catch (retryErr) {
+        console.warn('LocalStorage retry failed, keeping memory-only cache:', retryErr);
+      }
+    }
+  }
+
+  private enforceStorageQuota() {
+    if (!this.storageAvailable()) return;
+    const keys = this.getCacheKeys();
+    if (keys.length < this.maxCacheEntries) return;
+    const entries = keys
+      .map((key) => ({ key, ts: this.readCacheTimestamp(key) }))
+      .sort((a, b) => a.ts - b.ts);
+    const toRemove = entries.slice(0, entries.length - this.maxCacheEntries + 1);
+    toRemove.forEach((entry) => this.safeRemoveItem(entry.key));
+  }
+
+  private evictOldestCacheEntries(count: number) {
+    if (!this.storageAvailable()) return;
+    const keys = this.getCacheKeys();
+    if (keys.length === 0) return;
+    const entries = keys
+      .map((key) => ({ key, ts: this.readCacheTimestamp(key) }))
+      .sort((a, b) => a.ts - b.ts);
+    entries.slice(0, count).forEach((entry) => this.safeRemoveItem(entry.key));
+  }
+
+  private getCacheKeys() {
+    return Object.keys(window.localStorage).filter((key) => key.startsWith('notifications:'));
+  }
+
+  private readCacheTimestamp(key: string) {
+    try {
+      const raw = window.localStorage.getItem(key);
+      if (!raw) return 0;
+      const parsed = JSON.parse(raw) as { ts?: number };
+      return typeof parsed?.ts === 'number' ? parsed.ts : 0;
+    } catch {
+      return 0;
     }
   }
 }

@@ -87,6 +87,7 @@ export class EventService {
   private cacheTtlMs = 5 * 60 * 1000;
   private eventCache = new Map<string, { data: SportEvent; ts: number }>();
   private eventsListCache = new Map<string, { data: SportEvent[]; ts: number }>();
+  private readonly maxCacheEntries = 100;
   private eventsChange$ = new Subject<string>();
   private eventChange$ = new Subject<{ groupId: string; eventId: string }>();
 
@@ -767,12 +768,7 @@ export class EventService {
     const key = this.eventCacheKey(groupId, eventId);
     const entry = { data: event, ts: Date.now() };
     this.eventCache.set(key, entry);
-    try {
-      if (typeof window === 'undefined' || !window.localStorage) return;
-      window.localStorage.setItem(key, JSON.stringify(entry));
-    } catch {
-      // ignore cache errors
-    }
+    this.safeSetCacheItem(key, entry);
   }
 
   private getCachedEventsList(cacheKey: string): SportEvent[] | null {
@@ -798,12 +794,7 @@ export class EventService {
   private setCachedEventsList(cacheKey: string, events: SportEvent[]) {
     const entry = { data: events, ts: Date.now() };
     this.eventsListCache.set(cacheKey, entry);
-    try {
-      if (typeof window === 'undefined' || !window.localStorage) return;
-      window.localStorage.setItem(cacheKey, JSON.stringify(entry));
-    } catch {
-      // ignore cache errors
-    }
+    this.safeSetCacheItem(cacheKey, entry);
   }
 
   private eventCacheKey(groupId: string, eventId: string) {
@@ -825,25 +816,13 @@ export class EventService {
     for (const key of this.eventsListCache.keys()) {
       if (!key.startsWith(listPrefix)) continue;
       this.eventsListCache.delete(key);
-      try {
-        if (typeof window !== 'undefined' && window.localStorage) {
-          window.localStorage.removeItem(key);
-        }
-      } catch {
-        // ignore cache errors
-      }
+      this.safeRemoveItem(key);
     }
 
     if (eventId) {
       const eventKey = this.eventCacheKey(groupId, eventId);
       this.eventCache.delete(eventKey);
-      try {
-        if (typeof window !== 'undefined' && window.localStorage) {
-          window.localStorage.removeItem(eventKey);
-        }
-      } catch {
-        // ignore cache errors
-      }
+      this.safeRemoveItem(eventKey);
     }
   }
 
@@ -858,5 +837,75 @@ export class EventService {
   refreshGroupEvents(groupId: string) {
     this.invalidateEventCaches(groupId);
     this.emitEventsChange(groupId);
+  }
+
+  private storageAvailable() {
+    return typeof window !== 'undefined' && !!window.localStorage;
+  }
+
+  private safeRemoveItem(key: string) {
+    if (!this.storageAvailable()) return;
+    try {
+      window.localStorage.removeItem(key);
+    } catch (err) {
+      console.warn('LocalStorage remove failed:', err);
+    }
+  }
+
+  private safeSetCacheItem(
+    key: string,
+    entry: { data: SportEvent | SportEvent[]; ts: number }
+  ) {
+    if (!this.storageAvailable()) return;
+    try {
+      this.enforceStorageQuota();
+      window.localStorage.setItem(key, JSON.stringify(entry));
+    } catch (err) {
+      console.warn('LocalStorage write failed, using memory-only cache:', err);
+      this.evictOldestCacheEntries(1);
+      try {
+        window.localStorage.setItem(key, JSON.stringify(entry));
+      } catch (retryErr) {
+        console.warn('LocalStorage retry failed, keeping memory-only cache:', retryErr);
+      }
+    }
+  }
+
+  private enforceStorageQuota() {
+    if (!this.storageAvailable()) return;
+    const keys = this.getCacheKeys();
+    if (keys.length < this.maxCacheEntries) return;
+    const entries = keys
+      .map((key) => ({ key, ts: this.readCacheTimestamp(key) }))
+      .sort((a, b) => a.ts - b.ts);
+    const toRemove = entries.slice(0, entries.length - this.maxCacheEntries + 1);
+    toRemove.forEach((entry) => this.safeRemoveItem(entry.key));
+  }
+
+  private evictOldestCacheEntries(count: number) {
+    if (!this.storageAvailable()) return;
+    const keys = this.getCacheKeys();
+    if (keys.length === 0) return;
+    const entries = keys
+      .map((key) => ({ key, ts: this.readCacheTimestamp(key) }))
+      .sort((a, b) => a.ts - b.ts);
+    entries.slice(0, count).forEach((entry) => this.safeRemoveItem(entry.key));
+  }
+
+  private getCacheKeys() {
+    return Object.keys(window.localStorage).filter(
+      (key) => key.startsWith('event:') || key.startsWith('events:')
+    );
+  }
+
+  private readCacheTimestamp(key: string) {
+    try {
+      const raw = window.localStorage.getItem(key);
+      if (!raw) return 0;
+      const parsed = JSON.parse(raw) as { ts?: number };
+      return typeof parsed?.ts === 'number' ? parsed.ts : 0;
+    } catch {
+      return 0;
+    }
   }
 }

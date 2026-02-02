@@ -36,6 +36,7 @@ export class AuthService {
   private router = inject(Router);
   private cacheTtlMs = 5 * 60 * 1000;
   private profileCache = new Map<string, { data: AppUser; ts: number }>();
+  private readonly maxProfileCacheEntries = 100;
 
   // Expose the current user as an observable and signals
   public readonly user$: Observable<User | null>;
@@ -139,7 +140,7 @@ export class AuthService {
     };
     try {
       await sendSignInLinkToEmail(this.auth, email, actionCodeSettings);
-      window.localStorage.setItem('emailForSignIn', email);
+      this.safeSetItem('emailForSignIn', email);
       return true;
     } catch (error) {
       console.error('Magic link error:', error);
@@ -149,14 +150,14 @@ export class AuthService {
 
   async verifyMagicLink() {
     if (isSignInWithEmailLink(this.auth, window.location.href)) {
-      let email = window.localStorage.getItem('emailForSignIn');
+      let email = this.safeGetItem('emailForSignIn');
       if (!email) {
         email = window.prompt('Please provide your email for confirmation');
       }
       if (email) {
         try {
           const result = await signInWithEmailLink(this.auth, email, window.location.href);
-          window.localStorage.removeItem('emailForSignIn');
+          this.safeRemoveItem('emailForSignIn');
           await this.updateUserData(result.user);
           this.router.navigate(['/']);
           return result.user;
@@ -285,25 +286,97 @@ export class AuthService {
   private setCachedProfile(uid: string, data: AppUser) {
     const entry = { data, ts: Date.now() };
     this.profileCache.set(uid, entry);
-    try {
-      if (typeof window === 'undefined' || !window.localStorage) return;
-      window.localStorage.setItem(this.profileStorageKey(uid), JSON.stringify(entry));
-    } catch {
-      // ignore cache errors
-    }
+    this.safeSetCacheItem(this.profileStorageKey(uid), entry);
   }
 
   private clearCachedProfile(uid: string) {
     this.profileCache.delete(uid);
-    try {
-      if (typeof window === 'undefined' || !window.localStorage) return;
-      window.localStorage.removeItem(this.profileStorageKey(uid));
-    } catch {
-      // ignore cache errors
-    }
+    this.safeRemoveItem(this.profileStorageKey(uid));
   }
 
   private profileStorageKey(uid: string) {
     return `userProfile:${uid}`;
+  }
+
+  private storageAvailable() {
+    return typeof window !== 'undefined' && !!window.localStorage;
+  }
+
+  private safeSetItem(key: string, value: string) {
+    if (!this.storageAvailable()) return false;
+    try {
+      window.localStorage.setItem(key, value);
+      return true;
+    } catch (err) {
+      console.warn('LocalStorage write failed:', err);
+      return false;
+    }
+  }
+
+  private safeGetItem(key: string) {
+    if (!this.storageAvailable()) return null;
+    try {
+      return window.localStorage.getItem(key);
+    } catch (err) {
+      console.warn('LocalStorage read failed:', err);
+      return null;
+    }
+  }
+
+  private safeRemoveItem(key: string) {
+    if (!this.storageAvailable()) return;
+    try {
+      window.localStorage.removeItem(key);
+    } catch (err) {
+      console.warn('LocalStorage remove failed:', err);
+    }
+  }
+
+  private safeSetCacheItem(key: string, entry: { data: AppUser; ts: number }) {
+    if (!this.storageAvailable()) return;
+    try {
+      this.enforceProfileStorageQuota();
+      window.localStorage.setItem(key, JSON.stringify(entry));
+    } catch (err) {
+      console.warn('LocalStorage write failed, using memory-only cache:', err);
+      this.evictOldestProfileEntries(1);
+      try {
+        window.localStorage.setItem(key, JSON.stringify(entry));
+      } catch (retryErr) {
+        console.warn('LocalStorage retry failed, keeping memory-only cache:', retryErr);
+      }
+    }
+  }
+
+  private enforceProfileStorageQuota() {
+    if (!this.storageAvailable()) return;
+    const keys = Object.keys(window.localStorage).filter((k) => k.startsWith('userProfile:'));
+    if (keys.length < this.maxProfileCacheEntries) return;
+    const entries = keys
+      .map((key) => ({ key, ts: this.readCacheTimestamp(key) }))
+      .sort((a, b) => a.ts - b.ts);
+    const toRemove = entries.slice(0, entries.length - this.maxProfileCacheEntries + 1);
+    toRemove.forEach((entry) => this.safeRemoveItem(entry.key));
+  }
+
+  private evictOldestProfileEntries(count: number) {
+    if (!this.storageAvailable()) return;
+    const keys = Object.keys(window.localStorage).filter((k) => k.startsWith('userProfile:'));
+    if (keys.length === 0) return;
+    const entries = keys
+      .map((key) => ({ key, ts: this.readCacheTimestamp(key) }))
+      .sort((a, b) => a.ts - b.ts);
+    entries.slice(0, count).forEach((entry) => this.safeRemoveItem(entry.key));
+  }
+
+  private readCacheTimestamp(key: string) {
+    try {
+      const raw = window.localStorage.getItem(key);
+      if (!raw) return 0;
+      const parsed = JSON.parse(raw) as { ts?: number };
+      return typeof parsed?.ts === 'number' ? parsed.ts : 0;
+    } catch {
+      return 0;
+    }
   }
 }

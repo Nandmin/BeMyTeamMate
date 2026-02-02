@@ -70,9 +70,31 @@ export class GroupService {
   private groupCache = new Map<string, { data: Group; ts: number }>();
   private groupsListCache: { data: Group[]; ts: number } | null = null;
   private userGroupsCache = new Map<string, { data: Group[]; ts: number }>();
+  private readonly maxCacheEntries = 100;
 
   private get groupsCollection() {
     return collection(this.firestore, 'groups');
+  }
+
+  private async writeGroupAuditLog(
+    groupId: string,
+    action: string,
+    meta: Record<string, string> = {},
+  ) {
+    const user = this.authService.currentUser();
+    if (!user) return;
+    try {
+      const logRef = doc(collection(this.firestore, `groups/${groupId}/auditLogs`));
+      await setDoc(logRef, {
+        groupId,
+        actorId: user.uid,
+        action,
+        createdAt: serverTimestamp(),
+        ...meta,
+      });
+    } catch (error) {
+      console.warn('Audit log write failed:', error);
+    }
   }
 
   async createGroup(name: string, type: 'open' | 'closed', description: string = '') {
@@ -94,10 +116,8 @@ export class GroupService {
     };
 
     const ownerMemberRef = doc(this.firestore, `groups/${groupRef.id}/members/${user.uid}`);
-    // Removed userGroupRef - no longer syncing to users/uid/groups
-    const batch = writeBatch(this.firestore);
-    batch.set(groupRef, groupData);
-    batch.set(ownerMemberRef, {
+    await setDoc(groupRef, groupData);
+    await setDoc(ownerMemberRef, {
       userId: user.uid,
       name: user.displayName || 'Ismeretlen',
       photo: user.photoURL || null,
@@ -107,8 +127,10 @@ export class GroupService {
       skillLevel: 100,
       elo: 1200,
     });
-    // batch.set(userGroupRef, ...) removed
-    await batch.commit();
+    await this.writeGroupAuditLog(groupRef.id, 'group_create', {
+      groupName: name,
+      groupType: type,
+    });
 
     const fullGroup: Group = { id: groupRef.id, ...groupData };
     this.setCachedGroup(groupRef.id, fullGroup);
@@ -243,6 +265,10 @@ export class GroupService {
       joinedAt: serverTimestamp(),
       skillLevel: 50,
     });
+    await this.writeGroupAuditLog(groupId, 'member_join', {
+      targetUserId: user.uid,
+      targetUserName: user.displayName || 'Ismeretlen',
+    });
 
     const group = await this.getGroupOnce(groupId);
     if (group) {
@@ -297,6 +323,10 @@ export class GroupService {
     };
 
     await setDoc(requestRef, requestData);
+    await this.writeGroupAuditLog(groupId, 'join_request', {
+      targetUserId: user.uid,
+      targetUserName: user.displayName || 'Ismeretlen',
+    });
 
     // Notify Owner and Admins
     const members = await getDocs(collection(this.firestore, `groups/${groupId}/members`));
@@ -348,6 +378,10 @@ export class GroupService {
     });
 
     await deleteDoc(requestRef);
+    await this.writeGroupAuditLog(groupId, 'join_approve', {
+      targetUserId: request.userId,
+      targetUserName: request.userName,
+    });
 
     // Notify the user
     await this.notificationService.notifyUsers([request.userId], {
@@ -377,6 +411,9 @@ export class GroupService {
 
     const requestRef = doc(this.firestore, `groups/${groupId}/joinRequests/${requestId}`);
     await deleteDoc(requestRef);
+    await this.writeGroupAuditLog(groupId, 'join_reject', {
+      targetUserId: requestId,
+    });
   }
 
   private async addMemberToGroup(groupId: string, memberData: any) {
@@ -404,6 +441,7 @@ export class GroupService {
   async updateGroup(groupId: string, data: Partial<Omit<Group, 'id' | 'ownerId' | 'createdAt'>>) {
     const groupRef = doc(this.firestore, `groups/${groupId}`);
     const result = await updateDoc(groupRef, data);
+    await this.writeGroupAuditLog(groupId, 'group_update');
     const cached = this.getCachedGroup(groupId);
     if (cached) {
       const updated = { ...cached, ...data } as Group;
@@ -451,16 +489,13 @@ export class GroupService {
     // Delete group document
     const groupRef = doc(this.firestore, `groups/${groupId}`);
     await deleteDoc(groupRef);
+    await this.writeGroupAuditLog(groupId, 'group_delete');
 
     // Clear caches
     this.invalidateGroupsListCache();
     this.invalidateUserGroupsCache(user.uid);
     this.groupCache.delete(groupId);
-    try {
-      if (typeof window !== 'undefined' && window.localStorage) {
-        window.localStorage.removeItem(this.groupStorageKey(groupId));
-      }
-    } catch {}
+    this.safeRemoveItem(this.groupStorageKey(groupId));
   }
 
   async removeMember(groupId: string, memberId: string) {
@@ -490,6 +525,12 @@ export class GroupService {
     }
 
     await deleteDoc(memberRef);
+    if (memberData?.userId) {
+      await this.writeGroupAuditLog(groupId, 'member_remove', {
+        targetUserId: memberData.userId,
+        targetUserName: memberData.name || 'Ismeretlen',
+      });
+    }
 
     // Decrement member count
     const groupRef = doc(this.firestore, `groups/${groupId}`);
@@ -619,12 +660,7 @@ export class GroupService {
   private setCachedGroup(groupId: string, group: Group) {
     const entry = { data: group, ts: Date.now() };
     this.groupCache.set(groupId, entry);
-    try {
-      if (typeof window === 'undefined' || !window.localStorage) return;
-      window.localStorage.setItem(this.groupStorageKey(groupId), JSON.stringify(entry));
-    } catch {
-      // ignore cache errors
-    }
+    this.safeSetCacheItem(this.groupStorageKey(groupId), entry);
   }
 
   private getCachedGroupsList(): Group[] | null {
@@ -651,12 +687,7 @@ export class GroupService {
   private setCachedGroupsList(groups: Group[]) {
     const entry = { data: groups, ts: Date.now() };
     this.groupsListCache = entry;
-    try {
-      if (typeof window === 'undefined' || !window.localStorage) return;
-      window.localStorage.setItem(this.groupsListStorageKey(), JSON.stringify(entry));
-    } catch {
-      // ignore cache errors
-    }
+    this.safeSetCacheItem(this.groupsListStorageKey(), entry);
   }
 
   private getCachedUserGroups(uid: string): Group[] | null {
@@ -682,32 +713,17 @@ export class GroupService {
   private setCachedUserGroups(uid: string, groups: Group[]) {
     const entry = { data: groups, ts: Date.now() };
     this.userGroupsCache.set(uid, entry);
-    try {
-      if (typeof window === 'undefined' || !window.localStorage) return;
-      window.localStorage.setItem(this.userGroupsStorageKey(uid), JSON.stringify(entry));
-    } catch {
-      // ignore cache errors
-    }
+    this.safeSetCacheItem(this.userGroupsStorageKey(uid), entry);
   }
 
   private invalidateGroupsListCache() {
     this.groupsListCache = null;
-    try {
-      if (typeof window === 'undefined' || !window.localStorage) return;
-      window.localStorage.removeItem(this.groupsListStorageKey());
-    } catch {
-      // ignore cache errors
-    }
+    this.safeRemoveItem(this.groupsListStorageKey());
   }
 
   private invalidateUserGroupsCache(uid: string) {
     this.userGroupsCache.delete(uid);
-    try {
-      if (typeof window === 'undefined' || !window.localStorage) return;
-      window.localStorage.removeItem(this.userGroupsStorageKey(uid));
-    } catch {
-      // ignore cache errors
-    }
+    this.safeRemoveItem(this.userGroupsStorageKey(uid));
   }
 
   private groupStorageKey(groupId: string) {
@@ -720,5 +736,75 @@ export class GroupService {
 
   private userGroupsStorageKey(uid: string) {
     return `userGroups:${uid}`;
+  }
+
+  private storageAvailable() {
+    return typeof window !== 'undefined' && !!window.localStorage;
+  }
+
+  private safeRemoveItem(key: string) {
+    if (!this.storageAvailable()) return;
+    try {
+      window.localStorage.removeItem(key);
+    } catch (err) {
+      console.warn('LocalStorage remove failed:', err);
+    }
+  }
+
+  private safeSetCacheItem(key: string, entry: { data: Group | Group[]; ts: number }) {
+    if (!this.storageAvailable()) return;
+    try {
+      this.enforceStorageQuota();
+      window.localStorage.setItem(key, JSON.stringify(entry));
+    } catch (err) {
+      console.warn('LocalStorage write failed, using memory-only cache:', err);
+      this.evictOldestCacheEntries(1);
+      try {
+        window.localStorage.setItem(key, JSON.stringify(entry));
+      } catch (retryErr) {
+        console.warn('LocalStorage retry failed, keeping memory-only cache:', retryErr);
+      }
+    }
+  }
+
+  private enforceStorageQuota() {
+    if (!this.storageAvailable()) return;
+    const keys = this.getCacheKeys();
+    if (keys.length < this.maxCacheEntries) return;
+    const entries = keys
+      .map((key) => ({ key, ts: this.readCacheTimestamp(key) }))
+      .sort((a, b) => a.ts - b.ts);
+    const toRemove = entries.slice(0, entries.length - this.maxCacheEntries + 1);
+    toRemove.forEach((entry) => this.safeRemoveItem(entry.key));
+  }
+
+  private evictOldestCacheEntries(count: number) {
+    if (!this.storageAvailable()) return;
+    const keys = this.getCacheKeys();
+    if (keys.length === 0) return;
+    const entries = keys
+      .map((key) => ({ key, ts: this.readCacheTimestamp(key) }))
+      .sort((a, b) => a.ts - b.ts);
+    entries.slice(0, count).forEach((entry) => this.safeRemoveItem(entry.key));
+  }
+
+  private getCacheKeys() {
+    return Object.keys(window.localStorage).filter(
+      (key) =>
+        key.startsWith('group:') ||
+        key.startsWith('userGroups:') ||
+        key === this.groupsListStorageKey(),
+    );
+  }
+
+  private readCacheTimestamp(key: string) {
+    try {
+      const raw = window.localStorage.getItem(key);
+      if (!raw) return 0;
+      const parsed = JSON.parse(raw) as { ts?: number };
+      return typeof parsed?.ts === 'number' ? parsed.ts : 0;
+    } catch {
+      return 0;
+    }
   }
 }

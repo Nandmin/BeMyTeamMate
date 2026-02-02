@@ -628,27 +628,22 @@ async function verifyAuth(request, env) {
   if (authHeader && authHeader.startsWith('Bearer ')) {
     const token = authHeader.split('Bearer ')[1];
     try {
-      // Decode the JWT (3 parts)
-      const parts = token.split('.');
-      if (parts.length !== 3) {
-        return { authorized: false, error: 'Invalid ID Token format' };
-      }
-      
-      const payloadJson = atob(parts[1].replace(/-/g, '+').replace(/_/g, '/'));
-      const payload = JSON.parse(payloadJson);
-      
-      // Basic checks
-      const now = Math.floor(Date.now() / 1000);
-      if (payload.exp && payload.exp < now) {
-         return { authorized: false, error: 'ID Token expired' };
-      }
-      if (payload.aud !== env.FCM_PROJECT_ID && payload.aud !== env.FIREBASE_PROJECT_ID) {
-         // lenient check or log warning
-         // return { authorized: false, error: 'ID Token audience mismatch' };
+      const projectId = env.FCM_PROJECT_ID || env.FIREBASE_PROJECT_ID;
+      if (!projectId) {
+        return { authorized: false, error: 'Missing project ID for token verification' };
       }
 
-      // Return the user data from token
-      return { authorized: true, user: payload.user_id || payload.sub, email: payload.email };
+      const verified = await verifyFirebaseIdToken(token, projectId);
+      if (!verified.ok) {
+        return { authorized: false, error: verified.error };
+      }
+
+      const payload = verified.payload;
+      return {
+        authorized: true,
+        user: payload.user_id || payload.sub,
+        email: payload.email,
+      };
 
       /* 
       // PREVIOUS IMPLEMENTATION (BLOCKED BY APP CHECK)
@@ -683,6 +678,120 @@ async function verifyAuth(request, env) {
   }
 
   return { authorized: false, error: 'Missing or invalid authentication credentials' };
+}
+
+const FIREBASE_JWKS_URL =
+  'https://www.googleapis.com/service_accounts/v1/jwk/securetoken@system.gserviceaccount.com';
+const JWKS_CACHE_TTL_MS = 60 * 60 * 1000;
+let jwksCache = { fetchedAt: 0, keys: null };
+
+async function verifyFirebaseIdToken(token, projectId) {
+  const parts = token.split('.');
+  if (parts.length !== 3) {
+    return { ok: false, error: 'Invalid ID Token format' };
+  }
+
+  let header;
+  let payload;
+  try {
+    header = JSON.parse(base64UrlDecode(parts[0]));
+    payload = JSON.parse(base64UrlDecode(parts[1]));
+  } catch {
+    return { ok: false, error: 'Invalid ID Token encoding' };
+  }
+
+  if (header.alg !== 'RS256' || !header.kid) {
+    return { ok: false, error: 'Unsupported ID Token header' };
+  }
+
+  const now = Math.floor(Date.now() / 1000);
+  const clockSkew = 60;
+  if (payload.exp && payload.exp < now - clockSkew) {
+    return { ok: false, error: 'ID Token expired' };
+  }
+  if (payload.sub && typeof payload.sub !== 'string') {
+    return { ok: false, error: 'ID Token subject invalid' };
+  }
+  if (payload.iat && payload.iat > now + clockSkew) {
+    return { ok: false, error: 'ID Token issued in the future' };
+  }
+  if (payload.auth_time && payload.auth_time > now + clockSkew) {
+    return { ok: false, error: 'ID Token auth_time in the future' };
+  }
+  if (payload.nbf && payload.nbf > now + clockSkew) {
+    return { ok: false, error: 'ID Token not yet valid' };
+  }
+
+  const expectedIssuer = `https://securetoken.google.com/${projectId}`;
+  if (payload.iss !== expectedIssuer) {
+    return { ok: false, error: 'ID Token issuer mismatch' };
+  }
+  if (payload.aud !== projectId) {
+    return { ok: false, error: 'ID Token audience mismatch' };
+  }
+  if (!payload.sub || typeof payload.sub !== 'string') {
+    return { ok: false, error: 'ID Token subject missing' };
+  }
+
+  const jwks = await getFirebaseJwks();
+  const jwk = jwks?.keys?.find((key) => key.kid === header.kid);
+  if (!jwk) {
+    return { ok: false, error: 'Unknown ID Token key ID' };
+  }
+
+  try {
+    const key = await crypto.subtle.importKey(
+      'jwk',
+      jwk,
+      { name: 'RSASSA-PKCS1-v1_5', hash: 'SHA-256' },
+      false,
+      ['verify']
+    );
+    const data = new TextEncoder().encode(`${parts[0]}.${parts[1]}`);
+    const signature = base64UrlToBytes(parts[2]);
+    const ok = await crypto.subtle.verify('RSASSA-PKCS1-v1_5', key, signature, data);
+    if (!ok) {
+      return { ok: false, error: 'ID Token signature invalid' };
+    }
+  } catch (error) {
+    console.error('ID Token verify error:', error);
+    return { ok: false, error: 'ID Token verification failed' };
+  }
+
+  return { ok: true, payload };
+}
+
+async function getFirebaseJwks() {
+  const now = Date.now();
+  if (jwksCache.keys && now - jwksCache.fetchedAt < JWKS_CACHE_TTL_MS) {
+    return jwksCache.keys;
+  }
+
+  const response = await fetch(FIREBASE_JWKS_URL);
+  if (!response.ok) {
+    const detail = await response.text();
+    throw new Error(`JWKS fetch failed: ${response.status} ${detail}`);
+  }
+
+  const jwks = await response.json();
+  jwksCache = { fetchedAt: now, keys: jwks };
+  return jwks;
+}
+
+function base64UrlDecode(value) {
+  const padded = value.replace(/-/g, '+').replace(/_/g, '/');
+  const padLength = (4 - (padded.length % 4)) % 4;
+  const pad = '='.repeat(padLength);
+  return atob(padded + pad);
+}
+
+function base64UrlToBytes(value) {
+  const binary = base64UrlDecode(value);
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i += 1) {
+    bytes[i] = binary.charCodeAt(i);
+  }
+  return bytes;
 }
 
 async function sendToFcm(tokens, notification, data, accessToken, projectId) {

@@ -6,6 +6,7 @@ import { AnalyticsService } from './services/analytics.service';
 import { AuthService } from './services/auth.service';
 import { NotificationService } from './services/notification.service';
 import { ThemeService } from './services/theme.service';
+import { SwUpdate } from '@angular/service-worker';
 
 const analyticsServiceStub = {
   init: () => undefined,
@@ -33,6 +34,11 @@ const themeServiceStub = {
   toggleTheme: () => undefined,
 };
 
+const swUpdateStub = {
+  isEnabled: true,
+  versionUpdates: of(),
+};
+
 describe('App', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
@@ -43,6 +49,7 @@ describe('App', () => {
         { provide: AuthService, useValue: authServiceStub },
         { provide: NotificationService, useValue: notificationServiceStub },
         { provide: ThemeService, useValue: themeServiceStub },
+        { provide: SwUpdate, useValue: swUpdateStub },
       ],
     }).compileComponents();
   });

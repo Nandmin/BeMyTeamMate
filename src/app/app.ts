@@ -10,6 +10,7 @@ import { ThemeService } from './services/theme.service';
 import { NotificationService } from './services/notification.service';
 import { AuthService } from './services/auth.service';
 import { AnalyticsService } from './services/analytics.service';
+import { SwUpdate, VersionEvent } from '@angular/service-worker';
 
 @Component({
   selector: 'app-root',
@@ -33,6 +34,7 @@ export class App {
   private notificationService = inject(NotificationService);
   private authService = inject(AuthService);
   private analyticsService = inject(AnalyticsService);
+  private swUpdate = inject(SwUpdate);
   protected readonly title = signal('BeMyTeamMate');
   protected showNav = signal(true);
   protected showFooter = signal(true);
@@ -41,6 +43,23 @@ export class App {
 
   constructor() {
     this.analyticsService.init();
+    if (this.swUpdate.isEnabled) {
+      this.swUpdate.versionUpdates.subscribe({
+        next: (event: VersionEvent) => {
+          if (event.type === 'VERSION_READY') {
+            // TODO: notify user about the new version.
+          }
+          if (event.type === 'VERSION_INSTALLATION_FAILED') {
+            console.error('Service worker update failed:', event);
+          }
+        },
+        error: (err) => {
+          console.error('Service worker versionUpdates error:', err);
+        },
+      });
+    } else {
+      console.warn('Service worker is disabled or failed to register.');
+    }
     const mediaQuery = window.matchMedia('(max-width: 768px)');
     this.isMobile.set(mediaQuery.matches);
     mediaQuery.addEventListener('change', (event) => {

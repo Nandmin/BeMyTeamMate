@@ -1,5 +1,6 @@
 import { Component, EventEmitter, Output, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
 import { take } from 'rxjs/operators';
 import { GroupService } from '../../services/group.service';
@@ -19,9 +20,11 @@ export class AdminGroupsSectionComponent {
   private groupService = inject(GroupService);
   private eventService = inject(EventService);
   private modalService = inject(ModalService);
+  private router = inject(Router);
   private adminGroupsCacheKey = 'admin:groups:list';
 
   isQuerying = false;
+  isDeleting = false;
   hasQueried = false;
   pageSizeOptions = [10, 50, 100];
   pageSize = 10;
@@ -63,10 +66,12 @@ export class AdminGroupsSectionComponent {
   }
 
   editGroup(groupId: string): void {
-    console.info('Edit group', groupId);
+    if (!groupId) return;
+    this.router.navigate(['/groups', groupId, 'settings']);
   }
 
   async confirmDeleteGroup(groupId: string): Promise<void> {
+    if (this.isDeleting) return;
     const group = this.groups.find((item) => item.id === groupId);
     if (!group) {
       return;
@@ -82,10 +87,20 @@ export class AdminGroupsSectionComponent {
       return;
     }
 
-    this.groups = this.groups.filter((item) => item.id !== groupId);
-    this.saveCachedGroups(this.groups);
-    if (this.currentPage > this.totalPages) {
-      this.currentPage = this.totalPages;
+    this.isDeleting = true;
+    try {
+      await this.groupService.deleteGroup(groupId);
+      this.removeFromList(groupId);
+      await this.modalService.alert('A csoport törlése sikeres volt.', 'Kész', 'success');
+    } catch (error) {
+      console.error('Admin group delete failed:', error);
+      await this.modalService.alert(
+        'Hiba történt a csoport törlésekor. Próbáld újra.',
+        'Hiba',
+        'error'
+      );
+    } finally {
+      this.isDeleting = false;
     }
   }
 
@@ -204,7 +219,7 @@ export class AdminGroupsSectionComponent {
     const datePart = date
       .toLocaleDateString('hu-HU', { year: 'numeric', month: '2-digit', day: '2-digit' })
       .replace(/\s/g, '');
-    const timePart = date.toLocaleTimeString('hu-HU', { hour: '2-digit', minute: '2-digit' });
+    const timePart = date.toLocaleTimeString('hu-HU', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
     return `${datePart} ${timePart}`;
   }
 
@@ -215,6 +230,14 @@ export class AdminGroupsSectionComponent {
     if (typeof value?.seconds === 'number') return new Date(value.seconds * 1000);
     const parsed = new Date(value);
     return Number.isNaN(parsed.getTime()) ? null : parsed;
+  }
+
+  private removeFromList(groupId: string) {
+    this.groups = this.groups.filter((item) => item.id !== groupId);
+    if (this.currentPage > this.totalPages) {
+      this.currentPage = this.totalPages;
+    }
+    this.saveCachedGroups(this.groups);
   }
 }
 

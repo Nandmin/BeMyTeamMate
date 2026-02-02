@@ -84,7 +84,9 @@ export class GroupSettingsPage {
     return members.some((m) => m.userId === user.uid && m.isAdmin);
   });
 
-  canManageMembers = computed(() => this.isOwner() || this.isAdmin());
+  isSiteAdmin = computed(() => this.authService.fullCurrentUser()?.role === 'siteadmin');
+
+  canManageMembers = computed(() => this.isOwner() || this.isAdmin() || this.isSiteAdmin());
 
   // Form states
   isSubmitting = signal(false);

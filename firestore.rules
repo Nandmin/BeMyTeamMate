@@ -19,6 +19,11 @@ service cloud.firestore {
       );
     }
 
+    function isGroupOwner(groupId) {
+      let groupPath = /databases/$(database)/documents/groups/$(groupId);
+      return isSignedIn() && exists(groupPath) && get(groupPath).data.ownerId == request.auth.uid;
+    }
+
     function isGroupAdmin(groupId) {
       return isSignedIn() && (
         isSiteAdmin() ||
@@ -107,7 +112,12 @@ service cloud.firestore {
 
     // 3. Groups
     match /groups/{groupId} {
-      allow read, create: if isSignedIn();
+      allow read: if isSignedIn();
+
+      // Enforce ownership on creation to prevent privilege escalation.
+      allow create: if isSignedIn() &&
+        request.resource.data.ownerId == request.auth.uid &&
+        request.resource.data.get('memberCount', 0) == 1;
 
       allow update: if isSignedIn() && (
         resource.data.ownerId == request.auth.uid ||
@@ -167,9 +177,9 @@ service cloud.firestore {
             request.resource.data.userId == request.auth.uid &&
             (
               // 1a: The Group Owner can set themselves as Admin (e.g. initial setup batch)
-              // Note: Using existsAfter/getAfter here to support the creation batch.
-              (existsAfter(/databases/$(database)/documents/groups/$(groupId)) && 
-               getAfter(/databases/$(database)/documents/groups/$(groupId)).data.ownerId == request.auth.uid) ||
+              // Note: group must exist first; avoids existsAfter/getAfter race condition.
+              (isGroupOwner(groupId) &&
+               request.resource.data.get('isAdmin', false) == true) ||
               // 1b: Regular user joining must be restricted (Only for Open groups)
               (
                 request.resource.data.get('isAdmin', false) == false &&
@@ -211,6 +221,16 @@ service cloud.firestore {
         
         // Delete: Requester can cancel their own, or group admin can reject/remove it
         allow delete: if isSignedIn() && (request.auth.uid == requestId || isGroupAdmin(groupId));
+      }
+
+      // Lightweight audit logging (client-side) for free tier
+      match /auditLogs/{logId} {
+        allow read: if isGroupAdmin(groupId) || isSiteAdmin();
+        allow create: if isSignedIn() &&
+          request.resource.data.get('groupId', '') == groupId &&
+          request.resource.data.get('actorId', '') == request.auth.uid &&
+          request.resource.data.get('action', '') is string &&
+          request.resource.data.get('createdAt', null) is timestamp;
       }
     }
   }

@@ -46,8 +46,9 @@ describe('GroupService cache', () => {
 
     (service as any).setCachedGroup('g1', group);
 
+    const storageKey = (service as any).groupStorageKey('g1');
     expect((service as any).groupCache.get('g1')).toBeTruthy();
-    expect(window.localStorage.getItem('group:g1')).toBeTruthy();
+    expect(window.localStorage.getItem(storageKey)).toBeTruthy();
   });
 
   it('setCachedGroup falls back to memory-only on quota errors', () => {
@@ -87,13 +88,17 @@ describe('GroupService cache', () => {
 
     (service as any).maxCacheEntries = 2;
 
-    window.localStorage.setItem('group:g1', JSON.stringify({ data: group, ts: 1 }));
-    window.localStorage.setItem('group:g2', JSON.stringify({ data: group, ts: 2 }));
+    const key1 = (service as any).groupStorageKey('g1');
+    const key2 = (service as any).groupStorageKey('g2');
+    const key3 = (service as any).groupStorageKey('g3');
+
+    window.localStorage.setItem(key1, JSON.stringify({ data: group, ts: 1 }));
+    window.localStorage.setItem(key2, JSON.stringify({ data: group, ts: 2 }));
 
     (service as any).setCachedGroup('g3', group);
 
-    expect(window.localStorage.getItem('group:g1')).toBeNull();
-    expect(window.localStorage.getItem('group:g2')).toBeTruthy();
-    expect(window.localStorage.getItem('group:g3')).toBeTruthy();
+    expect(window.localStorage.getItem(key1)).toBeNull();
+    expect(window.localStorage.getItem(key2)).toBeTruthy();
+    expect(window.localStorage.getItem(key3)).toBeTruthy();
   });
 });

@@ -23,7 +23,7 @@ import { AuthService } from './auth.service';
 import { EloService } from './elo.service';
 import { GroupMember } from './group.service';
 import { NotificationService } from './notification.service';
-import { Observable, Subject, defer, from, of } from 'rxjs';
+import { Observable, Subject, defer, from, of, concat } from 'rxjs';
 import { map, tap, switchMap, catchError, startWith, filter } from 'rxjs/operators';
 
 export interface PlayerStats {
@@ -87,6 +87,8 @@ export class EventService {
   private cacheTtlMs = 5 * 60 * 1000;
   private eventCache = new Map<string, { data: SportEvent; ts: number }>();
   private eventsListCache = new Map<string, { data: SportEvent[]; ts: number }>();
+  private listCacheVersion = this.readCacheVersion('events:list:version');
+  private eventItemCacheVersion = this.readCacheVersion('events:item:version');
   private readonly maxCacheEntries = 100;
   private eventsChange$ = new Subject<string>();
   private eventChange$ = new Subject<{ groupId: string; eventId: string }>();
@@ -642,40 +644,10 @@ export class EventService {
             filter((changedGroupId) => changedGroupId === groupId),
             switchMap(() => {
               const cached = this.getCachedEventsList(cacheKey);
-              if (cached) return of(cached);
-
-              const now = new Date();
-              const startOfToday = new Date(now);
-              startOfToday.setHours(0, 0, 0, 0);
-              const end = new Date(startOfToday);
-              end.setDate(end.getDate() + options.daysAhead);
-              end.setHours(23, 59, 59, 999);
-
-              let q = query(
-                this.getEventsCollection(groupId),
-                where('date', '>=', Timestamp.fromDate(startOfToday)),
-                where('date', '<=', Timestamp.fromDate(end)),
-                orderBy('date', 'asc'),
-                limit(options.limit)
-              );
-
-              if (options.startAfterDate) {
-                q = query(q, startAfter(options.startAfterDate));
-              }
-
-              return from(getDocs(q)).pipe(
-                map((snap) => snap.docs.map((d) => ({ id: d.id, ...(d.data() as SportEvent) }))),
-                tap((events) => {
-                  this.setCachedEventsList(cacheKey, events);
-                  events.forEach(
-                    (event) => event.id && this.setCachedEvent(groupId, event.id, event)
-                  );
-                }),
-                catchError((err: any) => {
-                  console.error('getUpcomingEventsInternal error:', err);
-                  return of([]);
-                })
-              );
+              const q = this.buildEventsQuery(groupId, 'upcoming', options);
+              const fetch$ = this.fetchEventsList(groupId, cacheKey, q);
+              if (cached) return concat(of(cached), fetch$);
+              return fetch$;
             })
           );
         })
@@ -698,39 +670,10 @@ export class EventService {
             filter((changedGroupId) => changedGroupId === groupId),
             switchMap(() => {
               const cached = this.getCachedEventsList(cacheKey);
-              if (cached) return of(cached);
-
-              const now = new Date();
-              const startOfToday = new Date(now);
-              startOfToday.setHours(0, 0, 0, 0);
-              const start = new Date(startOfToday);
-              start.setDate(start.getDate() - options.daysBack);
-
-              let q = query(
-                this.getEventsCollection(groupId),
-                where('date', '<', Timestamp.fromDate(startOfToday)),
-                where('date', '>=', Timestamp.fromDate(start)),
-                orderBy('date', 'desc'),
-                limit(options.limit)
-              );
-
-              if (options.startAfterDate) {
-                q = query(q, startAfter(options.startAfterDate));
-              }
-
-              return from(getDocs(q)).pipe(
-                map((snap) => snap.docs.map((d) => ({ id: d.id, ...(d.data() as SportEvent) }))),
-                tap((events) => {
-                  this.setCachedEventsList(cacheKey, events);
-                  events.forEach(
-                    (event) => event.id && this.setCachedEvent(groupId, event.id, event)
-                  );
-                }),
-                catchError((err: any) => {
-                  console.error('getPastEventsInternal error:', err);
-                  return of([]);
-                })
-              );
+              const q = this.buildEventsQuery(groupId, 'past', options);
+              const fetch$ = this.fetchEventsList(groupId, cacheKey, q);
+              if (cached) return concat(of(cached), fetch$);
+              return fetch$;
             })
           );
         })
@@ -747,6 +690,7 @@ export class EventService {
     const key = this.eventCacheKey(groupId, eventId);
     const inMemory = this.eventCache.get(key);
     if (inMemory && Date.now() - inMemory.ts < this.cacheTtlMs) return inMemory.data;
+    if (inMemory) this.eventCache.delete(key);
     try {
       if (typeof window === 'undefined' || !window.localStorage) return null;
       const raw = window.localStorage.getItem(key);
@@ -774,6 +718,7 @@ export class EventService {
   private getCachedEventsList(cacheKey: string): SportEvent[] | null {
     const inMemory = this.eventsListCache.get(cacheKey);
     if (inMemory && Date.now() - inMemory.ts < this.cacheTtlMs) return inMemory.data;
+    if (inMemory) this.eventsListCache.delete(cacheKey);
     try {
       if (typeof window === 'undefined' || !window.localStorage) return null;
       const raw = window.localStorage.getItem(cacheKey);
@@ -798,7 +743,7 @@ export class EventService {
   }
 
   private eventCacheKey(groupId: string, eventId: string) {
-    return `event:${groupId}:${eventId}`;
+    return `event:v${this.eventItemCacheVersion}:${groupId}:${eventId}`;
   }
 
   private eventsListCacheKey(
@@ -808,21 +753,23 @@ export class EventService {
   ) {
     const windowSize = type === 'upcoming' ? options.daysAhead : options.daysBack;
     const startAfterKey = options.startAfterDate ? options.startAfterDate.toMillis() : 0;
-    return `events:${groupId}:${type}:${windowSize}:${options.limit}:${startAfterKey}`;
+    return `events:v${this.listCacheVersion}:${groupId}:${type}:${windowSize}:${options.limit}:${startAfterKey}`;
   }
 
   private invalidateEventCaches(groupId: string, eventId?: string) {
-    const listPrefix = `events:${groupId}:`;
+    const listPrefix = `events:v${this.listCacheVersion}:${groupId}:`;
     for (const key of this.eventsListCache.keys()) {
       if (!key.startsWith(listPrefix)) continue;
       this.eventsListCache.delete(key);
       this.safeRemoveItem(key);
     }
+    this.bumpListCacheVersion();
 
     if (eventId) {
       const eventKey = this.eventCacheKey(groupId, eventId);
       this.eventCache.delete(eventKey);
       this.safeRemoveItem(eventKey);
+      this.bumpEventItemCacheVersion();
     }
   }
 
@@ -894,7 +841,7 @@ export class EventService {
 
   private getCacheKeys() {
     return Object.keys(window.localStorage).filter(
-      (key) => key.startsWith('event:') || key.startsWith('events:')
+      (key) => (key.startsWith('event:') || key.startsWith('events:')) && !key.endsWith(':version')
     );
   }
 
@@ -907,5 +854,92 @@ export class EventService {
     } catch {
       return 0;
     }
+  }
+
+  private readCacheVersion(storageKey: string) {
+    if (!this.storageAvailable()) return 1;
+    try {
+      const raw = window.localStorage.getItem(storageKey);
+      const parsed = raw ? Number(raw) : NaN;
+      return Number.isFinite(parsed) && parsed >= 1 ? parsed : 1;
+    } catch {
+      return 1;
+    }
+  }
+
+  private bumpListCacheVersion() {
+    this.listCacheVersion += 1;
+    this.eventsListCache.clear();
+    this.safeSetVersion('events:list:version', this.listCacheVersion);
+  }
+
+  private bumpEventItemCacheVersion() {
+    this.eventItemCacheVersion += 1;
+    this.eventCache.clear();
+    this.safeSetVersion('events:item:version', this.eventItemCacheVersion);
+  }
+
+  private safeSetVersion(storageKey: string, value: number) {
+    if (!this.storageAvailable()) return;
+    try {
+      window.localStorage.setItem(storageKey, String(value));
+    } catch (err) {
+      console.warn('LocalStorage version write failed:', err);
+    }
+  }
+
+  private buildEventsQuery(
+    groupId: string,
+    type: 'upcoming' | 'past',
+    options: { daysAhead?: number; daysBack?: number; limit: number; startAfterDate?: Timestamp }
+  ) {
+    const now = new Date();
+    const startOfToday = new Date(now);
+    startOfToday.setHours(0, 0, 0, 0);
+
+    if (type === 'upcoming') {
+      const end = new Date(startOfToday);
+      end.setDate(end.getDate() + (options.daysAhead ?? 0));
+      end.setHours(23, 59, 59, 999);
+      let q = query(
+        this.getEventsCollection(groupId),
+        where('date', '>=', Timestamp.fromDate(startOfToday)),
+        where('date', '<=', Timestamp.fromDate(end)),
+        orderBy('date', 'asc'),
+        limit(options.limit)
+      );
+      if (options.startAfterDate) {
+        q = query(q, startAfter(options.startAfterDate));
+      }
+      return q;
+    }
+
+    const start = new Date(startOfToday);
+    start.setDate(start.getDate() - (options.daysBack ?? 0));
+    let q = query(
+      this.getEventsCollection(groupId),
+      where('date', '<', Timestamp.fromDate(startOfToday)),
+      where('date', '>=', Timestamp.fromDate(start)),
+      orderBy('date', 'desc'),
+      limit(options.limit)
+    );
+    if (options.startAfterDate) {
+      q = query(q, startAfter(options.startAfterDate));
+    }
+    return q;
+  }
+
+  private fetchEventsList(groupId: string, cacheKey: string, q: any): Observable<SportEvent[]> {
+    return from(getDocs(q)).pipe(
+      map((snap) => snap.docs.map((d) => ({ id: d.id, ...(d.data() as SportEvent) }))),
+      tap((events) => {
+        this.setCachedEventsList(cacheKey, events);
+        events.forEach((event) => event.id && this.setCachedEvent(groupId, event.id, event));
+      }),
+      catchError((err: any) => {
+        console.error('events list fetch error:', err);
+        return of([]);
+      })
+    );
   }
 }

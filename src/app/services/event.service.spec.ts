@@ -59,19 +59,23 @@ describe('EventService cache', () => {
 
     (service as any).setCachedEvent('g1', 'e1', event);
 
-    expect((service as any).eventCache.get('event:g1:e1')).toBeTruthy();
-    expect(window.localStorage.getItem('event:g1:e1')).toBeTruthy();
+    const storageKey = (service as any).eventCacheKey('g1', 'e1');
+    expect((service as any).eventCache.get(storageKey)).toBeTruthy();
+    expect(window.localStorage.getItem(storageKey)).toBeTruthy();
   });
 
   it('evicts oldest entries when cache exceeds limit', () => {
     (service as any).maxCacheEntries = 2;
-    window.localStorage.setItem('event:g1:e1', JSON.stringify({ data: {}, ts: 1 }));
-    window.localStorage.setItem('event:g1:e2', JSON.stringify({ data: {}, ts: 2 }));
+    const key1 = (service as any).eventCacheKey('g1', 'e1');
+    const key2 = (service as any).eventCacheKey('g1', 'e2');
+    const key3 = (service as any).eventCacheKey('g1', 'e3');
+    window.localStorage.setItem(key1, JSON.stringify({ data: {}, ts: 1 }));
+    window.localStorage.setItem(key2, JSON.stringify({ data: {}, ts: 2 }));
 
     (service as any).setCachedEvent('g1', 'e3', {} as any);
 
-    expect(window.localStorage.getItem('event:g1:e1')).toBeNull();
-    expect(window.localStorage.getItem('event:g1:e2')).toBeTruthy();
-    expect(window.localStorage.getItem('event:g1:e3')).toBeTruthy();
+    expect(window.localStorage.getItem(key1)).toBeNull();
+    expect(window.localStorage.getItem(key2)).toBeTruthy();
+    expect(window.localStorage.getItem(key3)).toBeTruthy();
   });
 });

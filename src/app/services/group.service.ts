@@ -21,7 +21,7 @@ import {
 } from '@angular/fire/firestore';
 import { AuthService } from './auth.service';
 import { NotificationService } from './notification.service';
-import { Observable, of, from, defer } from 'rxjs';
+import { Observable, of, from, defer, concat } from 'rxjs';
 import { tap, switchMap, map, catchError } from 'rxjs/operators';
 
 export interface Group {
@@ -70,6 +70,8 @@ export class GroupService {
   private groupCache = new Map<string, { data: Group; ts: number }>();
   private groupsListCache: { data: Group[]; ts: number } | null = null;
   private userGroupsCache = new Map<string, { data: Group[]; ts: number }>();
+  private listCacheVersion = this.readCacheVersion('groups:list:version');
+  private groupItemCacheVersion = this.readCacheVersion('groups:item:version');
   private readonly maxCacheEntries = 100;
 
   private get groupsCollection() {
@@ -148,7 +150,9 @@ export class GroupService {
             this.invalidateGroupsListCache();
           }
           const cached = this.getCachedGroupsList();
-          if (cached) return of(cached);
+          if (cached) {
+            return concat(of(cached), this.fetchGroupsList());
+          }
           const q = query(this.groupsCollection, orderBy('createdAt', 'desc'));
           return from(getDocs(q)).pipe(
             map((snap) => snap.docs.map((d) => ({ id: d.id, ...(d.data() as Group) }))),
@@ -208,7 +212,9 @@ export class GroupService {
   getGroup(id: string): Observable<Group | undefined> {
     return defer(() => {
       const cached = this.getCachedGroup(id);
-      if (cached) return of(cached);
+      if (cached) {
+        return concat(of(cached), this.fetchGroupById(id));
+      }
       const docRef = doc(this.firestore, `groups/${id}`);
       return from(getDoc(docRef)).pipe(
         map((snap) =>
@@ -496,6 +502,7 @@ export class GroupService {
     this.invalidateUserGroupsCache(user.uid);
     this.groupCache.delete(groupId);
     this.safeRemoveItem(this.groupStorageKey(groupId));
+    this.bumpGroupItemCacheVersion();
   }
 
   async removeMember(groupId: string, memberId: string) {
@@ -639,6 +646,7 @@ export class GroupService {
   private getCachedGroup(groupId: string): Group | null {
     const inMemory = this.groupCache.get(groupId);
     if (inMemory && Date.now() - inMemory.ts < this.cacheTtlMs) return inMemory.data;
+    if (inMemory) this.groupCache.delete(groupId);
 
     try {
       if (typeof window === 'undefined' || !window.localStorage) return null;
@@ -667,6 +675,7 @@ export class GroupService {
     if (this.groupsListCache && Date.now() - this.groupsListCache.ts < this.cacheTtlMs) {
       return this.groupsListCache.data;
     }
+    if (this.groupsListCache) this.groupsListCache = null;
     try {
       if (typeof window === 'undefined' || !window.localStorage) return null;
       const raw = window.localStorage.getItem(this.groupsListStorageKey());
@@ -693,6 +702,7 @@ export class GroupService {
   private getCachedUserGroups(uid: string): Group[] | null {
     const inMemory = this.userGroupsCache.get(uid);
     if (inMemory && Date.now() - inMemory.ts < this.cacheTtlMs) return inMemory.data;
+    if (inMemory) this.userGroupsCache.delete(uid);
     try {
       if (typeof window === 'undefined' || !window.localStorage) return null;
       const raw = window.localStorage.getItem(this.userGroupsStorageKey(uid));
@@ -719,23 +729,25 @@ export class GroupService {
   private invalidateGroupsListCache() {
     this.groupsListCache = null;
     this.safeRemoveItem(this.groupsListStorageKey());
+    this.bumpListCacheVersion();
   }
 
   private invalidateUserGroupsCache(uid: string) {
     this.userGroupsCache.delete(uid);
     this.safeRemoveItem(this.userGroupsStorageKey(uid));
+    this.bumpListCacheVersion();
   }
 
   private groupStorageKey(groupId: string) {
-    return `group:${groupId}`;
+    return `group:v${this.groupItemCacheVersion}:${groupId}`;
   }
 
   private groupsListStorageKey() {
-    return 'groups:list';
+    return `groups:list:v${this.listCacheVersion}`;
   }
 
   private userGroupsStorageKey(uid: string) {
-    return `userGroups:${uid}`;
+    return `userGroups:v${this.listCacheVersion}:${uid}`;
   }
 
   private storageAvailable() {
@@ -791,9 +803,10 @@ export class GroupService {
   private getCacheKeys() {
     return Object.keys(window.localStorage).filter(
       (key) =>
-        key.startsWith('group:') ||
-        key.startsWith('userGroups:') ||
-        key === this.groupsListStorageKey(),
+        (key.startsWith('group:') ||
+          key.startsWith('userGroups:') ||
+          key.startsWith('groups:list:')) &&
+        !key.endsWith(':version'),
     );
   }
 
@@ -806,5 +819,62 @@ export class GroupService {
     } catch {
       return 0;
     }
+  }
+
+  private readCacheVersion(storageKey: string) {
+    if (!this.storageAvailable()) return 1;
+    try {
+      const raw = window.localStorage.getItem(storageKey);
+      const parsed = raw ? Number(raw) : NaN;
+      return Number.isFinite(parsed) && parsed >= 1 ? parsed : 1;
+    } catch {
+      return 1;
+    }
+  }
+
+  private bumpListCacheVersion() {
+    this.listCacheVersion += 1;
+    this.groupsListCache = null;
+    this.userGroupsCache.clear();
+    this.safeSetVersion('groups:list:version', this.listCacheVersion);
+  }
+
+  private bumpGroupItemCacheVersion() {
+    this.groupItemCacheVersion += 1;
+    this.groupCache.clear();
+    this.safeSetVersion('groups:item:version', this.groupItemCacheVersion);
+  }
+
+  private safeSetVersion(storageKey: string, value: number) {
+    if (!this.storageAvailable()) return;
+    try {
+      window.localStorage.setItem(storageKey, String(value));
+    } catch (err) {
+      console.warn('LocalStorage version write failed:', err);
+    }
+  }
+
+  private fetchGroupsList(): Observable<Group[]> {
+    const q = query(this.groupsCollection, orderBy('createdAt', 'desc'));
+    return from(getDocs(q)).pipe(
+      map((snap) => snap.docs.map((d) => ({ id: d.id, ...(d.data() as Group) }))),
+      tap((groups) => this.setCachedGroupsList(groups)),
+      catchError((err: any) => {
+        console.error('getGroups error:', err);
+        return of([]);
+      }),
+    );
+  }
+
+  private fetchGroupById(id: string): Observable<Group | undefined> {
+    const docRef = doc(this.firestore, `groups/${id}`);
+    return from(getDoc(docRef)).pipe(
+      map((snap) =>
+        snap.exists() ? ({ id: snap.id, ...(snap.data() as Group) } as Group) : undefined,
+      ),
+      tap((group) => {
+        if (group) this.setCachedGroup(id, group);
+      }),
+    );
   }
 }

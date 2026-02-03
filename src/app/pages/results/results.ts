@@ -1,4 +1,4 @@
-import { Component, computed, effect, inject, signal } from '@angular/core';
+import { Component, DestroyRef, computed, effect, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
@@ -21,10 +21,13 @@ export class Results {
   private groupService = inject(GroupService);
   private router = inject(Router);
   private seo = inject(SeoService);
+  private destroyRef = inject(DestroyRef);
+  private chartAnimationTimer: number | null = null;
 
   user = toSignal(this.authService.user$, { initialValue: null });
   fullUser = this.authService.fullCurrentUser;
   userGroups = toSignal(this.groupService.getUserGroups(), { initialValue: [] });
+  chartAnimationPhase = signal<'reset' | 'animate'>('reset');
 
   constructor() {
     this.seo.setPageMeta({
@@ -32,6 +35,12 @@ export class Results {
       description: 'Legutóbbi meccsek, statisztikák és ELO változások áttekintése.',
       path: '/results',
       noindex: true,
+    });
+
+    this.destroyRef.onDestroy(() => {
+      if (this.chartAnimationTimer !== null) {
+        clearTimeout(this.chartAnimationTimer);
+      }
     });
   }
 
@@ -443,6 +452,28 @@ export class Results {
 
     return { points, path, midY };
   });
+
+  private chartAnimationEffect = effect(() => {
+    this.selectedPeriod();
+    this.selectedSport();
+    this.selectedTeam();
+    this.filteredMatches();
+    this.eloChart();
+    this.winLossChart();
+    this.triggerChartAnimation();
+  });
+
+  private triggerChartAnimation(): void {
+    this.chartAnimationPhase.set('reset');
+
+    if (this.chartAnimationTimer !== null) {
+      clearTimeout(this.chartAnimationTimer);
+    }
+
+    this.chartAnimationTimer = setTimeout(() => {
+      this.chartAnimationPhase.set('animate');
+    }, 140) as unknown as number;
+  }
 
   private getSportLabel(sport?: string): string {
     if (!sport) return 'Ismeretlen';

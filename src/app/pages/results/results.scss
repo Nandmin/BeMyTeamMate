@@ -77,6 +77,102 @@ circle {
   }
 }
 
+.results-chart {
+  --line-stagger: 180ms;
+  --bar-stagger: 0ms;
+  --chart-ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+
+  .elo-line {
+    stroke-dasharray: 1;
+    stroke-dashoffset: 1;
+    transition: stroke-dashoffset 1800ms var(--chart-ease);
+  }
+
+  .elo-point,
+  .elo-label {
+    opacity: 0;
+    transform: scale(0.7);
+    transform-origin: center;
+    transform-box: fill-box;
+    transition:
+      opacity 520ms ease,
+      transform 520ms ease;
+    transition-delay: calc(var(--point-delay) * var(--line-stagger) + 260ms);
+  }
+
+  .bar-fill {
+    transform: scaleY(0);
+    transform-origin: bottom;
+    transition: transform 1100ms var(--chart-ease);
+    transition-delay: calc(var(--bar-delay) * var(--bar-stagger));
+  }
+
+  .bar-fill--loss {
+    transition-delay: calc(var(--bar-delay) * var(--bar-stagger) + 120ms);
+  }
+
+  .bar-label {
+    opacity: 0;
+    transform: translateY(4px);
+    transition:
+      opacity 460ms ease,
+      transform 460ms ease;
+    transition-delay: calc(var(--bar-delay) * var(--bar-stagger) + 220ms);
+  }
+}
+
+.results-charts.chart-reset .results-chart {
+  .elo-line,
+  .elo-point,
+  .elo-label,
+  .bar-fill,
+  .bar-label {
+    transition: none !important;
+  }
+}
+
+.results-charts.chart-animate .results-chart {
+  .elo-line {
+    stroke-dashoffset: 0;
+  }
+
+  .elo-point,
+  .elo-label {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  .bar-fill {
+    transform: scaleY(1);
+  }
+
+  .bar-label {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .results-chart {
+    --line-stagger: 0ms;
+    --bar-stagger: 0ms;
+
+    .elo-line {
+      transition: none;
+      stroke-dashoffset: 0;
+    }
+
+    .elo-point,
+    .elo-label,
+    .bar-fill,
+    .bar-label {
+      transition: none;
+      opacity: 1;
+      transform: none;
+    }
+  }
+}
+
 // Light mode overrides for results page
 :host-context(html.light) {
   background: radial-gradient(circle at 50% 0%, rgba(31, 58, 43, 0.03) 0%, transparent 50%);

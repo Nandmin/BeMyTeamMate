@@ -173,7 +173,9 @@
       </div>
     </div>
     <!-- Charts Section -->
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 results-charts"
+      [class.chart-animate]="chartAnimationPhase() === 'animate'"
+      [class.chart-reset]="chartAnimationPhase() === 'reset'">
       <!-- Score Evolution Chart -->
       <div
         class="rounded-2xl bg-gradient-to-b from-dark-accent to-background-dark border border-border-dark p-4 sm:p-6 flex flex-col">
@@ -203,15 +205,18 @@
             </div>
           </div>
         </div>
-        <div class="relative flex-none w-full h-40 sm:h-56 min-h-[160px] sm:min-h-[224px] mt-4 flex flex-col">
+        <div
+          class="relative flex-none w-full h-40 sm:h-56 min-h-[160px] sm:min-h-[224px] mt-4 flex flex-col results-chart">
           <svg class="w-full flex-1 overflow-hidden" preserveAspectRatio="none" viewBox="0 0 100 50">
-            <path [attr.d]="eloChart().path" fill="none" stroke="#2bee7c" stroke-linecap="round" stroke-linejoin="round"
-              stroke-width="1.2"></path>
-            @for (point of eloChart().points; track point.key) {
-            <circle [attr.cx]="point.x" [attr.cy]="point.y" r="1.2" fill="#0b1a13" stroke="#2bee7c" stroke-width="0.8">
+            <path [attr.d]="eloChart().path" class="elo-line" pathLength="1" fill="none" stroke="#2bee7c"
+              stroke-linecap="round" stroke-linejoin="round" stroke-width="1.2"></path>
+            @for (point of eloChart().points; track point.key; let i = $index) {
+            <circle [attr.cx]="point.x" [attr.cy]="point.y" r="1.2" fill="#0b1a13" stroke="#2bee7c"
+              stroke-width="0.8" class="elo-point" [style.--point-delay]="i">
             </circle>
             <text [attr.x]="point.x" [attr.y]="point.y - 3" text-anchor="middle" font-size="3"
-              [attr.fill]="point.value >= 0 ? '#2bee7c' : '#ef4444'">
+              [attr.fill]="point.value >= 0 ? '#2bee7c' : '#ef4444'" class="elo-label"
+              [style.--point-delay]="i">
               {{ point.value }}
             </text>
             }
@@ -247,26 +252,28 @@
           </div>
         </div>
         <div
-          class="flex-none flex items-end justify-center h-40 sm:h-56 min-h-[160px] sm:min-h-[224px] mt-4 w-full gap-1.5 sm:gap-4 md:gap-6 px-1 sm:px-2">
-          @for (month of winLossChart(); track month.key) {
-          <div class="flex flex-col items-center gap-1.5 sm:gap-2 h-full flex-1 max-w-[80px]">
+          class="flex-none flex items-end justify-center h-40 sm:h-56 min-h-[160px] sm:min-h-[224px] mt-4 w-full gap-1.5 sm:gap-4 md:gap-6 px-1 sm:px-2 results-chart">
+          @for (month of winLossChart(); track month.key; let i = $index) {
+          <div class="flex flex-col items-center gap-1.5 sm:gap-2 h-full flex-1 max-w-[80px]" [style.--bar-delay]="i">
             <div class="flex items-end gap-1 sm:gap-2 h-full">
-              <div class="w-3 sm:w-4 md:w-5 rounded-t-sm relative h-full"
+              <div class="w-3 sm:w-4 md:w-5 rounded-t-sm relative h-full bar-track"
                 [ngClass]="month.wins === 0 ? 'bg-transparent' : 'bg-gradient-to-b from-dark-accent to-background-dark'"
                 [style.--bar-height]="month.winHeight + '%'">
-                <div class="absolute bottom-0 w-full bg-primary rounded-t-sm"
+                <div class="absolute bottom-0 w-full bg-primary rounded-t-sm bar-fill"
                   [style.height.%]="month.wins === 0 ? 0 : month.winHeight"></div>
-                <span class="absolute left-1/2 -translate-x-1/2 text-[9px] sm:text-[10px] font-semibold text-primary"
+                <span
+                  class="absolute left-1/2 -translate-x-1/2 text-[9px] sm:text-[10px] font-semibold text-primary bar-label"
                   style="bottom: calc(var(--bar-height) + 2px)">
                   {{ month.wins }}
                 </span>
               </div>
-              <div class="w-3 sm:w-4 md:w-5 rounded-t-sm relative h-full"
+              <div class="w-3 sm:w-4 md:w-5 rounded-t-sm relative h-full bar-track"
                 [ngClass]="month.losses === 0 ? 'bg-transparent' : 'bg-gradient-to-b from-dark-accent to-background-dark'"
                 [style.--bar-height]="month.lossHeight + '%'">
-                <div class="absolute bottom-0 w-full bg-red-500 rounded-t-sm"
+                <div class="absolute bottom-0 w-full bg-red-500 rounded-t-sm bar-fill bar-fill--loss"
                   [style.height.%]="month.losses === 0 ? 0 : month.lossHeight"></div>
-                <span class="absolute left-1/2 -translate-x-1/2 text-[9px] sm:text-[10px] font-semibold text-red-400"
+                <span
+                  class="absolute left-1/2 -translate-x-1/2 text-[9px] sm:text-[10px] font-semibold text-red-400 bar-label"
                   style="bottom: calc(var(--bar-height) + 2px)">
                   {{ month.losses }}
                 </span>

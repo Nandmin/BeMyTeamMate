@@ -16,9 +16,23 @@
             </button>
         </div>
 
+        <div class="flex items-center gap-3 mb-4">
+            <label class="text-sm text-gray-300">Sportág</label>
+            <span
+                class="material-symbols-outlined text-gray-400 text-base cursor-help"
+                title="Itt választhatod ki, milyen témára szeretnéd szűkíteni a megjelenő képeket.">info</span>
+            <select [value]="selectedTag" (change)="onTagChange($event)" [disabled]="disabled"
+                class="bg-black/40 border border-white/10 text-white rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/60">
+                <option value="">Összes</option>
+                @for (tag of availableTags; track tag) {
+                <option [value]="tag">{{ tag }}</option>
+                }
+            </select>
+        </div>
+
         <div
             class="cover-image-grid grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 overflow-y-auto custom-scrollbar pr-1 pb-4">
-            @for (img of images; track img.id) {
+            @for (img of filteredImages; track img.id) {
             <button (click)="onSelect(img.id)" [disabled]="disabled"
                 class="relative w-full aspect-video rounded-xl overflow-hidden group border-2 transition-all hover:scale-[1.02]"
                 [class.border-primary]="selectedImage === img.id"

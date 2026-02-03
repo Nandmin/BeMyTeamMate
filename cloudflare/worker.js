@@ -352,8 +352,8 @@ function corsHeaders(request, env) {
     .map((value) => value.trim())
     .filter(Boolean);
   const allowedOrigins = [
-    'https://bemyteammate.web.app',
-    'https://bemyteammate.firebaseapp.com',
+    'https://bemyteammate.eu',
+    'https://bemyteammate.pages.dev',
     ...extraOrigins,
   ];
   const allowOrigin = allowedOrigins.includes(origin) ? origin : allowedOrigins[0];

@@ -362,6 +362,7 @@ export class GroupDetailPage {
         'warning',
       );
       this.clearInviteQueryParam();
+      await this.router.navigate(['/groups']);
       return;
     }
 

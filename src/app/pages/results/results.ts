@@ -1,4 +1,4 @@
-import { Component, DestroyRef, computed, effect, inject, signal } from '@angular/core';
+import { Component, DestroyRef, computed, effect, inject, signal, untracked } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
@@ -22,12 +22,13 @@ export class Results {
   private router = inject(Router);
   private seo = inject(SeoService);
   private destroyRef = inject(DestroyRef);
-  private chartAnimationTimer: number | null = null;
+  private chartAnimationFrame: number | null = null;
 
   user = toSignal(this.authService.user$, { initialValue: null });
   fullUser = this.authService.fullCurrentUser;
   userGroups = toSignal(this.groupService.getUserGroups(), { initialValue: [] });
-  chartAnimationPhase = signal<'reset' | 'animate'>('reset');
+  displayEloChart = signal<EloChartDisplay>({ points: [], path: '', midY: 25 });
+  displayWinLossChart = signal<WinLossDisplay[]>([]);
 
   constructor() {
     this.seo.setPageMeta({
@@ -38,8 +39,8 @@ export class Results {
     });
 
     this.destroyRef.onDestroy(() => {
-      if (this.chartAnimationTimer !== null) {
-        clearTimeout(this.chartAnimationTimer);
+      if (this.chartAnimationFrame !== null && typeof cancelAnimationFrame === 'function') {
+        cancelAnimationFrame(this.chartAnimationFrame);
       }
     });
   }
@@ -422,57 +423,210 @@ export class Results {
       return { ...entry, x, y };
     });
 
-    const path = (() => {
-      if (points.length === 0) return '';
-      if (points.length === 1) {
-        return `M${points[0].x.toFixed(2)},${points[0].y.toFixed(2)}`;
-      }
-
-      const d: string[] = [
-        `M${points[0].x.toFixed(2)},${points[0].y.toFixed(2)}`,
-      ];
-
-      for (let i = 0; i < points.length - 1; i++) {
-        const p0 = points[i - 1] ?? points[i];
-        const p1 = points[i];
-        const p2 = points[i + 1];
-        const p3 = points[i + 2] ?? p2;
-        const cp1x = p1.x + (p2.x - p0.x) / 6;
-        const cp1y = p1.y + (p2.y - p0.y) / 6;
-        const cp2x = p2.x - (p3.x - p1.x) / 6;
-        const cp2y = p2.y - (p3.y - p1.y) / 6;
-
-        d.push(
-          `C${cp1x.toFixed(2)},${cp1y.toFixed(2)} ${cp2x.toFixed(2)},${cp2y.toFixed(2)} ${p2.x.toFixed(2)},${p2.y.toFixed(2)}`
-        );
-      }
-
-      return d.join(' ');
-    })();
+    const path = this.buildSmoothPath(points);
 
     return { points, path, midY };
   });
+
+  private buildEloChart(
+    points: EloChartPoint[],
+    maxAbs: number,
+    useExact = false
+  ): EloChartDisplay {
+    const height = 50;
+    const padding = 6;
+    const midY = height / 2;
+    const safeMax = Math.max(1, maxAbs);
+    const scale = (height / 2 - padding) / safeMax;
+
+    const mapped = points.map((point) => {
+      const valueExact =
+        useExact && typeof point.valueExact === 'number' ? point.valueExact : point.value;
+      const y = midY - valueExact * scale;
+      return { ...point, y };
+    });
+
+    return { points: mapped, path: this.buildSmoothPath(mapped), midY };
+  }
+
+  private buildWinLossChart(
+    entries: WinLossDisplay[],
+    maxValue: number,
+    useExact = false
+  ): WinLossDisplay[] {
+    const safeMax = Math.max(1, maxValue);
+    return entries.map((entry) => {
+      const winsValue =
+        useExact && typeof entry.winsExact === 'number' ? entry.winsExact : entry.wins;
+      const lossesValue =
+        useExact && typeof entry.lossesExact === 'number' ? entry.lossesExact : entry.losses;
+
+      return {
+        ...entry,
+        winHeight: (winsValue / safeMax) * 100,
+        lossHeight: (lossesValue / safeMax) * 100,
+      };
+    });
+  }
+
+  private getMaxAbs(points: Pick<EloChartPoint, 'value'>[]): number {
+    return Math.max(1, ...points.map((point) => Math.abs(point.value)));
+  }
+
+  private getMaxWinLoss(entries: Pick<WinLossDisplay, 'wins' | 'losses'>[]): number {
+    return Math.max(1, ...entries.flatMap((entry) => [entry.wins, entry.losses]));
+  }
+
+  private buildSmoothPath(points: Pick<EloChartPoint, 'x' | 'y'>[]): string {
+    if (points.length === 0) return '';
+    if (points.length === 1) {
+      return `M${points[0].x.toFixed(2)},${points[0].y.toFixed(2)}`;
+    }
+
+    const d: string[] = [`M${points[0].x.toFixed(2)},${points[0].y.toFixed(2)}`];
+
+    for (let i = 0; i < points.length - 1; i++) {
+      const p0 = points[i - 1] ?? points[i];
+      const p1 = points[i];
+      const p2 = points[i + 1];
+      const p3 = points[i + 2] ?? p2;
+      const cp1x = p1.x + (p2.x - p0.x) / 6;
+      const cp1y = p1.y + (p2.y - p0.y) / 6;
+      const cp2x = p2.x - (p3.x - p1.x) / 6;
+      const cp2y = p2.y - (p3.y - p1.y) / 6;
+
+      d.push(
+        `C${cp1x.toFixed(2)},${cp1y.toFixed(2)} ${cp2x.toFixed(2)},${cp2y.toFixed(2)} ${p2.x.toFixed(2)},${p2.y.toFixed(2)}`
+      );
+    }
+
+    return d.join(' ');
+  }
+
+  private prefersReducedMotion(): boolean {
+    if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return false;
+    return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  }
 
   private chartAnimationEffect = effect(() => {
     this.selectedPeriod();
     this.selectedSport();
     this.selectedTeam();
     this.filteredMatches();
-    this.eloChart();
-    this.winLossChart();
-    this.triggerChartAnimation();
+    const targetElo = this.eloChart();
+    const targetWinLoss = this.winLossChart();
+    this.animateCharts(targetElo.points, targetWinLoss);
   });
 
-  private triggerChartAnimation(): void {
-    this.chartAnimationPhase.set('reset');
-
-    if (this.chartAnimationTimer !== null) {
-      clearTimeout(this.chartAnimationTimer);
+  private animateCharts(
+    targetEloPoints: EloChartPoint[],
+    targetWinLoss: WinLossDisplay[]
+  ): void {
+    if (this.prefersReducedMotion()) {
+      this.displayEloChart.set(this.buildEloChart(targetEloPoints, this.getMaxAbs(targetEloPoints)));
+      this.displayWinLossChart.set(
+        this.buildWinLossChart(targetWinLoss, this.getMaxWinLoss(targetWinLoss))
+      );
+      return;
     }
 
-    this.chartAnimationTimer = setTimeout(() => {
-      this.chartAnimationPhase.set('animate');
-    }, 140) as unknown as number;
+    if (typeof window === 'undefined' || typeof requestAnimationFrame !== 'function') {
+      this.displayEloChart.set(this.buildEloChart(targetEloPoints, this.getMaxAbs(targetEloPoints)));
+      this.displayWinLossChart.set(
+        this.buildWinLossChart(targetWinLoss, this.getMaxWinLoss(targetWinLoss))
+      );
+      return;
+    }
+
+    const startElo = untracked(() => this.displayEloChart().points);
+    const startWinLoss = untracked(() => this.displayWinLossChart());
+
+    const safeStartElo =
+      startElo.length > 0
+        ? startElo
+        : targetEloPoints.map((point) => ({ ...point, value: 0 }));
+    const safeStartWinLoss =
+      startWinLoss.length > 0
+        ? startWinLoss
+        : targetWinLoss.map((entry) => ({ ...entry, wins: 0, losses: 0 }));
+
+    const startEloMap = new Map(safeStartElo.map((point) => [point.key, point.value]));
+    const startWinMap = new Map(
+      safeStartWinLoss.map((entry) => [entry.key, { wins: entry.wins, losses: entry.losses }])
+    );
+
+    const eloPairs = targetEloPoints.map((point) => ({
+      ...point,
+      startValue: startEloMap.get(point.key) ?? point.value,
+    }));
+
+    const winLossPairs = targetWinLoss.map((entry) => ({
+      ...entry,
+      startWins: startWinMap.get(entry.key)?.wins ?? entry.wins,
+      startLosses: startWinMap.get(entry.key)?.losses ?? entry.losses,
+    }));
+
+    const startMaxAbs = this.getMaxAbs(
+      eloPairs.map((point) => ({ ...point, value: point.startValue }))
+    );
+    const endMaxAbs = this.getMaxAbs(targetEloPoints);
+    const startMaxWinLoss = this.getMaxWinLoss(
+      winLossPairs.map((entry) => ({
+        ...entry,
+        wins: entry.startWins,
+        losses: entry.startLosses,
+      }))
+    );
+    const endMaxWinLoss = this.getMaxWinLoss(targetWinLoss);
+
+    const durationMs = 1200;
+    const startTime = typeof performance !== 'undefined' ? performance.now() : Date.now();
+
+    if (this.chartAnimationFrame !== null && typeof cancelAnimationFrame === 'function') {
+      cancelAnimationFrame(this.chartAnimationFrame);
+    }
+
+    const step = (now: number) => {
+      const progress = Math.min(1, (now - startTime) / durationMs);
+      const eased = 1 - Math.pow(1 - progress, 3);
+
+      const currentMaxAbs = startMaxAbs + (endMaxAbs - startMaxAbs) * eased;
+      const currentMaxWinLoss =
+        startMaxWinLoss + (endMaxWinLoss - startMaxWinLoss) * eased;
+
+      const interpolatedElo = eloPairs.map((point) => {
+        const valueExact = point.startValue + (point.value - point.startValue) * eased;
+        return { ...point, value: Math.round(valueExact), valueExact };
+      });
+
+      this.displayEloChart.set(this.buildEloChart(interpolatedElo, currentMaxAbs, true));
+
+      const interpolatedWinLoss = winLossPairs.map((entry) => {
+        const winsExact = entry.startWins + (entry.wins - entry.startWins) * eased;
+        const lossesExact = entry.startLosses + (entry.losses - entry.startLosses) * eased;
+        return {
+          ...entry,
+          wins: Math.round(winsExact),
+          losses: Math.round(lossesExact),
+          winsExact,
+          lossesExact,
+        };
+      });
+
+      this.displayWinLossChart.set(
+        this.buildWinLossChart(interpolatedWinLoss, currentMaxWinLoss, true)
+      );
+
+      if (progress < 1) {
+        this.chartAnimationFrame = requestAnimationFrame(step);
+      } else {
+        this.displayEloChart.set(this.buildEloChart(targetEloPoints, endMaxAbs));
+        this.displayWinLossChart.set(this.buildWinLossChart(targetWinLoss, endMaxWinLoss));
+        this.chartAnimationFrame = null;
+      }
+    };
+
+    this.chartAnimationFrame = requestAnimationFrame(step);
   }
 
   private getSportLabel(sport?: string): string {
@@ -598,4 +752,34 @@ interface RecentMatchRow {
   eloDelta: number;
   mvpWinnerId: string | null;
   sortTime: number;
+}
+
+interface EloChartPoint {
+  key: string;
+  label: string;
+  value: number;
+  x: number;
+  y: number;
+  valueExact?: number;
+}
+
+interface EloChartDisplay {
+  points: EloChartPoint[];
+  path: string;
+  midY: number;
+}
+
+interface WinLossDisplay {
+  key: string;
+  year: number;
+  month: number;
+  label: string;
+  wins: number;
+  losses: number;
+  winHeight: number;
+  lossHeight: number;
+  winsExact?: number;
+  lossesExact?: number;
+  startWins?: number;
+  startLosses?: number;
 }

@@ -173,9 +173,7 @@
       </div>
     </div>
     <!-- Charts Section -->
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 results-charts"
-      [class.chart-animate]="chartAnimationPhase() === 'animate'"
-      [class.chart-reset]="chartAnimationPhase() === 'reset'">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 results-charts">
       <!-- Score Evolution Chart -->
       <div
         class="rounded-2xl bg-gradient-to-b from-dark-accent to-background-dark border border-border-dark p-4 sm:p-6 flex flex-col">
@@ -208,22 +206,21 @@
         <div
           class="relative flex-none w-full h-40 sm:h-56 min-h-[160px] sm:min-h-[224px] mt-4 flex flex-col results-chart">
           <svg class="w-full flex-1 overflow-hidden" preserveAspectRatio="none" viewBox="0 0 100 50">
-            <path [attr.d]="eloChart().path" class="elo-line" pathLength="1" fill="none" stroke="#2bee7c"
+            <path [attr.d]="displayEloChart().path" class="elo-line" pathLength="1" fill="none" stroke="#2bee7c"
               stroke-linecap="round" stroke-linejoin="round" stroke-width="1.2"></path>
-            @for (point of eloChart().points; track point.key; let i = $index) {
+            @for (point of displayEloChart().points; track point.key) {
             <circle [attr.cx]="point.x" [attr.cy]="point.y" r="1.2" fill="#0b1a13" stroke="#2bee7c"
-              stroke-width="0.8" class="elo-point" [style.--point-delay]="i">
+              stroke-width="0.8" class="elo-point">
             </circle>
             <text [attr.x]="point.x" [attr.y]="point.y - 3" text-anchor="middle" font-size="3"
-              [attr.fill]="point.value >= 0 ? '#2bee7c' : '#ef4444'" class="elo-label"
-              [style.--point-delay]="i">
+              [attr.fill]="point.value >= 0 ? '#2bee7c' : '#ef4444'" class="elo-label">
               {{ point.value }}
             </text>
             }
           </svg>
           <div
             class="flex justify-between text-[#1F3A2B] dark:text-[#2bee7c] text-[10px] sm:text-xs font-bold mt-2 pt-2 border-t border-border-dark px-1 sm:px-2">
-            @for (point of eloChart().points; track point.key) {
+            @for (point of displayEloChart().points; track point.key) {
             <span>{{ point.label }}</span>
             }
           </div>
@@ -253,8 +250,8 @@
         </div>
         <div
           class="flex-none flex items-end justify-center h-40 sm:h-56 min-h-[160px] sm:min-h-[224px] mt-4 w-full gap-1.5 sm:gap-4 md:gap-6 px-1 sm:px-2 results-chart">
-          @for (month of winLossChart(); track month.key; let i = $index) {
-          <div class="flex flex-col items-center gap-1.5 sm:gap-2 h-full flex-1 max-w-[80px]" [style.--bar-delay]="i">
+          @for (month of displayWinLossChart(); track month.key) {
+          <div class="flex flex-col items-center gap-1.5 sm:gap-2 h-full flex-1 max-w-[80px]">
             <div class="flex items-end gap-1 sm:gap-2 h-full">
               <div class="w-3 sm:w-4 md:w-5 rounded-t-sm relative h-full bar-track"
                 [ngClass]="month.wins === 0 ? 'bg-transparent' : 'bg-gradient-to-b from-dark-accent to-background-dark'"

@@ -105,9 +105,13 @@
                         <div class="notif-list">
                             @for (n of filteredNotifications(); track n.id) {
                             <a class="notif-item" (click)="openNotification(n)">
-                                <div class="notif-item-title">{{ getNotificationTitle(n) }}</div>
+                                <div class="notif-item-title"
+                                    [class.notif-title-invite]="n.type === 'group_join' && (n.title || '').toLowerCase().includes('csatlakozási')">
+                                    {{ getNotificationTitle(n) }}
+                                </div>
                                 <div class="notif-item-body" [class.notif-body-yes]="n.type === 'event_rsvp_yes'"
-                                    [class.notif-body-no]="n.type === 'event_rsvp_no'">
+                                    [class.notif-body-no]="n.type === 'event_rsvp_no'"
+                                    [class.notif-body-invite]="n.type === 'group_invite'">
                                     {{ n.body }}
                                 </div>
                                 <div class="notif-item-meta">{{ formatTime(n.createdAt) }}</div>

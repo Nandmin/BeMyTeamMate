@@ -89,7 +89,7 @@ export class GroupDetailPage {
     const user = this.authService.currentUser();
     const members = this.members();
     if (!user || !members) return false;
-    return members.some((m) => m.userId === user.uid);
+    return members.some((m) => m.userId === user.uid || m.id === user.uid);
   });
 
   isAdmin = computed(() => {

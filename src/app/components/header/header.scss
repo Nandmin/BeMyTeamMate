@@ -296,6 +296,10 @@ header {
   color: #f8fafc;
 }
 
+.notif-title-invite {
+  color: #f59e0b;
+}
+
 .notif-item-body {
   margin-top: 4px;
   font-size: 12px;
@@ -308,6 +312,10 @@ header {
 
 .notif-body-no {
   color: #ef4444;
+}
+
+.notif-body-invite {
+  color: #f59e0b;
 }
 
 .notif-item-meta {
@@ -340,10 +348,18 @@ header {
   color: #0f172a;
 }
 
+:host-context(html.light) .notif-title-invite {
+  color: #d97706;
+}
+
 :host-context(html.light) .notif-item-body,
 :host-context(html.light) .notif-item-meta,
 :host-context(html.light) .notif-empty {
   color: #475569;
+}
+
+:host-context(html.light) .notif-body-invite {
+  color: #d97706;
 }
 
 :host-context(html.light) .notif-action-btn {

@@ -390,12 +390,12 @@ export class EventDetailPage {
     if (!event || !this.groupId || !this.isMember()) return;
     if (this.teamA().length === 0 && this.teamB().length === 0) {
       if (this.attendingMembers().length < 2) {
-        await this.modalService.alert('Nincs el?g jelentkez? a j?t?k ind?t?s?hoz.');
+        await this.modalService.alert('Nincs elég jelentkező a játék indításához.');
         return;
       }
       await this.modalService.alert(
-        'El?bb kattints a sorsol?s gombra a csapatok elk?sz?t?s?hez.',
-        'Csapatok hi?nyoznak'
+        'Előbb kattints a sorsolás gombra a csapatok elkészítéséhez.',
+        'Csapatok hiányoznak'
       );
       return;
     }

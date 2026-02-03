@@ -633,11 +633,13 @@ export class GroupService {
     const requestSnap = await getDoc(requestRef);
     if (!requestSnap.exists()) return;
     const request = requestSnap.data() as JoinRequest;
+    const targetUserId = request.userId || requestId;
+    const targetUserName = request.userName || 'Ismeretlen';
 
     await this.addMemberToGroup(groupId, {
-      userId: request.userId,
-      name: request.userName,
-      photo: request.userPhoto,
+      userId: targetUserId,
+      name: targetUserName,
+      photo: request.userPhoto || null,
       role: 'user',
       isAdmin: false,
       joinedAt: serverTimestamp(),
@@ -647,12 +649,12 @@ export class GroupService {
 
     await deleteDoc(requestRef);
     await this.writeGroupAuditLog(groupId, 'join_approve', {
-      targetUserId: request.userId,
-      targetUserName: request.userName,
+      targetUserId,
+      targetUserName,
     });
 
     // Notify the user
-    await this.notificationService.notifyUsers([request.userId], {
+    await this.notificationService.notifyUsers([targetUserId], {
       type: 'group_join',
       groupId,
       title: 'Csatlakozási kérelem elfogadva',

@@ -84,6 +84,25 @@ export class GroupSettingsPage {
     ),
   );
 
+  private getInviteCreatedAtMs(invite: GroupInvite): number {
+    const value: any = invite?.createdAt;
+    if (!value) return 0;
+    if (typeof value?.toDate === 'function') {
+      return value.toDate().getTime();
+    }
+    if (value instanceof Date) return value.getTime();
+    if (typeof value?.seconds === 'number') return value.seconds * 1000;
+    const parsed = new Date(value);
+    return isNaN(parsed.getTime()) ? 0 : parsed.getTime();
+  }
+
+  sortedInvites = computed(() => {
+    const invites = this.groupInvites() || [];
+    return [...invites].sort(
+      (a, b) => this.getInviteCreatedAtMs(b) - this.getInviteCreatedAtMs(a),
+    );
+  });
+
   // Check if current user is owner or admin
   isOwner = computed(() => {
     const user = this.authService.currentUser();

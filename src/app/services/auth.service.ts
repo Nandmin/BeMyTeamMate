@@ -74,9 +74,9 @@ export class AuthService {
       await reauthenticateWithCredential(u, credential);
       await updatePassword(u, newPassword);
       return true;
-    } catch (error) {
+    } catch (error: any) {
       console.error('Password change error:', error);
-      throw error;
+      throw this.toSafeError(error, 'Nem sikerült a jelszó módosítása.');
     }
   }
 
@@ -88,9 +88,9 @@ export class AuthService {
       await this.updateUserData(credential.user);
       this.router.navigate(['/']); // Navigate to home/dashboard
       return credential.user;
-    } catch (error) {
+    } catch (error: any) {
       console.error('Google login error:', error);
-      throw error;
+      throw this.toSafeError(error, 'Sikertelen Google bejelentkezés.');
     }
   }
 
@@ -113,9 +113,9 @@ export class AuthService {
 
       this.router.navigate(['/']);
       return credential.user;
-    } catch (error) {
+    } catch (error: any) {
       console.error('Registration error:', error);
-      throw error;
+      throw this.toSafeError(error, 'Sikertelen regisztráció.');
     }
   }
 
@@ -126,9 +126,9 @@ export class AuthService {
       await this.updateUserData(credential.user);
       this.router.navigate(['/']);
       return credential.user;
-    } catch (error) {
+    } catch (error: any) {
       console.error('Email login error:', error);
-      throw error;
+      throw this.toSafeError(error, 'Sikertelen bejelentkezés.');
     }
   }
 
@@ -142,9 +142,9 @@ export class AuthService {
       await sendSignInLinkToEmail(this.auth, email, actionCodeSettings);
       this.safeSetItem('emailForSignIn', email);
       return true;
-    } catch (error) {
+    } catch (error: any) {
       console.error('Magic link error:', error);
-      throw error;
+      throw this.toSafeError(error, 'Sikertelen belépési link küldés.');
     }
   }
 
@@ -161,9 +161,9 @@ export class AuthService {
           await this.updateUserData(result.user);
           this.router.navigate(['/']);
           return result.user;
-        } catch (error) {
+        } catch (error: any) {
           console.error('Link verification error:', error);
-          throw error;
+          throw this.toSafeError(error, 'Sikertelen belépés a varázslinkkel.');
         }
       }
     }
@@ -175,9 +175,9 @@ export class AuthService {
     try {
       await sendPasswordResetEmail(this.auth, email);
       return true;
-    } catch (error) {
+    } catch (error: any) {
       console.error('Password reset error:', error);
-      throw error;
+      throw this.toSafeError(error, 'Sikertelen jelszó-helyreállítás.');
     }
   }
 
@@ -378,5 +378,38 @@ export class AuthService {
     } catch {
       return 0;
     }
+  }
+
+  private toSafeError(error: any, fallbackMessage?: string) {
+    const safeMessage = this.getSafeErrorMessage(
+      error,
+      fallbackMessage || 'Váratlan hiba történt. Kérlek próbáld újra később.'
+    );
+    const safeError = new Error(safeMessage);
+    if (error?.code) {
+      (safeError as any).code = error.code;
+    }
+    return safeError;
+  }
+
+  private getSafeErrorMessage(error: any, fallbackMessage: string) {
+    const errorCode = error?.code || 'unknown';
+    const errorMessages: Record<string, string> = {
+      'auth/wrong-password': 'Hibás jelenlegi jelszó.',
+      'auth/weak-password': 'Az új jelszó túl gyenge.',
+      'auth/user-not-found': 'A felhasználó nem található.',
+      'auth/invalid-email': 'Érvénytelen e-mail cím.',
+      'auth/email-already-in-use': 'Ez az e-mail cím már használatban van.',
+      'auth/popup-closed-by-user': 'A bejelentkezési ablak bezárult.',
+      'auth/cancelled-popup-request': 'A bejelentkezési ablak már meg van nyitva.',
+      'auth/too-many-requests': 'Túl sok próbálkozás. Próbáld újra később.',
+      'auth/network-request-failed': 'Hálózati hiba. Ellenőrizd a kapcsolatot.',
+      'auth/requires-recent-login': 'A művelethez újra be kell jelentkezned.',
+      'permission-denied': 'Nincs jogosultságod ehhez a művelethez.',
+      'unauthenticated': 'Bejelentkezés szükséges.',
+      unavailable: 'A szolgáltatás jelenleg nem érhető el.',
+    };
+
+    return errorMessages[errorCode] || fallbackMessage;
   }
 }

@@ -329,10 +329,10 @@ export class NotificationService {
         } catch (retryErr) {
           console.error('Failed to recover from stale push registration:', retryErr);
           // If retry fails, throw the original error or the new one
-          throw err;
+          throw this.toSafeError(err, 'Nem sikerült újra létrehozni az értesítési tokent.');
         }
       }
-      throw err;
+      throw this.toSafeError(err, 'Nem sikerült létrehozni az értesítési tokent.');
     }
   }
 
@@ -508,5 +508,35 @@ export class NotificationService {
     } catch {
       return 0;
     }
+  }
+
+  private toSafeError(error: any, fallbackMessage?: string) {
+    const safeMessage = this.getSafeErrorMessage(
+      error,
+      fallbackMessage || 'Váratlan hiba történt. Kérlek próbáld újra később.'
+    );
+    const safeError = new Error(safeMessage);
+    if (error?.code) {
+      (safeError as any).code = error.code;
+    }
+    return safeError;
+  }
+
+  private getSafeErrorMessage(error: any, fallbackMessage: string) {
+    const errorCode = error?.code || 'unknown';
+    const errorMessages: Record<string, string> = {
+      'messaging/unsupported-browser': 'A böngésződ nem támogatja a push értesítéseket.',
+      'messaging/permission-blocked': 'Az értesítések engedélyezése le van tiltva a böngészőben.',
+      'messaging/permission-default': 'Az értesítési engedély nincs megadva.',
+      'messaging/invalid-vapid-key': 'Értesítési beállítási hiba történt.',
+      'messaging/invalid-registration-token': 'Érvénytelen értesítési token.',
+      'messaging/token-unsubscribe-failed': 'Nem sikerült frissíteni az értesítési tokent.',
+      'network-request-failed': 'Hálózati hiba. Ellenőrizd a kapcsolatot.',
+      'permission-denied': 'Nincs jogosultságod ehhez a művelethez.',
+      unauthenticated: 'Bejelentkezés szükséges.',
+      unavailable: 'A szolgáltatás jelenleg nem érhető el.',
+    };
+
+    return errorMessages[errorCode] || fallbackMessage;
   }
 }

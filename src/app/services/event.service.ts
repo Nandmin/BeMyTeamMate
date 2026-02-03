@@ -203,8 +203,17 @@ export class EventService {
       if (eventsToCreate.length > 366) break;
     }
 
-    const promises = eventsToCreate.map((data) => addDoc(this.getEventsCollection(groupId), data));
-    const result = await Promise.all(promises);
+    const result = [];
+    const batches = this.chunkArray(eventsToCreate, 400);
+    for (const batchData of batches) {
+      const batch = writeBatch(this.firestore);
+      for (const data of batchData) {
+        const ref = doc(this.getEventsCollection(groupId));
+        batch.set(ref, data);
+        result.push(ref);
+      }
+      await batch.commit();
+    }
     this.invalidateEventCaches(groupId);
     this.emitEventsChange(groupId);
 
@@ -784,6 +793,15 @@ export class EventService {
   refreshGroupEvents(groupId: string) {
     this.invalidateEventCaches(groupId);
     this.emitEventsChange(groupId);
+  }
+
+  private chunkArray<T>(items: T[], size: number): T[][] {
+    if (items.length === 0) return [];
+    const chunks: T[][] = [];
+    for (let i = 0; i < items.length; i += size) {
+      chunks.push(items.slice(i, i + size));
+    }
+    return chunks;
   }
 
   private storageAvailable() {

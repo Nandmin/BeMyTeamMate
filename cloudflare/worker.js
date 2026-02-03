@@ -8,19 +8,19 @@ export default {
     if (request.method === 'OPTIONS') {
       return new Response(null, {
         status: 204,
-        headers: corsHeaders(),
+        headers: corsHeaders(request, env),
       });
     }
 
     if (!ALLOWED_METHODS.includes(request.method)) {
-      return jsonResponse({ error: 'Method not allowed' }, 405);
+      return jsonResponse(request, env, { error: 'Method not allowed' }, 405);
     }
 
     if (url.pathname === '/send-notification') {
       // 1. Authentication Check
       const authResult = await verifyAuth(request, env);
       if (!authResult.authorized) {
-        return jsonResponse({ error: 'Unauthorized', detail: authResult.error }, 401);
+        return jsonResponse(request, env, { error: 'Unauthorized', detail: authResult.error }, 401);
       }
 
     // 2. Rate Limiting (Basic)
@@ -31,12 +31,12 @@ export default {
     try {
       body = await request.json();
     } catch {
-      return jsonResponse({ error: 'Invalid JSON body' }, 400);
+      return jsonResponse(request, env, { error: 'Invalid JSON body' }, 400);
     }
 
     const tokens = Array.isArray(body.tokens) ? body.tokens.filter(Boolean) : [];
     if (tokens.length === 0) {
-      return jsonResponse({ error: 'Missing recipients (tokens)' }, 400);
+      return jsonResponse(request, env, { error: 'Missing recipients (tokens)' }, 400);
     }
 
     const notification = body.notification || {};
@@ -48,7 +48,7 @@ export default {
 
     if (!projectId || !clientEmail || !privateKey) {
       console.error('Missing FCM Configuration in Secrets');
-      return jsonResponse({ error: 'Server configuration error' }, 500);
+      return jsonResponse(request, env, { error: 'Server configuration error' }, 500);
     }
 
     // 3. Get FCM Refresh Token / Access Token
@@ -61,7 +61,7 @@ export default {
       );
     } catch (error) {
       console.error('Token generation failed:', error);
-      return jsonResponse(
+      return jsonResponse(request, env, 
         { error: 'Failed to obtain FCM access token', detail: String(error) },
         500
       );
@@ -77,7 +77,7 @@ export default {
       );
 
       // Log the result (Cloudflare logs)
-      return jsonResponse(
+      return jsonResponse(request, env, 
         {
           success: result.success,
           failure: result.failure,
@@ -90,31 +90,31 @@ export default {
     if (url.pathname === '/mvp-cron-run-now') {
       const authResult = await verifyAuth(request, env);
       if (!authResult.authorized) {
-        return jsonResponse({ error: 'Unauthorized', detail: authResult.error }, 401);
+        return jsonResponse(request, env, { error: 'Unauthorized', detail: authResult.error }, 401);
       }
 
       if (ctx?.waitUntil) {
         ctx.waitUntil(handleMvpCron(env, { force: true, trigger: 'manual' }));
-        return jsonResponse({ ok: true, queued: true }, 202);
+        return jsonResponse(request, env, { ok: true, queued: true }, 202);
       }
 
       await handleMvpCron(env, { force: true, trigger: 'manual' });
-      return jsonResponse({ ok: true, queued: false }, 200);
+      return jsonResponse(request, env, { ok: true, queued: false }, 200);
     }
 
     if (url.pathname === '/mvp-cron-list-group') {
       const authResult = await verifyAuth(request, env);
       if (!authResult.authorized) {
-        return jsonResponse({ error: 'Unauthorized', detail: authResult.error }, 401);
+        return jsonResponse(request, env, { error: 'Unauthorized', detail: authResult.error }, 401);
       }
 
       const body = await readJsonBody(request);
-      if (!body.ok) return jsonResponse({ error: body.error }, 400);
+      if (!body.ok) return jsonResponse(request, env, { error: body.error }, 400);
       const groupId = typeof body.data?.groupId === 'string' ? body.data.groupId.trim() : '';
-      if (!groupId) return jsonResponse({ error: 'Missing groupId' }, 400);
+      if (!groupId) return jsonResponse(request, env, { error: 'Missing groupId' }, 400);
 
       const config = await getFirestoreAuth(env);
-      if (!config.ok) return jsonResponse({ error: config.error }, 500);
+      if (!config.ok) return jsonResponse(request, env, { error: config.error }, 500);
 
       const now = new Date();
       const cutoffIso = now.toISOString();
@@ -134,7 +134,7 @@ export default {
         summarizeMvpEventDoc(doc, now)
       );
       const eligible = items.filter((item) => item.eligible);
-      return jsonResponse(
+      return jsonResponse(request, env, 
         { ok: true, groupId, total: items.length, eligible: eligible.length, items },
         200
       );
@@ -143,17 +143,17 @@ export default {
     if (url.pathname === '/mvp-cron-run-group') {
       const authResult = await verifyAuth(request, env);
       if (!authResult.authorized) {
-        return jsonResponse({ error: 'Unauthorized', detail: authResult.error }, 401);
+        return jsonResponse(request, env, { error: 'Unauthorized', detail: authResult.error }, 401);
       }
 
       const body = await readJsonBody(request);
-      if (!body.ok) return jsonResponse({ error: body.error }, 400);
+      if (!body.ok) return jsonResponse(request, env, { error: body.error }, 400);
       const groupId = typeof body.data?.groupId === 'string' ? body.data.groupId.trim() : '';
       const dryRun = Boolean(body.data?.dryRun);
-      if (!groupId) return jsonResponse({ error: 'Missing groupId' }, 400);
+      if (!groupId) return jsonResponse(request, env, { error: 'Missing groupId' }, 400);
 
       const config = await getFirestoreAuth(env);
-      if (!config.ok) return jsonResponse({ error: config.error }, 500);
+      if (!config.ok) return jsonResponse(request, env, { error: config.error }, 500);
 
       const now = new Date();
       const cutoffIso = now.toISOString();
@@ -186,7 +186,7 @@ export default {
         }
       }
 
-      return jsonResponse(
+      return jsonResponse(request, env, 
         {
           ok: true,
           groupId,
@@ -201,19 +201,19 @@ export default {
     if (url.pathname === '/mvp-cron-get-event') {
       const authResult = await verifyAuth(request, env);
       if (!authResult.authorized) {
-        return jsonResponse({ error: 'Unauthorized', detail: authResult.error }, 401);
+        return jsonResponse(request, env, { error: 'Unauthorized', detail: authResult.error }, 401);
       }
 
       const body = await readJsonBody(request);
-      if (!body.ok) return jsonResponse({ error: body.error }, 400);
+      if (!body.ok) return jsonResponse(request, env, { error: body.error }, 400);
       const groupId = typeof body.data?.groupId === 'string' ? body.data.groupId.trim() : '';
       const eventId = typeof body.data?.eventId === 'string' ? body.data.eventId.trim() : '';
       if (!groupId || !eventId) {
-        return jsonResponse({ error: 'Missing groupId or eventId' }, 400);
+        return jsonResponse(request, env, { error: 'Missing groupId or eventId' }, 400);
       }
 
       const config = await getFirestoreAuth(env);
-      if (!config.ok) return jsonResponse({ error: config.error }, 500);
+      if (!config.ok) return jsonResponse(request, env, { error: config.error }, 500);
 
       const docName = `projects/${config.projectId}/databases/(default)/documents/groups/${groupId}/events/${eventId}`;
       const url = `https://firestore.googleapis.com/v1/${docName}`;
@@ -222,30 +222,30 @@ export default {
       });
       if (!response.ok) {
         const detail = await response.text();
-        return jsonResponse({ error: `Event fetch failed: ${response.status} ${detail}` }, 500);
+        return jsonResponse(request, env, { error: `Event fetch failed: ${response.status} ${detail}` }, 500);
       }
 
       const doc = await response.json();
       const summary = summarizeMvpEventDoc(doc, new Date());
-      return jsonResponse({ ok: true, groupId, eventId, summary, raw: doc }, 200);
+      return jsonResponse(request, env, { ok: true, groupId, eventId, summary, raw: doc }, 200);
     }
 
     if (url.pathname === '/mvp-cron-list-events') {
       const authResult = await verifyAuth(request, env);
       if (!authResult.authorized) {
-        return jsonResponse({ error: 'Unauthorized', detail: authResult.error }, 401);
+        return jsonResponse(request, env, { error: 'Unauthorized', detail: authResult.error }, 401);
       }
 
       const body = await readJsonBody(request);
-      if (!body.ok) return jsonResponse({ error: body.error }, 400);
+      if (!body.ok) return jsonResponse(request, env, { error: body.error }, 400);
       const groupId = typeof body.data?.groupId === 'string' ? body.data.groupId.trim() : '';
       const pageSizeRaw = Number(body.data?.pageSize ?? 50);
       const pageSize = Number.isFinite(pageSizeRaw) ? Math.min(Math.max(pageSizeRaw, 1), 200) : 50;
       const pageToken = typeof body.data?.pageToken === 'string' ? body.data.pageToken.trim() : '';
-      if (!groupId) return jsonResponse({ error: 'Missing groupId' }, 400);
+      if (!groupId) return jsonResponse(request, env, { error: 'Missing groupId' }, 400);
 
       const config = await getFirestoreAuth(env);
-      if (!config.ok) return jsonResponse({ error: config.error }, 500);
+      if (!config.ok) return jsonResponse(request, env, { error: config.error }, 500);
 
       const listUrl = new URL(
         `https://firestore.googleapis.com/v1/projects/${config.projectId}/databases/(default)/documents/groups/${groupId}/events`
@@ -258,14 +258,14 @@ export default {
       });
       if (!response.ok) {
         const detail = await response.text();
-        return jsonResponse({ error: `Events list failed: ${response.status} ${detail}` }, 500);
+        return jsonResponse(request, env, { error: `Events list failed: ${response.status} ${detail}` }, 500);
       }
 
       const data = await response.json();
       const docs = data.documents || [];
       const now = new Date();
       const items = docs.map((doc) => summarizeMvpEventDoc(doc, now));
-      return jsonResponse(
+      return jsonResponse(request, env, 
         {
           ok: true,
           groupId,
@@ -280,16 +280,16 @@ export default {
     if (url.pathname === '/mvp-cron-normalize-group') {
       const authResult = await verifyAuth(request, env);
       if (!authResult.authorized) {
-        return jsonResponse({ error: 'Unauthorized', detail: authResult.error }, 401);
+        return jsonResponse(request, env, { error: 'Unauthorized', detail: authResult.error }, 401);
       }
 
       const body = await readJsonBody(request);
-      if (!body.ok) return jsonResponse({ error: body.error }, 400);
+      if (!body.ok) return jsonResponse(request, env, { error: body.error }, 400);
       const groupId = typeof body.data?.groupId === 'string' ? body.data.groupId.trim() : '';
-      if (!groupId) return jsonResponse({ error: 'Missing groupId' }, 400);
+      if (!groupId) return jsonResponse(request, env, { error: 'Missing groupId' }, 400);
 
       const config = await getFirestoreAuth(env);
-      if (!config.ok) return jsonResponse({ error: config.error }, 500);
+      if (!config.ok) return jsonResponse(request, env, { error: config.error }, 500);
 
       const now = new Date();
       const result = await normalizeMvpEventsForGroup(
@@ -298,22 +298,22 @@ export default {
         groupId,
         now
       );
-      return jsonResponse({ ok: true, groupId, ...result }, 200);
+      return jsonResponse(request, env, { ok: true, groupId, ...result }, 200);
     }
 
     if (url.pathname === '/mvp-cron-report-group') {
       const authResult = await verifyAuth(request, env);
       if (!authResult.authorized) {
-        return jsonResponse({ error: 'Unauthorized', detail: authResult.error }, 401);
+        return jsonResponse(request, env, { error: 'Unauthorized', detail: authResult.error }, 401);
       }
 
       const body = await readJsonBody(request);
-      if (!body.ok) return jsonResponse({ error: body.error }, 400);
+      if (!body.ok) return jsonResponse(request, env, { error: body.error }, 400);
       const groupId = typeof body.data?.groupId === 'string' ? body.data.groupId.trim() : '';
-      if (!groupId) return jsonResponse({ error: 'Missing groupId' }, 400);
+      if (!groupId) return jsonResponse(request, env, { error: 'Missing groupId' }, 400);
 
       const config = await getFirestoreAuth(env);
-      if (!config.ok) return jsonResponse({ error: config.error }, 500);
+      if (!config.ok) return jsonResponse(request, env, { error: config.error }, 500);
 
       const docs = await listGroupEvents(config.projectId, config.accessToken, groupId);
       const items = docs
@@ -330,14 +330,14 @@ export default {
           };
         });
 
-      return jsonResponse({ ok: true, groupId, total: items.length, items }, 200);
+      return jsonResponse(request, env, { ok: true, groupId, total: items.length, items }, 200);
     }
 
     if (url.pathname === '/contact-message') {
       return handleContactMessage(request, env);
     }
 
-    return jsonResponse({ error: 'Endpoint not found' }, 404);
+    return jsonResponse(request, env, { error: 'Endpoint not found' }, 404);
   },
   async scheduled(event, env, ctx) {
     console.log('MVP cron triggered', { scheduledTime: event.scheduledTime });
@@ -345,20 +345,33 @@ export default {
   },
 };
 
-function corsHeaders() {
+function corsHeaders(request, env) {
+  const origin = request?.headers?.get('Origin') || '';
+  const extraOrigins = (env?.ALLOWED_ORIGINS || '')
+    .split(',')
+    .map((value) => value.trim())
+    .filter(Boolean);
+  const allowedOrigins = [
+    'https://bemyteammate.web.app',
+    'https://bemyteammate.firebaseapp.com',
+    ...extraOrigins,
+  ];
+  const allowOrigin = allowedOrigins.includes(origin) ? origin : allowedOrigins[0];
+
   return {
-    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Origin': allowOrigin,
     'Access-Control-Allow-Methods': 'POST, OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Admin-Secret',
+    'Access-Control-Allow-Credentials': 'true',
   };
 }
 
-function jsonResponse(payload, status = 200) {
+function jsonResponse(request, env, payload, status = 200) {
   return new Response(JSON.stringify(payload), {
     status,
     headers: {
       'Content-Type': 'application/json',
-      ...corsHeaders(),
+      ...corsHeaders(request, env),
     },
   });
 }
@@ -383,41 +396,41 @@ async function handleContactMessage(request, env) {
   try {
     body = await request.json();
   } catch {
-    return jsonResponse({ error: 'Invalid JSON body' }, 400);
+    return jsonResponse(request, env, { error: 'Invalid JSON body' }, 400);
   }
 
   const honeypot = typeof body.honeypot === 'string' ? body.honeypot.trim() : '';
   if (honeypot) {
-    return jsonResponse({ ok: true }, 200);
+    return jsonResponse(request, env, { ok: true }, 200);
   }
 
   const message = typeof body.message === 'string' ? body.message.trim() : '';
   if (!message || message.length < 10 || message.length > 2000) {
-    return jsonResponse({ error: 'Invalid message length' }, 400);
+    return jsonResponse(request, env, { error: 'Invalid message length' }, 400);
   }
 
   const contactEmail = typeof body.contactEmail === 'string' ? body.contactEmail.trim() : '';
   if (contactEmail && !isValidEmail(contactEmail)) {
-    return jsonResponse({ error: 'Invalid email' }, 400);
+    return jsonResponse(request, env, { error: 'Invalid email' }, 400);
   }
 
   const token = typeof body.turnstileToken === 'string' ? body.turnstileToken.trim() : '';
   if (!token) {
-    return jsonResponse({ error: 'Missing captcha token' }, 400);
+    return jsonResponse(request, env, { error: 'Missing captcha token' }, 400);
   }
 
   if (!env.TURNSTILE_SECRET_KEY) {
-    return jsonResponse({ error: 'Turnstile secret missing' }, 500);
+    return jsonResponse(request, env, { error: 'Turnstile secret missing' }, 500);
   }
 
   const turnstileOk = await verifyTurnstileToken(token, request, env.TURNSTILE_SECRET_KEY);
   if (!turnstileOk) {
-    return jsonResponse({ error: 'Captcha verification failed' }, 403);
+    return jsonResponse(request, env, { error: 'Captcha verification failed' }, 403);
   }
 
   const rateLimited = await applyContactRateLimit(request, env);
   if (rateLimited) {
-    return jsonResponse({ error: 'Rate limited' }, 429);
+    return jsonResponse(request, env, { error: 'Rate limited' }, 429);
   }
 
   const projectId = env.FCM_PROJECT_ID;
@@ -426,7 +439,7 @@ async function handleContactMessage(request, env) {
 
   if (!projectId || !clientEmail || !privateKey) {
     console.error('Missing Firestore configuration in secrets');
-    return jsonResponse({ error: 'Server configuration error' }, 500);
+    return jsonResponse(request, env, { error: 'Server configuration error' }, 500);
   }
 
   let accessToken;
@@ -438,7 +451,7 @@ async function handleContactMessage(request, env) {
     );
   } catch (error) {
     console.error('Firestore token generation failed:', error);
-    return jsonResponse({ error: 'Failed to obtain Firestore access token' }, 500);
+    return jsonResponse(request, env, { error: 'Failed to obtain Firestore access token' }, 500);
   }
 
   const user = body.user && typeof body.user === 'object' ? body.user : null;
@@ -465,7 +478,7 @@ async function handleContactMessage(request, env) {
     await createFirestoreDocument(projectId, accessToken, 'contactMessages', fields);
   } catch (error) {
     console.error('Failed to write contact message:', error);
-    return jsonResponse({ error: 'Failed to store message' }, 500);
+    return jsonResponse(request, env, { error: 'Failed to store message' }, 500);
   }
 
   try {
@@ -497,7 +510,7 @@ async function handleContactMessage(request, env) {
     console.error('Failed to notify site admins:', error);
   }
 
-  return jsonResponse({ ok: true }, 200);
+  return jsonResponse(request, env, { ok: true }, 200);
 }
 
 async function verifyTurnstileToken(token, request, secret) {
@@ -1720,3 +1733,4 @@ async function commitWrites(projectId, accessToken, writes) {
     throw new Error(`Commit failed: ${response.status} ${detail}`);
   }
 }
+

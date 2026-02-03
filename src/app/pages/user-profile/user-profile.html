@@ -272,7 +272,7 @@
                         class="group relative overflow-hidden rounded-xl border border-[#326748] bg-surface-darker hover:border-primary transition-all duration-300 max-w-[380px] w-full mx-auto md:mx-0">
                         <!-- Image section -->
                         <div class="h-32 w-full bg-cover bg-center relative"
-                            [style.backgroundImage]="'url(' + (group.image || 'https://images.unsplash.com/photo-1517486808906-6ca8b3f04846?auto=format&fit=crop&q=80&w=800') + ')'">
+                            [style.backgroundImage]="'url(' + resolveCoverImage(group.image) + ')'">
                             <div class="absolute inset-0"></div>
                             <!-- Sport Icon overlapping the bottom edge -->
                             <div

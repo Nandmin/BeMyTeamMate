@@ -21,6 +21,7 @@ import { AppUser } from '../../models/user.model';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { switchMap, map, of, from, take, combineLatest, catchError } from 'rxjs';
 import { SeoService } from '../../services/seo.service';
+import { CoverImagesService } from '../../services/cover-images.service';
 
 @Component({
   selector: 'app-user-profile',
@@ -38,6 +39,7 @@ export class UserProfilePage implements AfterViewInit {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private seo = inject(SeoService);
+  private coverImagesService = inject(CoverImagesService);
 
   @ViewChild('turnstileContainer', { static: false })
   turnstileContainer?: ElementRef<HTMLDivElement>;
@@ -154,6 +156,7 @@ export class UserProfilePage implements AfterViewInit {
       path: '/profile',
       noindex: true,
     });
+    void this.coverImagesService.getCoverImages();
 
     effect(() => {
       const u = this.profileUser();
@@ -520,6 +523,13 @@ export class UserProfilePage implements AfterViewInit {
     if (user?.photoURL) return user.photoURL;
     return `https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.uid || 'default'}`;
     // return `https://api.dicebear.com/7.x/adventurer/svg?seed=${user?.uid || 'default'}`;
+  }
+
+  resolveCoverImage(imageId?: number | string | null): string {
+    return (
+      this.coverImagesService.resolveImageSrc(imageId) ||
+      this.coverImagesService.getDefaultImageSrc()
+    );
   }
 
   async onDeleteRegistration() {

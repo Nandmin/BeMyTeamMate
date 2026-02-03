@@ -256,7 +256,8 @@
                         @if (editGroupForm().image) {
                         <div
                             class="relative w-full aspect-video rounded-xl overflow-hidden group border border-white/10">
-                            <img [src]="editGroupForm().image" class="w-full h-full object-cover" alt="Borítókép">
+                            <img [src]="resolveCoverImage(editGroupForm().image)" class="w-full h-full object-cover"
+                                alt="Borítókép">
                             <div
                                 class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                                 <button (click)="openImageSelector()"

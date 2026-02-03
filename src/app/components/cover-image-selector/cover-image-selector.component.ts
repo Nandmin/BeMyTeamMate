@@ -1,5 +1,6 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { CoverImageEntry } from '../../services/cover-images.service';
 
 @Component({
   selector: 'app-cover-image-selector',
@@ -10,20 +11,20 @@ import { CommonModule } from '@angular/common';
 })
 export class CoverImageSelectorComponent {
   @Input() show = false;
-  @Input() images: string[] = [];
-  @Input() selectedImage: string | null = null;
+  @Input() images: CoverImageEntry[] = [];
+  @Input() selectedImage: number | string | null = null;
   @Input() disabled = false;
   @Input() offsetTopClass = '';
 
   @Output() close = new EventEmitter<void>();
-  @Output() select = new EventEmitter<string>();
+  @Output() select = new EventEmitter<number>();
 
   onBackdropClick() {
     this.close.emit();
   }
 
-  onSelect(imagePath: string) {
+  onSelect(imageId: number) {
     if (this.disabled) return;
-    this.select.emit(imagePath);
+    this.select.emit(imageId);
   }
 }

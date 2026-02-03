@@ -12,6 +12,7 @@ import { ModalService } from '../../services/modal.service';
 import { CoverImageSelectorComponent } from '../../components/cover-image-selector/cover-image-selector.component';
 import { RoleLabelPipe } from '../../pipes/role-label.pipe';
 import { SeoService } from '../../services/seo.service';
+import { CoverImageEntry, CoverImagesService } from '../../services/cover-images.service';
 
 @Component({
   selector: 'app-group-detail',
@@ -30,6 +31,7 @@ export class GroupDetailPage {
   private renderer = inject(Renderer2);
   private document = inject(DOCUMENT);
   private seo = inject(SeoService);
+  private coverImagesService = inject(CoverImagesService);
   protected math = Math;
 
   selectedView = signal<'upcoming' | 'previous'>('upcoming');
@@ -41,6 +43,7 @@ export class GroupDetailPage {
       path: '/groups',
       noindex: true,
     });
+    void this.loadCoverImages();
     effect(() => {
       const isModalOpen = !!this.selectedEventForRecurrence();
       const mainContent = this.document.querySelector('.main-content');
@@ -53,6 +56,17 @@ export class GroupDetailPage {
         }
       }
     });
+  }
+
+  private async loadCoverImages(tag?: string) {
+    this.availableCoverImages = await this.coverImagesService.getImageEntries(tag);
+  }
+
+  resolveCoverImage(imageId?: number | string | null): string {
+    return (
+      this.coverImagesService.resolveImageSrc(imageId) ||
+      this.coverImagesService.getDefaultImageSrc()
+    );
   }
 
   group = toSignal(
@@ -194,30 +208,7 @@ export class GroupDetailPage {
   isSubmitting = signal(false);
   showImageSelector = signal(false);
 
-  availableCoverImages = [
-    'assets/groupPictures/1636475245-untgRIFep_md.jpg',
-    'assets/groupPictures/ball-7610545_640.jpg',
-    'assets/groupPictures/ball-9856638_640.jpg',
-    'assets/groupPictures/basketball-2258650_640.jpg',
-    'assets/groupPictures/basketball-3571730_640.jpg',
-    'assets/groupPictures/basketball-7121617_640.jpg',
-    'assets/groupPictures/basketball-7605637_640.jpg',
-    'assets/groupPictures/football-1406106_640.jpg',
-    'assets/groupPictures/football-257489_640.png',
-    'assets/groupPictures/football-3024154_640.jpg',
-    'assets/groupPictures/football-488714_640.jpg',
-    'assets/groupPictures/football-6616819_640.jpg',
-    'assets/groupPictures/football-8266065_640.jpg',
-    'assets/groupPictures/football_grass_play_football_games_soccer_garden_summer_activity-623521.jpg',
-    'assets/groupPictures/grass-2616911_640.jpg',
-    'assets/groupPictures/kormend-3430879_640.jpg',
-    'assets/groupPictures/moon-4919501_640.jpg',
-    'assets/groupPictures/res_9280ed553018260e8c2df6b33786d17e.webp',
-    'assets/groupPictures/soccer-4586282_640.jpg',
-    'assets/groupPictures/soccer-5506110_640.jpg',
-    'assets/groupPictures/soccer-698553_640.jpg',
-    'assets/groupPictures/stafion.webp',
-  ];
+  availableCoverImages: CoverImageEntry[] = [];
 
   // Recurrence for existing event
   selectedEventForRecurrence = signal<SportEvent | null>(null);
@@ -239,12 +230,12 @@ export class GroupDetailPage {
     this.showImageSelector.set(false);
   }
 
-  async selectCoverImage(imagePath: string) {
+  async selectCoverImage(imageId: number) {
     if (!this.isAdmin() || !this.groupId) return;
 
     this.isSubmitting.set(true);
     try {
-      await this.groupService.updateGroup(this.groupId, { image: imagePath });
+      await this.groupService.updateGroup(this.groupId, { image: imageId });
       this.showImageSelector.set(false);
     } catch (error) {
       console.error('Error updating group image:', error);

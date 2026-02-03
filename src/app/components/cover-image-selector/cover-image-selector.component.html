@@ -18,17 +18,17 @@
 
         <div
             class="cover-image-grid grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 overflow-y-auto custom-scrollbar pr-1 pb-4">
-            @for (img of images; track img) {
-            <button (click)="onSelect(img)" [disabled]="disabled"
+            @for (img of images; track img.id) {
+            <button (click)="onSelect(img.id)" [disabled]="disabled"
                 class="relative w-full aspect-video rounded-xl overflow-hidden group border-2 transition-all hover:scale-[1.02]"
-                [class.border-primary]="selectedImage === img"
-                [class.border-transparent]="selectedImage !== img">
-                <img [src]="img" class="w-full h-full object-cover" loading="lazy">
+                [class.border-primary]="selectedImage === img.id"
+                [class.border-transparent]="selectedImage !== img.id">
+                <img [src]="img.src" class="w-full h-full object-cover" loading="lazy">
                 <div
                     class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                     <span class="material-symbols-outlined text-white text-3xl">check_circle</span>
                 </div>
-                @if (selectedImage === img) {
+                @if (selectedImage === img.id) {
                 <div class="absolute inset-0 bg-primary/20 flex items-center justify-center">
                     <span class="material-symbols-outlined text-white text-3xl drop-shadow-md">check_circle</span>
                 </div>

@@ -78,7 +78,7 @@
                 class="min-w-[260px] w-[260px] snap-center group relative flex flex-col overflow-hidden rounded-2xl bg-surface-card border border-border-green hover:border-primary/50 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-primary/10 cursor-pointer">
                 <!-- Cover Image -->
                 <div class="h-32 w-full overflow-hidden relative">
-                    <img [src]="group.image" [alt]="group.name"
+                    <img [src]="resolveCoverImage(group.image)" [alt]="group.name"
                         class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110" />
                     <div
                         class="absolute top-2 right-2 backdrop-blur-md px-2 py-0.5 rounded-lg flex items-center gap-1">

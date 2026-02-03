@@ -34,7 +34,7 @@ export interface Group {
   createdAt: any;
   memberCount: number;
   description?: string;
-  image?: string;
+  image?: number | string;
 }
 
 export interface GroupMember {
@@ -113,8 +113,7 @@ export class GroupService {
       ownerPhoto: user.photoURL || null,
       createdAt: serverTimestamp(),
       memberCount: 1, // The owner is the first member
-      image:
-        'https://images.unsplash.com/photo-1517486808906-6ca8b3f04846?auto=format&fit=crop&q=80&w=800', // Default image
+      image: 0, // Default image id
     };
 
     const ownerMemberRef = doc(this.firestore, `groups/${groupRef.id}/members/${user.uid}`);

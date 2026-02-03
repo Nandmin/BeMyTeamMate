@@ -10,6 +10,7 @@ import { of } from 'rxjs';
 import { CoverImageSelectorComponent } from '../../components/cover-image-selector/cover-image-selector.component';
 import { RoleLabelPipe } from '../../pipes/role-label.pipe';
 import { SeoService } from '../../services/seo.service';
+import { CoverImageEntry, CoverImagesService } from '../../services/cover-images.service';
 
 export type MemberRole = 'owner' | 'admin' | 'member';
 
@@ -26,6 +27,7 @@ export class GroupSettingsPage {
   private groupService = inject(GroupService);
   protected authService = inject(AuthService);
   private seo = inject(SeoService);
+  private coverImagesService = inject(CoverImagesService);
 
   group = toSignal(
     this.route.params.pipe(
@@ -97,7 +99,7 @@ export class GroupSettingsPage {
     name: '',
     description: '',
     type: 'open' as 'open' | 'closed',
-    image: '',
+    image: null as number | string | null,
   });
 
   // Member to delete (for confirmation modal)
@@ -113,30 +115,7 @@ export class GroupSettingsPage {
   requestToReject = signal<any>(null);
 
   // Available cover images
-  availableCoverImages = [
-    'assets/groupPictures/1636475245-untgRIFep_md.jpg',
-    'assets/groupPictures/ball-7610545_640.jpg',
-    'assets/groupPictures/ball-9856638_640.jpg',
-    'assets/groupPictures/basketball-2258650_640.jpg',
-    'assets/groupPictures/basketball-3571730_640.jpg',
-    'assets/groupPictures/basketball-7121617_640.jpg',
-    'assets/groupPictures/basketball-7605637_640.jpg',
-    'assets/groupPictures/football-1406106_640.jpg',
-    'assets/groupPictures/football-257489_640.png',
-    'assets/groupPictures/football-3024154_640.jpg',
-    'assets/groupPictures/football-488714_640.jpg',
-    'assets/groupPictures/football-6616819_640.jpg',
-    'assets/groupPictures/football-8266065_640.jpg',
-    'assets/groupPictures/football_grass_play_football_games_soccer_garden_summer_activity-623521.jpg',
-    'assets/groupPictures/grass-2616911_640.jpg',
-    'assets/groupPictures/kormend-3430879_640.jpg',
-    'assets/groupPictures/moon-4919501_640.jpg',
-    'assets/groupPictures/res_9280ed553018260e8c2df6b33786d17e.webp',
-    'assets/groupPictures/soccer-4586282_640.jpg',
-    'assets/groupPictures/soccer-5506110_640.jpg',
-    'assets/groupPictures/soccer-698553_640.jpg',
-    'assets/groupPictures/stafion.webp',
-  ];
+  availableCoverImages: CoverImageEntry[] = [];
 
   // Image selector modal state
   showImageSelector = signal(false);
@@ -148,6 +127,7 @@ export class GroupSettingsPage {
       path: '/groups',
       noindex: true,
     });
+    void this.loadCoverImages();
 
     // Initialize edit form when group loads
     effect(() => {
@@ -163,6 +143,17 @@ export class GroupSettingsPage {
         });
       }
     });
+  }
+
+  private async loadCoverImages(tag?: string) {
+    this.availableCoverImages = await this.coverImagesService.getImageEntries(tag);
+  }
+
+  resolveCoverImage(imageId?: number | string | null): string {
+    return (
+      this.coverImagesService.resolveImageSrc(imageId) ||
+      this.coverImagesService.getDefaultImageSrc()
+    );
   }
 
   get groupId(): string {
@@ -246,7 +237,7 @@ export class GroupSettingsPage {
         name: form.name.trim(),
         description: form.description.trim(),
         type: form.type,
-        image: form.image.trim() || undefined,
+        image: form.image ?? undefined,
       });
       this.successMessage.set('A csoport beállításai sikeresen mentve.');
     } catch (error: any) {
@@ -257,7 +248,10 @@ export class GroupSettingsPage {
     }
   }
 
-  updateFormField(field: 'name' | 'description' | 'type' | 'image', value: string) {
+  updateFormField(
+    field: 'name' | 'description' | 'type' | 'image',
+    value: string | number | null,
+  ) {
     this.editGroupForm.update((form) => ({ ...form, [field]: value }));
   }
 
@@ -270,8 +264,8 @@ export class GroupSettingsPage {
     this.showImageSelector.set(false);
   }
 
-  selectCoverImage(imagePath: string) {
-    this.updateFormField('image', imagePath);
+  selectCoverImage(imageId: number) {
+    this.updateFormField('image', imageId);
     this.closeImageSelector();
   }
 

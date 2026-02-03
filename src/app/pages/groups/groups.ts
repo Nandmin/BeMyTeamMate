@@ -16,6 +16,7 @@ import { GroupService, Group } from '../../services/group.service';
 import { AuthService } from '../../services/auth.service';
 import { ModalService } from '../../services/modal.service';
 import { SeoService } from '../../services/seo.service';
+import { CoverImagesService } from '../../services/cover-images.service';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { catchError, of, switchMap } from 'rxjs';
 
@@ -78,6 +79,7 @@ export class GroupsPage implements AfterViewInit, OnDestroy {
   protected authService = inject(AuthService);
   private modalService = inject(ModalService);
   private seo = inject(SeoService);
+  private coverImagesService = inject(CoverImagesService);
 
   groups: Signal<Group[] | undefined> = toSignal(
     this.authService.user$.pipe(
@@ -104,11 +106,19 @@ export class GroupsPage implements AfterViewInit, OnDestroy {
       path: '/groups',
       noindex: true,
     });
+    void this.coverImagesService.getCoverImages();
     this.groupForm = this.fb.group({
       name: ['', [Validators.required, Validators.minLength(3)]],
       type: ['closed', Validators.required],
       description: [''],
     });
+  }
+
+  resolveCoverImage(imageId?: number | string | null): string {
+    return (
+      this.coverImagesService.resolveImageSrc(imageId) ||
+      this.coverImagesService.getDefaultImageSrc()
+    );
   }
 
   toggleCreateModal() {

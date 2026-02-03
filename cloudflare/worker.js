@@ -354,9 +354,18 @@ function corsHeaders(request, env) {
   const allowedOrigins = [
     'https://bemyteammate.eu',
     'https://bemyteammate.pages.dev',
+    'http://localhost:4200',
+    'http://127.0.0.1:4200',
+    'http://localhost:8100',
+    'http://127.0.0.1:8100',
     ...extraOrigins,
   ];
-  const allowOrigin = allowedOrigins.includes(origin) ? origin : allowedOrigins[0];
+  const hasOrigin = Boolean(origin);
+  const allowOrigin = !hasOrigin
+    ? allowedOrigins[0]
+    : allowedOrigins.includes(origin)
+      ? origin
+      : 'null';
 
   return {
     'Access-Control-Allow-Origin': allowOrigin,
@@ -1733,4 +1742,3 @@ async function commitWrites(projectId, accessToken, writes) {
     throw new Error(`Commit failed: ${response.status} ${detail}`);
   }
 }
-

@@ -60,7 +60,11 @@
                                 class="flex items-center gap-2 px-4 sm:px-5 py-2 sm:py-2.5 rounded-xl bg-primary text-white font-bold text-xs sm:text-sm hover:bg-primary-hover transition-all shadow-[0_0_15px_rgba(43,238,124,0.3)] hover:scale-105 active:scale-95 disabled:opacity-50 min-w-0 text-center whitespace-normal leading-tight">
                                 <span class="material-symbols-outlined text-lg">{{ isSubmitting() ? 'sync' :
                                     'person_add' }}</span>
-                                <span>{{ isSubmitting() ? 'Csatlakozás...' : 'Csatlakozás' }}</span>
+                                <span>{{
+                                    isSubmitting()
+                                        ? (group()?.type === 'closed' ? 'Jelentkez?s...' : 'Csatlakoz?s...')
+                                        : (group()?.type === 'closed' ? 'Jelentkez?s' : 'Csatlakoz?s')
+                                    }}</span>
                             </button>
                             }
                             @if (isAdmin()) {
@@ -70,12 +74,14 @@
                                 <span>Beállítások</span>
                             </a>
                             }
-                            @if (isMember()) {
-                            <button
+                            @if (isAdmin()) {
+                            <button (click)="openInviteModal()"
                                 class="flex items-center gap-2 px-4 sm:px-5 py-2 sm:py-2.5 rounded-xl bg-primary text-white font-bold text-xs sm:text-sm hover:bg-primary-hover transition-all shadow-[0_0_15px_rgba(43,238,124,0.3)] hover:scale-105 active:scale-95 keep-white min-w-0 text-center whitespace-normal leading-tight">
                                 <span class="material-symbols-outlined text-lg">person_add</span>
                                 <span>Tag meghívása</span>
                             </button>
+                            }
+                            @if (isMember()) {
                             <button [routerLink]="['/groups', group()?.id, 'create-event']"
                                 class="flex items-center gap-2 px-4 sm:px-5 py-2 sm:py-2.5 rounded-xl bg-primary text-white font-bold text-xs sm:text-sm hover:bg-primary-hover transition-all shadow-[0_0_15px_rgba(43,238,124,0.3)] hover:scale-105 active:scale-95 keep-white min-w-0 text-center whitespace-normal leading-tight">
                                 <span class="material-symbols-outlined text-lg">event</span>
@@ -350,6 +356,7 @@
                 </div>
             </div>
 
+            @if (isMember()) {
             <!-- Danger Zone -->
             <div class="mt-16 border-t border-white/10 pt-8">
                 <h3 class="text-lg font-bold text-white mb-4">Veszélyes műveletek</h3>
@@ -368,6 +375,7 @@
                     </button>
                 </div>
             </div>
+            }
         </div>
     </div>
 
@@ -375,10 +383,127 @@
         [selectedImage]="group()?.image || null" [disabled]="isSubmitting()" offsetTopClass="pt-[114px]"
         (close)="closeImageSelector()" (select)="selectCoverImage($event)"></app-cover-image-selector>
 
+    <!-- Invite Member Modal -->
+    @if (showInviteModal()) {
+    <div
+        class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-background-dark/90 backdrop-blur-sm animate-fade-in">
+        <div class="w-full max-w-md bg-card-dark border border-white/10 rounded-2xl p-6 shadow-2xl animate-slide-up">
+            <h3 class="text-xl font-bold text-white mb-2">Tag meghívása</h3>
+            <p class="text-sm text-gray-400 mb-5">Adj meg felhasználónevet vagy e-mail címet.</p>
+
+            <div class="flex gap-2 mb-4">
+                <input type="text" [ngModel]="inviteLookup()" (ngModelChange)="inviteLookup.set($event)"
+                    (keydown.enter)="findInvitee()"
+                    class="flex-1 bg-white/5 border border-white/10 text-white rounded-lg p-2.5 focus:border-primary focus:ring-1 focus:ring-primary outline-none"
+                    placeholder="pl. KovacsJanos vagy user@email.com">
+                <button (click)="findInvitee()" [disabled]="inviteLookupStatus() === 'loading'"
+                    class="px-4 py-2 rounded-lg bg-white/10 text-white border border-white/10 hover:bg-white/20 transition-all">
+                    @if (inviteLookupStatus() === 'loading') {
+                    <span class="material-symbols-outlined text-sm animate-spin">progress_activity</span>
+                    } @else {
+                    Ellenőrzés
+                    }
+                </button>
+            </div>
+
+            @if (inviteLookupStatus() === 'not_found' || inviteLookupStatus() === 'error') {
+            <div class="mb-4 text-sm text-red-400 bg-red-600/10 border border-red-600/20 rounded-lg p-3">
+                {{ inviteLookupMessage() }}
+            </div>
+            }
+
+            @if (inviteCandidate()) {
+            <div class="mb-4 flex items-center gap-3 p-3 bg-white/5 border border-white/10 rounded-lg">
+                <img [src]="inviteCandidate()?.photoURL || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + inviteCandidate()?.uid"
+                    [alt]="inviteCandidate()?.displayName"
+                    class="w-10 h-10 rounded-full object-cover border border-white/10">
+                <div class="flex-1 min-w-0">
+                    <p class="text-white font-bold truncate">{{ inviteCandidate()?.displayName || inviteCandidate()?.email }}</p>
+                    <p class="text-xs text-gray-400 truncate">{{ inviteCandidate()?.email }}</p>
+                </div>
+                <span class="text-xs text-primary font-semibold">Rendben</span>
+            </div>
+            }
+
+            <div class="flex gap-4 pt-2">
+                <button (click)="closeInviteModal()"
+                    class="flex-1 px-4 py-2.5 border border-white/10 rounded-xl text-white font-bold hover:bg-white/5 transition-all">
+                    Mégse
+                </button>
+                <button (click)="sendInvite()" [disabled]="!inviteCandidate() || isInviting()"
+                    class="flex-1 px-4 py-2.5 bg-primary text-white font-bold rounded-xl hover:bg-primary-hover disabled:opacity-50 shadow-[0_0_15px_rgba(43,238,124,0.3)] transition-all">
+                    @if (isInviting()) {
+                    <span class="material-symbols-outlined animate-spin text-sm">progress_activity</span>
+                    } @else {
+                    Meghívó küldése
+                    }
+                </button>
+            </div>
+        </div>
+    </div>
+    }
+
+    <!-- Invite Decision Modal -->
+    @if (showInviteDecisionModal()) {
+    <div
+        class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-background-dark/90 backdrop-blur-sm animate-fade-in">
+        <div class="w-full max-w-lg bg-card-dark border border-white/10 rounded-2xl p-6 shadow-2xl animate-slide-up">
+            <h3 class="text-xl font-bold text-white text-center mb-2">Meghívás csoportba</h3>
+            <p class="text-sm text-gray-400 mt-5 mb-4">
+                Meghívót kaptál a(z) <span class="text-white font-semibold">{{ group()?.name }}</span> csoportba
+                <span class="text-white font-semibold">{{ pendingInvite()?.inviterName || 'Ismeretlen' }}</span> felhasználótól.
+            </p>
+
+            <div class="bg-white/5 border border-white/10 rounded-xl p-4 text-sm text-gray-300 mb-4">
+                <!-- A meghívás elfogadásával a csoport tagjává válsz, egyben tudomásul veszed, hogy a csoport tagjai láthatják a profilod alapadatait. -->
+                <label class="flex items-start gap-3 text-sm text-gray-300 mb-3">
+                <input type="checkbox" [ngModel]="inviteLegalAccepted()"
+                    (ngModelChange)="inviteLegalAccepted.set($event)"
+                    class="mt-1 h-4 w-4 rounded border-white/20 flex justify-start bg-white/5 text-primary focus:ring-primary">
+                <span> Tudomásul veszem és elfogadom, hogy csatlakozás után a csoport tagjai láthatják a megjelenített
+                    nevemet, profilomat, részvételi jelzéseimet, valamint nyilvános csoport esetén a
+                    csoport alapadatai a csoporton kívül is megjelenhetnek.</span>
+            </label>
+            </div>
+
+            <!-- <label class="flex items-start gap-3 text-sm text-gray-300 mb-3">
+                <input type="checkbox" [ngModel]="inviteLegalAccepted()"
+                    (ngModelChange)="inviteLegalAccepted.set($event)"
+                    class="mt-1 h-4 w-4 rounded border-white/20 bg-white/5 text-primary focus:ring-primary">
+                <span> Tudomásul veszem és elfogadom, hogy csatlakozás után a csoport tagjai láthatják a megjelenített
+                    nevemet, profilomat és a részvételi jelzéseimet, valamint nyilvános csoport esetén a
+                    csoport alapadatai a csoporton kívül is megjelenhetnek..</span>
+            </label> -->
+
+            @if (inviteDecisionError()) {
+            <div class="mb-4 text-sm text-red-400 bg-red-600/10 border border-red-600/20 rounded-lg p-3">
+                {{ inviteDecisionError() }}
+            </div>
+            }
+
+            <div class="flex gap-4 pt-2">
+                <button (click)="declineInvite()" [disabled]="isInviteDecisionSubmitting()"
+                    class="flex-1 px-4 py-2.5 border border-white/10 rounded-xl text-white font-bold hover:bg-white/5 transition-all">
+                    Elutasítom
+                </button>
+                <button (click)="acceptInvite()" [disabled]="isInviteDecisionSubmitting() || !inviteLegalAccepted()"
+                    class="flex-1 px-4 py-2.5 bg-primary text-white font-bold rounded-xl hover:bg-primary-hover disabled:opacity-50 shadow-[0_0_15px_rgba(43,238,124,0.3)] transition-all">
+                    @if (isInviteDecisionSubmitting()) {
+                    <span class="material-symbols-outlined animate-spin text-sm">progress_activity</span>
+                    } @else {
+                    Elfogadom
+                    }
+                </button>
+            </div>
+        </div>
+    </div>
+    }
+
+
     <!-- Recurrence Modal -->
     @if (selectedEventForRecurrence()) {
     <div
-        class="fixed inset-0 z-[100] flex items-start justify-center p-4 bg-background-dark/90 backdrop-blur-sm animate-fade-in pt-[114px]">
+        class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-background-dark/90 backdrop-blur-sm animate-fade-in">
         <div class="w-full max-w-md bg-card-dark border border-white/10 rounded-2xl p-6 shadow-2xl animate-slide-up">
             <h3 class="text-xl font-bold text-white mb-2">Esemény ismétlődővé tétele</h3>
             <p class="text-sm text-gray-400 mb-6">"{{ selectedEventForRecurrence()?.title }}" automatikus másolása.</p>

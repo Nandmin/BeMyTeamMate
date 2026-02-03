@@ -1,6 +1,8 @@
 export type NotificationType =
   | 'group_join'
   | 'group_leave'
+  | 'group_invite'
+  | 'group_invite_response'
   | 'event_created'
   | 'event_cancelled'
   | 'event_rsvp_yes'

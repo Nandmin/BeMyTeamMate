@@ -2,7 +2,7 @@ import { Component, inject, signal, computed, effect, untracked } from '@angular
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { GroupService, Group, GroupMember } from '../../services/group.service';
+import { GroupService, Group, GroupMember, GroupInvite } from '../../services/group.service';
 import { AuthService } from '../../services/auth.service';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { switchMap, catchError } from 'rxjs/operators';
@@ -64,6 +64,19 @@ export class GroupSettingsPage {
           catchError((err) => {
             console.error('Join requests load error:', err);
             // Don't block page, just log
+            return of([]);
+          }),
+        ),
+      ),
+    ),
+  );
+
+  groupInvites = toSignal(
+    this.route.params.pipe(
+      switchMap((params) =>
+        this.groupService.getGroupInvites(params['id']).pipe(
+          catchError((err) => {
+            console.error('Group invites load error:', err);
             return of([]);
           }),
         ),
@@ -284,6 +297,50 @@ export class GroupSettingsPage {
       return 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30';
     if (member.isAdmin) return 'bg-primary/20 text-primary border-primary/30';
     return 'bg-white/10 text-gray-300 border-white/10';
+  }
+
+  getInviteStatusLabel(invite: GroupInvite): string {
+    switch (invite.status) {
+      case 'pending':
+        return 'Függőben';
+      case 'accepted':
+        return 'Elfogadva';
+      case 'declined':
+        return 'Elutasítva';
+      case 'revoked':
+        return 'Visszavonva';
+      default:
+        return 'Ismeretlen';
+    }
+  }
+
+  getInviteStatusClass(invite: GroupInvite): string {
+    switch (invite.status) {
+      case 'pending':
+        return 'bg-white/10 text-white border-white/10';
+      case 'accepted':
+        return 'bg-green-500/20 text-green-400 border-green-500/30';
+      case 'declined':
+        return 'bg-red-500/20 text-red-400 border-red-500/30';
+      case 'revoked':
+        return 'bg-gray-500/20 text-gray-400 border-gray-500/30';
+      default:
+        return 'bg-white/10 text-gray-300 border-white/10';
+    }
+  }
+
+  async revokeInvite(invite: GroupInvite) {
+    this.isSubmitting.set(true);
+    this.errorMessage.set('');
+    try {
+      await this.groupService.revokeGroupInvite(this.groupId, invite.id);
+      this.successMessage.set(`${invite.targetUserName || 'Felhasználó'} meghívója visszavonva.`);
+    } catch (error: any) {
+      console.error('Revoke invite error:', error);
+      this.errorMessage.set('Hiba történt a meghívó visszavonásakor.');
+    } finally {
+      this.isSubmitting.set(false);
+    }
   }
 
   // --- Join Requests ---

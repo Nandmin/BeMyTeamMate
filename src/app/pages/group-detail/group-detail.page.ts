@@ -3,16 +3,17 @@ import { Timestamp } from '@angular/fire/firestore';
 import { CommonModule, DOCUMENT } from '@angular/common';
 import { ActivatedRoute, RouterModule, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { GroupService, Group, GroupMember } from '../../services/group.service';
+import { GroupService, Group, GroupMember, GroupInvite } from '../../services/group.service';
 import { AuthService } from '../../services/auth.service';
-import { toSignal } from '@angular/core/rxjs-interop';
-import { switchMap, combineLatest, map } from 'rxjs';
+import { toSignal, toObservable } from '@angular/core/rxjs-interop';
+import { switchMap, combineLatest, map, of } from 'rxjs';
 import { EventService, SportEvent } from '../../services/event.service';
 import { ModalService } from '../../services/modal.service';
 import { CoverImageSelectorComponent } from '../../components/cover-image-selector/cover-image-selector.component';
 import { RoleLabelPipe } from '../../pipes/role-label.pipe';
 import { SeoService } from '../../services/seo.service';
 import { CoverImageEntry, CoverImagesService } from '../../services/cover-images.service';
+import { AppUser } from '../../models/user.model';
 
 @Component({
   selector: 'app-group-detail',
@@ -33,6 +34,7 @@ export class GroupDetailPage {
   private seo = inject(SeoService);
   private coverImagesService = inject(CoverImagesService);
   protected math = Math;
+  private inviteParams = toSignal(this.route.queryParams, { initialValue: {} as any });
 
   selectedView = signal<'upcoming' | 'previous'>('upcoming');
 
@@ -56,6 +58,12 @@ export class GroupDetailPage {
         }
       }
     });
+    effect(() => {
+      const inviteFlag = this.inviteParams()['invite'];
+      const user = this.authService.currentUser();
+      if (!inviteFlag || !user) return;
+      void this.openInviteFromNotification();
+    });
   }
 
   private async loadCoverImages(tag?: string) {
@@ -77,10 +85,32 @@ export class GroupDetailPage {
     this.route.params.pipe(switchMap((params) => this.groupService.getGroupMembers(params['id'])))
   );
 
+  isMember = computed(() => {
+    const user = this.authService.currentUser();
+    const members = this.members();
+    if (!user || !members) return false;
+    return members.some((m) => m.userId === user.uid);
+  });
+
+  isAdmin = computed(() => {
+    const user = this.authService.currentUser();
+    const group = this.group();
+    const members = this.members();
+    if (!user || !group) return false;
+    // Owner is always admin
+    if (group.ownerId === user.uid) return true;
+    // Check if user has admin role in members
+    if (!members) return false;
+    return members.some((m) => m.userId === user.uid && m.isAdmin);
+  });
+
+  canViewEvents = computed(() => this.isMember() || this.isAdmin());
+
   events = toSignal(
-    this.route.params.pipe(
-      switchMap((params) =>
-        combineLatest([
+    combineLatest([this.route.params, toObservable(this.canViewEvents)]).pipe(
+      switchMap(([params, canView]) => {
+        if (!canView) return of([] as SportEvent[]);
+        return combineLatest([
           this.eventService.getUpcomingEventsInternal(params['id'], {
             daysAhead: 3650,
             limit: 500,
@@ -89,9 +119,10 @@ export class GroupDetailPage {
             daysBack: 3650,
             limit: 500,
           }),
-        ]).pipe(map(([upcoming, past]) => [...upcoming, ...past]))
-      )
-    )
+        ]).pipe(map(([upcoming, past]) => [...upcoming, ...past]));
+      })
+    ),
+    { initialValue: [] as SportEvent[] }
   );
 
   currentPage = signal(1);
@@ -186,27 +217,20 @@ export class GroupDetailPage {
     return this.getEventDateTime(event) < new Date();
   }
 
-  isMember = computed(() => {
-    const user = this.authService.currentUser();
-    const members = this.members();
-    if (!user || !members) return false;
-    return members.some((m) => m.userId === user.uid);
-  });
-
-  isAdmin = computed(() => {
-    const user = this.authService.currentUser();
-    const group = this.group();
-    const members = this.members();
-    if (!user || !group) return false;
-    // Owner is always admin
-    if (group.ownerId === user.uid) return true;
-    // Check if user has admin role in members
-    if (!members) return false;
-    return members.some((m) => m.userId === user.uid && m.isAdmin);
-  });
-
   isSubmitting = signal(false);
   showImageSelector = signal(false);
+  showInviteModal = signal(false);
+  inviteLookup = signal('');
+  inviteLookupStatus = signal<'idle' | 'loading' | 'found' | 'not_found' | 'error'>('idle');
+  inviteLookupMessage = signal('');
+  inviteCandidate = signal<AppUser | null>(null);
+  isInviting = signal(false);
+
+  showInviteDecisionModal = signal(false);
+  pendingInvite = signal<GroupInvite | null>(null);
+  inviteDecisionError = signal('');
+  inviteLegalAccepted = signal(false);
+  isInviteDecisionSubmitting = signal(false);
 
   availableCoverImages: CoverImageEntry[] = [];
 
@@ -242,6 +266,167 @@ export class GroupDetailPage {
       await this.modalService.alert('Hiba történt a borítókép mentésekor.', 'Hiba', 'error');
     } finally {
       this.isSubmitting.set(false);
+    }
+  }
+
+  openInviteModal() {
+    if (!this.isAdmin()) return;
+    this.resetInviteLookup();
+    this.showInviteModal.set(true);
+  }
+
+  closeInviteModal() {
+    this.showInviteModal.set(false);
+  }
+
+  private resetInviteLookup() {
+    this.inviteLookup.set('');
+    this.inviteLookupStatus.set('idle');
+    this.inviteLookupMessage.set('');
+    this.inviteCandidate.set(null);
+  }
+
+  async findInvitee() {
+    if (!this.isAdmin()) return;
+    const value = this.inviteLookup().trim();
+    if (!value) {
+      this.inviteLookupStatus.set('error');
+      this.inviteLookupMessage.set('Add meg a felhasználónevet vagy e-mail címet.');
+      this.inviteCandidate.set(null);
+      return;
+    }
+
+    this.inviteLookupStatus.set('loading');
+    this.inviteLookupMessage.set('');
+    this.inviteCandidate.set(null);
+
+    try {
+      const user = await this.groupService.findUserByIdentifier(value);
+      if (!user) {
+        this.inviteLookupStatus.set('not_found');
+        this.inviteLookupMessage.set('Nem található ilyen felhasználó.');
+        return;
+      }
+
+      if (user.uid === this.authService.currentUser()?.uid) {
+        this.inviteLookupStatus.set('error');
+        this.inviteLookupMessage.set('Saját magadat nem hívhatod meg.');
+        return;
+      }
+
+      const members = this.members();
+      if (members?.some((m) => m.userId === user.uid)) {
+        this.inviteLookupStatus.set('error');
+        this.inviteLookupMessage.set('A felhasználó már tagja a csoportnak.');
+        return;
+      }
+
+      this.inviteCandidate.set(user);
+      this.inviteLookupStatus.set('found');
+    } catch (error: any) {
+      this.inviteLookupStatus.set('error');
+      this.inviteLookupMessage.set(error?.message || 'Hiba történt a keresés közben.');
+    }
+  }
+
+  async sendInvite() {
+    const candidate = this.inviteCandidate();
+    if (!this.isAdmin() || !candidate) return;
+
+    this.isInviting.set(true);
+    try {
+      await this.groupService.createGroupInvite(this.groupId, candidate);
+      await this.modalService.alert('Meghívó elküldve.', 'Kész', 'success');
+      this.closeInviteModal();
+    } catch (error: any) {
+      await this.modalService.alert(
+        error?.message || 'Hiba történt a meghívó küldésekor.',
+        'Hiba',
+        'error',
+      );
+    } finally {
+      this.isInviting.set(false);
+    }
+  }
+
+  private async openInviteFromNotification() {
+    if (this.showInviteDecisionModal()) return;
+    const user = this.authService.currentUser();
+    if (!user) return;
+
+    const invite = await this.groupService.getGroupInviteOnce(this.groupId, user.uid);
+    if (!invite || invite.status !== 'pending') {
+      await this.modalService.alert(
+        'A meghívó már nem aktív vagy nem található.',
+        'Meghívó',
+        'warning',
+      );
+      this.clearInviteQueryParam();
+      return;
+    }
+
+    this.pendingInvite.set(invite);
+    this.inviteDecisionError.set('');
+    this.inviteLegalAccepted.set(false);
+    this.showInviteDecisionModal.set(true);
+    this.clearInviteQueryParam();
+  }
+
+  private clearInviteQueryParam() {
+    this.router.navigate([], {
+      queryParams: { invite: null },
+      queryParamsHandling: 'merge',
+      replaceUrl: true,
+    });
+  }
+
+  closeInviteDecisionModal() {
+    this.showInviteDecisionModal.set(false);
+    this.pendingInvite.set(null);
+    this.inviteDecisionError.set('');
+    this.inviteLegalAccepted.set(false);
+  }
+
+  async acceptInvite() {
+    const invite = this.pendingInvite();
+    if (!invite) return;
+    if (!this.inviteLegalAccepted()) {
+      this.inviteDecisionError.set('A jogi nyilatkozat elfogadása kötelező.');
+      return;
+    }
+
+    this.isInviteDecisionSubmitting.set(true);
+    this.inviteDecisionError.set('');
+    try {
+      await this.groupService.acceptGroupInvite(this.groupId, invite.id, true);
+      await this.modalService.alert('Sikeresen csatlakoztál a csoporthoz.', 'Kész', 'success');
+      this.closeInviteDecisionModal();
+    } catch (error: any) {
+      this.inviteDecisionError.set(
+        error?.message || 'Hiba történt a meghívó elfogadásakor.',
+      );
+    } finally {
+      this.isInviteDecisionSubmitting.set(false);
+    }
+  }
+
+  async declineInvite() {
+    const invite = this.pendingInvite();
+    if (!invite) return;
+
+    this.isInviteDecisionSubmitting.set(true);
+    this.inviteDecisionError.set('');
+    try {
+      await this.groupService.declineGroupInvite(this.groupId, invite.id);
+      await this.modalService.alert('A meghívót elutasítottad.', 'Kész', 'success');
+      this.closeInviteDecisionModal();
+      await this.router.navigate(['/groups']);
+    } catch (error: any) {
+      this.inviteDecisionError.set(
+        error?.message || 'Hiba történt a meghívó elutasításakor.',
+      );
+    } finally {
+      this.isInviteDecisionSubmitting.set(false);
     }
   }
 
@@ -304,10 +489,24 @@ export class GroupDetailPage {
 
     this.isSubmitting.set(true);
     try {
-      await this.groupService.joinGroup(groupId);
+      const group = this.group();
+      if (group?.type === 'closed') {
+        await this.groupService.requestJoinGroup(groupId);
+        await this.modalService.alert(
+          'A csatlakozási kérelmed elküldtük. Az adminok értesítést kapnak.',
+          'Kész',
+          'success',
+        );
+      } else {
+        await this.groupService.joinGroup(groupId);
+      }
     } catch (error) {
       console.error('Error joining group:', error);
-      await this.modalService.alert('Hiba történt a csatlakozáskor.', 'Hiba', 'error');
+      await this.modalService.alert(
+        (error as any)?.message || 'Hiba történt a csatlakozáskor.',
+        'Hiba',
+        'error',
+      );
     } finally {
       this.isSubmitting.set(false);
     }

@@ -187,6 +187,45 @@
                 }
             </div>
             }
+
+            @if ((groupInvites() || []).length > 0) {
+            <div class="mt-6 bg-white/5 border border-white/10 rounded-2xl overflow-hidden">
+                <div class="p-4 border-b border-white/10">
+                    <h3 class="text-sm font-bold text-primary uppercase tracking-wider flex items-center gap-2">
+                        <span class="material-symbols-outlined text-lg">outgoing_mail</span>
+                        Meghívók ({{ (groupInvites() || []).length }})
+                    </h3>
+                </div>
+                @for (invite of groupInvites(); track invite.id) {
+                <div
+                    class="p-4 flex items-center gap-4 hover:bg-white/5 transition-colors border-b border-white/5 last:border-0">
+                    <div class="relative">
+                        <img [src]="invite.targetUserPhoto || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + invite.targetUserId"
+                            [alt]="invite.targetUserName" class="w-10 h-10 rounded-full object-cover border-2 border-white/10">
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <p class="text-white font-bold truncate">{{ invite.targetUserName }}</p>
+                        <p class="text-xs text-gray-400 truncate">{{ invite.targetUserEmail || '' }}</p>
+                        <p class="text-xs text-gray-400">Küldve: {{ invite.createdAt?.toDate() | date:'yyyy.MM.dd HH:mm' }}</p>
+                        @if (invite.respondedAt) {
+                        <p class="text-xs text-gray-400">Válasz: {{ invite.respondedAt?.toDate() | date:'yyyy.MM.dd HH:mm' }}</p>
+                        }
+                    </div>
+                    <span class="px-3 py-1 text-xs font-bold rounded-full border"
+                        [ngClass]="getInviteStatusClass(invite)">
+                        {{ getInviteStatusLabel(invite) }}
+                    </span>
+                    @if (invite.status === 'pending') {
+                    <button (click)="revokeInvite(invite)" [disabled]="isSubmitting()"
+                        class="ml-2 p-2 rounded-lg bg-red-600/10 text-red-400 hover:bg-red-600 hover:text-white transition-all">
+                        <span class="material-symbols-outlined text-lg">block</span>
+                    </button>
+                    }
+                </div>
+                }
+            </div>
+            }
+
             }
 
             <!-- Settings Tab -->

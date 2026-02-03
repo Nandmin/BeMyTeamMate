@@ -23,6 +23,7 @@ import { AuthService } from './auth.service';
 import { NotificationService } from './notification.service';
 import { Observable, of, from, defer, concat } from 'rxjs';
 import { tap, switchMap, map, catchError } from 'rxjs/operators';
+import { AppUser } from '../models/user.model';
 
 export interface Group {
   id?: string;
@@ -57,6 +58,25 @@ export interface JoinRequest {
   userPhoto?: string | null;
   status: 'pending' | 'approved' | 'rejected';
   createdAt: any;
+}
+
+export interface GroupInvite {
+  id: string; // target userId
+  groupId: string;
+  targetUserId: string;
+  targetUserName: string;
+  targetUserEmail?: string;
+  targetUserPhoto?: string | null;
+  inviterId: string;
+  inviterName: string;
+  inviterPhoto?: string | null;
+  status: 'pending' | 'accepted' | 'declined' | 'revoked';
+  createdAt: any;
+  respondedAt?: any;
+  legalAccepted?: boolean;
+  legalAcceptedAt?: any;
+  revokedById?: string;
+  revokedByName?: string;
 }
 
 @Injectable({
@@ -363,6 +383,249 @@ export class GroupService {
     // To avoid index issues for now, maybe just getDocs or client side sort if small.
     // `createdAt` sorting usually works fine on single collection queries.
     return collectionData(q, { idField: 'id' }) as Observable<JoinRequest[]>;
+  }
+
+  async findUserByIdentifier(identifier: string): Promise<AppUser | null> {
+    const value = (identifier || '').trim();
+    if (!value) return null;
+
+    const usersRef = collection(this.firestore, 'users');
+
+    const fetchSingle = async (field: string, match: string) => {
+      const q = query(usersRef, where(field, '==', match), limit(2));
+      const snap = await getDocs(q);
+      if (snap.empty) return null;
+      if (snap.size > 1) {
+        throw new Error('Több felhasználó is található ezzel az azonosítóval.');
+      }
+      const docSnap = snap.docs[0];
+      return { ...(docSnap.data() as AppUser), uid: docSnap.id } as AppUser;
+    };
+
+    if (value.includes('@')) {
+      return fetchSingle('email', value);
+    }
+
+    const byUsername = await fetchSingle('username', value);
+    if (byUsername) return byUsername;
+
+    return fetchSingle('displayName', value);
+  }
+
+  getGroupInvites(groupId: string): Observable<GroupInvite[]> {
+    const invitesRef = collection(this.firestore, `groups/${groupId}/invites`);
+    const q = query(invitesRef, orderBy('createdAt', 'desc'));
+    return collectionData(q, { idField: 'id' }) as Observable<GroupInvite[]>;
+  }
+
+  async getGroupInviteOnce(groupId: string, targetUserId: string): Promise<GroupInvite | null> {
+    if (!groupId || !targetUserId) return null;
+    const inviteRef = doc(this.firestore, `groups/${groupId}/invites/${targetUserId}`);
+    const inviteSnap = await getDoc(inviteRef);
+    if (!inviteSnap.exists()) return null;
+    return { ...(inviteSnap.data() as GroupInvite), id: inviteSnap.id } as GroupInvite;
+  }
+
+  async createGroupInvite(groupId: string, targetUser: AppUser) {
+    const user = this.authService.currentUser();
+    if (!user) throw new Error('User must be logged in');
+    if (!groupId) throw new Error('Csoport azonosító hiányzik.');
+    if (!targetUser?.uid) throw new Error('Érvénytelen felhasználó.');
+
+    if (targetUser.uid === user.uid) {
+      throw new Error('Saját magadat nem hívhatod meg.');
+    }
+
+    const group = await this.getGroupOnce(groupId);
+    if (!group) throw new Error('Csoport nem található.');
+
+    const memberRef = doc(this.firestore, `groups/${groupId}/members/${targetUser.uid}`);
+    const memberSnap = await getDoc(memberRef);
+    if (memberSnap.exists()) {
+      throw new Error('A felhasználó már tagja a csoportnak.');
+    }
+
+    const inviteRef = doc(this.firestore, `groups/${groupId}/invites/${targetUser.uid}`);
+    const existingSnap = await getDoc(inviteRef);
+    if (existingSnap.exists()) {
+      const existing = existingSnap.data() as GroupInvite;
+      if (existing.status === 'pending') {
+        throw new Error('Már van függő meghívó ehhez a felhasználóhoz.');
+      }
+    }
+
+    const inviterName = user.displayName || 'Ismeretlen';
+    const invite: GroupInvite = {
+      id: targetUser.uid,
+      groupId,
+      targetUserId: targetUser.uid,
+      targetUserName:
+        targetUser.displayName || (targetUser as any).username || 'Ismeretlen',
+      targetUserEmail: targetUser.email,
+      targetUserPhoto: targetUser.photoURL || null,
+      inviterId: user.uid,
+      inviterName,
+      inviterPhoto: user.photoURL || null,
+      status: 'pending',
+      createdAt: serverTimestamp(),
+      respondedAt: null,
+      legalAccepted: false,
+      legalAcceptedAt: null,
+    };
+
+    await setDoc(inviteRef, invite);
+    await this.writeGroupAuditLog(groupId, 'invite_create', {
+      targetUserId: targetUser.uid,
+      targetUserName:
+        targetUser.displayName || (targetUser as any).username || 'Ismeretlen',
+    });
+
+    await this.notificationService.notifyUsers([targetUser.uid], {
+      type: 'group_invite',
+      groupId,
+      title: 'Meghívás csoportba',
+      body: `${inviterName} meghívott a(z) ${group.name} csoportba.`,
+      link: `/groups/${groupId}?invite=1`,
+      eventId: null,
+      actorId: user.uid,
+      actorName: inviterName,
+      actorPhoto: user.photoURL || null,
+    });
+  }
+
+  async acceptGroupInvite(groupId: string, inviteId: string, legalAccepted: boolean) {
+    const user = this.authService.currentUser();
+    if (!user) throw new Error('User must be logged in');
+    if (!legalAccepted) throw new Error('A jogi nyilatkozat elfogadása kötelező.');
+
+    const inviteRef = doc(this.firestore, `groups/${groupId}/invites/${inviteId}`);
+    const inviteSnap = await getDoc(inviteRef);
+    if (!inviteSnap.exists()) throw new Error('A meghívó nem található.');
+    const invite = inviteSnap.data() as GroupInvite;
+
+    if (invite.targetUserId !== user.uid) {
+      throw new Error('Nincs jogosultságod ehhez a meghívóhoz.');
+    }
+    if (invite.status !== 'pending') {
+      throw new Error('A meghívó már nem aktív.');
+    }
+
+    await this.addMemberToGroup(groupId, {
+      userId: user.uid,
+      name: user.displayName || invite.targetUserName || 'Ismeretlen',
+      photo: user.photoURL || invite.targetUserPhoto || null,
+      role: 'user',
+      isAdmin: false,
+      joinedAt: serverTimestamp(),
+      skillLevel: 50,
+      elo: 1200,
+    });
+
+    await updateDoc(inviteRef, {
+      status: 'accepted',
+      respondedAt: serverTimestamp(),
+      legalAccepted: true,
+      legalAcceptedAt: serverTimestamp(),
+    });
+
+    await this.writeGroupAuditLog(groupId, 'invite_accept', {
+      targetUserId: user.uid,
+      targetUserName: user.displayName || invite.targetUserName || 'Ismeretlen',
+    });
+
+    const group = await this.getGroupOnce(groupId);
+    if (group) {
+      await this.notificationService.notifyUsers([invite.inviterId], {
+        type: 'group_invite_response',
+        groupId,
+        title: 'Meghívó elfogadva',
+        body: `${user.displayName || 'Ismeretlen'} elfogadta a meghívásodat a(z) ${
+          group.name
+        } csoportba.`,
+        link: `/groups/${groupId}`,
+        eventId: null,
+        actorId: user.uid,
+        actorName: user.displayName || 'Ismeretlen',
+        actorPhoto: user.photoURL || null,
+      });
+      await this.notificationService.notifyGroupMembers(
+        {
+          type: 'group_join',
+          groupId,
+          title: `${group.name} - Taglétszám változás`,
+          body: `${user.displayName || 'Ismeretlen'} csatlakozott a csoporthoz.`,
+          link: `/groups/${groupId}`,
+          actorId: user.uid,
+          actorName: user.displayName || 'Ismeretlen',
+          actorPhoto: user.photoURL || null,
+        },
+        [user.uid],
+      );
+    }
+  }
+
+  async declineGroupInvite(groupId: string, inviteId: string) {
+    const user = this.authService.currentUser();
+    if (!user) throw new Error('User must be logged in');
+
+    const inviteRef = doc(this.firestore, `groups/${groupId}/invites/${inviteId}`);
+    const inviteSnap = await getDoc(inviteRef);
+    if (!inviteSnap.exists()) throw new Error('A meghívó nem található.');
+    const invite = inviteSnap.data() as GroupInvite;
+
+    if (invite.targetUserId !== user.uid) {
+      throw new Error('Nincs jogosultságod ehhez a meghívóhoz.');
+    }
+    if (invite.status !== 'pending') {
+      throw new Error('A meghívó már nem aktív.');
+    }
+
+    await updateDoc(inviteRef, {
+      status: 'declined',
+      respondedAt: serverTimestamp(),
+    });
+
+    await this.writeGroupAuditLog(groupId, 'invite_decline', {
+      targetUserId: user.uid,
+      targetUserName: user.displayName || invite.targetUserName || 'Ismeretlen',
+    });
+
+    const group = await this.getGroupOnce(groupId);
+    if (group) {
+      await this.notificationService.notifyUsers([invite.inviterId], {
+        type: 'group_invite_response',
+        groupId,
+        title: 'Meghívó elutasítva',
+        body: `${user.displayName || 'Ismeretlen'} elutasította a meghívásodat a(z) ${
+          group.name
+        } csoportba.`,
+        link: `/groups/${groupId}`,
+        eventId: null,
+        actorId: user.uid,
+        actorName: user.displayName || 'Ismeretlen',
+        actorPhoto: user.photoURL || null,
+      });
+    }
+  }
+
+  async revokeGroupInvite(groupId: string, inviteId: string) {
+    const user = this.authService.currentUser();
+    if (!user) throw new Error('User must be logged in');
+
+    const inviteRef = doc(this.firestore, `groups/${groupId}/invites/${inviteId}`);
+    const inviteSnap = await getDoc(inviteRef);
+    if (!inviteSnap.exists()) throw new Error('A meghívó nem található.');
+
+    await updateDoc(inviteRef, {
+      status: 'revoked',
+      respondedAt: serverTimestamp(),
+      revokedById: user.uid,
+      revokedByName: user.displayName || 'Ismeretlen',
+    });
+
+    await this.writeGroupAuditLog(groupId, 'invite_revoke', {
+      targetUserId: inviteId,
+    });
   }
 
   async approveJoinRequest(requestId: string, groupId: string) {

@@ -31,6 +31,11 @@ service cloud.firestore {
       );
     }
 
+    function hasPendingInvite(groupId, uid) {
+      let invitePath = /databases/$(database)/documents/groups/$(groupId)/invites/$(uid);
+      return exists(invitePath) && get(invitePath).data.status == 'pending';
+    }
+
     // 1. User documents
     match /users/{userId} {
       allow read: if isSignedIn();
@@ -89,6 +94,17 @@ service cloud.firestore {
               (isGroupAdmin(request.resource.data.groupId) && 
                (exists(/databases/$(database)/documents/groups/$(request.resource.data.groupId)/members/$(userId)) ||
                 exists(/databases/$(database)/documents/groups/$(request.resource.data.groupId)/joinRequests/$(userId))))
+              ||
+              // Case 4: Group Invite or Invite Response (scoped to existing invite)
+              (
+                (request.resource.data.type == 'group_invite' &&
+                 isGroupAdmin(request.resource.data.groupId) &&
+                 exists(/databases/$(database)/documents/groups/$(request.resource.data.groupId)/invites/$(userId)))
+                ||
+                (request.resource.data.type == 'group_invite_response' &&
+                 exists(/databases/$(database)/documents/groups/$(request.resource.data.groupId)/invites/$(request.auth.uid)) &&
+                 get(/databases/$(database)/documents/groups/$(request.resource.data.groupId)/invites/$(request.auth.uid)).data.inviterId == userId)
+              )
             )
           )
         );
@@ -186,6 +202,12 @@ service cloud.firestore {
                 request.resource.data.get('role', 'user') == 'user' &&
                 exists(/databases/$(database)/documents/groups/$(groupId)) &&
                 get(/databases/$(database)/documents/groups/$(groupId)).data.type == 'open'
+              ) ||
+              // 1c: Invited user can join closed groups
+              (
+                request.resource.data.get('isAdmin', false) == false &&
+                request.resource.data.get('role', 'user') == 'user' &&
+                hasPendingInvite(groupId, request.auth.uid)
               )
             )
           ) ||
@@ -221,6 +243,29 @@ service cloud.firestore {
         
         // Delete: Requester can cancel their own, or group admin can reject/remove it
         allow delete: if isSignedIn() && (request.auth.uid == requestId || isGroupAdmin(groupId));
+      }
+
+      match /invites/{inviteId} {
+        allow read: if isSignedIn() && (request.auth.uid == inviteId || isGroupAdmin(groupId));
+
+        allow create: if isGroupAdmin(groupId) &&
+          request.resource.data.get('groupId', '') == groupId &&
+          request.resource.data.get('targetUserId', '') == inviteId &&
+          request.resource.data.get('inviterId', '') == request.auth.uid &&
+          request.resource.data.get('status', '') == 'pending';
+
+        allow update: if isSignedIn() && (
+          isGroupAdmin(groupId) ||
+          (
+            request.auth.uid == inviteId &&
+            resource.data.get('status', '') == 'pending' &&
+            request.resource.data.get('status', '') in ['accepted', 'declined'] &&
+            request.resource.data.diff(resource.data).affectedKeys()
+              .hasOnly(['status', 'respondedAt', 'legalAccepted', 'legalAcceptedAt'])
+          )
+        );
+
+        allow delete: if isGroupAdmin(groupId);
       }
 
       // Lightweight audit logging (client-side) for free tier

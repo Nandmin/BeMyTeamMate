@@ -8,7 +8,7 @@ import {
   ViewChild,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink, RouterLinkActive } from '@angular/router';
+import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { switchMap, of } from 'rxjs';
 import { AuthService } from '../../services/auth.service';
@@ -27,6 +27,7 @@ export class HeaderComponent {
   public authService = inject(AuthService);
   public themeService = inject(ThemeService);
   public notificationService = inject(NotificationService);
+  private router = inject(Router);
   public isNotificationsOpen = signal(false);
   public isMobileMenuOpen = signal(false);
   public isFilterOpen = signal(false);
@@ -102,6 +103,16 @@ export class HeaderComponent {
     await this.notificationService.deleteAllNotifications(uid);
     this.filterEventId.set(null);
     this.isFilterOpen.set(false);
+  }
+
+  async openNotification(notification: AppNotification) {
+    const link = notification.link || `/groups/${notification.groupId}`;
+    this.closeNotifications();
+    try {
+      await this.router.navigateByUrl(link);
+    } catch (error) {
+      console.error('Notification navigation failed:', error);
+    }
   }
 
   closeNotifications() {

@@ -52,6 +52,13 @@ export class EventDetailPage {
   goalsMap = signal<{ [userId: string]: number }>({});
   assistsMap = signal<{ [userId: string]: number }>({});
   isEditingResults = signal(false);
+  selectedResultPlayerId = signal<string | null>(null);
+  selectedResultPlayer = computed(() => {
+    const selectedId = this.selectedResultPlayerId();
+    if (!selectedId) return null;
+    const allMembers = [...this.teamA(), ...this.teamB()];
+    return allMembers.find((member) => member.userId === selectedId) || null;
+  });
   selectedMvpId = signal<string | null>(null);
   isFinalizingMvp = signal(false);
 
@@ -84,6 +91,10 @@ export class EventDetailPage {
           });
           this.goalsMap.set(goals);
           this.assistsMap.set(assists);
+        }
+
+        if (this.isEditingResults()) {
+          this.ensureResultPlayerSelection();
         }
       }
     });
@@ -507,7 +518,31 @@ export class EventDetailPage {
   // --- Result Management Logic ---
 
   toggleResultsEdit() {
-    this.isEditingResults.update((v) => !v);
+    const nextValue = !this.isEditingResults();
+    this.isEditingResults.set(nextValue);
+    if (nextValue) {
+      this.ensureResultPlayerSelection();
+    }
+  }
+
+  selectResultPlayer(userId: string) {
+    this.selectedResultPlayerId.set(userId);
+  }
+
+  updateSelectedStat(type: 'goals' | 'assists', delta: number) {
+    const selectedId = this.selectedResultPlayerId();
+    if (!selectedId) return;
+    this.updateStat(selectedId, type, delta);
+  }
+
+  getSelectedGoals(): number {
+    const selectedId = this.selectedResultPlayerId();
+    return selectedId ? this.getStat(selectedId, 'goals') : 0;
+  }
+
+  getSelectedAssists(): number {
+    const selectedId = this.selectedResultPlayerId();
+    return selectedId ? this.getStat(selectedId, 'assists') : 0;
   }
 
   updateStat(userId: string, type: 'goals' | 'assists', delta: number) {
@@ -559,6 +594,15 @@ export class EventDetailPage {
   calculateTeamGoals(team: 'A' | 'B'): number {
     const members = team === 'A' ? this.teamA() : this.teamB();
     return members.reduce((sum, m) => sum + this.getStat(m.userId, 'goals'), 0);
+  }
+
+  private ensureResultPlayerSelection() {
+    const selectedId = this.selectedResultPlayerId();
+    const allMembers = [...this.teamA(), ...this.teamB()];
+    if (selectedId && allMembers.some((member) => member.userId === selectedId)) {
+      return;
+    }
+    this.selectedResultPlayerId.set(allMembers[0]?.userId ?? null);
   }
 
   private coerceDate(value: any): Date {

@@ -420,8 +420,8 @@ export class GroupService {
 
   async getGroupInviteOnce(groupId: string, targetUserId: string): Promise<GroupInvite | null> {
     if (!groupId || !targetUserId) return null;
-    const inviteRef = doc(this.firestore, `groups/${groupId}/invites/${targetUserId}`);
-    const inviteSnap = await getDoc(inviteRef);
+    const inviteRef = this.fsDoc(`groups/${groupId}/invites/${targetUserId}`);
+    const inviteSnap = await this.fsGetDoc(inviteRef);
     if (!inviteSnap.exists()) return null;
     return { ...(inviteSnap.data() as GroupInvite), id: inviteSnap.id } as GroupInvite;
   }
@@ -439,14 +439,14 @@ export class GroupService {
     const group = await this.getGroupOnce(groupId);
     if (!group) throw new Error('Csoport nem található.');
 
-    const memberRef = doc(this.firestore, `groups/${groupId}/members/${targetUser.uid}`);
-    const memberSnap = await getDoc(memberRef);
+    const memberRef = this.fsDoc(`groups/${groupId}/members/${targetUser.uid}`);
+    const memberSnap = await this.fsGetDoc(memberRef);
     if (memberSnap.exists()) {
       throw new Error('A felhasználó már tagja a csoportnak.');
     }
 
-    const inviteRef = doc(this.firestore, `groups/${groupId}/invites/${targetUser.uid}`);
-    const existingSnap = await getDoc(inviteRef);
+    const inviteRef = this.fsDoc(`groups/${groupId}/invites/${targetUser.uid}`);
+    const existingSnap = await this.fsGetDoc(inviteRef);
     if (existingSnap.exists()) {
       const existing = existingSnap.data() as GroupInvite;
       if (existing.status === 'pending') {
@@ -467,13 +467,13 @@ export class GroupService {
       inviterName,
       inviterPhoto: user.photoURL || null,
       status: 'pending',
-      createdAt: serverTimestamp(),
+      createdAt: this.fsServerTimestamp(),
       respondedAt: null,
       legalAccepted: false,
       legalAcceptedAt: null,
     };
 
-    await setDoc(inviteRef, invite);
+    await this.fsSetDoc(inviteRef, invite);
     await this.writeGroupAuditLog(groupId, 'invite_create', {
       targetUserId: targetUser.uid,
       targetUserName:
@@ -498,8 +498,8 @@ export class GroupService {
     if (!user) throw new Error('User must be logged in');
     if (!legalAccepted) throw new Error('A jogi nyilatkozat elfogadása kötelező.');
 
-    const inviteRef = doc(this.firestore, `groups/${groupId}/invites/${inviteId}`);
-    const inviteSnap = await getDoc(inviteRef);
+    const inviteRef = this.fsDoc(`groups/${groupId}/invites/${inviteId}`);
+    const inviteSnap = await this.fsGetDoc(inviteRef);
     if (!inviteSnap.exists()) throw new Error('A meghívó nem található.');
     const invite = inviteSnap.data() as GroupInvite;
 
@@ -521,11 +521,11 @@ export class GroupService {
       elo: 1200,
     });
 
-    await updateDoc(inviteRef, {
+    await this.fsUpdateDoc(inviteRef, {
       status: 'accepted',
-      respondedAt: serverTimestamp(),
+      respondedAt: this.fsServerTimestamp(),
       legalAccepted: true,
-      legalAcceptedAt: serverTimestamp(),
+      legalAcceptedAt: this.fsServerTimestamp(),
     });
 
     await this.writeGroupAuditLog(groupId, 'invite_accept', {
@@ -568,8 +568,8 @@ export class GroupService {
     const user = this.authService.currentUser();
     if (!user) throw new Error('User must be logged in');
 
-    const inviteRef = doc(this.firestore, `groups/${groupId}/invites/${inviteId}`);
-    const inviteSnap = await getDoc(inviteRef);
+    const inviteRef = this.fsDoc(`groups/${groupId}/invites/${inviteId}`);
+    const inviteSnap = await this.fsGetDoc(inviteRef);
     if (!inviteSnap.exists()) throw new Error('A meghívó nem található.');
     const invite = inviteSnap.data() as GroupInvite;
 
@@ -580,9 +580,9 @@ export class GroupService {
       throw new Error('A meghívó már nem aktív.');
     }
 
-    await updateDoc(inviteRef, {
+    await this.fsUpdateDoc(inviteRef, {
       status: 'declined',
-      respondedAt: serverTimestamp(),
+      respondedAt: this.fsServerTimestamp(),
     });
 
     await this.writeGroupAuditLog(groupId, 'invite_decline', {
@@ -612,13 +612,13 @@ export class GroupService {
     const user = this.authService.currentUser();
     if (!user) throw new Error('User must be logged in');
 
-    const inviteRef = doc(this.firestore, `groups/${groupId}/invites/${inviteId}`);
-    const inviteSnap = await getDoc(inviteRef);
+    const inviteRef = this.fsDoc(`groups/${groupId}/invites/${inviteId}`);
+    const inviteSnap = await this.fsGetDoc(inviteRef);
     if (!inviteSnap.exists()) throw new Error('A meghívó nem található.');
 
-    await updateDoc(inviteRef, {
+    await this.fsUpdateDoc(inviteRef, {
       status: 'revoked',
-      respondedAt: serverTimestamp(),
+      respondedAt: this.fsServerTimestamp(),
       revokedById: user.uid,
       revokedByName: user.displayName || 'Ismeretlen',
     });
@@ -705,6 +705,26 @@ export class GroupService {
       this.setCachedGroup(groupId, updatedGroup);
       this.invalidateUserGroupsCache(memberData.userId); // Invalidate cache so next fetch gets fresh list
     }
+  }
+
+  private fsDoc(path: string) {
+    return doc(this.firestore, path);
+  }
+
+  private fsGetDoc(ref: any) {
+    return getDoc(ref);
+  }
+
+  private fsSetDoc(ref: any, data: any) {
+    return setDoc(ref, data);
+  }
+
+  private fsUpdateDoc(ref: any, data: any) {
+    return updateDoc(ref, data);
+  }
+
+  private fsServerTimestamp() {
+    return serverTimestamp();
   }
 
   // --- Group Management ---

@@ -161,6 +161,15 @@ export class GroupDetailPage {
 
   canViewEvents = computed(() => this.isMember() || this.isAdmin());
 
+  canViewGroupContent = computed(() => {
+    const group = this.group();
+    if (!group) return false;
+    if (group.type === 'open') return true;
+    const members = this.members();
+    if (members === undefined) return false;
+    return this.isMember() || this.isAdmin();
+  });
+
   events = toSignal(
     combineLatest([this.route.params, toObservable(this.canViewEvents)]).pipe(
       switchMap(([params, canView]) => {

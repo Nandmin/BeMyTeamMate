@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './guards/auth.guard';
+import { groupAccessGuard } from './guards/group-access.guard';
 import { siteAdminGuard } from './guards/site-admin.guard';
 
 export const routes: Routes = [
@@ -45,6 +46,7 @@ export const routes: Routes = [
   },
   {
     path: 'groups/:id',
+    canActivate: [authGuard, groupAccessGuard],
     loadComponent: () =>
       import('./pages/group-detail/group-detail.page').then((m) => m.GroupDetailPage),
   },

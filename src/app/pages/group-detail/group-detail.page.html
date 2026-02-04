@@ -1,4 +1,5 @@
 <main class="flex-grow min-h-screen bg-background-dark text-white">
+    @if (canViewGroupContent()) {
     <div class="relative w-full group-hero">
         <!-- Hero Background - Neutralized/Premium -->
         <div class="absolute inset-0 h-[400px] overflow-hidden pointer-events-none">
@@ -378,6 +379,11 @@
             }
         </div>
     </div>
+    } @else {
+    <div class="min-h-[60vh] flex items-center justify-center text-gray-400 text-sm">
+        Hozzáférés ellenőrzése...
+    </div>
+    }
 
     <app-cover-image-selector [show]="showImageSelector()" [images]="availableCoverImages"
         [selectedImage]="group()?.image || null" [disabled]="isSubmitting()" offsetTopClass="pt-[114px]"

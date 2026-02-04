@@ -52,22 +52,25 @@ export const routes: Routes = [
   },
   {
     path: 'groups/:id/create-event',
+    canActivate: [authGuard, groupAccessGuard],
     loadComponent: () =>
       import('./pages/create-event/create-event.page').then((m) => m.CreateEventPage),
   },
   {
     path: 'groups/:id/edit-event/:eventId',
+    canActivate: [authGuard, groupAccessGuard],
     loadComponent: () =>
       import('./pages/create-event/create-event.page').then((m) => m.CreateEventPage),
   },
   {
     path: 'groups/:id/settings',
+    canActivate: [authGuard, groupAccessGuard],
     loadComponent: () =>
       import('./pages/group-settings/group-settings.page').then((m) => m.GroupSettingsPage),
   },
   {
     path: 'groups/:id/events/:eventId',
-    canActivate: [authGuard],
+    canActivate: [authGuard, groupAccessGuard],
     loadComponent: () =>
       import('./pages/event-detail/event-detail.page').then((m) => m.EventDetailPage),
   },

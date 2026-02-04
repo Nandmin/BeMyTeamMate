@@ -128,7 +128,14 @@ service cloud.firestore {
 
     // 3. Groups
     match /groups/{groupId} {
-      allow read: if isSignedIn();
+      allow read: if isSignedIn() && (
+        isSiteAdmin() ||
+        isGroupAdmin(groupId) ||
+        exists(/databases/$(database)/documents/groups/$(groupId)/members/$(request.auth.uid)) ||
+        hasPendingInvite(groupId, request.auth.uid) ||
+        exists(/databases/$(database)/documents/groups/$(groupId)/joinRequests/$(request.auth.uid)) ||
+        get(/databases/$(database)/documents/groups/$(groupId)).data.type == 'open'
+      );
 
       // Enforce ownership on creation to prevent privilege escalation.
       allow create: if isSignedIn() &&

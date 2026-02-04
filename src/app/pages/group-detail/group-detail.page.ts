@@ -6,7 +6,7 @@ import { FormsModule } from '@angular/forms';
 import { GroupService, Group, GroupMember, GroupInvite } from '../../services/group.service';
 import { AuthService } from '../../services/auth.service';
 import { toSignal, toObservable } from '@angular/core/rxjs-interop';
-import { switchMap, combineLatest, map, of } from 'rxjs';
+import { switchMap, combineLatest, map, of, catchError } from 'rxjs';
 import { EventService, SportEvent } from '../../services/event.service';
 import { ModalService } from '../../services/modal.service';
 import { CoverImageSelectorComponent } from '../../components/cover-image-selector/cover-image-selector.component';
@@ -61,8 +61,37 @@ export class GroupDetailPage {
     effect(() => {
       const inviteFlag = this.inviteParams()['invite'];
       const user = this.authService.currentUser();
+      const members = this.members();
       if (!inviteFlag || !user) return;
-      void this.openInviteFromNotification();
+      if (members === undefined) return;
+      if (this.isMember() || this.isAdmin()) {
+        this.clearInviteQueryParam();
+        return;
+      }
+      void this.openInviteWithFallback(
+        'A meghívó már nem aktív vagy nem található.',
+        'Meghívó',
+      );
+    });
+    effect(() => {
+      const group = this.group();
+      const user = this.authService.currentUser();
+      const members = this.members();
+      if (!group || !user) return;
+      if (group.type !== 'closed') return;
+      if (members === undefined) return;
+      if (this.isMember() || this.isAdmin()) return;
+      if (this.inviteAcceptedGrace()) return;
+      if (this.showInviteDecisionModal()) return;
+      void this.openInviteWithFallback(
+        'Ez a csoport zárt. Meghívó nélkül nem tekinthető meg.',
+        'Hozzáférés megtagadva',
+      );
+    });
+    effect(() => {
+      if (this.inviteAcceptedGrace() && this.isMember()) {
+        this.inviteAcceptedGrace.set(false);
+      }
     });
   }
 
@@ -78,11 +107,37 @@ export class GroupDetailPage {
   }
 
   group = toSignal(
-    this.route.params.pipe(switchMap((params) => this.groupService.getGroup(params['id'])))
+    this.route.params.pipe(
+      switchMap((params) =>
+        this.groupService.getGroup(params['id']).pipe(
+          catchError((err) => {
+            console.error('Group load error:', err);
+            void this.modalService.alert(
+              'Nincs jogosultságod a csoport megtekintéséhez.',
+              'Hozzáférés megtagadva',
+              'warning',
+            );
+            void this.router.navigate(['/groups']);
+            return of(undefined);
+          }),
+        ),
+      ),
+    ),
   );
 
+  membersReload = signal(0);
+
   members = toSignal(
-    this.route.params.pipe(switchMap((params) => this.groupService.getGroupMembers(params['id'])))
+    combineLatest([this.route.params, toObservable(this.membersReload)]).pipe(
+      switchMap(([params]) =>
+        this.groupService.getGroupMembers(params['id']).pipe(
+          catchError((err) => {
+            console.warn('Members load denied or failed:', err);
+            return of([] as GroupMember[]);
+          }),
+        ),
+      ),
+    ),
   );
 
   isMember = computed(() => {
@@ -231,6 +286,8 @@ export class GroupDetailPage {
   inviteDecisionError = signal('');
   inviteLegalAccepted = signal(false);
   isInviteDecisionSubmitting = signal(false);
+  inviteGateInProgress = signal(false);
+  inviteAcceptedGrace = signal(false);
 
   availableCoverImages: CoverImageEntry[] = [];
 
@@ -349,28 +406,29 @@ export class GroupDetailPage {
     }
   }
 
-  private async openInviteFromNotification() {
-    if (this.showInviteDecisionModal()) return;
+  private async openInviteWithFallback(fallbackMessage: string, fallbackTitle: string) {
+    if (this.showInviteDecisionModal() || this.inviteGateInProgress()) return;
     const user = this.authService.currentUser();
     if (!user) return;
 
-    const invite = await this.groupService.getGroupInviteOnce(this.groupId, user.uid);
-    if (!invite || invite.status !== 'pending') {
-      await this.modalService.alert(
-        'A meghívó már nem aktív vagy nem található.',
-        'Meghívó',
-        'warning',
-      );
-      this.clearInviteQueryParam();
-      await this.router.navigate(['/groups']);
-      return;
-    }
+    this.inviteGateInProgress.set(true);
+    try {
+      const invite = await this.groupService.getGroupInviteOnce(this.groupId, user.uid);
+      if (!invite || invite.status !== 'pending') {
+        await this.modalService.alert(fallbackMessage, fallbackTitle, 'warning');
+        this.clearInviteQueryParam();
+        await this.router.navigate(['/groups']);
+        return;
+      }
 
-    this.pendingInvite.set(invite);
-    this.inviteDecisionError.set('');
-    this.inviteLegalAccepted.set(false);
-    this.showInviteDecisionModal.set(true);
-    this.clearInviteQueryParam();
+      this.pendingInvite.set(invite);
+      this.inviteDecisionError.set('');
+      this.inviteLegalAccepted.set(false);
+      this.showInviteDecisionModal.set(true);
+      this.clearInviteQueryParam();
+    } finally {
+      this.inviteGateInProgress.set(false);
+    }
   }
 
   private clearInviteQueryParam() {
@@ -401,6 +459,8 @@ export class GroupDetailPage {
     try {
       await this.groupService.acceptGroupInvite(this.groupId, invite.id, true);
       await this.modalService.alert('Sikeresen csatlakoztál a csoporthoz.', 'Kész', 'success');
+      this.inviteAcceptedGrace.set(true);
+      this.membersReload.update((value) => value + 1);
       this.closeInviteDecisionModal();
     } catch (error: any) {
       this.inviteDecisionError.set(

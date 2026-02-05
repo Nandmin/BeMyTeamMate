@@ -7,7 +7,7 @@ compatibility_date = "2025-01-01"
 # FCM_PROJECT_ID, FCM_CLIENT_EMAIL, FCM_PRIVATE_KEY
 
 [triggers]
-crons = ["30 22 * * *", "30 23 * * *"]
+crons = ["*/15 * * * *"]
 
 [observability]
 enabled = true

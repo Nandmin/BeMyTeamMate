@@ -2,6 +2,12 @@
     animation: fadeIn 0.6s ease-out forwards;
 }
 
+@property --mobile-neon-angle {
+  syntax: '<angle>';
+  initial-value: 0deg;
+  inherits: false;
+}
+
 @keyframes fadeIn {
     from { opacity: 0; transform: translateY(10px); }
     to { opacity: 1; transform: translateY(0); }
@@ -63,6 +69,54 @@
 
 .card-gradient {
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.06) 0%, rgba(255, 255, 255, 0.02) 65%, rgba(255, 255, 255, 0) 100%);
+}
+
+.mobile-results-glow {
+  position: relative;
+}
+
+.mobile-results-glow::before {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: inherit;
+  padding: 2px;
+  background: conic-gradient(
+    from var(--mobile-neon-angle, 0deg),
+    rgba(43, 238, 124, 0) 0deg,
+    rgba(43, 238, 124, 0) 338deg,
+    rgba(43, 238, 124, 1) 348deg,
+    rgba(43, 238, 124, 0.35) 354deg,
+    rgba(43, 238, 124, 0) 360deg
+  );
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  mask-composite: exclude;
+  animation: neon-border-spin 15s linear infinite;
+  filter: drop-shadow(0 0 6px rgba(43, 238, 124, 0.6));
+  pointer-events: none;
+  z-index: 1;
+}
+
+.mobile-results-glow > * {
+  position: relative;
+  z-index: 2;
+}
+
+@keyframes neon-border-spin {
+  from {
+    --mobile-neon-angle: 0deg;
+  }
+  to {
+    --mobile-neon-angle: 360deg;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mobile-results-glow::before {
+    animation: none;
+  }
 }
 
 :host {

@@ -132,6 +132,40 @@ export default {
       return jsonResponse(request, env, { ok: true, queued: false, dryRun, groupId: groupId || null, result }, 200);
     }
 
+    if (url.pathname === '/event-reminder-get-event') {
+      const authResult = await verifyAuth(request, env);
+      if (!authResult.authorized) {
+        return jsonResponse(request, env, { error: 'Unauthorized', detail: authResult.error }, 401);
+      }
+
+      const body = await readJsonBody(request);
+      if (!body.ok) return jsonResponse(request, env, { error: body.error }, 400);
+      const groupId = typeof body.data?.groupId === 'string' ? body.data.groupId.trim() : '';
+      const eventId = typeof body.data?.eventId === 'string' ? body.data.eventId.trim() : '';
+      const nowIso = typeof body.data?.nowIso === 'string' ? body.data.nowIso.trim() : '';
+      if (!groupId || !eventId) {
+        return jsonResponse(request, env, { error: 'Missing groupId or eventId' }, 400);
+      }
+
+      const config = await getFirestoreAuth(env);
+      if (!config.ok) return jsonResponse(request, env, { error: config.error }, 500);
+
+      const docName = `projects/${config.projectId}/databases/(default)/documents/groups/${groupId}/events/${eventId}`;
+      const url = `https://firestore.googleapis.com/v1/${docName}`;
+      const response = await fetch(url, {
+        headers: { Authorization: `Bearer ${config.accessToken}` },
+      });
+      if (!response.ok) {
+        const detail = await response.text();
+        return jsonResponse(request, env, { error: `Event fetch failed: ${response.status} ${detail}` }, 500);
+      }
+
+      const doc = await response.json();
+      const now = nowIso ? new Date(nowIso) : new Date();
+      const summary = summarizeEventReminderDoc(doc, now);
+      return jsonResponse(request, env, { ok: true, groupId, eventId, summary, raw: doc }, 200);
+    }
+
     if (url.pathname === '/mvp-cron-list-group') {
       const authResult = await verifyAuth(request, env);
       if (!authResult.authorized) {
@@ -1174,6 +1208,7 @@ async function handleEventReminderCron(env, options = {}) {
   let eligibleEvents = 0;
   let markedEvents = 0;
   let deferredEvents = 0;
+  let skippedNoTokens = 0;
   let pushedSuccess = 0;
   let pushedFailure = 0;
   let groupsWithEligibleEvents = 0;
@@ -1193,6 +1228,13 @@ async function handleEventReminderCron(env, options = {}) {
 
       const memberIds = await listGroupMemberUserIds(projectId, firestoreAccessToken, groupId);
       const tokens = await fetchUserTokensByUserIds(projectId, firestoreAccessToken, memberIds);
+      if (tokens.length === 0) {
+        console.log('Reminder cron: no push tokens for group', {
+          groupId,
+          memberCount: memberIds.length,
+          dueEvents: dueEvents.length,
+        });
+      }
 
       for (const eventSummary of dueEvents) {
         let shouldMarkSent = true;
@@ -1218,6 +1260,9 @@ async function handleEventReminderCron(env, options = {}) {
               failure: pushResult.failure,
             });
           }
+        } else if (!dryRun && tokens.length === 0) {
+          shouldMarkSent = false;
+          skippedNoTokens += 1;
         }
 
         if (!dryRun && shouldMarkSent) {
@@ -1244,6 +1289,7 @@ async function handleEventReminderCron(env, options = {}) {
     eligibleEvents,
     markedEvents,
     deferredEvents,
+    skippedNoTokens,
     pushedSuccess,
     pushedFailure,
     durationMs,
@@ -1308,8 +1354,10 @@ function getEventStartUtc(fields) {
 
   if (!baseDate || Number.isNaN(baseDate.getTime())) return null;
   const dateParts = getZonedParts(baseDate, EVENT_REMINDER_TIMEZONE);
-  const parsedTime = parseEventTime(fields?.time?.stringValue);
-  if (!parsedTime) return null;
+  const parsedTime = parseEventTime(fields?.time?.stringValue) ?? {
+    hour: dateParts.hour,
+    minute: dateParts.minute,
+  };
 
   return getUtcDateForZonedDate(
     dateParts.year,
@@ -1324,8 +1372,8 @@ function getEventStartUtc(fields) {
 
 function parseEventTime(value) {
   const raw = typeof value === 'string' ? value.trim() : '';
-  if (!raw) return { hour: 0, minute: 0 };
-  const match = raw.match(/^(\d{1,2}):(\d{2})$/);
+  if (!raw) return null;
+  const match = raw.match(/^(\d{1,2})[:.](\d{2})(?::(\d{2}))?$/);
   if (!match) return null;
   const hour = Number(match[1]);
   const minute = Number(match[2]);

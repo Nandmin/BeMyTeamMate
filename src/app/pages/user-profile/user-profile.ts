@@ -31,6 +31,14 @@ import { CoverImagesService } from '../../services/cover-images.service';
   styleUrl: './user-profile.scss',
 })
 export class UserProfilePage implements AfterViewInit {
+  private readonly profileFieldLabels: Record<string, string> = {
+    displayName: 'Felhasználónév',
+    photoURL: 'Profilkép',
+    bio: 'Bemutatkozás',
+    elo: 'ELO pontszám',
+    email: 'Email cím'
+  };
+
   protected authService = inject(AuthService);
   protected modalService = inject(ModalService);
   private groupService = inject(GroupService);
@@ -505,6 +513,11 @@ export class UserProfilePage implements AfterViewInit {
     if (typeof value?.seconds === 'number') return new Date(value.seconds * 1000);
     const parsed = new Date(value);
     return Number.isNaN(parsed.getTime()) ? null : parsed;
+  }
+
+  protected formatModifiedFields(fields?: string[] | null): string {
+    if (!fields?.length) return '';
+    return fields.map((field) => this.profileFieldLabels[field] ?? field).join(', ');
   }
 
   canOpenGroup(groupId?: string) {

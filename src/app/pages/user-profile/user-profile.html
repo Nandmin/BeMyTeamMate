@@ -126,7 +126,7 @@
                                 Utoljára frissítve: {{ toDate(profileUser()?.profileUpdatedAt) | date:'yyyy.MM.dd HH:mm'
                                 }}
                                 @if(profileUser()?.lastModifiedFields?.length) {
-                                ({{ profileUser()?.lastModifiedFields?.join(', ') }})
+                                ({{ formatModifiedFields(profileUser()?.lastModifiedFields) }})
                                 }
                             </p>
                             }

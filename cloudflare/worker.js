@@ -1613,22 +1613,26 @@ async function finalizeMvpEvent(projectId, accessToken, groupId, eventDoc) {
   if (winnerId) {
     const userDocName = `projects/${projectId}/databases/(default)/documents/users/${winnerId}`;
     writes.push({
-      update: { name: userDocName, fields: {} },
-      updateTransforms: [
-        { fieldPath: 'elo', increment: { integerValue: '5' } },
-        { fieldPath: 'profileUpdatedAt', setToServerValue: 'REQUEST_TIME' },
-        {
-          fieldPath: 'lastModifiedFields',
-          appendMissingElements: { values: [{ stringValue: 'elo' }] },
-        },
-      ],
+      transform: {
+        document: userDocName,
+        fieldTransforms: [
+          { fieldPath: 'elo', increment: { integerValue: '5' } },
+          { fieldPath: 'profileUpdatedAt', setToServerValue: 'REQUEST_TIME' },
+          {
+            fieldPath: 'lastModifiedFields',
+            appendMissingElements: { values: [{ stringValue: 'elo' }] },
+          },
+        ],
+      },
     });
 
     const memberDoc = await findGroupMemberDoc(projectId, accessToken, groupId, winnerId);
     if (memberDoc) {
       writes.push({
-        update: { name: memberDoc, fields: {} },
-        updateTransforms: [{ fieldPath: 'elo', increment: { integerValue: '5' } }],
+        transform: {
+          document: memberDoc,
+          fieldTransforms: [{ fieldPath: 'elo', increment: { integerValue: '5' } }],
+        },
       });
     }
   }

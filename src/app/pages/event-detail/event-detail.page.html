@@ -272,7 +272,7 @@
                     <div
                         class="absolute bg-sport-background rounded-full p-0 shadow-[0_0_30px_rgba(0,0,0,0.5)]">
                         <div
-                            class="size-20 rounded-full bg-primary flex items-center justify-center shadow-inner overflow-hidden">
+                            class="size-20 rounded-full bg-card-dark/70 border border-card-border flex items-center justify-center shadow-inner overflow-hidden">
                             @if (event()?.status === 'active' || event()?.status === 'finished') {
                             <div
                                 class="flex flex-col items-center justify-center w-full h-full card-gradient bg-card-dark/60 backdrop-blur-xl text-white">
@@ -292,7 +292,7 @@
                 <!-- Mobile VS Badge / Scoreboard -->
                 <div class="lg:hidden flex justify-center -my-6">
                     <div
-                        class="size-14 rounded-full bg-primary flex items-center justify-center shadow-lg relative z-10 overflow-hidden vs-ring-mobile">
+                        class="size-14 rounded-full bg-card-dark/70 border border-card-border flex items-center justify-center shadow-lg relative z-10 overflow-hidden vs-ring-mobile">
                         @if (event()?.status === 'active' || event()?.status === 'finished') {
                         <div class="flex flex-col items-center justify-center w-full h-full bg-card-dark text-white">
                             <div class="flex items-center gap-1 font-black text-lg leading-none">
@@ -458,7 +458,7 @@
                             <span class="material-symbols-outlined text-[18px]">local_fire_department</span>
                             "A" csapat
                         </div>
-                        <span class="absolute right-0 text-xs text-gray-400 font-black">Gólok: {{ calculateTeamGoals('A') }}</span>
+                        <span class="absolute right-0 text-xs text-white font-black">Gól: {{ calculateTeamGoals('A') }}</span>
                     </div>
                     <div class="grid grid-cols-2 gap-2">
                         @for (player of teamA(); track player.userId) {
@@ -483,7 +483,7 @@
                             <span class="material-symbols-outlined text-[18px]">nights_stay</span>
                             "B" csapat
                         </div>
-                        <span class="absolute right-0 text-xs text-gray-400 font-black">Gólok: {{ calculateTeamGoals('B') }}</span>
+                        <span class="absolute right-0 text-xs text-white font-black">Gól: {{ calculateTeamGoals('B') }}</span>
                     </div>
                     <div class="grid grid-cols-2 gap-2">
                         @for (player of teamB(); track player.userId) {
@@ -511,39 +511,39 @@
                     </span>
                 </div>
                 <div class="grid grid-cols-1 gap-3">
-                    <div class="flex items-center justify-between rounded-xl bg-background-dark/20 p-3">
-                        <div class="flex items-center gap-2">
+                    <div class="flex flex-col items-center gap-3 rounded-xl bg-background-dark/20 p-4">
+                        <div class="flex items-center justify-center gap-2">
                             <span class="material-symbols-outlined text-primary">sports_soccer</span>
-                            <p class="text-white font-bold">Gólok</p>
+                            <p class="text-white font-bold">Gól</p>
                         </div>
-                        <div class="flex items-center gap-3">
+                        <div class="flex items-center justify-center gap-4">
                             <button type="button" (click)="updateSelectedStat('goals', -1)"
                                 [disabled]="!selectedResultPlayerId()"
-                                class="w-12 h-12 rounded-xl bg-white/5 hover:bg-white/10 text-white text-lg font-black disabled:opacity-40 disabled:cursor-not-allowed">-</button>
-                            <span class="w-10 text-center text-white font-black text-lg">
+                                class="w-14 h-14 rounded-xl bg-white/5 hover:bg-white/10 text-white text-2xl font-black disabled:opacity-40 disabled:cursor-not-allowed">-</button>
+                            <span class="w-12 text-center text-white font-black text-2xl">
                                 {{ getSelectedGoals() }}
                             </span>
                             <button type="button" (click)="updateSelectedStat('goals', 1)"
                                 [disabled]="!selectedResultPlayerId()"
-                                class="w-12 h-12 rounded-xl bg-white/5 hover:bg-white/10 text-white text-lg font-black disabled:opacity-40 disabled:cursor-not-allowed">+</button>
+                                class="w-14 h-14 rounded-xl bg-white/5 hover:bg-white/10 text-white text-2xl font-black disabled:opacity-40 disabled:cursor-not-allowed">+</button>
                         </div>
                     </div>
 
-                    <div class="flex items-center justify-between rounded-xl bg-background-dark/20 p-3">
-                        <div class="flex items-center gap-2">
+                    <div class="flex flex-col items-center gap-3 rounded-xl bg-background-dark/20 p-4">
+                        <div class="flex items-center justify-center gap-2">
                             <span class="material-symbols-outlined text-blue-400">handshake</span>
-                            <p class="text-white font-bold">Gólpasszok</p>
+                            <p class="text-white font-bold">Gólpassz</p>
                         </div>
-                        <div class="flex items-center gap-3">
+                        <div class="flex items-center justify-center gap-4">
                             <button type="button" (click)="updateSelectedStat('assists', -1)"
                                 [disabled]="!selectedResultPlayerId()"
-                                class="w-12 h-12 rounded-xl bg-white/5 hover:bg-white/10 text-white text-lg font-black disabled:opacity-40 disabled:cursor-not-allowed">-</button>
-                            <span class="w-10 text-center text-white font-black text-lg">
+                                class="w-14 h-14 rounded-xl bg-white/5 hover:bg-white/10 text-white text-2xl font-black disabled:opacity-40 disabled:cursor-not-allowed">-</button>
+                            <span class="w-12 text-center text-white font-black text-2xl">
                                 {{ getSelectedAssists() }}
                             </span>
                             <button type="button" (click)="updateSelectedStat('assists', 1)"
                                 [disabled]="!selectedResultPlayerId()"
-                                class="w-12 h-12 rounded-xl bg-white/5 hover:bg-white/10 text-white text-lg font-black disabled:opacity-40 disabled:cursor-not-allowed">+</button>
+                                class="w-14 h-14 rounded-xl bg-white/5 hover:bg-white/10 text-white text-2xl font-black disabled:opacity-40 disabled:cursor-not-allowed">+</button>
                         </div>
                     </div>
                 </div>

@@ -85,10 +85,11 @@ service cloud.firestore {
               (exists(/databases/$(database)/documents/groups/$(request.resource.data.groupId)/members/$(request.auth.uid)) &&
                exists(/databases/$(database)/documents/groups/$(request.resource.data.groupId)/members/$(userId))) ||
               
-              // Case 2: Join Request (User notifying Group Admins)
+              // Case 2: Join Request or Membership Change (User notifying Group Admins/Owner)
               (request.resource.data.type == 'group_join' && 
                isUserAdminOfGroup(userId, request.resource.data.groupId) &&
-               exists(/databases/$(database)/documents/groups/$(request.resource.data.groupId)/joinRequests/$(request.auth.uid))) ||
+               (exists(/databases/$(database)/documents/groups/$(request.resource.data.groupId)/joinRequests/$(request.auth.uid)) ||
+                exists(/databases/$(database)/documents/groups/$(request.resource.data.groupId)/members/$(request.auth.uid)))) ||
               
               // Case 3: Joined/Rejected Decision or Admin Action
               (isGroupAdmin(request.resource.data.groupId) && 
@@ -128,14 +129,7 @@ service cloud.firestore {
 
     // 3. Groups
     match /groups/{groupId} {
-      allow read: if isSignedIn() && (
-        isSiteAdmin() ||
-        isGroupAdmin(groupId) ||
-        exists(/databases/$(database)/documents/groups/$(groupId)/members/$(request.auth.uid)) ||
-        hasPendingInvite(groupId, request.auth.uid) ||
-        exists(/databases/$(database)/documents/groups/$(groupId)/joinRequests/$(request.auth.uid)) ||
-        get(/databases/$(database)/documents/groups/$(groupId)).data.type == 'open'
-      );
+      allow read: if isSignedIn();
 
       // Enforce ownership on creation to prevent privilege escalation.
       allow create: if isSignedIn() &&
@@ -208,7 +202,7 @@ service cloud.firestore {
                 request.resource.data.get('isAdmin', false) == false &&
                 request.resource.data.get('role', 'user') == 'user' &&
                 exists(/databases/$(database)/documents/groups/$(groupId)) &&
-                get(/databases/$(database)/documents/groups/$(groupId)).data.type == 'open'
+                (resource.data.type == 'open' || get(/databases/$(database)/documents/groups/$(groupId)).data.type == 'open')
               ) ||
               // 1c: Invited user can join closed groups
               (

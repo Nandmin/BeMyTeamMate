@@ -842,6 +842,10 @@ async function sendToFcm(tokens, notification, data, accessToken, projectId) {
 }
 
 async function sendSingleMessage(token, notification, data, accessToken, projectId) {
+  const androidChannelId = typeof data?.channelId === 'string' && data.channelId.trim()
+    ? data.channelId.trim()
+    : 'bmtm_alerts_v2';
+
   const message = {
     message: {
       token,
@@ -850,10 +854,12 @@ async function sendSingleMessage(token, notification, data, accessToken, project
         body: notification.body || '',
       },
       android: {
-        priority: 'high',
+        priority: 'HIGH',
         notification: {
           sound: 'default',
-          channel_id: 'default_channel_id',
+          channel_id: androidChannelId,
+          default_sound: true,
+          default_vibrate_timings: true,
         },
       },
       apns: {

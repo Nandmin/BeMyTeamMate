@@ -87,10 +87,12 @@ export const routes: Routes = [
   }, // TODO
   {
     path: 'profile',
+    canActivate: [authGuard],
     loadComponent: () => import('./pages/user-profile/user-profile').then((m) => m.UserProfilePage),
   },
   {
     path: 'profile/:id',
+    canActivate: [authGuard],
     loadComponent: () => import('./pages/user-profile/user-profile').then((m) => m.UserProfilePage),
   },
 ];

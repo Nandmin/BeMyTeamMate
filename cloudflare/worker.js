@@ -61,7 +61,7 @@ export default {
       );
     } catch (error) {
       console.error('Token generation failed:', error);
-      return jsonResponse(request, env, 
+      return jsonResponse(request, env,
         { error: 'Failed to obtain FCM access token', detail: String(error) },
         500
       );
@@ -76,12 +76,24 @@ export default {
         projectId
       );
 
+      // 5. Cleanup Dead Tokens (Async)
+      const deadTokens = result.errors
+        .filter((err) => err.isUnregistered)
+        .map((err) => err.token);
+
+      if (deadTokens.length > 0 && ctx?.waitUntil) {
+        ctx.waitUntil(cleanupDeadTokens(env, deadTokens));
+      }
+
       // Log the result (Cloudflare logs)
-      return jsonResponse(request, env, 
+      return jsonResponse(
+        request,
+        env,
         {
           success: result.success,
           failure: result.failure,
           errors: result.errors,
+          cleanedUp: deadTokens.length,
         },
         result.failure > 0 ? 207 : 200
       );
@@ -134,7 +146,7 @@ export default {
         summarizeMvpEventDoc(doc, now)
       );
       const eligible = items.filter((item) => item.eligible);
-      return jsonResponse(request, env, 
+      return jsonResponse(request, env,
         { ok: true, groupId, total: items.length, eligible: eligible.length, items },
         200
       );
@@ -186,7 +198,7 @@ export default {
         }
       }
 
-      return jsonResponse(request, env, 
+      return jsonResponse(request, env,
         {
           ok: true,
           groupId,
@@ -265,7 +277,7 @@ export default {
       const docs = data.documents || [];
       const now = new Date();
       const items = docs.map((doc) => summarizeMvpEventDoc(doc, now));
-      return jsonResponse(request, env, 
+      return jsonResponse(request, env,
         {
           ok: true,
           groupId,
@@ -667,7 +679,7 @@ async function verifyAuth(request, env) {
         email: payload.email,
       };
 
-      /* 
+      /*
       // PREVIOUS IMPLEMENTATION (BLOCKED BY APP CHECK)
       if (!env.FIREBASE_API_KEY) {
         return { authorized: false, error: 'Missing FIREBASE_API_KEY' };
@@ -823,11 +835,11 @@ async function sendToFcm(tokens, notification, data, accessToken, projectId) {
 
   // Batch tokens in chunks to avoid hitting concurrency limits too hard
   const chunks = chunkArray(tokens, 10);
-  
+
   for (const chunk of chunks) {
     const promises = chunk.map(token => sendSingleMessage(token, notification, data, accessToken, projectId));
     const results = await Promise.all(promises);
-    
+
     results.forEach(res => {
       if (res.ok) {
         success++;
@@ -896,12 +908,25 @@ async function sendSingleMessage(token, notification, data, accessToken, project
       return { ok: true };
     } else {
       let detail = '';
+      let isUnregistered = false;
       try {
         detail = await response.text();
-      } catch { detail = 'Unknown error'; }
-      
-      console.error(`FCM Error: ${response.status} - ${detail}`);
-      return { ok: false, error: { token, status: response.status, detail } };
+        const parsed = JSON.parse(detail);
+        if (
+          parsed?.error?.details?.[0]?.errorCode === 'UNREGISTERED' ||
+          parsed?.error?.message?.includes('Requested entity was not found')
+        ) {
+          isUnregistered = true;
+        }
+      } catch {
+        detail = detail || 'Unknown error';
+      }
+
+      // Only log as error if it's NOT an expected UNREGISTERED status
+      if (!isUnregistered || response.status !== 404) {
+        console.error(`FCM Error: ${response.status} - ${detail}`);
+      }
+      return { ok: false, error: { token, status: response.status, detail, isUnregistered } };
     }
   } catch (err) {
     console.error(`Fetch Error: ${err}`);
@@ -1770,5 +1795,90 @@ async function commitWrites(projectId, accessToken, writes) {
   if (!response.ok) {
     const detail = await response.text();
     throw new Error(`Commit failed: ${response.status} ${detail}`);
+  }
+}
+
+/**
+ * Removes stale tokens from Firestore users collection
+ */
+async function cleanupDeadTokens(env, deadTokens) {
+  if (!deadTokens || deadTokens.length === 0) return;
+
+  const config = await getFirestoreAuth(env);
+  if (!config.ok) {
+    console.error('Cleanup: Failed to get Firestore auth');
+    return;
+  }
+
+  const { projectId, accessToken } = config;
+  console.log(`Starting cleanup for ${deadTokens.length} dead tokens`);
+
+  // Process tokens in small batches to avoid hitting rate limits too hard
+  for (const token of deadTokens) {
+    try {
+      // 1. Find the user document containing this token
+      const queryUrl = `https://firestore.googleapis.com/v1/projects/${projectId}/databases/(default)/documents:runQuery`;
+      const queryBody = {
+        structuredQuery: {
+          from: [{ collectionId: 'users' }],
+          where: {
+            fieldFilter: {
+              field: { fieldPath: 'fcmTokens' },
+              op: 'ARRAY_CONTAINS',
+              value: { stringValue: token },
+            },
+          },
+        },
+      };
+
+      const resp = await fetch(queryUrl, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(queryBody),
+      });
+
+      if (!resp.ok) {
+        const errText = await resp.text();
+        console.warn(`Cleanup: Query failed for token: ${errText}`);
+        continue;
+      }
+
+      const results = await resp.json();
+      const writes = [];
+
+      for (const row of results || []) {
+        const doc = row?.document;
+        if (!doc?.name) continue;
+
+        const currentTokens = doc.fields?.fcmTokens?.arrayValue?.values || [];
+        const filteredTokens = currentTokens
+          .map((v) => v.stringValue)
+          .filter((t) => t && t !== token);
+
+        writes.push({
+          update: {
+            name: doc.name,
+            fields: {
+              fcmTokens: {
+                arrayValue: {
+                  values: filteredTokens.map((t) => ({ stringValue: t })),
+                },
+              },
+            },
+          },
+          updateMask: { fieldPaths: ['fcmTokens'] },
+        });
+      }
+
+      if (writes.length > 0) {
+        await commitWrites(projectId, accessToken, writes);
+        console.log(`Cleanup: Removed token ${token.substring(0, 10)}... from ${writes.length} user(s)`);
+      }
+    } catch (err) {
+      console.error(`Cleanup: Error processing token ${token.substring(0, 10)}...:`, err);
+    }
   }
 }

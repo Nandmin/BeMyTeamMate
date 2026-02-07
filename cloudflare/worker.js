@@ -849,6 +849,26 @@ async function sendSingleMessage(token, notification, data, accessToken, project
         title: notification.title || 'Notification',
         body: notification.body || '',
       },
+      android: {
+        priority: 'high',
+        notification: {
+          sound: 'default',
+          channel_id: 'default_channel_id',
+        },
+      },
+      apns: {
+        payload: {
+          aps: {
+            sound: 'default',
+          },
+        },
+      },
+      webpush: {
+        notification: {
+          icon: '/favicon.ico',
+          silent: false,
+        },
+      },
       data: normalizeData(data),
     },
   };

@@ -36,6 +36,10 @@ messaging.onBackgroundMessage((payload) => {
     data: payload.data || {},
     icon: '/favicon.ico',
     badge: '/favicon.ico',
+    vibrate: [200, 100, 200],
+    tag: payload.data?.type || 'general',
+    renotify: true,
+    requireInteraction: false,
   };
 
   self.registration.showNotification(title, options);

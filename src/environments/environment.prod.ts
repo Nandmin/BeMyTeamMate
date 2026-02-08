@@ -1,7 +1,7 @@
 export const environment = {
   production: true,
   firebase: {
-    apiKey: 'AIzaSyD0CWx35U-Ry5o57rqJ3FaMmm7SQnu5VAk',
+    apiKey: 'AIzaSyCyPzPGm8lPwJ3fWgbrHciKIorRvJqUDyw',
     authDomain: 'bemyteammate.firebaseapp.com',
     databaseURL: 'https://bemyteammate-default-rtdb.europe-west1.firebasedatabase.app',
     projectId: 'bemyteammate',

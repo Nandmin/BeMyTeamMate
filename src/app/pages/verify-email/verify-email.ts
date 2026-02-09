@@ -23,7 +23,7 @@ export class VerifyEmailPage implements OnInit {
   ngOnInit() {
     this.seo.setPageMeta({
       title: 'Email cím hitelesítés - BeMyTeamMate',
-      description: 'Itt tudod véglegesíteni az email címed hitelesítését.',
+      description: 'Itt tudod véglegesíteni az e-mail címed hitelesítését.',
       path: '/verify-email',
       noindex: true,
     });
@@ -34,7 +34,7 @@ export class VerifyEmailPage implements OnInit {
   private async verifyFromCurrentUrl() {
     const verified = this.pickParam('verified');
     if (verified === '1') {
-      this.successMessage.set('Sikeres email cím hitelesítés.' + '\n' + ' Most már be tudsz jelentkezni.');
+      this.successMessage.set('Sikeres e-mail cím hitelesítés.' + '\n' + ' Most már be tudsz jelentkezni.');
       this.isLoading.set(false);
       return;
     }
@@ -43,14 +43,14 @@ export class VerifyEmailPage implements OnInit {
     const oobCode = this.pickParam('oobCode');
 
     if (mode !== 'verifyEmail' || !oobCode) {
-      this.errorMessage.set('Érvénytelen vagy hiányos hitelesítési link. Kérj újabb hitelesítő emailt.');
+      this.errorMessage.set('Érvénytelen vagy hiányos hitelesítési link.' + '\n' + '  Kérj újabb hitelesítő e-mailt.');
       this.isLoading.set(false);
       return;
     }
 
     try {
       await applyActionCode(this.auth, oobCode);
-      this.successMessage.set('Sikeres email cím hitelesítés.' + '\n' + ' Most már be tudsz jelentkezni.');
+      this.successMessage.set('Sikeres e-mail cím hitelesítés.' + '\n' + ' Most már be tudsz jelentkezni.');
     } catch (error: any) {
       this.errorMessage.set(this.getErrorMessage(error?.code));
       console.error('Email verification failed:', error);
@@ -95,13 +95,13 @@ export class VerifyEmailPage implements OnInit {
   private getErrorMessage(code: string): string {
     switch (code) {
       case 'auth/invalid-action-code':
-        return 'Érvénytelen hitelesítési kód. Kérj újabb hitelesítő e-mailt.';
+        return 'Érvénytelen hitelesítési kód.' + '\n' + ' Kérj újabb hitelesítő e-mailt.';
       case 'auth/expired-action-code':
-        return 'A hitelesítési link lejárt. Kérj újabb hitelesítő e-mailt.';
+        return 'A hitelesítési link lejárt.' + '\n' + ' Kérj újabb hitelesítő e-mailt.';
       case 'auth/user-disabled':
         return 'Ez a fiók le van tiltva.';
       default:
-        return 'Nem sikerült az e-mail cím hitelesítése. Próbáld újra vagy kérj új linket.';
+        return 'Nem sikerült az e-mail cím hitelesítése.' + '\n' + ' Próbáld újra vagy kérj új linket.';
     }
   }
 }

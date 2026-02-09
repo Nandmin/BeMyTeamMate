@@ -12,19 +12,19 @@
             <div class="flex flex-col items-center text-center mb-6">
                 <img src="assets/images/headerIcon_1282.webp" alt="BeMyTeamMate Logo" style="width: 64px; height: 64px;" />
                 <h1 class="text-white tracking-tight text-[24px] md:text-[28px] font-bold leading-tight mt-3 mb-2">
-                    Verifikációs email újraküldése
+                    Verifikációs e-mail újraküldése
                 </h1>
                 <p class="text-xs sm:text-sm font-normal leading-snug mx-auto w-full max-w-[24rem]">
-                    Add meg az email címed és jelszavad, es újra elküldjük az aktivációs emailt.
+                    Add meg az e-mail címed és jelszavad, és újra elküldjük az aktivációs e-mailt.
                 </p>
             </div>
 
             <div *ngIf="errorMessage"
-                class="mb-4 p-3 bg-red-600 border border-red-700 rounded-lg text-white font-medium text-sm text-center shadow-lg">
+                class="whitespace-pre-line mb-4 p-3 bg-red-600 border border-red-700 rounded-lg text-white font-medium text-sm text-center shadow-lg">
                 {{ errorMessage }}
             </div>
             <div *ngIf="successMessage()"
-                class="mb-4 p-3 bg-green-600 border border-green-700 rounded-lg text-white font-medium text-sm text-center shadow-lg">
+                class="whitespace-pre-line mb-4 p-3 bg-green-600 border border-green-700 rounded-lg text-white font-medium text-sm text-center shadow-lg">
                 {{ successMessage() }}
             </div>
 
@@ -65,7 +65,7 @@
                         <span class="material-symbols-outlined animate-spin">progress_activity</span>
                         Folyamatban...
                         } @else {
-                        Email ujraküldése
+                        E-mail újraküldése
                         <span class="material-symbols-outlined text-[18px]">mail</span>
                         }
                     </span>

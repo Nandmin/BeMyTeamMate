@@ -84,17 +84,17 @@ export class ResendVerificationPage implements OnInit {
       case 'auth/invalid-credential':
       case 'auth/wrong-password':
       case 'auth/user-not-found':
-        return 'Hibas email cim vagy jelszo.';
+        return 'Hibás e-mail cím vagy jelszó.';
       case 'auth/invalid-email':
-        return 'Ervenytelen email cim formatum.';
+        return 'Érvénytelen e-mail cím formátum.';
       case 'auth/unauthorized-continue-uri':
       case 'auth/invalid-continue-uri':
       case 'auth/missing-continue-uri':
         return 'A hitelesítő link domain nincs engedélyezve. Ellenőrizd az Auth domain beállításokat.';
       case 'auth/too-many-requests':
-        return 'Túl sok próbálkozás. Próbáld újra később.';
+        return 'Túl sok próbálkozás.' + '\n' + 'Próbáld újra később.';
       default:
-        return 'Sikertelen megerősítő email küldés. Próbáld újra.';
+        return 'Sikertelen megerősítő e-mail küldés.' + '\n' + 'Próbáld újra.';
     }
   }
 }

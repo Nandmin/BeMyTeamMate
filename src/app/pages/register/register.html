@@ -56,11 +56,11 @@
 
             <!-- Error Message -->
             <div *ngIf="errorMessage"
-                class="mb-4 p-3 bg-red-600 border border-red-700 rounded-lg text-white font-medium text-sm text-center shadow-lg animate-shake">
+                class="mb-4 p-3 bg-red-600 border border-red-700 rounded-lg text-white font-medium text-sm text-center shadow-lg animate-shake whitespace-pre-line">
                 {{ errorMessage }}
             </div>
             <div *ngIf="successMessage()"
-                class="mb-4 p-3 bg-green-600 border border-green-700 rounded-lg text-white font-medium text-sm text-center shadow-lg">
+                class="mb-4 p-3 bg-green-600 border border-green-700 rounded-lg text-white font-medium text-sm text-center shadow-lg whitespace-pre-line">
                 {{ successMessage() }}
             </div>
 
@@ -105,9 +105,9 @@
                         @if (registerForm.get('email')?.invalid && registerForm.get('email')?.touched) {
                         <span class="text-red-400 text-xs mt-1">
                             @if (registerForm.get('email')?.errors?.['required']) {
-                            Az email cím megadása kötelező.
+                            Az e-mail cím megadása kötelező.
                             } @else if (registerForm.get('email')?.errors?.['email']) {
-                            Érvénytelen email formátum.
+                            Érvénytelen e-mail formátum.
                             }
                         </span>
                         }
@@ -215,3 +215,4 @@
         </div>
     </div>
 </div>
+

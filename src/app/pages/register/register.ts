@@ -104,19 +104,19 @@ export class RegisterPage {
   private getErrorMessage(code: string): string {
     switch (code) {
       case 'auth/email-already-in-use':
-        return 'Ez az email cím már használatban van.';
+        return 'Ez az e-mail cím már használatban van.';
       case 'auth/invalid-email':
-        return 'Érvénytelen email cím formátum.';
+        return 'Érvénytelen e-mail cím formátum.';
       case 'auth/operation-not-allowed':
-        return 'Az email/jelszó regisztráció nincs engedélyezve.';
+        return 'Az e-mail/jelszó regisztráció nincs engedélyezve.';
       case 'auth/weak-password':
         return 'A jelszó túl gyenge (legalább 6 karakter).';
       case 'auth/unauthorized-continue-uri':
       case 'auth/invalid-continue-uri':
       case 'auth/missing-continue-uri':
-        return 'A hitelesítő email link beállítás hibás. Jelezd az adminnak.';
+        return 'A hitelesítő e-mail link beállítás hibás.' + '\n' + 'Jelezd az adminnak.';
       default:
-        return 'Sikertelen regisztráció. Kérlek próbáld újra.';
+        return 'Sikertelen regisztráció.' + '\n' + 'Kérlek próbáld újra.';
     }
   }
 }

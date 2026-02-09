@@ -39,7 +39,7 @@
             <!-- Login Form -->
             <!-- Login Form -->
             <div *ngIf="errorMessage"
-                class="mb-4 p-3 bg-red-600 border border-red-700 rounded-lg text-white font-medium text-sm text-center shadow-lg animate-shake">
+                class="mb-4 p-3 bg-red-600 border border-red-700 rounded-lg text-white font-medium text-sm text-center shadow-lg animate-shake whitespace-pre-line">
                 {{ errorMessage }}
             </div>
             <div *ngIf="showResendVerificationLink()" class="mb-4 text-center">
@@ -51,7 +51,7 @@
                 </a>
             </div>
             <div *ngIf="successMessage()"
-                class="mb-4 p-3 bg-green-600 border border-green-700 rounded-lg text-white font-medium text-sm text-center shadow-lg">
+                class="mb-4 p-3 bg-green-600 border border-green-700 rounded-lg text-white font-medium text-sm text-center shadow-lg whitespace-pre-line">
                 {{ successMessage() }}
             </div>
             <form class="flex flex-col gap-4" [formGroup]="loginForm" (ngSubmit)="onLogin()">
@@ -148,3 +148,4 @@
         </div>
     </div>
 </div>
+

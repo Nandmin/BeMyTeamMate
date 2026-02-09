@@ -113,17 +113,17 @@ export class LoginPage implements OnInit {
       case 'auth/user-not-found':
       case 'auth/wrong-password':
       case 'auth/invalid-credential':
-        return 'Helytelen email cím vagy jelszó.';
+        return 'Helytelen e-mail cím vagy jelszó.';
       case 'auth/invalid-email':
-        return 'Érvénytelen email cím formátum.';
+        return 'Érvénytelen e-mail cím formátum.';
       case 'auth/user-disabled':
         return 'Ez a felhasználói fiók le van tiltva.';
       case 'auth/email-not-verified':
-        return 'Az email címed még nincs megerősítve.' + '\n' + 'Előbb hitelesítsd az email címed.';
+        return 'Az e-mail címed még nincs megerősítve.' + '\n' + 'Előbb hitelesítsd az e-mail címed.';
       case 'auth/too-many-requests':
-        return 'Túl sok sikertelen próbálkozás. Próbáld meg később.';
+        return 'Rövid idő alatt túl sok sikertelen próbálkozás.' + '\n' + 'Próbáld meg újra később.';
       default:
-        return 'Sikertelen bejelentkezés. Kérlek próbáld újra.';
+        return 'Sikertelen bejelentkezés.' + '\n' + 'Kérlek próbáld újra.';
     }
   }
 }

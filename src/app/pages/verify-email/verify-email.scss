@@ -1,0 +1,28 @@
+﻿:host {
+  display: block;
+  min-height: 100%;
+}
+
+:host-context(html.light) {
+  .bg-background-light,
+  .dark\:bg-background-dark {
+    background-color: #f8fafc;
+  }
+
+  .bg-card-dark\/60 {
+    background-color: rgba(255, 255, 255, 0.92);
+    border-color: rgba(0, 0, 0, 0.12);
+  }
+
+  .text-white {
+    color: #1e293b !important;
+  }
+
+  .from-background-dark\/90,
+  .via-background-dark\/80,
+  .to-background-dark\/95 {
+    --tw-gradient-from: rgba(248, 250, 252, 0.85) !important;
+    --tw-gradient-to: rgba(248, 250, 252, 0.95) !important;
+    --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to) !important;
+  }
+}

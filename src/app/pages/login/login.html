@@ -42,6 +42,14 @@
                 class="mb-4 p-3 bg-red-600 border border-red-700 rounded-lg text-white font-medium text-sm text-center shadow-lg animate-shake">
                 {{ errorMessage }}
             </div>
+            <div *ngIf="showResendVerificationLink()" class="mb-4 text-center">
+                <a
+                    class="text-sm font-semibold text-primary hover:underline decoration-primary decoration-2 underline-offset-4"
+                    [routerLink]="['/resend-verification']"
+                    [queryParams]="{ email: emailForResend }">
+                    Nem kaptad meg az aktiváló e-mailt? Küldd újra itt.
+                </a>
+            </div>
             <div *ngIf="successMessage()"
                 class="mb-4 p-3 bg-green-600 border border-green-700 rounded-lg text-white font-medium text-sm text-center shadow-lg">
                 {{ successMessage() }}

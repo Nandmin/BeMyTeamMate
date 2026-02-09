@@ -11,6 +11,17 @@ export const authGuard: CanActivateFn = () => {
     take(1),
     map((user) => {
       if (user) {
+        const isPasswordAccount =
+          user.providerData.some((provider) => provider.providerId === 'password') ||
+          user.providerData.length === 0;
+
+        if (isPasswordAccount && !user.emailVerified) {
+          router.navigate(['/resend-verification'], {
+            queryParams: { email: user.email ?? '' },
+          });
+          return false;
+        }
+
         return true;
       }
       router.navigate(['/login']);

@@ -1,5 +1,6 @@
 export const environment = {
   production: true,
+  appBaseUrl: 'https://bemyteammate.eu',
   firebase: {
     apiKey: 'AIzaSyCyPzPGm8lPwJ3fWgbrHciKIorRvJqUDyw',
     authDomain: 'bemyteammate.firebaseapp.com',

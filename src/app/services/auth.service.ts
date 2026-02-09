@@ -1,6 +1,7 @@
-import { Injectable, inject, signal, Signal } from '@angular/core';
+﻿import { Injectable, inject, Signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import {
+  ActionCodeSettings,
   Auth,
   GoogleAuthProvider,
   signInWithPopup,
@@ -23,9 +24,10 @@ import {
 } from '@angular/fire/auth';
 import { Firestore, doc, setDoc, serverTimestamp, getDoc } from '@angular/fire/firestore';
 import { Router } from '@angular/router';
-import { defer, Observable, of, firstValueFrom, from } from 'rxjs';
+import { defer, Observable, of, from } from 'rxjs';
 import { map, switchMap, tap } from 'rxjs/operators';
 import { AppUser } from '../models/user.model';
+import { environment } from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root',
@@ -96,26 +98,28 @@ export class AuthService {
 
   // --- Email/Password Register ---
   async registerWithEmail(email: string, pass: string, username?: string, additionalData?: any) {
+    let createdUser: User | null = null;
     try {
       const credential = await createUserWithEmailAndPassword(this.auth, email, pass);
+      createdUser = credential.user;
       if (username) {
         await updateProfile(credential.user, { displayName: username });
       }
       await this.updateUserData(credential.user, { username, ...additionalData }); // Save extra data
 
-      // --- Send Email Verification ---
-      try {
-        await sendEmailVerification(credential.user);
-        console.log('Verification email sent');
-      } catch (emailError) {
-        console.error('Error sending verification email:', emailError);
-      }
-
-      this.router.navigate(['/']);
+      await this.sendVerificationEmailWithFallback(credential.user);
       return credential.user;
     } catch (error: any) {
       console.error('Registration error:', error);
       throw this.toSafeError(error, 'Sikertelen regisztráció.');
+    } finally {
+      if (createdUser) {
+        try {
+          await signOut(this.auth);
+        } catch (logoutError) {
+          console.warn('Auto logout after registration failed:', logoutError);
+        }
+      }
     }
   }
 
@@ -123,12 +127,51 @@ export class AuthService {
   async loginWithEmail(email: string, pass: string) {
     try {
       const credential = await signInWithEmailAndPassword(this.auth, email, pass);
+
+      await credential.user.reload();
+      if (this.requiresEmailVerification(credential.user)) {
+        try {
+          await signOut(this.auth);
+        } catch (logoutError) {
+          console.warn('Logout after blocked login failed:', logoutError);
+        }
+        throw this.createEmailNotVerifiedError();
+      }
+
       await this.updateUserData(credential.user);
       this.router.navigate(['/']);
       return credential.user;
     } catch (error: any) {
       console.error('Email login error:', error);
-      throw this.toSafeError(error, 'Sikertelen bejelentkezés.');
+      throw this.toSafeError(error, 'Sikertelen bejelentkezĂ©s.');
+    }
+  }
+
+  async resendVerificationEmail(email: string, pass: string): Promise<'sent' | 'already-verified'> {
+    let signedInUser: User | null = null;
+    try {
+      const credential = await signInWithEmailAndPassword(this.auth, email, pass);
+      signedInUser = credential.user;
+      await signedInUser.reload();
+
+      if (this.requiresEmailVerification(signedInUser)) {
+        await this.sendVerificationEmailWithFallback(signedInUser);
+        return 'sent';
+      }
+
+      await this.updateUserData(signedInUser);
+      return 'already-verified';
+    } catch (error: any) {
+      console.error('Resend verification error:', error);
+      throw this.toSafeError(error, 'Sikertelen megerositő email küldés.');
+    } finally {
+      if (signedInUser) {
+        try {
+          await signOut(this.auth);
+        } catch (logoutError) {
+          console.warn('Logout after resend verification failed:', logoutError);
+        }
+      }
     }
   }
 
@@ -236,6 +279,7 @@ export class AuthService {
     const data: any = {
       uid: firebaseUser.uid,
       email: firebaseUser.email,
+      emailVerified: firebaseUser.emailVerified ?? existingData['emailVerified'] ?? false,
       displayName:
         firebaseUser.displayName ||
         existingData['displayName'] ||
@@ -380,6 +424,64 @@ export class AuthService {
     }
   }
 
+  private requiresEmailVerification(firebaseUser: User): boolean {
+    const providerIds = firebaseUser.providerData.map((provider) => provider.providerId);
+    const isPasswordAccount = providerIds.includes('password') || providerIds.length === 0;
+    return isPasswordAccount && !firebaseUser.emailVerified;
+  }
+
+  private getEmailVerificationActionCodeSettings(): ActionCodeSettings {
+    const appBaseUrl = this.resolveVerificationAppBaseUrl();
+    return {
+      url: `${appBaseUrl}/verify-email`,
+      handleCodeInApp: true,
+    };
+  }
+
+  private resolveVerificationAppBaseUrl(): string {
+    if (typeof window !== 'undefined' && !environment.production) {
+      return window.location.origin.replace(/\/+$/, '');
+    }
+
+    const configured = environment.appBaseUrl?.trim();
+    if (configured) {
+      return configured.replace(/\/+$/, '');
+    }
+
+    return 'https://bemyteammate.eu';
+  }
+
+  private async sendVerificationEmailWithFallback(firebaseUser: User) {
+    const actionCodeSettings = this.getEmailVerificationActionCodeSettings();
+    const retryWithoutSettingsCodes = new Set(['auth/argument-error']);
+
+    try {
+      if (actionCodeSettings) {
+        await sendEmailVerification(firebaseUser, actionCodeSettings);
+      } else {
+        await sendEmailVerification(firebaseUser);
+      }
+      console.log('Verification email sent');
+    } catch (error: any) {
+      if (actionCodeSettings && retryWithoutSettingsCodes.has(error?.code)) {
+        console.warn(
+          'Custom verification link failed, retrying with default Firebase action handler:',
+          error
+        );
+        await sendEmailVerification(firebaseUser);
+        console.log('Verification email sent (fallback handler)');
+        return;
+      }
+      throw error;
+    }
+  }
+
+  private createEmailNotVerifiedError() {
+    const error = new Error('Az email cim meg nincs megerősítve.');
+    (error as any).code = 'auth/email-not-verified';
+    return error;
+  }
+
   private toSafeError(error: any, fallbackMessage?: string) {
     const safeMessage = this.getSafeErrorMessage(
       error,
@@ -395,6 +497,7 @@ export class AuthService {
   private getSafeErrorMessage(error: any, fallbackMessage: string) {
     const errorCode = error?.code || 'unknown';
     const errorMessages: Record<string, string> = {
+      'auth/email-not-verified': 'Az email cím még nincs megerősítve.',
       'auth/wrong-password': 'Hibás jelenlegi jelszó.',
       'auth/weak-password': 'Az új jelszó túl gyenge.',
       'auth/user-not-found': 'A felhasználó nem található.',
@@ -405,6 +508,9 @@ export class AuthService {
       'auth/too-many-requests': 'Túl sok próbálkozás. Próbáld újra később.',
       'auth/network-request-failed': 'Hálózati hiba. Ellenőrizd a kapcsolatot.',
       'auth/requires-recent-login': 'A művelethez újra be kell jelentkezned.',
+      'auth/unauthorized-continue-uri': 'A verifikációs link domain nincs engedélyezve.',
+      'auth/invalid-continue-uri': 'Érvénytelen verifikációs visszairányítási URL.',
+      'auth/missing-continue-uri': 'Hiányzik a verifikációs visszairányítási URL.',
       'permission-denied': 'Nincs jogosultságod ehhez a művelethez.',
       'unauthenticated': 'Bejelentkezés szükséges.',
       unavailable: 'A szolgáltatás jelenleg nem érhető el.',

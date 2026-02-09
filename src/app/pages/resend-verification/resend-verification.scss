@@ -1,0 +1,60 @@
+﻿:host {
+  display: block;
+  min-height: 100%;
+  background-color: var(--bg-primary);
+  transition: background-color 0.3s ease;
+}
+
+:host-context(html.light) {
+  .bg-background-light,
+  .dark\:bg-background-dark {
+    background-color: #f8fafc;
+  }
+
+  .bg-card-dark\/60 {
+    background-color: rgba(255, 255, 255, 0.92);
+    border-color: rgba(0, 0, 0, 0.1);
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+  }
+
+  .text-white {
+    color: #1e293b !important;
+  }
+
+  .text-gray-200 {
+    color: #475569 !important;
+  }
+
+  .text-gray-400 {
+    color: #64748b !important;
+  }
+
+  input,
+  .form-input {
+    background-color: #ffffff;
+    border-color: rgba(0, 0, 0, 0.2);
+    color: #1e293b;
+
+    &::placeholder {
+      color: #94a3b8;
+    }
+
+    &:focus {
+      border-color: #22c55e;
+      background-color: #ffffff;
+    }
+  }
+
+  .bg-dark-accent\/50 {
+    background-color: #ffffff;
+    border-color: rgba(0, 0, 0, 0.2);
+  }
+
+  .from-background-dark\/90,
+  .via-background-dark\/80,
+  .to-background-dark\/95 {
+    --tw-gradient-from: rgba(248, 250, 252, 0.8) !important;
+    --tw-gradient-to: rgba(248, 250, 252, 0.9) !important;
+    --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to) !important;
+  }
+}

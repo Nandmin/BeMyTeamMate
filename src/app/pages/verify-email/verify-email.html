@@ -1,0 +1,51 @@
+﻿<div class="font-lexend bg-background-light dark:bg-background-dark text-white relative overflow-hidden flex flex-col min-h-full">
+  <div class="fixed inset-0 z-0">
+    <img
+      alt="Night stadium background"
+      class="h-full w-full object-cover opacity-20"
+      src="https://lh3.googleusercontent.com/aida-public/AB6AXuBV8MAP5WlTqKL8RULkbECJpebqvKaH4n4vKWay4M7aT6_RC4BQOGOxVgDYtrz8CVXKqZJ3JyZNjskFxVmU52C6m3KIqKlN9PhqxJUBN0iimXXg3QlvradLplNrvYeYmuPEnXtdbJ0XnyNcs24qH3PHkATD1gsF4SjxFz_NoI4J0ffpAuIErH2RIrDGN1cP9Np_OMW6pJrHJ3QN4UyNl8Y-IaRD8dCfk1ECV5_kxz1QLEUg4uwL9vZ5yf1KZm972HhiZvtJ4Np8-qI"
+    />
+    <div class="absolute inset-0 bg-gradient-to-b from-background-dark/90 via-background-dark/80 to-background-dark/95"></div>
+  </div>
+
+  <div class="relative z-10 flex grow items-center justify-center p-4">
+    <div class="w-full max-w-[520px] rounded-xl border border-border-dark bg-card-dark/60 p-6 shadow-2xl backdrop-blur-md">
+      <div class="mb-5 text-center">
+        <h1 class="text-[26px] font-bold tracking-tight">E-mail cím hitelesítés</h1>
+      </div>
+
+      @if (isLoading()) {
+      <div class="rounded-lg border border-border-dark bg-dark-accent/40 p-4 text-center text-sm">
+        Ellenőrizzük a hitelesítési linket...
+      </div>
+      }
+
+      @if (!isLoading() && successMessage()) {
+      <div class="rounded-lg border border-green-700 bg-green-600 p-4 text-center text-sm font-medium">
+        {{ successMessage() }}
+      </div>
+      }
+
+      @if (!isLoading() && errorMessage()) {
+      <div class="rounded-lg border border-red-700 bg-red-600 p-4 text-center text-sm font-medium">
+        {{ errorMessage() }}
+      </div>
+      }
+
+      <div class="mt-5 flex flex-col gap-3 sm:flex-row sm:justify-center">
+        <a
+          routerLink="/login"
+          class="inline-flex items-center justify-center rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-primary-hover"
+        >
+          Bejelentkezés
+        </a>
+        <a
+          routerLink="/resend-verification"
+          class="inline-flex items-center justify-center rounded-lg border border-border-dark bg-dark-accent/40 px-4 py-2 text-sm font-semibold text-white transition-colors hover:border-primary/60"
+        >
+          Új verifikációs e-mail
+        </a>
+      </div>
+    </div>
+  </div>
+</div>

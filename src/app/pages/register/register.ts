@@ -1,6 +1,6 @@
-import { Component, inject, signal } from '@angular/core';
+﻿import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { AbstractControl, FormBuilder, ReactiveFormsModule, ValidationErrors, Validators } from '@angular/forms';
 import { AuthService } from '../../services/auth.service';
 import { SeoService } from '../../services/seo.service';
@@ -16,6 +16,7 @@ export class RegisterPage {
   private authService = inject(AuthService);
   private fb = inject(FormBuilder);
   private seo = inject(SeoService);
+  private router = inject(Router);
 
   currentYear = new Date().getFullYear();
 
@@ -89,7 +90,9 @@ export class RegisterPage {
         sports: Array.from(this.selectedSports),
       });
       this.successMessage.set('Sikeres regisztráció! Az aktiváló emailt elküldtük.');
-      // Wait a moment so user can see it before redirect (AuthService already redirects, but adding here for clarity if we change redirect logic)
+      await this.router.navigate(['/resend-verification'], {
+        queryParams: { email: email ?? '', registered: '1' },
+      });
     } catch (error: any) {
       this.errorMessage = this.getErrorMessage(error.code);
       console.error(error);
@@ -108,8 +111,14 @@ export class RegisterPage {
         return 'Az email/jelszó regisztráció nincs engedélyezve.';
       case 'auth/weak-password':
         return 'A jelszó túl gyenge (legalább 6 karakter).';
+      case 'auth/unauthorized-continue-uri':
+      case 'auth/invalid-continue-uri':
+      case 'auth/missing-continue-uri':
+        return 'A hitelesítő email link beállítás hibás. Jelezd az adminnak.';
       default:
         return 'Sikertelen regisztráció. Kérlek próbáld újra.';
     }
   }
 }
+
+

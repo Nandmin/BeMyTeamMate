@@ -42,6 +42,7 @@ export class App {
   private isMobile = signal(false);
 
   constructor() {
+    this.redirectEmailVerificationCallbacks();
     this.analyticsService.init();
     if (this.swUpdate.isEnabled) {
       this.swUpdate.versionUpdates.subscribe({
@@ -91,6 +92,49 @@ export class App {
           mainContent.scrollTop = 0;
         }
       });
+  }
+
+  private redirectEmailVerificationCallbacks() {
+    if (typeof window === 'undefined') return;
+
+    const currentUrl = new URL(window.location.href);
+    const directMode = currentUrl.searchParams.get('mode');
+    const directOobCode = currentUrl.searchParams.get('oobCode');
+
+    const linkParam = currentUrl.searchParams.get('link');
+    const nestedUrl = this.tryParseUrl(linkParam);
+    const nestedMode = nestedUrl?.searchParams.get('mode');
+    const nestedOobCode = nestedUrl?.searchParams.get('oobCode');
+
+    const mode = directMode ?? nestedMode;
+    const oobCode = directOobCode ?? nestedOobCode;
+    const isFirebaseActionPath =
+      currentUrl.pathname === '/__/auth/action' || currentUrl.pathname === '/_/auth/action';
+    const isVerifyAction = mode === 'verifyEmail';
+
+    if (!isFirebaseActionPath && !isVerifyAction) return;
+    if (currentUrl.pathname === '/verify-email') return;
+
+    const params = new URLSearchParams();
+    if (mode) params.set('mode', mode);
+    if (oobCode) params.set('oobCode', oobCode);
+    if (!oobCode && isVerifyAction) params.set('verified', '1');
+
+    const target = params.toString() ? `/verify-email?${params.toString()}` : '/verify-email';
+    void this.router.navigateByUrl(target, { replaceUrl: true });
+  }
+
+  private tryParseUrl(value: string | null): URL | null {
+    if (!value) return null;
+    try {
+      return new URL(value);
+    } catch {
+      try {
+        return new URL(value, window.location.origin);
+      } catch {
+        return null;
+      }
+    }
   }
 
   private updateFooterVisibility(url: string) {

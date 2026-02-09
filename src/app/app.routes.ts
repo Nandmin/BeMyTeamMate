@@ -35,6 +35,37 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/register/register').then((m) => m.RegisterPage),
   },
   {
+    path: 'resend-verification',
+    loadComponent: () =>
+      import('./pages/resend-verification/resend-verification').then(
+        (m) => m.ResendVerificationPage
+      ),
+  },
+  {
+    path: 'verify-email',
+    loadComponent: () => import('./pages/verify-email/verify-email').then((m) => m.VerifyEmailPage),
+  },
+  {
+    path: '__',
+    children: [
+      {
+        path: 'auth/action',
+        loadComponent: () =>
+          import('./pages/verify-email/verify-email').then((m) => m.VerifyEmailPage),
+      },
+    ],
+  },
+  {
+    path: '_',
+    children: [
+      {
+        path: 'auth/action',
+        loadComponent: () =>
+          import('./pages/verify-email/verify-email').then((m) => m.VerifyEmailPage),
+      },
+    ],
+  },
+  {
     path: 'events',
     canActivate: [authGuard],
     loadComponent: () => import('./pages/events-list/events-list').then((m) => m.EventsList),
@@ -94,5 +125,9 @@ export const routes: Routes = [
     path: 'profile/:id',
     canActivate: [authGuard],
     loadComponent: () => import('./pages/user-profile/user-profile').then((m) => m.UserProfilePage),
+  },
+  {
+    path: '**',
+    redirectTo: '',
   },
 ];

@@ -28,6 +28,8 @@ export class LoginPage implements OnInit {
   successMessage = signal('');
   isLoading = signal(false);
   showPassword = signal(false);
+  showResendVerificationLink = signal(false);
+  emailForResend = '';
 
   togglePassword() {
     this.showPassword.update((v) => !v);
@@ -51,13 +53,16 @@ export class LoginPage implements OnInit {
       return;
     }
     this.errorMessage = '';
+    this.showResendVerificationLink.set(false);
     this.isLoading.set(true);
 
     const { email, password } = this.loginForm.value;
+    this.emailForResend = email ?? '';
     try {
       await this.authService.loginWithEmail(email!, password!);
     } catch (error: any) {
       this.errorMessage = this.getErrorMessage(error.code);
+      this.showResendVerificationLink.set(error?.code === 'auth/email-not-verified');
       console.error(error);
     } finally {
       this.isLoading.set(false);
@@ -66,6 +71,7 @@ export class LoginPage implements OnInit {
 
   async onGoogleLogin() {
     this.errorMessage = '';
+    this.showResendVerificationLink.set(false);
     this.isLoading.set(true);
     try {
       await this.authService.loginWithGoogle();
@@ -87,6 +93,7 @@ export class LoginPage implements OnInit {
     }
 
     this.errorMessage = '';
+    this.showResendVerificationLink.set(false);
     this.successMessage.set('');
     this.isLoading.set(true);
 
@@ -111,6 +118,8 @@ export class LoginPage implements OnInit {
         return 'Érvénytelen email cím formátum.';
       case 'auth/user-disabled':
         return 'Ez a felhasználói fiók le van tiltva.';
+      case 'auth/email-not-verified':
+        return 'Az email címed még nincs megerősítve.' + '\n' + 'Előbb hitelesítsd az email címed.';
       case 'auth/too-many-requests':
         return 'Túl sok sikertelen próbálkozás. Próbáld meg később.';
       default:

@@ -316,4 +316,202 @@ describe('GroupService invites', () => {
       }),
     );
   });
+
+  it('declineGroupInvite updates invite status and notifies inviter', async () => {
+    currentUser = { uid: 'u2', displayName: 'Target', photoURL: 't.png' };
+
+    spyOn(service as any, 'getGroupOnce').and.returnValue(
+      Promise.resolve({
+        id: 'g1',
+        name: 'Group 1',
+        type: 'closed',
+        ownerId: 'u1',
+        ownerName: 'Admin',
+        createdAt: new Date(),
+        memberCount: 1,
+      } as Group),
+    );
+
+    docSnaps.set(
+      'groups/g1/invites/u2',
+      makeSnap('groups/g1/invites/u2', true, {
+        targetUserId: 'u2',
+        targetUserName: 'Target',
+        inviterId: 'u1',
+        status: 'pending',
+      }),
+    );
+
+    await service.declineGroupInvite('g1', 'u2');
+
+    const updateDocCalls = (service as any).fsUpdateDoc.calls;
+    expect(updateDocCalls.count()).toBe(1);
+    const [inviteRef, payload] = updateDocCalls.mostRecent().args as any[];
+    expect(inviteRef.path).toBe('groups/g1/invites/u2');
+    expect(payload).toEqual(
+      jasmine.objectContaining({
+        status: 'declined',
+      }),
+    );
+
+    expect(notificationServiceStub.notifyUsers).toHaveBeenCalled();
+    const notifyArgs = notificationServiceStub.notifyUsers.calls.mostRecent().args as any[];
+    expect(notifyArgs[0]).toEqual(['u1']);
+    expect(notifyArgs[1]).toEqual(
+      jasmine.objectContaining({
+        type: 'group_invite_response',
+        groupId: 'g1',
+        link: '/groups/g1',
+      }),
+    );
+  });
+});
+
+describe('GroupService flows', () => {
+  let restoreLocalStorage: () => void;
+  let service: GroupService;
+  let currentUser: any;
+
+  const authServiceStub = {
+    user$: of(null),
+    currentUser: () => currentUser,
+  };
+
+  const notificationServiceStub = {
+    notifyUsers: jasmine.createSpy('notifyUsers').and.returnValue(Promise.resolve()),
+    notifyGroupMembers: jasmine.createSpy('notifyGroupMembers').and.returnValue(Promise.resolve()),
+  };
+
+  const makeSnap = (exists: boolean, data: any = {}, id: string = 'id') => ({
+    exists: () => exists,
+    data: () => data,
+    id,
+  });
+
+  beforeEach(() => {
+    const { restore } = installMockLocalStorage();
+    restoreLocalStorage = restore;
+
+    currentUser = null;
+    notificationServiceStub.notifyUsers.calls.reset();
+    notificationServiceStub.notifyGroupMembers.calls.reset();
+
+    TestBed.configureTestingModule({
+      providers: [
+        GroupService,
+        { provide: Firestore, useValue: {} },
+        { provide: AuthService, useValue: authServiceStub },
+        { provide: NotificationService, useValue: notificationServiceStub },
+      ],
+    });
+    service = TestBed.inject(GroupService);
+
+    spyOn(service as any, 'writeGroupAuditLog').and.returnValue(Promise.resolve());
+  });
+
+  afterEach(() => {
+    restoreLocalStorage();
+  });
+
+  it('createGroup creates group and owner member', async () => {
+    currentUser = { uid: 'owner1', displayName: 'Owner', photoURL: 'owner.png' };
+
+    spyOn(service as any, 'fsCollection').and.callFake((path: string) => ({ path }));
+    spyOn(service as any, 'fsDoc').and.callFake((arg: any) => {
+      if (typeof arg !== 'string') {
+        return { id: 'g1', path: 'groups/g1' } as any;
+      }
+      const path = arg as string;
+      return { id: path.split('/').pop(), path } as any;
+    });
+    spyOn(service as any, 'fsServerTimestamp').and.returnValue('server-ts' as any);
+    const setDocSpy = spyOn(service as any, 'fsSetDoc').and.returnValue(
+      Promise.resolve() as any,
+    );
+
+    const groupRef = await service.createGroup('Test Group', 'closed', 'desc');
+
+    expect(groupRef.id).toBe('g1');
+    expect(setDocSpy.calls.count()).toBe(2);
+    expect(setDocSpy.calls.argsFor(0)[0]).toEqual(jasmine.objectContaining({ path: 'groups/g1' }));
+    expect(setDocSpy.calls.argsFor(0)[1]).toEqual(
+      jasmine.objectContaining({
+        name: 'Test Group',
+        ownerId: 'owner1',
+        memberCount: 1,
+      }),
+    );
+    expect(setDocSpy.calls.argsFor(1)[0]).toEqual(
+      jasmine.objectContaining({ path: 'groups/g1/members/owner1' }),
+    );
+    expect(setDocSpy.calls.argsFor(1)[1]).toEqual(
+      jasmine.objectContaining({
+        userId: 'owner1',
+        isAdmin: true,
+      }),
+    );
+  });
+
+  it('requestJoinGroup stores pending request and notifies owner/admin', async () => {
+    currentUser = { uid: 'u-requester', displayName: 'Requester', photoURL: 'user.png' };
+
+    spyOn(service as any, 'fsCollection').and.callFake((path: string) => ({ path }));
+    spyOn(service as any, 'fsDoc').and.callFake((path: string) => {
+      return { id: path.split('/').pop(), path } as any;
+    });
+    spyOn(service as any, 'fsServerTimestamp').and.returnValue('server-ts' as any);
+    spyOn(service as any, 'fsGetDoc').and.callFake(async (ref: any) => {
+      if (ref.path === 'groups/g1/members/u-requester') return makeSnap(false);
+      if (ref.path === 'groups/g1/joinRequests/u-requester') return makeSnap(false);
+      return makeSnap(true, { name: 'Group 1' }, 'g1');
+    });
+    spyOn(service as any, 'fsGetDocs').and.callFake(async (ref: any) => {
+      if (ref.path === 'groups/g1/members') {
+        return {
+          docs: [
+            { id: 'member-admin', data: () => ({ isAdmin: true, userId: 'u-admin' }) },
+            { id: 'u-owner', data: () => ({ isAdmin: false, userId: 'u-owner' }) },
+          ],
+        } as any;
+      }
+      return { docs: [] } as any;
+    });
+    const setDocSpy = spyOn(service as any, 'fsSetDoc').and.returnValue(
+      Promise.resolve() as any,
+    );
+    spyOn(service as any, 'getGroupOnce').and.returnValue(
+      Promise.resolve({
+        id: 'g1',
+        name: 'Group 1',
+        type: 'closed',
+        ownerId: 'u-owner',
+        ownerName: 'Owner',
+        createdAt: new Date(),
+        memberCount: 3,
+      } as Group),
+    );
+
+    await service.requestJoinGroup('g1');
+
+    expect(setDocSpy).toHaveBeenCalled();
+    expect(setDocSpy.calls.mostRecent().args[0]).toEqual(
+      jasmine.objectContaining({ path: 'groups/g1/joinRequests/u-requester' }),
+    );
+    expect(setDocSpy.calls.mostRecent().args[1]).toEqual(
+      jasmine.objectContaining({
+        userId: 'u-requester',
+        status: 'pending',
+      }),
+    );
+    expect(notificationServiceStub.notifyUsers).toHaveBeenCalled();
+    const notifyArgs = notificationServiceStub.notifyUsers.calls.mostRecent().args as any[];
+    expect(notifyArgs[0]).toEqual(['u-admin', 'u-owner']);
+    expect(notifyArgs[1]).toEqual(
+      jasmine.objectContaining({
+        type: 'group_join',
+        groupId: 'g1',
+        link: '/groups/g1/settings',
+      }),
+    );
+  });
 });

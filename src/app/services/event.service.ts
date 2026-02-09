@@ -94,7 +94,7 @@ export class EventService {
   private eventChange$ = new Subject<{ groupId: string; eventId: string }>();
 
   private getEventsCollection(groupId: string) {
-    return collection(this.firestore, `groups/${groupId}/events`);
+    return this.fsCollection(`groups/${groupId}/events`);
   }
 
   private computeMvpVotingEndsAt(date: Timestamp) {
@@ -123,18 +123,18 @@ export class EventService {
       ...eventData,
       groupId,
       creatorId: user.uid,
-      createdAt: serverTimestamp(),
+      createdAt: this.fsServerTimestamp(),
       currentAttendees: 1, // Creator is the first attendee? Or just set it to 1 and add creator to list
       attendees: [user.uid],
       status: eventData.status ?? 'planned',
       ...(mvpVotingEndsAt ? { mvpVotingEndsAt } : {}),
     };
 
-    const docRef = await addDoc(this.getEventsCollection(groupId), data);
+    const docRef = await this.fsAddDoc(this.getEventsCollection(groupId), data);
     this.invalidateEventCaches(groupId);
     this.emitEventsChange(groupId);
 
-    const groupSnap = await getDoc(doc(this.firestore, `groups/${groupId}`));
+    const groupSnap = await this.fsGetDoc(this.fsDoc(`groups/${groupId}`));
     const groupName = groupSnap.exists() ? (groupSnap.data() as any).name : 'Csoport';
     await this.notificationService.notifyGroupMembers(
       {
@@ -296,8 +296,8 @@ export class EventService {
     const user = this.authService.currentUser();
     if (!user) throw new Error('User must be logged in');
 
-    const eventRef = doc(this.firestore, `groups/${groupId}/events/${eventId}`);
-    const snap = await getDoc(eventRef);
+    const eventRef = this.fsDoc(`groups/${groupId}/events/${eventId}`);
+    const snap = await this.fsGetDoc(eventRef);
     if (!snap.exists()) throw new Error('Event not found');
     const event = { id: snap.id, ...(snap.data() as SportEvent) } as SportEvent;
     const attendees = event.attendees || [];
@@ -313,7 +313,7 @@ export class EventService {
       if (index > -1) attendees.splice(index, 1);
     }
 
-    const result = await updateDoc(eventRef, {
+    const result = await this.fsUpdateDoc(eventRef, {
       attendees,
       currentAttendees: attendees.length,
     });
@@ -321,7 +321,7 @@ export class EventService {
     this.emitEventsChange(groupId);
     this.emitEventChange(groupId, eventId);
 
-    const groupSnap = await getDoc(doc(this.firestore, `groups/${groupId}`));
+    const groupSnap = await this.fsGetDoc(this.fsDoc(`groups/${groupId}`));
     const groupName = groupSnap.exists() ? ((groupSnap.data() as any).name as string) : 'Csoport';
     const eventDate = event.date ? event.date.toDate() : new Date();
     const pad = (value: number) => String(value).padStart(2, '0');
@@ -619,6 +619,30 @@ export class EventService {
     this.invalidateEventCaches(groupId, eventId);
     this.emitEventsChange(groupId);
     this.emitEventChange(groupId, eventId);
+  }
+
+  private fsCollection(path: string) {
+    return collection(this.firestore, path);
+  }
+
+  private fsDoc(path: string) {
+    return doc(this.firestore, path);
+  }
+
+  private fsGetDoc(ref: any) {
+    return getDoc(ref);
+  }
+
+  private fsAddDoc(ref: any, data: any) {
+    return addDoc(ref, data);
+  }
+
+  private fsUpdateDoc(ref: any, data: any) {
+    return updateDoc(ref, data);
+  }
+
+  private fsServerTimestamp() {
+    return serverTimestamp();
   }
 
   private coerceDate(value: any): Date {

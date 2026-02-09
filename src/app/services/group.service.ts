@@ -95,7 +95,7 @@ export class GroupService {
   private readonly maxCacheEntries = 100;
 
   private get groupsCollection() {
-    return collection(this.firestore, 'groups');
+    return this.fsCollection('groups');
   }
 
   private async writeGroupAuditLog(
@@ -111,7 +111,7 @@ export class GroupService {
         groupId,
         actorId: user.uid,
         action,
-        createdAt: serverTimestamp(),
+        createdAt: this.fsServerTimestamp(),
         ...meta,
       });
     } catch (error) {
@@ -123,7 +123,7 @@ export class GroupService {
     const user = this.authService.currentUser();
     if (!user) throw new Error('User must be logged in to create a group');
 
-    const groupRef = doc(this.groupsCollection);
+    const groupRef = this.fsDoc(this.groupsCollection);
     const groupData: Omit<Group, 'id'> = {
       name,
       type,
@@ -131,14 +131,14 @@ export class GroupService {
       ownerId: user.uid,
       ownerName: user.displayName || 'Ismeretlen',
       ownerPhoto: user.photoURL || null,
-      createdAt: serverTimestamp(),
+      createdAt: this.fsServerTimestamp(),
       memberCount: 1, // The owner is the first member
       image: 0, // Default image id
     };
 
-    const ownerMemberRef = doc(this.firestore, `groups/${groupRef.id}/members/${user.uid}`);
-    await setDoc(groupRef, groupData);
-    await setDoc(ownerMemberRef, {
+    const ownerMemberRef = this.fsDoc(`groups/${groupRef.id}/members/${user.uid}`);
+    await this.fsSetDoc(groupRef, groupData);
+    await this.fsSetDoc(ownerMemberRef, {
       userId: user.uid,
       name: user.displayName || 'Ismeretlen',
       photo: user.photoURL || null,
@@ -325,13 +325,13 @@ export class GroupService {
     if (!user) throw new Error('User must be logged in');
 
     // Check if already member
-    const memberRef = doc(this.firestore, `groups/${groupId}/members/${user.uid}`);
-    const memberSnap = await getDoc(memberRef);
+    const memberRef = this.fsDoc(`groups/${groupId}/members/${user.uid}`);
+    const memberSnap = await this.fsGetDoc(memberRef);
     if (memberSnap.exists()) throw new Error('Már tag vagy ebben a csoportban.');
 
     // Check if request already exists
-    const requestRef = doc(this.firestore, `groups/${groupId}/joinRequests/${user.uid}`);
-    const requestSnap = await getDoc(requestRef);
+    const requestRef = this.fsDoc(`groups/${groupId}/joinRequests/${user.uid}`);
+    const requestSnap = await this.fsGetDoc(requestRef);
     if (requestSnap.exists()) throw new Error('Már elküldted a csatlakozási kérelmet.');
 
     const group = await this.getGroupOnce(groupId);
@@ -344,18 +344,18 @@ export class GroupService {
       userName: user.displayName || 'Ismeretlen',
       userPhoto: user.photoURL || null,
       status: 'pending',
-      createdAt: serverTimestamp(),
+      createdAt: this.fsServerTimestamp(),
     };
 
-    await setDoc(requestRef, requestData);
+    await this.fsSetDoc(requestRef, requestData);
     await this.writeGroupAuditLog(groupId, 'join_request', {
       targetUserId: user.uid,
       targetUserName: user.displayName || 'Ismeretlen',
     });
 
     // Notify Owner and Admins
-    const members = await getDocs(collection(this.firestore, `groups/${groupId}/members`));
-    const adminIds = members.docs
+    const members = await this.fsGetDocs(this.fsCollection(`groups/${groupId}/members`));
+    const adminIds = (members.docs as any[])
       .filter((d) => d.data()['isAdmin'] === true || d.id === group.ownerId) // Owner might not be marked isAdmin explicitly in members sometimes based on logic, but usually is. Checking ownerId is safe.
       .map((d) => d.data()['userId']);
 
@@ -516,7 +516,7 @@ export class GroupService {
       photo: user.photoURL || invite.targetUserPhoto || null,
       role: 'user',
       isAdmin: false,
-      joinedAt: serverTimestamp(),
+      joinedAt: this.fsServerTimestamp(),
       skillLevel: 50,
       elo: 1200,
     });
@@ -630,7 +630,7 @@ export class GroupService {
 
   async approveJoinRequest(requestId: string, groupId: string) {
     const requestRef = doc(this.firestore, `groups/${groupId}/joinRequests/${requestId}`);
-    const requestSnap = await getDoc(requestRef);
+    const requestSnap = await this.fsGetDoc(requestRef);
     if (!requestSnap.exists()) return;
     const request = requestSnap.data() as JoinRequest;
     const targetUserId = request.userId || requestId;
@@ -642,7 +642,7 @@ export class GroupService {
       photo: request.userPhoto || null,
       role: 'user',
       isAdmin: false,
-      joinedAt: serverTimestamp(),
+      joinedAt: this.fsServerTimestamp(),
       skillLevel: 50,
       elo: 1200,
     });
@@ -707,12 +707,23 @@ export class GroupService {
     }
   }
 
-  private fsDoc(path: string) {
-    return doc(this.firestore, path);
+  private fsCollection(path: string) {
+    return collection(this.firestore, path);
+  }
+
+  private fsDoc(pathOrRef: any) {
+    if (typeof pathOrRef === 'string') {
+      return doc(this.firestore, pathOrRef);
+    }
+    return doc(pathOrRef);
   }
 
   private fsGetDoc(ref: any) {
     return getDoc(ref);
+  }
+
+  private fsGetDocs(ref: any) {
+    return getDocs(ref);
   }
 
   private fsSetDoc(ref: any, data: any) {
@@ -798,8 +809,8 @@ export class GroupService {
       throw new Error('A csoport tulajdonosa nem lĂ©phet ki.');
     }
 
-    const memberRef = doc(this.firestore, `groups/${groupId}/members/${user.uid}`);
-    const memberSnap = await getDoc(memberRef);
+    const memberRef = this.fsDoc(`groups/${groupId}/members/${user.uid}`);
+    const memberSnap = await this.fsGetDoc(memberRef);
     if (!memberSnap.exists()) return;
 
     await this.removeMember(groupId, user.uid);
@@ -811,7 +822,7 @@ export class GroupService {
 
     // Delete the member document
     const memberRef = doc(this.firestore, `groups/${groupId}/members/${memberId}`);
-    const memberSnap = await getDoc(memberRef);
+    const memberSnap = await this.fsGetDoc(memberRef);
     if (!memberSnap.exists()) return;
     const memberData = memberSnap.exists() ? (memberSnap.data() as GroupMember) : null;
 

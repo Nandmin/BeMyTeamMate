@@ -2,6 +2,10 @@ name = "bemyteammate-push"
 main = "worker.js"
 compatibility_date = "2025-01-01"
 
+[[kv_namespaces]]
+binding = "RATE_LIMIT_KV"
+id = "bdbaa1ee442f4b75b490f9dce8a8d162"
+
 [vars]
 # Set in Cloudflare as secrets instead of here:
 # FCM_PROJECT_ID, FCM_CLIENT_EMAIL, FCM_PRIVATE_KEY

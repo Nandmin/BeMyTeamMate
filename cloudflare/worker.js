@@ -1,4 +1,7 @@
+import { RateLimiter, RateLimitExceededError } from './rate-limiter.js';
+
 const ALLOWED_METHODS = ['POST', 'OPTIONS'];
+const rateLimiter = new RateLimiter();
 
 export default {
   async fetch(request, env, ctx) {
@@ -23,49 +26,62 @@ export default {
         return jsonResponse(request, env, { error: 'Unauthorized', detail: authResult.error }, 401);
       }
 
-    // 2. Rate Limiting (Basic)
-    // Authenticated users are less likely to spam.
-    // Ideally, use Cloudflare Rate Limiting feature in Dashboard.
+      // 2. Rate limiting by client IP and authenticated user.
+      try {
+        await rateLimiter.check(request, env, authResult.user);
+      } catch (error) {
+        if (error instanceof RateLimitExceededError) {
+          return jsonResponse(request, env,
+            {
+              error: 'Rate limit exceeded',
+              message: error.message,
+              retryAfter: error.retryAfter,
+            },
+            429
+          );
+        }
+        console.error('Rate limiter failed:', error);
+      }
 
-    let body;
-    try {
-      body = await request.json();
-    } catch {
-      return jsonResponse(request, env, { error: 'Invalid JSON body' }, 400);
-    }
+      let body;
+      try {
+        body = await request.json();
+      } catch {
+        return jsonResponse(request, env, { error: 'Invalid JSON body' }, 400);
+      }
 
-    const tokens = Array.isArray(body.tokens) ? body.tokens.filter(Boolean) : [];
-    if (tokens.length === 0) {
-      return jsonResponse(request, env, { error: 'Missing recipients (tokens)' }, 400);
-    }
+      const tokens = Array.isArray(body.tokens) ? body.tokens.filter(Boolean) : [];
+      if (tokens.length === 0) {
+        return jsonResponse(request, env, { error: 'Missing recipients (tokens)' }, 400);
+      }
 
-    const notification = body.notification || {};
-    const data = body.data || {};
+      const notification = body.notification || {};
+      const data = body.data || {};
 
-    const projectId = env.FCM_PROJECT_ID;
-    const clientEmail = env.FCM_CLIENT_EMAIL;
-    const privateKey = normalizePrivateKey(env.FCM_PRIVATE_KEY);
+      const projectId = env.FCM_PROJECT_ID;
+      const clientEmail = env.FCM_CLIENT_EMAIL;
+      const privateKey = normalizePrivateKey(env.FCM_PRIVATE_KEY);
 
-    if (!projectId || !clientEmail || !privateKey) {
-      console.error('Missing FCM Configuration in Secrets');
-      return jsonResponse(request, env, { error: 'Server configuration error' }, 500);
-    }
+      if (!projectId || !clientEmail || !privateKey) {
+        console.error('Missing FCM Configuration in Secrets');
+        return jsonResponse(request, env, { error: 'Server configuration error' }, 500);
+      }
 
-    // 3. Get FCM Refresh Token / Access Token
-    let accessToken;
-    try {
-      accessToken = await getAccessToken(
-        clientEmail,
-        privateKey,
-        'https://www.googleapis.com/auth/firebase.messaging'
-      );
-    } catch (error) {
-      console.error('Token generation failed:', error);
-      return jsonResponse(request, env,
-        { error: 'Failed to obtain FCM access token', detail: String(error) },
-        500
-      );
-    }
+      // 3. Get FCM Refresh Token / Access Token
+      let accessToken;
+      try {
+        accessToken = await getAccessToken(
+          clientEmail,
+          privateKey,
+          'https://www.googleapis.com/auth/firebase.messaging'
+        );
+      } catch (error) {
+        console.error('Token generation failed:', error);
+        return jsonResponse(request, env,
+          { error: 'Failed to obtain FCM access token', detail: String(error) },
+          500
+        );
+      }
 
       // 4. Send Notifications
       const result = await sendToFcm(

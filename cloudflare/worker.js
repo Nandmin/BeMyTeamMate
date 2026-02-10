@@ -1,6 +1,14 @@
 import { RateLimiter, RateLimitExceededError } from './rate-limiter.js';
 
 const ALLOWED_METHODS = ['POST', 'OPTIONS'];
+const MAX_TARGET_USER_IDS = 200;
+const MAX_RECIPIENT_TOKENS = 500;
+const MAX_TITLE_LENGTH = 100;
+const MAX_BODY_LENGTH = 500;
+const MAX_LINK_LENGTH = 500;
+const MAX_DATA_SIZE_BYTES = 4096;
+const MIN_FCM_TOKEN_LENGTH = 100;
+const MAX_FCM_TOKEN_LENGTH = 4096;
 const rateLimiter = new RateLimiter();
 
 export default {
@@ -89,12 +97,30 @@ export default {
           400
         );
       }
+      if (title.length > MAX_TITLE_LENGTH) {
+        return jsonResponse(request, env, { error: `title too long (max ${MAX_TITLE_LENGTH})` }, 400);
+      }
+      if (messageBody.length > MAX_BODY_LENGTH) {
+        return jsonResponse(request, env, { error: `body too long (max ${MAX_BODY_LENGTH})` }, 400);
+      }
+      if (link.length > MAX_LINK_LENGTH) {
+        return jsonResponse(request, env, { error: `link too long (max ${MAX_LINK_LENGTH})` }, 400);
+      }
+      const pushData = {
+        groupId,
+        eventId,
+        type,
+        ...(link ? { link } : {}),
+      };
+      if (calculateDataPayloadSize(pushData) > MAX_DATA_SIZE_BYTES) {
+        return jsonResponse(request, env, { error: `data payload too large (max ${MAX_DATA_SIZE_BYTES} bytes)` }, 400);
+      }
 
       if (link && !isRelativeAppLink(link)) {
         return jsonResponse(request, env, { error: 'link must be a relative path' }, 400);
       }
-      if (targetUserIds.length > 200) {
-        return jsonResponse(request, env, { error: 'Too many targetUserIds (max 200)' }, 400);
+      if (targetUserIds.length > MAX_TARGET_USER_IDS) {
+        return jsonResponse(request, env, { error: `Too many targetUserIds (max ${MAX_TARGET_USER_IDS})` }, 400);
       }
 
       const projectId = env.FCM_PROJECT_ID;
@@ -197,8 +223,16 @@ export default {
         return jsonResponse(request, env, { error: 'Failed to resolve recipient push tokens' }, 500);
       }
 
+      const tokenValidation = validateRecipientTokens(tokens);
+      if (tokenValidation.invalidCount > 0) {
+        console.warn(`Filtered ${tokenValidation.invalidCount} invalid push token(s)`);
+      }
+      tokens = tokenValidation.tokens;
       if (tokens.length === 0) {
         return jsonResponse(request, env, { error: 'No valid recipient tokens found' }, 400);
+      }
+      if (tokens.length > MAX_RECIPIENT_TOKENS) {
+        return jsonResponse(request, env, { error: `Too many recipient tokens (max ${MAX_RECIPIENT_TOKENS})` }, 400);
       }
 
       // 3. Get FCM Refresh Token / Access Token
@@ -221,12 +255,7 @@ export default {
       const result = await sendToFcm(
         tokens,
         { title, body: messageBody },
-        {
-          groupId,
-          eventId,
-          type,
-          ...(link ? { link } : {}),
-        },
+        pushData,
         accessToken,
         projectId
       );
@@ -1370,6 +1399,39 @@ function normalizeData(data) {
     result[key] = String(value);
   }
   return result;
+}
+
+function calculateDataPayloadSize(data) {
+  return utf8ByteLength(JSON.stringify(normalizeData(data)));
+}
+
+function utf8ByteLength(value) {
+  return new TextEncoder().encode(String(value)).length;
+}
+
+function validateRecipientTokens(tokens) {
+  const validTokens = [];
+  let invalidCount = 0;
+  for (const rawToken of Array.isArray(tokens) ? tokens : []) {
+    const token = typeof rawToken === 'string' ? rawToken.trim() : '';
+    if (!isLikelyFcmToken(token)) {
+      invalidCount += 1;
+      continue;
+    }
+    validTokens.push(token);
+  }
+  return {
+    tokens: Array.from(new Set(validTokens)),
+    invalidCount,
+  };
+}
+
+function isLikelyFcmToken(token) {
+  if (!token) return false;
+  if (token.length < MIN_FCM_TOKEN_LENGTH) return false;
+  if (token.length > MAX_FCM_TOKEN_LENGTH) return false;
+  if (/\s/.test(token)) return false;
+  return true;
 }
 
 function chunkArray(array, size) {

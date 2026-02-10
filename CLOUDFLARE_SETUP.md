@@ -1,93 +1,84 @@
 # Cloudflare Push Notification Worker Setup
 
-Ez a dokumentum leírja a push értesítések küldéséért felelős Cloudflare Worker beállítását és használatát.
+Ez a dokumentum a Cloudflare Worker es a Cloudflare Pages beallitasokat irja le.
 
-## 1. Előfeltételek
+## 1. Elofeltetelek
 
-- Cloudflare fiók (Free plan is elegendő)
+- Cloudflare fiok
 - Firebase projekt (FCM Service Account JSON)
 
-## 2. Környezeti Változók (Secrets)
+## 2. Worker secrets
 
-A Worker működéséhez a következő környezeti változókat **titkosítottként (Secret)** kell felvenni a Cloudflare Dashboard-on (Worker > Settings > Variables):
+A Worker mukodesehez az alabbi valtozok legyenek Cloudflare Worker secretkent beallitva
+(Worker > Settings > Variables):
 
-| Változó Név        | Leírás                                                  | Érték Forrása                                                                                                 |
-| ------------------ | ------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
-| `FCM_PROJECT_ID`   | A Firebase projekt azonosítója.                         | Firebase Console > Project Settings                                                                           |
-| `FCM_CLIENT_EMAIL` | A Service Account e-mail címe.                          | Service Account JSON (`client_email`)                                                                         |
-| `FCM_PRIVATE_KEY`  | A Service Account privát kulcsa.                        | Service Account JSON (`private_key`) <br> **Fontos:** A teljes `-----BEGIN PRIVATE KEY...` blokkot másold be! |
-| `ADMIN_SECRET`     | (Opcionális) Titkos kulcs adminisztratív hozzáféréshez. | Generálj egy erős véletlenszerű stringet.                                                                     |
+| Valtozo nev | Leiras |
+| --- | --- |
+| `FCM_PROJECT_ID` | Firebase projekt azonosito |
+| `FCM_CLIENT_EMAIL` | Service Account email (`client_email`) |
+| `FCM_PRIVATE_KEY` | Service Account private key (`private_key`) |
+| `TURNSTILE_SECRET_KEY` | Turnstile secret key a captcha ellenorzeshez |
+| `ADMIN_SECRET` | Opcionais admin kulcs teszt/admin hasznalathoz |
 
-> **Megjegyzés:** A `FCM_PRIVATE_KEY` bemásolásakor ügyelj arra, hogy a sortörések (`\n`) helyesen kerüljenek átadásra. A kód automatikusan kezeli a `\n` karaktert, ha szövegként másolod be.
->
-> **Kulcsrotáció:** Ha új Service Account keypárt generálsz, frissítsd a Cloudflare Worker secrets értékeket (`FCM_CLIENT_EMAIL`, `FCM_PRIVATE_KEY`, szükség esetén `FCM_PROJECT_ID`), majd töröld/revokáld a régi kulcsot a Google Cloud Console-ban.
+Megjegyzes: `FCM_PRIVATE_KEY` eseten a `\n` sortoreseket a kod kezeli.
 
-## 3. Worker Telepítése
+## 3. Cloudflare Pages build env valtozok (frontend)
 
-Ha van telepítve `wrangler` CLI:
+A frontend publikus kulcsait a build elott a `scripts/generate-runtime-config.mjs`
+script generalja a `public/runtime-config.js` fajlba.
+
+Cloudflare Pages > Settings > Environment variables:
+
+- `BMT_VAPID_KEY`: Firebase Web Push VAPID public key
+- `BMT_TURNSTILE_SITE_KEY`: Cloudflare Turnstile site key (publikus)
+
+Fontos:
+- A Turnstile site key publikus, de igy nem hardcode-olt a repo-ban.
+- A Turnstile secret key csak Worker secret maradjon (`TURNSTILE_SECRET_KEY`).
+
+## 4. Worker telepitese
 
 ```bash
 cd cloudflare
 npx wrangler deploy
 ```
 
-Vagy másold be a `worker.js` tartalmát a Cloudflare Dashboard online szerkesztőjébe.
+## 5. API hasznalata
 
-## 4. API Használata
+Endpoint: `POST /send-notification`
 
-**Endpoint:** `POST /send-notification`
+Hitelesites:
 
-**Hitelesítés (Authentication):**
-Két módon lehetséges:
+1. Firebase ID token:
+- Header: `Authorization: Bearer <FIREBASE_ID_TOKEN>`
 
-1.  **Firebase ID Token (Kliens felől):**
-    Header: `Authorization: Bearer <FIREBASE_ID_TOKEN>`
-    A token érvényességét a Google API-n keresztül ellenőrizzük.
-2.  **Admin Secret (Szerver felől / Tesztelés):**
-    Header: `X-Admin-Secret: <YOUR_ADMIN_SECRET>`
+2. Admin secret:
+- Header: `X-Admin-Secret: <YOUR_ADMIN_SECRET>`
 
-**Request Body (JSON):**
+## 6. Frontend implementacio
 
-```json
-{
-  "tokens": ["FCM_TOKEN_1", "FCM_TOKEN_2"],
-  "notification": {
-    "title": "Üzenet címe",
-    "body": "Üzenet tartalma"
-  },
-  "data": {
-    "groupId": "group123",
-    "eventId": "event456",
-    "type": "NEW_EVENT"
-  }
-}
-```
+A frontend automatikusan csatolja a bejelentkezett felhasznalo ID tokenjet.
+Lasd: `src/app/services/notification.service.ts`.
 
-## 5. Frontend Implementáció
+## 7. Hibaelharitas
 
-A frontend automatikusan csatolja a bejelentkezett felhasználó ID tokenjét a kéréshez. Lásd: `src/app/services/notification.service.ts`.
+- `401 Unauthorized`: hianyzo vagy ervenytelen auth header
+- `500 Server Error`: hianyzo Worker secret vagy hibas FCM config
 
-## 6. Hibaelhárítás
+## 8. MVP Cron Trigger (00:30 Europe/Budapest)
 
-- **401 Unauthorized**: Nincs vagy érvénytelen Auth header. Jelentkezz be újra.
-- **500 Server Error**: Hiányzó Secrets vagy hibás FCM config. Ellenőrizd a Cloudflare logokat.
-- **Token Verification Failed**: A Firebase ID token lejárt vagy érvénytelen.
+Alapertelmezett cron a `cloudflare/wrangler.toml` fajlban:
 
-## 7. MVP Cron Trigger (00:30, Europe/Budapest)
-
-Az MVP szavazások automatikus lezárásához a Worker tartalmaz egy Cron trigger-t.
-Alapértelmezetten a `cloudflare/wrangler.toml` fájlban ez van beállítva:
-
-```
+```toml
 crons = ["30 22 * * *", "30 23 * * *"]
 ```
 
-Ez **UTC** idő szerint fut. A Worker belül ellenőrzi a Budapest időt, és csak akkor fut,
-amikor ott 00:30 van (DST-t is kezeli).
+Ez UTC idoben fut, a Worker belul ellenorzi a budapesti idot.
 
-## 8. Szükséges jogosultságok
+## 9. Szukseges jogosultsagok
 
-Az MVP cron ugyanazokat a Firebase Service Account adatokat használja, mint az értesítések küldése:
+Az MVP cron ugyanazokat a Firebase Service Account adatokat hasznalja,
+mint az ertesites kuldes:
 
 - `FCM_PROJECT_ID`
 - `FCM_CLIENT_EMAIL`

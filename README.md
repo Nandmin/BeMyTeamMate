@@ -45,6 +45,16 @@ Use these settings when creating a Pages project:
 
 SPA routing is handled by `public/_redirects`.
 
+### Public Runtime Config (Pages build vars)
+
+The app generates `public/runtime-config.js` before `start` and `build`.
+Set these environment variables in Cloudflare Pages (Production and Preview):
+
+- `BMT_VAPID_KEY`: Firebase Web Push VAPID public key
+- `BMT_TURNSTILE_SITE_KEY`: Cloudflare Turnstile site key (public)
+
+If a variable is missing, fallback values are written (`YOUR_VAPID_KEY` / empty Turnstile key).
+
 ## Running unit tests
 
 To execute unit tests with the [Karma](https://karma-runner.github.io) test runner, use the following command:
@@ -98,12 +108,13 @@ The application implements Firebase Cloud Messaging (FCM) for push notifications
 **Service Worker:**
 - Location: `public/firebase-messaging-sw.js`
 - Registered in `app.config.ts` via `provideServiceWorker`
-- VAPID Key configured in environment files
+- VAPID key is loaded from `window.__BMT_RUNTIME_CONFIG__.vapidKey` (`public/runtime-config.js`)
 
 **Implementation:**
 - `NotificationService` handles FCM token management
 - Tokens are stored in Firestore under `users/{uid}/private/pushTokens`
 - Cloudflare Worker endpoint: `https://bemyteammate-push.andras78-nemeth.workers.dev/send-notification`
+- Contact captcha verification is done in Worker using `TURNSTILE_SECRET_KEY` (Worker secret)
 
 **Features:**
 - Push notification permission management

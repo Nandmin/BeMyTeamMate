@@ -10,11 +10,11 @@ export const environment = {
     messagingSenderId: 'YOUR_MESSAGING_SENDER_ID',
     appId: 'YOUR_APP_ID',
     measurementId: 'YOUR_MEASUREMENT_ID',
-    vapidKey: 'YOUR_VAPID_KEY',
+    vapidKey: 'YOUR_VAPID_KEY', // Prefer BMT_VAPID_KEY via runtime-config.js
     appCheckSiteKey: 'YOUR_RECAPTCHA_V3_SITE_KEY',
     appCheckDebugToken: undefined as string | undefined,
   },
   cloudflareWorkerUrl: 'https://your-worker.workers.dev/send-notification',
   contactWorkerUrl: 'https://your-worker.workers.dev/contact-message',
-  turnstileSiteKey: 'YOUR_TURNSTILE_SITE_KEY',
+  turnstileSiteKey: 'YOUR_TURNSTILE_SITE_KEY', // Prefer BMT_TURNSTILE_SITE_KEY via runtime-config.js
 };

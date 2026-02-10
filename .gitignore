@@ -49,9 +49,10 @@ firebase-export-*
 # Secret files
 .env
 .env.*
-! .env.example
+!.env.example
 !src/environments/environment.example.ts
 
 # System files
 .DS_Store
 Thumbs.db
+

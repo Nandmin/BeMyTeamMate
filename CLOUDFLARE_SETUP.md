@@ -19,6 +19,7 @@ A Worker mukodesehez az alabbi valtozok legyenek Cloudflare Worker secretkent be
 | `FCM_PRIVATE_KEY` | Service Account private key (`private_key`) |
 | `TURNSTILE_SECRET_KEY` | Turnstile secret key a captcha ellenorzeshez |
 | `ADMIN_SECRET` | Opcionais admin kulcs teszt/admin hasznalathoz |
+| `FIREBASE_PROJECT_NUMBER` | Firebase project number (App Check token verifikaciohoz) |
 
 Megjegyzes: `FCM_PRIVATE_KEY` eseten a `\n` sortoreseket a kod kezeli.
 
@@ -51,18 +52,19 @@ Hitelesites:
 
 1. Firebase ID token:
 - Header: `Authorization: Bearer <FIREBASE_ID_TOKEN>`
+- Header: `X-Firebase-AppCheck: <FIREBASE_APPCHECK_TOKEN>`
 
 2. Admin secret:
 - Header: `X-Admin-Secret: <YOUR_ADMIN_SECRET>`
 
 ## 6. Frontend implementacio
 
-A frontend automatikusan csatolja a bejelentkezett felhasznalo ID tokenjet.
+A frontend automatikusan csatolja a bejelentkezett felhasznalo ID tokenjet es az App Check tokent.
 Lasd: `src/app/services/notification.service.ts`.
 
 ## 7. Hibaelharitas
 
-- `401 Unauthorized`: hianyzo vagy ervenytelen auth header
+- `401 Unauthorized`: hianyzo/ervenytelen auth vagy App Check header
 - `500 Server Error`: hianyzo Worker secret vagy hibas FCM config
 
 ## 8. MVP Cron Trigger (00:30 Europe/Budapest)

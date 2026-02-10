@@ -10,6 +10,7 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { AppCheck } from '@angular/fire/app-check';
 import { RouterModule, ActivatedRoute, Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { GroupService } from '../../services/group.service';
@@ -22,6 +23,7 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { switchMap, map, of, from, take, combineLatest, catchError } from 'rxjs';
 import { SeoService } from '../../services/seo.service';
 import { CoverImagesService } from '../../services/cover-images.service';
+import { getAppCheckTokenOrNull } from '../../utils/app-check.util';
 
 @Component({
   selector: 'app-user-profile',
@@ -44,6 +46,7 @@ export class UserProfilePage implements AfterViewInit {
   private groupService = inject(GroupService);
   private eventService = inject(EventService);
   private notificationService = inject(NotificationService);
+  private appCheck = inject(AppCheck, { optional: true });
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private seo = inject(SeoService);
@@ -582,9 +585,15 @@ export class UserProfilePage implements AfterViewInit {
         },
       };
 
+      const appCheckToken = await getAppCheckTokenOrNull(this.appCheck);
+      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+      if (appCheckToken) {
+        headers['X-Firebase-AppCheck'] = appCheckToken;
+      }
+
       const response = await fetch(environment.contactWorkerUrl, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers,
         body: JSON.stringify(payload),
       });
 

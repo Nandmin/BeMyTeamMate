@@ -78,6 +78,8 @@ Angular CLI does not come with an end-to-end testing framework by default. You c
 ### App Check Setup
 
 The application uses Firebase App Check with reCAPTCHA v3 to protect against abuse. 
+For Cloud Firestore, enforcement must be enabled in Firebase Console under **App Check -> Cloud Firestore**.
+Firestore Security Rules cannot directly validate an App Check token claim.
 
 **Development Environment:**
 - Debug token is NOT stored in the repository.
@@ -100,6 +102,7 @@ The application uses Firebase App Check with reCAPTCHA v3 to protect against abu
 **Production Environment:**
 - Uses reCAPTCHA v3 Site Key: `YOUR_RECAPTCHAV3_TOKEN`
 - Debug token is set to `undefined`
+- Cloudflare Worker endpoints also validate `X-Firebase-AppCheck` tokens (requires `FIREBASE_PROJECT_NUMBER` worker var)
 
 ### Push Notifications
 

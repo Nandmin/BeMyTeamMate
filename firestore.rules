@@ -5,6 +5,9 @@ service cloud.firestore {
       return request.auth != null;
     }
 
+    // Firebase App Check is enforced at the Firebase product level (App Check -> Cloud Firestore).
+    // Firestore Security Rules cannot directly validate App Check tokens.
+
     function isSiteAdmin() {
       let userPath = /databases/$(database)/documents/users/$(request.auth.uid);
       return isSignedIn() && exists(userPath) && get(userPath).data.role == 'siteadmin';

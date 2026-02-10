@@ -1,9 +1,11 @@
 import { AfterViewInit, Component, ElementRef, ViewChild, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { AppCheck } from '@angular/fire/app-check';
 import { AuthService } from '../../services/auth.service';
 import { environment } from '../../../environments/environment';
 import { SeoService } from '../../services/seo.service';
+import { getAppCheckTokenOrNull } from '../../utils/app-check.util';
 
 @Component({
   selector: 'app-contact-page',
@@ -14,6 +16,7 @@ import { SeoService } from '../../services/seo.service';
 })
 export class ContactPage implements AfterViewInit {
   private authService = inject(AuthService);
+  private appCheck = inject(AppCheck, { optional: true });
   private fb = inject(FormBuilder);
   private seo = inject(SeoService);
 
@@ -114,9 +117,15 @@ export class ContactPage implements AfterViewInit {
     this.isLoading.set(true);
 
     try {
+      const appCheckToken = await getAppCheckTokenOrNull(this.appCheck);
+      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+      if (appCheckToken) {
+        headers['X-Firebase-AppCheck'] = appCheckToken;
+      }
+
       const response = await fetch(environment.contactWorkerUrl, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers,
         body: JSON.stringify(payload),
       });
 

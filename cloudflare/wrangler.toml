@@ -8,6 +8,7 @@ binding = "RATE_LIMIT_KV"
 id = "bdbaa1ee442f4b75b490f9dce8a8d162"
 
 [vars]
+FIREBASE_PROJECT_NUMBER = "592557549877"
 # Set in Cloudflare as secrets instead of here:
 # FCM_PROJECT_ID, FCM_CLIENT_EMAIL, FCM_PRIVATE_KEY
 

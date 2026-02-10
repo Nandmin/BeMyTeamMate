@@ -9,6 +9,7 @@ const MAX_LINK_LENGTH = 500;
 const MAX_DATA_SIZE_BYTES = 4096;
 const MIN_FCM_TOKEN_LENGTH = 100;
 const MAX_FCM_TOKEN_LENGTH = 4096;
+const APP_CHECK_HEADER = 'X-Firebase-AppCheck';
 const rateLimiter = new RateLimiter();
 
 export default {
@@ -567,7 +568,8 @@ function corsHeaders(request, env) {
   return {
     'Access-Control-Allow-Origin': allowOrigin,
     'Access-Control-Allow-Methods': 'POST, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Admin-Secret',
+    'Access-Control-Allow-Headers':
+      'Content-Type, Authorization, X-Admin-Secret, X-Firebase-AppCheck',
     'Access-Control-Allow-Credentials': 'true',
   };
 }
@@ -1050,7 +1052,7 @@ function isRelativeAppLink(link) {
 }
 
 /**
- * Verifies the request using Admin Secret or Firebase ID Token
+ * Verifies the request using Admin Secret or Firebase ID Token + App Check token
  */
 async function verifyAuth(request, env) {
   const authHeader = request.headers.get('Authorization');
@@ -1061,7 +1063,7 @@ async function verifyAuth(request, env) {
     return { authorized: true, user: 'internal-admin', authType: 'admin-secret' };
   }
 
-      // 2. Check Firebase ID Token (Simplified - Bypass identitytoolkit API to avoid App Check issues)
+  // 2. Check Firebase ID Token + App Check token
   if (authHeader && authHeader.startsWith('Bearer ')) {
     const token = authHeader.split('Bearer ')[1];
     try {
@@ -1075,12 +1077,18 @@ async function verifyAuth(request, env) {
         return { authorized: false, error: verified.error };
       }
 
+      const appCheckVerified = await verifyAppCheckHeader(request, env);
+      if (!appCheckVerified.ok) {
+        return { authorized: false, error: appCheckVerified.error };
+      }
+
       const payload = verified.payload;
       return {
         authorized: true,
         user: payload.user_id || payload.sub,
         email: payload.email,
         authType: 'firebase',
+        appId: appCheckVerified.appId,
       };
 
       /*
@@ -1118,11 +1126,13 @@ async function verifyAuth(request, env) {
   return { authorized: false, error: 'Missing or invalid authentication credentials' };
 }
 
-const FIREBASE_JWKS_URL =
+const FIREBASE_ID_JWKS_URL =
   'https://www.googleapis.com/service_accounts/v1/jwk/securetoken@system.gserviceaccount.com';
+const FIREBASE_APPCHECK_JWKS_URL = 'https://firebaseappcheck.googleapis.com/v1/jwks';
 const JWKS_CACHE_TTL_MS = 60 * 60 * 1000;
 class JwksCache {
-  constructor(ttlMs = JWKS_CACHE_TTL_MS) {
+  constructor(url, ttlMs = JWKS_CACHE_TTL_MS) {
+    this.url = url;
     this.ttlMs = ttlMs;
     this.cache = { fetchedAt: 0, keys: null };
     this.inFlightRefresh = null;
@@ -1177,7 +1187,7 @@ class JwksCache {
   }
 
   async fetchAndStore(now) {
-    const response = await fetch(FIREBASE_JWKS_URL);
+    const response = await fetch(this.url);
     if (!response.ok) {
       const detail = await response.text();
       throw new Error(`JWKS fetch failed: ${response.status} ${detail}`);
@@ -1193,7 +1203,107 @@ class JwksCache {
   }
 }
 
-const jwksCache = new JwksCache();
+const jwksCache = new JwksCache(FIREBASE_ID_JWKS_URL);
+const appCheckJwksCache = new JwksCache(FIREBASE_APPCHECK_JWKS_URL);
+
+async function verifyAppCheckHeader(request, env) {
+  const appCheckTokenHeader = request.headers.get(APP_CHECK_HEADER);
+  const appCheckToken =
+    typeof appCheckTokenHeader === 'string' ? appCheckTokenHeader.trim() : '';
+  if (!appCheckToken) {
+    return { ok: false, error: 'Missing App Check token' };
+  }
+
+  const projectNumberRaw = env.FIREBASE_PROJECT_NUMBER;
+  const projectNumber =
+    typeof projectNumberRaw === 'string' ? projectNumberRaw.trim() : String(projectNumberRaw || '');
+  if (!projectNumber) {
+    return { ok: false, error: 'Missing FIREBASE_PROJECT_NUMBER for App Check verification' };
+  }
+
+  const verified = await verifyAppCheckToken(appCheckToken, projectNumber);
+  if (!verified.ok) {
+    return { ok: false, error: verified.error };
+  }
+
+  return { ok: true, appId: verified.payload.sub };
+}
+
+async function verifyAppCheckToken(token, projectNumber) {
+  const parts = token.split('.');
+  if (parts.length !== 3) {
+    return { ok: false, error: 'Invalid App Check token format' };
+  }
+
+  let header;
+  let payload;
+  try {
+    header = JSON.parse(base64UrlDecode(parts[0]));
+    payload = JSON.parse(base64UrlDecode(parts[1]));
+  } catch {
+    return { ok: false, error: 'Invalid App Check token encoding' };
+  }
+
+  if (header.alg !== 'RS256' || !header.kid) {
+    return { ok: false, error: 'Unsupported App Check token header' };
+  }
+
+  const now = Math.floor(Date.now() / 1000);
+  const clockSkew = 60;
+  if (payload.exp && payload.exp < now - clockSkew) {
+    return { ok: false, error: 'App Check token expired' };
+  }
+  if (payload.iat && payload.iat > now + clockSkew) {
+    return { ok: false, error: 'App Check token issued in the future' };
+  }
+  if (payload.nbf && payload.nbf > now + clockSkew) {
+    return { ok: false, error: 'App Check token not yet valid' };
+  }
+
+  const expectedIssuer = `https://firebaseappcheck.googleapis.com/${projectNumber}`;
+  if (payload.iss !== expectedIssuer) {
+    return { ok: false, error: 'App Check token issuer mismatch' };
+  }
+
+  const expectedAudience = `projects/${projectNumber}`;
+  const audience = payload.aud;
+  const hasExpectedAudience =
+    (typeof audience === 'string' && audience === expectedAudience) ||
+    (Array.isArray(audience) && audience.includes(expectedAudience));
+  if (!hasExpectedAudience) {
+    return { ok: false, error: 'App Check token audience mismatch' };
+  }
+
+  if (!payload.sub || typeof payload.sub !== 'string') {
+    return { ok: false, error: 'App Check token subject missing' };
+  }
+
+  const jwk = await appCheckJwksCache.getKeyByKid(header.kid);
+  if (!jwk) {
+    return { ok: false, error: 'Unknown App Check key ID' };
+  }
+
+  try {
+    const key = await crypto.subtle.importKey(
+      'jwk',
+      jwk,
+      { name: 'RSASSA-PKCS1-v1_5', hash: 'SHA-256' },
+      false,
+      ['verify']
+    );
+    const data = new TextEncoder().encode(`${parts[0]}.${parts[1]}`);
+    const signature = base64UrlToBytes(parts[2]);
+    const ok = await crypto.subtle.verify('RSASSA-PKCS1-v1_5', key, signature, data);
+    if (!ok) {
+      return { ok: false, error: 'App Check token signature invalid' };
+    }
+  } catch (error) {
+    console.error('App Check token verify error:', error);
+    return { ok: false, error: 'App Check token verification failed' };
+  }
+
+  return { ok: true, payload };
+}
 
 async function verifyFirebaseIdToken(token, projectId) {
   const parts = token.split('.');

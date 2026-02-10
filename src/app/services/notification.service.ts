@@ -17,12 +17,14 @@ import {
   arrayRemove,
   collectionData,
 } from '@angular/fire/firestore';
+import { AppCheck } from '@angular/fire/app-check';
 import { getMessaging, getToken, deleteToken, onMessage } from 'firebase/messaging';
 import { AuthService } from './auth.service';
 import { environment } from '../../environments/environment';
 import { AppNotification, NotificationType } from '../models/notification.model';
 import { Observable, of, defer, concat } from 'rxjs';
 import { tap } from 'rxjs/operators';
+import { getAppCheckTokenOrNull } from '../utils/app-check.util';
 
 export interface GroupNotificationPayload {
   type: NotificationType;
@@ -41,6 +43,7 @@ export interface GroupNotificationPayload {
 })
 export class NotificationService {
   private firestore = inject(Firestore);
+  private appCheck = inject(AppCheck, { optional: true });
   private authService = inject(AuthService);
   private tokenStorageKey = 'fcmToken';
   private notificationCacheTtlMs = 60 * 1000;
@@ -253,9 +256,13 @@ export class NotificationService {
       : [[]];
 
     try {
+      const appCheckToken = await getAppCheckTokenOrNull(this.appCheck);
       const headers: Record<string, string> = { 'Content-Type': 'application/json' };
       if (authToken) {
         headers['Authorization'] = `Bearer ${authToken}`;
+      }
+      if (appCheckToken) {
+        headers['X-Firebase-AppCheck'] = appCheckToken;
       }
       for (const chunk of chunks) {
         const body: Record<string, unknown> = {

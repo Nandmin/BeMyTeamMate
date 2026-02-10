@@ -48,6 +48,7 @@ export class NotificationService {
   private readonly maxCacheEntries = 100;
   private notificationCache = new Map<string, { data: AppNotification[]; ts: number }>();
   private memberIdsCache = new Map<string, { data: string[]; ts: number }>();
+  private foregroundListenerInitialized = false;
 
   watchNotifications(uid: string): Observable<AppNotification[]> {
     if (!uid) return of([]);
@@ -178,6 +179,8 @@ export class NotificationService {
 
   listenForForegroundMessages() {
     if (!this.canUsePush()) return;
+    if (this.foregroundListenerInitialized) return;
+    this.foregroundListenerInitialized = true;
     const messaging = getMessaging();
     onMessage(messaging, (payload) => {
       const title = payload.notification?.title || 'Értesítés';
@@ -193,12 +196,14 @@ export class NotificationService {
     if (targetIds.length === 0) return;
 
     await this.writeNotifications(targetIds, payload);
-    await this.sendPushForGroup(payload);
+    await this.sendPush(payload, targetIds);
   }
 
   async notifyUsers(userIds: string[], payload: GroupNotificationPayload) {
-    if (userIds.length === 0) return;
-    await this.writeNotifications(userIds, payload);
+    const uniqueUserIds = Array.from(new Set(userIds.filter(Boolean)));
+    if (uniqueUserIds.length === 0) return;
+    await this.writeNotifications(uniqueUserIds, payload);
+    await this.sendPush(payload, uniqueUserIds);
   }
 
   private async writeNotifications(userIds: string[], payload: GroupNotificationPayload) {
@@ -226,9 +231,10 @@ export class NotificationService {
     }
   }
 
-  private async sendPushForGroup(payload: GroupNotificationPayload) {
+  private async sendPush(payload: GroupNotificationPayload, targetUserIds: string[] = []) {
     if (!payload.groupId) return;
     if (!this.isValidPushWorkerUrl(environment.cloudflareWorkerUrl)) return;
+    const uniqueTargetUserIds = Array.from(new Set(targetUserIds.filter(Boolean)));
 
     const user = this.authService.currentUser();
     let authToken = '';
@@ -242,32 +248,37 @@ export class NotificationService {
 
     // Ensure environment URL is used directly
     const url = environment.cloudflareWorkerUrl;
-
-    const body: Record<string, string | boolean> = {
-      groupId: payload.groupId,
-      eventId: payload.eventId || '',
-      type: payload.type,
-      title: payload.title,
-      body: payload.body,
-      writeInApp: false,
-    };
-    if (payload.link) body['link'] = payload.link;
+    const chunks = uniqueTargetUserIds.length > 0
+      ? this.chunkArray(uniqueTargetUserIds, 200)
+      : [[]];
 
     try {
       const headers: Record<string, string> = { 'Content-Type': 'application/json' };
       if (authToken) {
         headers['Authorization'] = `Bearer ${authToken}`;
       }
+      for (const chunk of chunks) {
+        const body: Record<string, unknown> = {
+          groupId: payload.groupId,
+          eventId: payload.eventId || '',
+          type: payload.type,
+          title: payload.title,
+          body: payload.body,
+          writeInApp: false,
+        };
+        if (payload.link) body['link'] = payload.link;
+        if (chunk.length > 0) body['targetUserIds'] = chunk;
 
-      const response = await fetch(url, {
-        method: 'POST',
-        headers: headers,
-        body: JSON.stringify(body),
-      });
+        const response = await fetch(url, {
+          method: 'POST',
+          headers: headers,
+          body: JSON.stringify(body),
+        });
 
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error('Push dispatch failed with status:', response.status, errorText);
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error('Push dispatch failed with status:', response.status, errorText);
+        }
       }
     } catch (error) {
       console.warn('Push dispatch network/logic error:', error);

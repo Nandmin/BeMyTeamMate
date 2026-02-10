@@ -68,6 +68,8 @@ export class App {
       this.updateFooterVisibility(this.router.url);
     });
 
+    this.notificationService.listenForForegroundMessages();
+
     this.authService.user$.subscribe((user) => {
       if (!user?.uid) return;
       this.notificationService.syncTokenForCurrentUser();

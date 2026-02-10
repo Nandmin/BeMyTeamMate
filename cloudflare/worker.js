@@ -76,6 +76,9 @@ export default {
       const messageBody = typeof body.body === 'string' ? body.body.trim() : '';
       const link = typeof body.link === 'string' ? body.link.trim() : '';
       const writeInApp = body.writeInApp !== false;
+      const targetUserIds = Array.isArray(body.targetUserIds)
+        ? body.targetUserIds.map((value) => String(value || '').trim()).filter(Boolean)
+        : [];
 
       if (!groupId || !type || !title || !messageBody) {
         return jsonResponse(
@@ -88,6 +91,9 @@ export default {
 
       if (link && !isRelativeAppLink(link)) {
         return jsonResponse(request, env, { error: 'link must be a relative path' }, 400);
+      }
+      if (targetUserIds.length > 200) {
+        return jsonResponse(request, env, { error: 'Too many targetUserIds (max 200)' }, 400);
       }
 
       const projectId = env.FCM_PROJECT_ID;
@@ -109,7 +115,8 @@ export default {
           firestoreAuth.projectId,
           firestoreAuth.accessToken,
           groupId,
-          authResult.user
+          authResult.user,
+          type
         );
         if (!canSend) {
           return jsonResponse(request, env, { error: 'Forbidden' }, 403);
@@ -135,13 +142,33 @@ export default {
         return jsonResponse(request, env, { error: 'No group members found' }, 404);
       }
 
+      let recipientUserIds = memberUserIds;
+      if (targetUserIds.length > 0) {
+        try {
+          recipientUserIds = await filterEligibleTargetUserIds(
+            firestoreAuth.projectId,
+            firestoreAuth.accessToken,
+            groupId,
+            targetUserIds,
+            memberUserIds
+          );
+        } catch (error) {
+          console.error('Failed to resolve target recipients:', error);
+          return jsonResponse(request, env, { error: 'Failed to resolve target recipients' }, 500);
+        }
+      }
+
+      if (recipientUserIds.length === 0) {
+        return jsonResponse(request, env, { error: 'No eligible recipient users found' }, 400);
+      }
+
       let inAppWritten = 0;
       if (writeInApp) {
         try {
           inAppWritten = await writeInAppNotificationsForGroupMembers(
             firestoreAuth.projectId,
             firestoreAuth.accessToken,
-            memberUserIds,
+            recipientUserIds,
             {
               type,
               groupId,
@@ -162,7 +189,7 @@ export default {
         tokens = await fetchPushTokensForUserIds(
           firestoreAuth.projectId,
           firestoreAuth.accessToken,
-          memberUserIds
+          recipientUserIds
         );
       } catch (error) {
         console.error('Failed to resolve group member push tokens:', error);
@@ -832,6 +859,26 @@ function getGroupMemberDocUrl(projectId, groupId, userId) {
   return `https://firestore.googleapis.com/v1/projects/${projectId}/databases/(default)/documents/groups/${groupId}/members/${userId}`;
 }
 
+function getGroupInviteDocUrl(projectId, groupId, userId) {
+  return `https://firestore.googleapis.com/v1/projects/${projectId}/databases/(default)/documents/groups/${groupId}/invites/${userId}`;
+}
+
+function getGroupJoinRequestDocUrl(projectId, groupId, userId) {
+  return `https://firestore.googleapis.com/v1/projects/${projectId}/databases/(default)/documents/groups/${groupId}/joinRequests/${userId}`;
+}
+
+async function documentExists(docUrl, accessToken) {
+  const response = await fetch(docUrl, {
+    headers: { Authorization: `Bearer ${accessToken}` },
+  });
+  if (response.status === 404) return false;
+  if (!response.ok) {
+    const detail = await response.text();
+    throw new Error(`Document lookup failed: ${response.status} ${detail}`);
+  }
+  return true;
+}
+
 async function isUserSiteAdmin(projectId, accessToken, userId) {
   const response = await fetch(getUserDocUrl(projectId, userId), {
     headers: { Authorization: `Bearer ${accessToken}` },
@@ -858,13 +905,20 @@ async function isUserGroupMember(projectId, accessToken, groupId, userId) {
   return true;
 }
 
-async function canSendGroupNotification(projectId, accessToken, groupId, userId) {
+async function canSendGroupNotification(projectId, accessToken, groupId, userId, type) {
   if (!groupId || !userId) return false;
   const [isMember, isSiteAdmin] = await Promise.all([
     isUserGroupMember(projectId, accessToken, groupId, userId),
     isUserSiteAdmin(projectId, accessToken, userId),
   ]);
-  return isMember || isSiteAdmin;
+  if (isMember || isSiteAdmin) return true;
+
+  // Allow non-members to notify admins about their own pending join request.
+  if (type === 'group_join') {
+    return documentExists(getGroupJoinRequestDocUrl(projectId, groupId, userId), accessToken);
+  }
+
+  return false;
 }
 
 async function fetchGroupMemberUserIds(projectId, accessToken, groupId) {
@@ -898,6 +952,60 @@ async function fetchGroupMemberUserIds(projectId, accessToken, groupId) {
   } while (pageToken);
 
   return Array.from(new Set(userIds));
+}
+
+async function isUserEligibleTarget(projectId, accessToken, groupId, userId, memberSet) {
+  if (memberSet?.has(userId)) return true;
+
+  const [hasInvite, hasJoinRequest] = await Promise.all([
+    documentExists(getGroupInviteDocUrl(projectId, groupId, userId), accessToken),
+    documentExists(getGroupJoinRequestDocUrl(projectId, groupId, userId), accessToken),
+  ]);
+  return hasInvite || hasJoinRequest;
+}
+
+async function filterEligibleTargetUserIds(
+  projectId,
+  accessToken,
+  groupId,
+  targetUserIds,
+  memberUserIds
+) {
+  const uniqueTargetUserIds = Array.from(
+    new Set(
+      (Array.isArray(targetUserIds) ? targetUserIds : [])
+        .map((value) => String(value || '').trim())
+        .filter(Boolean)
+    )
+  );
+  if (uniqueTargetUserIds.length === 0) return [];
+
+  const memberSet = new Set(
+    (Array.isArray(memberUserIds) ? memberUserIds : [])
+      .map((value) => String(value || '').trim())
+      .filter(Boolean)
+  );
+
+  const allowed = [];
+  const chunks = chunkArray(uniqueTargetUserIds, 20);
+  for (const chunk of chunks) {
+    const results = await Promise.all(
+      chunk.map(async (userId) => {
+        const eligible = await isUserEligibleTarget(
+          projectId,
+          accessToken,
+          groupId,
+          userId,
+          memberSet
+        );
+        return eligible ? userId : '';
+      })
+    );
+    for (const userId of results) {
+      if (userId) allowed.push(userId);
+    }
+  }
+  return allowed;
 }
 
 function isRelativeAppLink(link) {

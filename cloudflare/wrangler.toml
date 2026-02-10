@@ -3,6 +3,7 @@ main = "worker.js"
 compatibility_date = "2025-01-01"
 
 [[kv_namespaces]]
+# Shared limiter storage: per-IP/per-user/global/contact limits.
 binding = "RATE_LIMIT_KV"
 id = "bdbaa1ee442f4b75b490f9dce8a8d162"
 

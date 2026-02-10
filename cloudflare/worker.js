@@ -36,6 +36,7 @@ export default {
 
       // 2. Rate limiting by client IP and authenticated user.
       try {
+        await rateLimiter.checkGlobal(env, 'send-notification');
         await rateLimiter.check(request, env, authResult.user);
       } catch (error) {
         if (error instanceof RateLimitExceededError) {
@@ -604,9 +605,23 @@ async function handleContactMessage(request, env) {
     return jsonResponse(request, env, { error: 'Captcha verification failed' }, 403);
   }
 
-  const rateLimited = await applyContactRateLimit(request, env);
-  if (rateLimited) {
-    return jsonResponse(request, env, { error: 'Rate limited' }, 429);
+  try {
+    await rateLimiter.checkGlobal(env, 'contact-message');
+    await rateLimiter.checkContact(request, env);
+  } catch (error) {
+    if (error instanceof RateLimitExceededError) {
+      return jsonResponse(
+        request,
+        env,
+        {
+          error: 'Rate limit exceeded',
+          message: error.message,
+          retryAfter: error.retryAfter,
+        },
+        429
+      );
+    }
+    console.error('Contact rate limiter failed:', error);
   }
 
   const projectId = env.FCM_PROJECT_ID;
@@ -716,18 +731,6 @@ async function verifyTurnstileToken(token, request, secret) {
     console.error('Turnstile verify error:', error);
     return false;
   }
-}
-
-async function applyContactRateLimit(request, env) {
-  const kv = env.CONTACT_RATE_LIMIT;
-  if (!kv) return false;
-  const ip = getClientIp(request);
-  if (!ip) return false;
-  const key = `contact:${ip}`;
-  const existing = await kv.get(key);
-  if (existing) return true;
-  await kv.put(key, '1', { expirationTtl: 60 });
-  return false;
 }
 
 function getClientIp(request) {

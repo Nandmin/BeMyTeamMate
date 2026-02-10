@@ -8,10 +8,36 @@ export class RateLimitExceededError extends Error {
 
 export class RateLimiter {
   constructor(limits = {
-    perIP: { max: 300, window: 60 },
-    perUser: { max: 100, window: 60 },
+    perIP: { max: 60, window: 60 },
+    perUser: { max: 30, window: 60 },
+    global: { max: 1000, window: 60 },
+    contact: { max: 3, window: 3600 },
   }) {
     this.limits = limits;
+  }
+
+  async checkGlobal(env, scope = 'all') {
+    const kv = env?.RATE_LIMIT_KV;
+    if (!kv) return true;
+
+    const now = Math.floor(Date.now() / 1000);
+    const windowSeconds = this.limits.global.window;
+    const window = Math.floor(now / windowSeconds);
+    const key = `rl:global:${scope}:${window}`;
+    const count = Number.parseInt((await kv.get(key)) || '0', 10) || 0;
+
+    if (count >= this.limits.global.max) {
+      const retryAfter = this.secondsUntilWindowReset(now, windowSeconds);
+      throw new RateLimitExceededError(
+        `Global rate limit exceeded. Try again in ${retryAfter}s`,
+        retryAfter
+      );
+    }
+
+    await kv.put(key, String(count + 1), {
+      expirationTtl: windowSeconds * 2,
+    });
+    return true;
   }
 
   async check(request, env, userId) {
@@ -62,6 +88,31 @@ export class RateLimiter {
       );
     }
     await Promise.all(writes);
+    return true;
+  }
+
+  async checkContact(request, env) {
+    const kv = env?.RATE_LIMIT_KV;
+    if (!kv) return true;
+
+    const ip = this.getClientIp(request) || 'unknown';
+    const now = Math.floor(Date.now() / 1000);
+    const windowSeconds = this.limits.contact.window;
+    const window = Math.floor(now / windowSeconds);
+    const key = `rl:contact:${ip}:${window}`;
+    const count = Number.parseInt((await kv.get(key)) || '0', 10) || 0;
+
+    if (count >= this.limits.contact.max) {
+      const retryAfter = this.secondsUntilWindowReset(now, windowSeconds);
+      throw new RateLimitExceededError(
+        `Contact rate limit exceeded. Try again in ${retryAfter}s`,
+        retryAfter
+      );
+    }
+
+    await kv.put(key, String(count + 1), {
+      expirationTtl: windowSeconds * 2,
+    });
     return true;
   }
 

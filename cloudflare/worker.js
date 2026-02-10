@@ -265,6 +265,7 @@ export default {
       const deadTokens = result.errors
         .filter((err) => err.isUnregistered)
         .map((err) => err.token);
+      const publicErrors = await buildPublicNotificationErrors(result.errors);
 
       if (deadTokens.length > 0 && ctx?.waitUntil) {
         ctx.waitUntil(cleanupDeadTokens(env, deadTokens));
@@ -277,7 +278,7 @@ export default {
         {
           success: result.success,
           failure: result.failure,
-          errors: result.errors,
+          errors: publicErrors,
           cleanedUp: deadTokens.length,
           inAppWritten,
         },
@@ -1419,6 +1420,41 @@ async function sendToFcm(tokens, notification, data, accessToken, projectId) {
   }
 
   return { success, failure, errors };
+}
+
+async function buildPublicNotificationErrors(errors) {
+  if (!Array.isArray(errors) || errors.length === 0) {
+    return [];
+  }
+
+  return Promise.all(errors.map(async (error) => {
+    const item = {
+      status: Number.isFinite(error?.status) ? error.status : 0,
+      isUnregistered: Boolean(error?.isUnregistered),
+    };
+    const tokenHint = await buildTokenHashHint(error?.token);
+    if (tokenHint) {
+      item.tokenHint = tokenHint;
+    }
+    return item;
+  }));
+}
+
+async function buildTokenHashHint(token) {
+  if (typeof token !== 'string' || !token) {
+    return null;
+  }
+
+  try {
+    const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(token));
+    const bytes = new Uint8Array(digest);
+    return Array.from(bytes)
+      .slice(0, 4)
+      .map((value) => value.toString(16).padStart(2, '0'))
+      .join('');
+  } catch {
+    return null;
+  }
 }
 
 async function sendSingleMessage(token, notification, data, accessToken, projectId) {

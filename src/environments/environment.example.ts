@@ -12,7 +12,7 @@ export const environment = {
     measurementId: 'YOUR_MEASUREMENT_ID',
     vapidKey: 'YOUR_VAPID_KEY',
     appCheckSiteKey: 'YOUR_RECAPTCHA_V3_SITE_KEY',
-    appCheckDebugToken: false,
+    appCheckDebugToken: undefined as string | undefined,
   },
   cloudflareWorkerUrl: 'https://your-worker.workers.dev/send-notification',
   contactWorkerUrl: 'https://your-worker.workers.dev/contact-message',

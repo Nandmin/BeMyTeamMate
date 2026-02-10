@@ -13,7 +13,7 @@ export const environment = {
     vapidKey:
       'BKl1Pd0srJRPM4PjNOhsrvOapWCA7pCiSL_LG3vdJbbNxFBG3i6nDI43VxfCuSQgXIGTua0vGKjKzJtp3og9IoI', // For FCM web push (fill when available)
     appCheckSiteKey: '6LcENkgsAAAAAHV8Sg7826bzbzOczZK1ZDxVxY5d',
-    appCheckDebugToken: '8daf3178-779f-44a8-a930-c5ff6b83e63c', // Debug token for localhost development
+    appCheckDebugToken: undefined as string | undefined,
   },
   cloudflareWorkerUrl: 'https://bemyteammate-push.andras78-nemeth.workers.dev/send-notification',
   contactWorkerUrl: 'https://bemyteammate-push.andras78-nemeth.workers.dev/contact-message',

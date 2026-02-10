@@ -17,6 +17,38 @@ import { provideServiceWorker } from '@angular/service-worker';
 import { getApp } from 'firebase/app';
 import { initializeAppCheck, ReCaptchaEnterpriseProvider } from 'firebase/app-check';
 
+const getLocalAppCheckDebugToken = (): string | true | undefined => {
+  if (environment.production) {
+    return undefined;
+  }
+
+  const envToken = environment.firebase.appCheckDebugToken;
+  if (typeof envToken === 'string' && envToken.trim().length > 0) {
+    return envToken.trim();
+  }
+
+  const globalToken = (globalThis as any).__APP_CHECK_DEBUG_TOKEN__;
+  if (typeof globalToken === 'string' && globalToken.trim().length > 0) {
+    return globalToken.trim();
+  }
+
+  try {
+    const storageToken = globalThis.localStorage?.getItem('FIREBASE_APPCHECK_DEBUG_TOKEN');
+    if (typeof storageToken === 'string' && storageToken.trim().length > 0) {
+      return storageToken.trim();
+    }
+  } catch {
+    // localStorage can be unavailable in some browser contexts
+  }
+
+  const host = globalThis.location?.hostname;
+  if (host === 'localhost' || host === '127.0.0.1' || host === '::1') {
+    return true;
+  }
+
+  return undefined;
+};
+
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
@@ -32,10 +64,9 @@ export const appConfig: ApplicationConfig = {
     ...(environment.firebase.appCheckSiteKey
       ? [
           provideAppCheck(() => {
-            if (!environment.production && environment.firebase.appCheckDebugToken) {
-              // Set the debug token if it's provided
-              (globalThis as any).FIREBASE_APPCHECK_DEBUG_TOKEN =
-                environment.firebase.appCheckDebugToken;
+            const debugToken = getLocalAppCheckDebugToken();
+            if (debugToken) {
+              (globalThis as any).FIREBASE_APPCHECK_DEBUG_TOKEN = debugToken;
             }
             return initializeAppCheck(getApp(), {
               provider: new ReCaptchaEnterpriseProvider(environment.firebase.appCheckSiteKey),

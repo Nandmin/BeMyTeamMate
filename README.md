@@ -70,17 +70,25 @@ Angular CLI does not come with an end-to-end testing framework by default. You c
 The application uses Firebase App Check with reCAPTCHA v3 to protect against abuse. 
 
 **Development Environment:**
-- Debug token is configured in `src/environments/environment.ts`
-- Current debug token: `8daf3178-779f-44a8-a930-c5ff6b83e63c`
-- **Important:** This debug token must be registered in Firebase Console:
+- Debug token is NOT stored in the repository.
+- Set your local token in browser console on localhost:
+  ```js
+  localStorage.setItem('FIREBASE_APPCHECK_DEBUG_TOKEN', 'YOUR_DEBUG_TOKEN')
+  ```
+- If no token is set on localhost, the app enables `FIREBASE_APPCHECK_DEBUG_TOKEN = true` automatically to generate one.
+- You can also set a temporary global value before app bootstrap:
+  ```js
+  window.__APP_CHECK_DEBUG_TOKEN__ = 'YOUR_DEBUG_TOKEN'
+  ```
+- **Important:** Your local debug token must be registered in Firebase Console:
   1. Go to [Firebase Console](https://console.firebase.google.com/)
   2. Select the **BeMyTeamMate** project
-  3. Navigate to **App Check** → **Apps** → **Web app**
+  3. Navigate to **App Check** -> **Apps** -> **Web app**
   4. Click **Manage debug tokens**
-  5. Add the debug token: `8daf3178-779f-44a8-a930-c5ff6b83e63c`
+  5. Add your local debug token value
 
 **Production Environment:**
-- Uses reCAPTCHA v3 Site Key: `6LcENkgsAAAAAHV8Sg7826bzbzOczZK1ZDxVxY5d`
+- Uses reCAPTCHA v3 Site Key: `YOUR_RECAPTCHAV3_TOKEN`
 - Debug token is set to `undefined`
 
 ### Push Notifications
@@ -173,3 +181,4 @@ You may see console warnings like:
 ## Additional Resources
 
 For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+

@@ -1092,7 +1092,79 @@ async function verifyAuth(request, env) {
 const FIREBASE_JWKS_URL =
   'https://www.googleapis.com/service_accounts/v1/jwk/securetoken@system.gserviceaccount.com';
 const JWKS_CACHE_TTL_MS = 60 * 60 * 1000;
-let jwksCache = { fetchedAt: 0, keys: null };
+class JwksCache {
+  constructor(ttlMs = JWKS_CACHE_TTL_MS) {
+    this.ttlMs = ttlMs;
+    this.cache = { fetchedAt: 0, keys: null };
+    this.inFlightRefresh = null;
+  }
+
+  async getKeys(options = {}) {
+    const forceRefresh = options.forceRefresh === true;
+    const now = Date.now();
+    const hasFreshCache =
+      this.cache.keys && !forceRefresh && now - this.cache.fetchedAt < this.ttlMs;
+
+    if (hasFreshCache) {
+      return this.cache.keys;
+    }
+
+    if (this.inFlightRefresh) {
+      try {
+        return await this.inFlightRefresh;
+      } catch (error) {
+        if (this.cache.keys) {
+          console.warn('JWKS in-flight refresh failed, using stale cache:', error);
+          return this.cache.keys;
+        }
+        throw error;
+      }
+    }
+
+    this.inFlightRefresh = this.fetchAndStore(now);
+    try {
+      return await this.inFlightRefresh;
+    } catch (error) {
+      if (this.cache.keys) {
+        console.warn('JWKS refresh failed, using stale cache:', error);
+        return this.cache.keys;
+      }
+      throw error;
+    } finally {
+      this.inFlightRefresh = null;
+    }
+  }
+
+  async getKeyByKid(kid) {
+    const jwks = await this.getKeys();
+    const found = jwks?.keys?.find((key) => key.kid === kid);
+    if (found) {
+      return found;
+    }
+
+    // Key rotation can happen while cache is still fresh, so retry once with forced refresh.
+    const refreshed = await this.getKeys({ forceRefresh: true });
+    return refreshed?.keys?.find((key) => key.kid === kid) || null;
+  }
+
+  async fetchAndStore(now) {
+    const response = await fetch(FIREBASE_JWKS_URL);
+    if (!response.ok) {
+      const detail = await response.text();
+      throw new Error(`JWKS fetch failed: ${response.status} ${detail}`);
+    }
+
+    const jwks = await response.json();
+    if (!jwks || !Array.isArray(jwks.keys)) {
+      throw new Error('JWKS fetch returned invalid payload');
+    }
+
+    this.cache = { fetchedAt: now, keys: jwks };
+    return jwks;
+  }
+}
+
+const jwksCache = new JwksCache();
 
 async function verifyFirebaseIdToken(token, projectId) {
   const parts = token.split('.');
@@ -1142,8 +1214,7 @@ async function verifyFirebaseIdToken(token, projectId) {
     return { ok: false, error: 'ID Token subject missing' };
   }
 
-  const jwks = await getFirebaseJwks();
-  const jwk = jwks?.keys?.find((key) => key.kid === header.kid);
+  const jwk = await jwksCache.getKeyByKid(header.kid);
   if (!jwk) {
     return { ok: false, error: 'Unknown ID Token key ID' };
   }
@@ -1168,23 +1239,6 @@ async function verifyFirebaseIdToken(token, projectId) {
   }
 
   return { ok: true, payload };
-}
-
-async function getFirebaseJwks() {
-  const now = Date.now();
-  if (jwksCache.keys && now - jwksCache.fetchedAt < JWKS_CACHE_TTL_MS) {
-    return jwksCache.keys;
-  }
-
-  const response = await fetch(FIREBASE_JWKS_URL);
-  if (!response.ok) {
-    const detail = await response.text();
-    throw new Error(`JWKS fetch failed: ${response.status} ${detail}`);
-  }
-
-  const jwks = await response.json();
-  jwksCache = { fetchedAt: now, keys: jwks };
-  return jwks;
 }
 
 function base64UrlDecode(value) {

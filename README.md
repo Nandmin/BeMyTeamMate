@@ -94,7 +94,7 @@ The application implements Firebase Cloud Messaging (FCM) for push notifications
 
 **Implementation:**
 - `NotificationService` handles FCM token management
-- Tokens are stored in Firestore under `users/{uid}/fcmTokens`
+- Tokens are stored in Firestore under `users/{uid}/private/pushTokens`
 - Cloudflare Worker endpoint: `https://bemyteammate-push.andras78-nemeth.workers.dev/send-notification`
 
 **Features:**

@@ -3,15 +3,16 @@ import {
   Firestore,
   collection,
   doc,
+  setDoc,
   serverTimestamp,
   writeBatch,
   getDocs,
   query,
   where,
-  documentId,
   orderBy,
   limit,
   updateDoc,
+  deleteField,
   arrayUnion,
   arrayRemove,
   collectionData,
@@ -44,11 +45,9 @@ export class NotificationService {
   private tokenStorageKey = 'fcmToken';
   private notificationCacheTtlMs = 60 * 1000;
   private memberCacheTtlMs = 2 * 60 * 1000;
-  private tokenCacheTtlMs = 5 * 60 * 1000;
   private readonly maxCacheEntries = 100;
   private notificationCache = new Map<string, { data: AppNotification[]; ts: number }>();
   private memberIdsCache = new Map<string, { data: string[]; ts: number }>();
-  private tokenCache = new Map<string, { data: string[]; ts: number }>();
 
   watchNotifications(uid: string): Observable<AppNotification[]> {
     if (!uid) return of([]);
@@ -108,9 +107,15 @@ export class NotificationService {
     const token = await this.getOrCreateToken();
     if (!token) throw new Error('Unable to get FCM token');
 
-    await updateDoc(doc(this.firestore, `users/${user.uid}`), {
-      fcmTokens: arrayUnion(token),
-    });
+    await setDoc(
+      this.getPushTokensDocRef(user.uid),
+      {
+        tokens: arrayUnion(token),
+        updatedAt: serverTimestamp(),
+      },
+      { merge: true },
+    );
+    await this.clearLegacyFcmTokensField(user.uid);
     this.safeSetItem(this.tokenStorageKey, token);
     return token;
   }
@@ -125,9 +130,15 @@ export class NotificationService {
 
     const messaging = getMessaging();
     await deleteToken(messaging);
-    await updateDoc(doc(this.firestore, `users/${user.uid}`), {
-      fcmTokens: arrayRemove(token),
-    });
+    await setDoc(
+      this.getPushTokensDocRef(user.uid),
+      {
+        tokens: arrayRemove(token),
+        updatedAt: serverTimestamp(),
+      },
+      { merge: true },
+    );
+    await this.clearLegacyFcmTokensField(user.uid);
     this.safeRemoveItem(this.tokenStorageKey);
   }
 
@@ -138,18 +149,30 @@ export class NotificationService {
 
     const stored = this.safeGetItem(this.tokenStorageKey);
     if (stored) {
-      await updateDoc(doc(this.firestore, `users/${user.uid}`), {
-        fcmTokens: arrayUnion(stored),
-      });
+      await setDoc(
+        this.getPushTokensDocRef(user.uid),
+        {
+          tokens: arrayUnion(stored),
+          updatedAt: serverTimestamp(),
+        },
+        { merge: true },
+      );
+      await this.clearLegacyFcmTokensField(user.uid);
       return;
     }
 
     if (Notification.permission !== 'granted') return;
     const token = await this.getOrCreateToken();
     if (!token) return;
-    await updateDoc(doc(this.firestore, `users/${user.uid}`), {
-      fcmTokens: arrayUnion(token),
-    });
+    await setDoc(
+      this.getPushTokensDocRef(user.uid),
+      {
+        tokens: arrayUnion(token),
+        updatedAt: serverTimestamp(),
+      },
+      { merge: true },
+    );
+    await this.clearLegacyFcmTokensField(user.uid);
     this.safeSetItem(this.tokenStorageKey, token);
   }
 
@@ -201,8 +224,8 @@ export class NotificationService {
   }
 
   private async sendPushToMembers(userIds: string[], payload: GroupNotificationPayload) {
-    const tokens = await this.collectTokens(userIds);
-    if (tokens.length === 0) return;
+    const uniqueUserIds = Array.from(new Set(userIds.filter(Boolean)));
+    if (uniqueUserIds.length === 0) return;
     if (!this.isValidPushWorkerUrl(environment.cloudflareWorkerUrl)) return;
 
     const user = this.authService.currentUser();
@@ -219,7 +242,7 @@ export class NotificationService {
     const url = environment.cloudflareWorkerUrl;
 
     const body = {
-      tokens,
+      userIds: uniqueUserIds,
       notification: {
         title: payload.title,
         body: payload.body,
@@ -251,43 +274,6 @@ export class NotificationService {
     } catch (error) {
       console.warn('Push dispatch network/logic error:', error);
     }
-  }
-
-  private async collectTokens(userIds: string[]): Promise<string[]> {
-    const tokens: string[] = [];
-    const missingIds: string[] = [];
-
-    userIds.forEach((uid) => {
-      const cached = this.getCachedTokens(uid);
-      if (cached) {
-        tokens.push(...cached);
-      } else {
-        missingIds.push(uid);
-      }
-    });
-
-    if (missingIds.length > 0) {
-      const chunks = this.chunkArray(missingIds, 10);
-      for (const chunk of chunks) {
-        const q = query(collection(this.firestore, 'users'), where(documentId(), 'in', chunk));
-        const snap = await getDocs(q);
-        const found = new Set<string>();
-        snap.docs.forEach((docSnap) => {
-          found.add(docSnap.id);
-          const data = docSnap.data() as { fcmTokens?: string[] };
-          const userTokens = Array.isArray(data.fcmTokens) ? data.fcmTokens : [];
-          this.setCachedTokens(docSnap.id, userTokens);
-          tokens.push(...userTokens);
-        });
-        chunk.forEach((uid) => {
-          if (!found.has(uid)) {
-            this.setCachedTokens(uid, []);
-          }
-        });
-      }
-    }
-
-    return Array.from(new Set(tokens));
   }
 
   private async getOrCreateToken() {
@@ -384,14 +370,18 @@ export class NotificationService {
     this.memberIdsCache.set(groupId, { data: memberIds, ts: Date.now() });
   }
 
-  private getCachedTokens(uid: string): string[] | null {
-    const entry = this.tokenCache.get(uid);
-    if (entry && Date.now() - entry.ts < this.tokenCacheTtlMs) return entry.data;
-    return null;
+  private getPushTokensDocRef(uid: string) {
+    return doc(this.firestore, `users/${uid}/private/pushTokens`);
   }
 
-  private setCachedTokens(uid: string, tokens: string[]) {
-    this.tokenCache.set(uid, { data: tokens, ts: Date.now() });
+  private async clearLegacyFcmTokensField(uid: string) {
+    try {
+      await updateDoc(doc(this.firestore, `users/${uid}`), {
+        fcmTokens: deleteField(),
+      });
+    } catch (error) {
+      console.warn('Legacy fcmTokens cleanup failed:', error);
+    }
   }
 
   private async getGroupMemberIds(groupId: string): Promise<string[]> {

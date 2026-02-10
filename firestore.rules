@@ -24,6 +24,16 @@ service cloud.firestore {
       return isSignedIn() && exists(groupPath) && get(groupPath).data.ownerId == request.auth.uid;
     }
 
+    function touchesLegacyFcmTokensField() {
+      return request.resource.data.diff(resource.data).affectedKeys().hasAny(['fcmTokens']);
+    }
+
+    function isLegacyFcmTokenSelfSync(userId) {
+      return isSignedIn() &&
+        request.auth.uid == userId &&
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['fcmTokens']);
+    }
+
     function isGroupAdmin(groupId) {
       return isSignedIn() && (
         isSiteAdmin() ||
@@ -38,14 +48,19 @@ service cloud.firestore {
 
     // 1. User documents
     match /users/{userId} {
-      allow read: if isSignedIn();
+      // Public profile read: legacy fcmTokens must never leak to other users.
+      allow read: if isSignedIn() && (
+        request.auth.uid == userId ||
+        !('fcmTokens' in resource.data)
+      );
       
       // Global siteadmin role is FORBIDDEN from client side
       // Allow role only if it's the default "user" (to let initial profile creation succeed).
       allow create: if isSignedIn() && request.auth.uid == userId && (
-                    !('role' in request.resource.data) || request.resource.data.role == 'user');
+                    (!('role' in request.resource.data) || request.resource.data.role == 'user') &&
+                    !('fcmTokens' in request.resource.data));
       
-      allow update: if isSignedIn() && (
+      allow update: if isLegacyFcmTokenSelfSync(userId) || (isSignedIn() && !touchesLegacyFcmTokensField() && (
         // Self-update: cannot touch role (except adding default role if it was missing)
         (request.auth.uid == userId && (
           !request.resource.data.diff(resource.data).affectedKeys().hasAny(['role']) ||
@@ -60,7 +75,15 @@ service cloud.firestore {
           isGroupAdmin(request.resource.data.lastGroupId) &&
           exists(/databases/$(database)/documents/groups/$(request.resource.data.lastGroupId)/members/$(userId))
         )
-      );
+      ));
+
+      // Private user data (e.g. push tokens) - only owner can access from client.
+      match /private/{privateDocId} {
+        allow get, create, update, delete: if isSignedIn() &&
+          request.auth.uid == userId &&
+          privateDocId == 'pushTokens';
+        allow list: if false;
+      }
 
       // User group summaries
       match /groups/{groupId} {

@@ -7,7 +7,8 @@
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
-    "migrate:group-members": "node scripts/migrations/migrate-group-members.js"
+    "migrate:group-members": "node scripts/migrations/migrate-group-members.js",
+    "migrate:fcm-tokens": "node scripts/migrations/migrate-fcm-tokens.js"
   },
   "prettier": {
     "printWidth": 100,

@@ -50,9 +50,19 @@ export default {
         return jsonResponse(request, env, { error: 'Invalid JSON body' }, 400);
       }
 
-      const tokens = Array.isArray(body.tokens) ? body.tokens.filter(Boolean) : [];
-      if (tokens.length === 0) {
-        return jsonResponse(request, env, { error: 'Missing recipients (tokens)' }, 400);
+      const directTokens = Array.isArray(body.tokens)
+        ? body.tokens.map((value) => String(value).trim()).filter(Boolean)
+        : [];
+      const recipientUserIds = Array.isArray(body.userIds)
+        ? body.userIds.map((value) => String(value).trim()).filter(Boolean)
+        : [];
+      if (directTokens.length === 0 && recipientUserIds.length === 0) {
+        return jsonResponse(
+          request,
+          env,
+          { error: 'Missing recipients (tokens or userIds)' },
+          400
+        );
       }
 
       const notification = body.notification || {};
@@ -65,6 +75,34 @@ export default {
       if (!projectId || !clientEmail || !privateKey) {
         console.error('Missing FCM Configuration in Secrets');
         return jsonResponse(request, env, { error: 'Server configuration error' }, 500);
+      }
+
+      let resolvedUserTokens = [];
+      if (recipientUserIds.length > 0) {
+        const firestoreAuth = await getFirestoreAuth(env);
+        if (!firestoreAuth.ok) {
+          return jsonResponse(request, env, { error: firestoreAuth.error }, 500);
+        }
+        try {
+          resolvedUserTokens = await fetchPushTokensForUserIds(
+            firestoreAuth.projectId,
+            firestoreAuth.accessToken,
+            recipientUserIds
+          );
+        } catch (error) {
+          console.error('Failed to resolve user push tokens:', error);
+          return jsonResponse(
+            request,
+            env,
+            { error: 'Failed to resolve recipient push tokens' },
+            500
+          );
+        }
+      }
+
+      const tokens = Array.from(new Set([...directTokens, ...resolvedUserTokens]));
+      if (tokens.length === 0) {
+        return jsonResponse(request, env, { error: 'No valid recipient tokens found' }, 400);
       }
 
       // 3. Get FCM Refresh Token / Access Token
@@ -650,12 +688,62 @@ async function fetchSiteAdminTokens(projectId, accessToken) {
   }
 
   const data = await response.json();
-  const tokens = [];
+  const userIds = [];
   for (const row of data || []) {
     const doc = row?.document;
-    if (!doc?.fields?.fcmTokens?.arrayValue?.values) continue;
-    for (const value of doc.fields.fcmTokens.arrayValue.values) {
-      if (value?.stringValue) tokens.push(value.stringValue);
+    const userId = doc?.name?.split('/').pop();
+    if (userId) userIds.push(userId);
+  }
+
+  return fetchPushTokensForUserIds(projectId, accessToken, userIds);
+}
+
+function getPushTokensDocUrl(projectId, userId) {
+  return `https://firestore.googleapis.com/v1/projects/${projectId}/databases/(default)/documents/users/${userId}/private/pushTokens`;
+}
+
+function extractTokensFromPushTokenDoc(doc) {
+  const values = doc?.fields?.tokens?.arrayValue?.values || [];
+  const tokens = [];
+  for (const value of values) {
+    if (typeof value?.stringValue === 'string' && value.stringValue.trim()) {
+      tokens.push(value.stringValue.trim());
+    }
+  }
+  return tokens;
+}
+
+async function fetchPushTokensForUserIds(projectId, accessToken, userIds) {
+  const uniqueUserIds = Array.from(
+    new Set(
+      (Array.isArray(userIds) ? userIds : [])
+        .map((value) => String(value || '').trim())
+        .filter(Boolean)
+    )
+  );
+  if (uniqueUserIds.length === 0) return [];
+
+  const tokens = [];
+  const chunks = chunkArray(uniqueUserIds, 20);
+  for (const chunk of chunks) {
+    const results = await Promise.all(
+      chunk.map(async (userId) => {
+        const response = await fetch(getPushTokensDocUrl(projectId, userId), {
+          headers: { Authorization: `Bearer ${accessToken}` },
+        });
+
+        if (response.status === 404) return [];
+        if (!response.ok) {
+          const detail = await response.text();
+          throw new Error(`Push token doc fetch failed (${userId}): ${response.status} ${detail}`);
+        }
+
+        const doc = await response.json();
+        return extractTokensFromPushTokenDoc(doc);
+      })
+    );
+    for (const row of results) {
+      tokens.push(...row);
     }
   }
 
@@ -1815,7 +1903,7 @@ async function commitWrites(projectId, accessToken, writes) {
 }
 
 /**
- * Removes stale tokens from Firestore users collection
+ * Removes stale tokens from Firestore private push token documents
  */
 async function cleanupDeadTokens(env, deadTokens) {
   if (!deadTokens || deadTokens.length === 0) return;
@@ -1832,14 +1920,14 @@ async function cleanupDeadTokens(env, deadTokens) {
   // Process tokens in small batches to avoid hitting rate limits too hard
   for (const token of deadTokens) {
     try {
-      // 1. Find the user document containing this token
+      // 1. Find private push token docs containing this token
       const queryUrl = `https://firestore.googleapis.com/v1/projects/${projectId}/databases/(default)/documents:runQuery`;
       const queryBody = {
         structuredQuery: {
-          from: [{ collectionId: 'users' }],
+          from: [{ collectionId: 'private', allDescendants: true }],
           where: {
             fieldFilter: {
-              field: { fieldPath: 'fcmTokens' },
+              field: { fieldPath: 'tokens' },
               op: 'ARRAY_CONTAINS',
               value: { stringValue: token },
             },
@@ -1868,8 +1956,9 @@ async function cleanupDeadTokens(env, deadTokens) {
       for (const row of results || []) {
         const doc = row?.document;
         if (!doc?.name) continue;
+        if (!doc.name.endsWith('/pushTokens')) continue;
 
-        const currentTokens = doc.fields?.fcmTokens?.arrayValue?.values || [];
+        const currentTokens = doc.fields?.tokens?.arrayValue?.values || [];
         const filteredTokens = currentTokens
           .map((v) => v.stringValue)
           .filter((t) => t && t !== token);
@@ -1878,14 +1967,15 @@ async function cleanupDeadTokens(env, deadTokens) {
           update: {
             name: doc.name,
             fields: {
-              fcmTokens: {
-                arrayValue: {
-                  values: filteredTokens.map((t) => ({ stringValue: t })),
-                },
+              tokens: {
+                arrayValue:
+                  filteredTokens.length > 0
+                    ? { values: filteredTokens.map((t) => ({ stringValue: t })) }
+                    : {},
               },
             },
           },
-          updateMask: { fieldPaths: ['fcmTokens'] },
+          updateMask: { fieldPaths: ['tokens'] },
         });
       }
 

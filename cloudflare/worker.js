@@ -25,6 +25,14 @@ export default {
       if (!authResult.authorized) {
         return jsonResponse(request, env, { error: 'Unauthorized', detail: authResult.error }, 401);
       }
+      if (authResult.authType !== 'firebase' || !authResult.user) {
+        return jsonResponse(
+          request,
+          env,
+          { error: 'Firebase ID token required for this endpoint' },
+          401
+        );
+      }
 
       // 2. Rate limiting by client IP and authenticated user.
       try {
@@ -43,30 +51,44 @@ export default {
         console.error('Rate limiter failed:', error);
       }
 
-      let body;
-      try {
-        body = await request.json();
-      } catch {
-        return jsonResponse(request, env, { error: 'Invalid JSON body' }, 400);
+      const parsedBody = await readJsonBody(request);
+      if (!parsedBody.ok) {
+        return jsonResponse(request, env, { error: parsedBody.error }, 400);
       }
-
-      const directTokens = Array.isArray(body.tokens)
-        ? body.tokens.map((value) => String(value).trim()).filter(Boolean)
-        : [];
-      const recipientUserIds = Array.isArray(body.userIds)
-        ? body.userIds.map((value) => String(value).trim()).filter(Boolean)
-        : [];
-      if (directTokens.length === 0 && recipientUserIds.length === 0) {
+      const body = parsedBody.data || {};
+      if (
+        Object.prototype.hasOwnProperty.call(body, 'tokens') ||
+        Object.prototype.hasOwnProperty.call(body, 'userIds') ||
+        Object.prototype.hasOwnProperty.call(body, 'notification') ||
+        Object.prototype.hasOwnProperty.call(body, 'data')
+      ) {
         return jsonResponse(
           request,
           env,
-          { error: 'Missing recipients (tokens or userIds)' },
+          { error: 'Legacy payload is not supported. Use groupId/eventId/type/title/body/link.' },
+          400
+        );
+      }
+      const groupId = typeof body.groupId === 'string' ? body.groupId.trim() : '';
+      const eventId = typeof body.eventId === 'string' ? body.eventId.trim() : '';
+      const type = typeof body.type === 'string' ? body.type.trim() : '';
+      const title = typeof body.title === 'string' ? body.title.trim() : '';
+      const messageBody = typeof body.body === 'string' ? body.body.trim() : '';
+      const link = typeof body.link === 'string' ? body.link.trim() : '';
+      const writeInApp = body.writeInApp !== false;
+
+      if (!groupId || !type || !title || !messageBody) {
+        return jsonResponse(
+          request,
+          env,
+          { error: 'Missing required fields: groupId, type, title, body' },
           400
         );
       }
 
-      const notification = body.notification || {};
-      const data = body.data || {};
+      if (link && !isRelativeAppLink(link)) {
+        return jsonResponse(request, env, { error: 'link must be a relative path' }, 400);
+      }
 
       const projectId = env.FCM_PROJECT_ID;
       const clientEmail = env.FCM_CLIENT_EMAIL;
@@ -77,30 +99,76 @@ export default {
         return jsonResponse(request, env, { error: 'Server configuration error' }, 500);
       }
 
-      let resolvedUserTokens = [];
-      if (recipientUserIds.length > 0) {
-        const firestoreAuth = await getFirestoreAuth(env);
-        if (!firestoreAuth.ok) {
-          return jsonResponse(request, env, { error: firestoreAuth.error }, 500);
+      const firestoreAuth = await getFirestoreAuth(env);
+      if (!firestoreAuth.ok) {
+        return jsonResponse(request, env, { error: firestoreAuth.error }, 500);
+      }
+
+      try {
+        const canSend = await canSendGroupNotification(
+          firestoreAuth.projectId,
+          firestoreAuth.accessToken,
+          groupId,
+          authResult.user
+        );
+        if (!canSend) {
+          return jsonResponse(request, env, { error: 'Forbidden' }, 403);
         }
+      } catch (error) {
+        console.error('Push authorization check failed:', error);
+        return jsonResponse(request, env, { error: 'Failed to verify sender permissions' }, 500);
+      }
+
+      let memberUserIds = [];
+      try {
+        memberUserIds = await fetchGroupMemberUserIds(
+          firestoreAuth.projectId,
+          firestoreAuth.accessToken,
+          groupId
+        );
+      } catch (error) {
+        console.error('Failed to resolve group members:', error);
+        return jsonResponse(request, env, { error: 'Failed to resolve group members' }, 500);
+      }
+
+      if (memberUserIds.length === 0) {
+        return jsonResponse(request, env, { error: 'No group members found' }, 404);
+      }
+
+      let inAppWritten = 0;
+      if (writeInApp) {
         try {
-          resolvedUserTokens = await fetchPushTokensForUserIds(
+          inAppWritten = await writeInAppNotificationsForGroupMembers(
             firestoreAuth.projectId,
             firestoreAuth.accessToken,
-            recipientUserIds
+            memberUserIds,
+            {
+              type,
+              groupId,
+              eventId,
+              title,
+              body: messageBody,
+              link,
+            }
           );
         } catch (error) {
-          console.error('Failed to resolve user push tokens:', error);
-          return jsonResponse(
-            request,
-            env,
-            { error: 'Failed to resolve recipient push tokens' },
-            500
-          );
+          console.error('Failed to write in-app notifications:', error);
+          return jsonResponse(request, env, { error: 'Failed to write in-app notifications' }, 500);
         }
       }
 
-      const tokens = Array.from(new Set([...directTokens, ...resolvedUserTokens]));
+      let tokens = [];
+      try {
+        tokens = await fetchPushTokensForUserIds(
+          firestoreAuth.projectId,
+          firestoreAuth.accessToken,
+          memberUserIds
+        );
+      } catch (error) {
+        console.error('Failed to resolve group member push tokens:', error);
+        return jsonResponse(request, env, { error: 'Failed to resolve recipient push tokens' }, 500);
+      }
+
       if (tokens.length === 0) {
         return jsonResponse(request, env, { error: 'No valid recipient tokens found' }, 400);
       }
@@ -124,8 +192,13 @@ export default {
       // 4. Send Notifications
       const result = await sendToFcm(
         tokens,
-        { title: notification.title, body: notification.body },
-        data,
+        { title, body: messageBody },
+        {
+          groupId,
+          eventId,
+          type,
+          ...(link ? { link } : {}),
+        },
         accessToken,
         projectId
       );
@@ -148,6 +221,7 @@ export default {
           failure: result.failure,
           errors: result.errors,
           cleanedUp: deadTokens.length,
+          inAppWritten,
         },
         result.failure > 0 ? 207 : 200
       );
@@ -750,6 +824,91 @@ async function fetchPushTokensForUserIds(projectId, accessToken, userIds) {
   return Array.from(new Set(tokens));
 }
 
+function getUserDocUrl(projectId, userId) {
+  return `https://firestore.googleapis.com/v1/projects/${projectId}/databases/(default)/documents/users/${userId}`;
+}
+
+function getGroupMemberDocUrl(projectId, groupId, userId) {
+  return `https://firestore.googleapis.com/v1/projects/${projectId}/databases/(default)/documents/groups/${groupId}/members/${userId}`;
+}
+
+async function isUserSiteAdmin(projectId, accessToken, userId) {
+  const response = await fetch(getUserDocUrl(projectId, userId), {
+    headers: { Authorization: `Bearer ${accessToken}` },
+  });
+  if (response.status === 404) return false;
+  if (!response.ok) {
+    const detail = await response.text();
+    throw new Error(`User lookup failed (${userId}): ${response.status} ${detail}`);
+  }
+  const doc = await response.json();
+  const role = doc?.fields?.role?.stringValue || '';
+  return role === 'siteadmin';
+}
+
+async function isUserGroupMember(projectId, accessToken, groupId, userId) {
+  const response = await fetch(getGroupMemberDocUrl(projectId, groupId, userId), {
+    headers: { Authorization: `Bearer ${accessToken}` },
+  });
+  if (response.status === 404) return false;
+  if (!response.ok) {
+    const detail = await response.text();
+    throw new Error(`Group member lookup failed (${groupId}/${userId}): ${response.status} ${detail}`);
+  }
+  return true;
+}
+
+async function canSendGroupNotification(projectId, accessToken, groupId, userId) {
+  if (!groupId || !userId) return false;
+  const [isMember, isSiteAdmin] = await Promise.all([
+    isUserGroupMember(projectId, accessToken, groupId, userId),
+    isUserSiteAdmin(projectId, accessToken, userId),
+  ]);
+  return isMember || isSiteAdmin;
+}
+
+async function fetchGroupMemberUserIds(projectId, accessToken, groupId) {
+  const userIds = [];
+  let pageToken = '';
+
+  do {
+    const url = new URL(
+      `https://firestore.googleapis.com/v1/projects/${projectId}/databases/(default)/documents/groups/${groupId}/members`
+    );
+    url.searchParams.set('pageSize', '200');
+    if (pageToken) url.searchParams.set('pageToken', pageToken);
+
+    const response = await fetch(url.toString(), {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    });
+
+    if (response.status === 404) return [];
+    if (!response.ok) {
+      const detail = await response.text();
+      throw new Error(`Group members list failed (${groupId}): ${response.status} ${detail}`);
+    }
+
+    const data = await response.json();
+    const docs = data.documents || [];
+    for (const doc of docs) {
+      const userId = doc?.fields?.userId?.stringValue || doc?.name?.split('/').pop() || '';
+      if (userId) userIds.push(userId);
+    }
+    pageToken = data.nextPageToken || '';
+  } while (pageToken);
+
+  return Array.from(new Set(userIds));
+}
+
+function isRelativeAppLink(link) {
+  if (typeof link !== 'string') return false;
+  const value = link.trim();
+  if (!value) return false;
+  if (!value.startsWith('/')) return false;
+  if (value.startsWith('//')) return false;
+  return !/^[a-zA-Z][a-zA-Z\d+.-]*:/.test(value);
+}
+
 /**
  * Verifies the request using Admin Secret or Firebase ID Token
  */
@@ -759,7 +918,7 @@ async function verifyAuth(request, env) {
 
   // 1. Check Admin Secret (server-to-server or admin bypass)
   if (env.ADMIN_SECRET && adminSecretHeader === env.ADMIN_SECRET) {
-    return { authorized: true, user: 'internal-admin' };
+    return { authorized: true, user: 'internal-admin', authType: 'admin-secret' };
   }
 
       // 2. Check Firebase ID Token (Simplified - Bypass identitytoolkit API to avoid App Check issues)
@@ -781,6 +940,7 @@ async function verifyAuth(request, env) {
         authorized: true,
         user: payload.user_id || payload.sub,
         email: payload.email,
+        authType: 'firebase',
       };
 
       /*
@@ -1900,6 +2060,57 @@ async function commitWrites(projectId, accessToken, writes) {
     const detail = await response.text();
     throw new Error(`Commit failed: ${response.status} ${detail}`);
   }
+}
+
+function buildInAppNotificationFields(payload, createdAtIso) {
+  const eventId = typeof payload?.eventId === 'string' ? payload.eventId.trim() : '';
+  const link = typeof payload?.link === 'string' ? payload.link.trim() : '';
+  return {
+    type: { stringValue: String(payload?.type || 'event_created') },
+    groupId: { stringValue: String(payload?.groupId || '') },
+    eventId: eventId ? { stringValue: eventId } : { nullValue: null },
+    title: { stringValue: String(payload?.title || 'Értesítés') },
+    body: { stringValue: String(payload?.body || '') },
+    link: { stringValue: link },
+    createdAt: { timestampValue: createdAtIso },
+    read: { booleanValue: false },
+    actorId: { nullValue: null },
+    actorName: { stringValue: 'Rendszer' },
+    actorPhoto: { nullValue: null },
+  };
+}
+
+async function writeInAppNotificationsForGroupMembers(
+  projectId,
+  accessToken,
+  userIds,
+  payload
+) {
+  const uniqueUserIds = Array.from(
+    new Set(
+      (Array.isArray(userIds) ? userIds : [])
+        .map((value) => String(value || '').trim())
+        .filter(Boolean)
+    )
+  );
+  if (uniqueUserIds.length === 0) return 0;
+
+  const createdAtIso = new Date().toISOString();
+  let written = 0;
+  const chunks = chunkArray(uniqueUserIds, 300);
+
+  for (const chunk of chunks) {
+    const writes = chunk.map((uid) => ({
+      update: {
+        name: `projects/${projectId}/databases/(default)/documents/users/${uid}/notifications/${crypto.randomUUID()}`,
+        fields: buildInAppNotificationFields(payload, createdAtIso),
+      },
+    }));
+    await commitWrites(projectId, accessToken, writes);
+    written += writes.length;
+  }
+
+  return written;
 }
 
 /**

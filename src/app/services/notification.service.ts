@@ -179,8 +179,11 @@ export class NotificationService {
   listenForForegroundMessages() {
     if (!this.canUsePush()) return;
     const messaging = getMessaging();
-    onMessage(messaging, () => {
-      // Foreground messages are handled by Firestore notifications already.
+    onMessage(messaging, (payload) => {
+      const title = payload.notification?.title || 'Értesítés';
+      const body = payload.notification?.body || '';
+      const data = (payload.data || {}) as Record<string, string>;
+      void this.showForegroundNotification(title, body, data);
     });
   }
 
@@ -189,13 +192,13 @@ export class NotificationService {
     const targetIds = memberIds.filter((id) => !excludeUserIds.includes(id));
     if (targetIds.length === 0) return;
 
-    await this.notifyUsers(targetIds, payload);
+    await this.writeNotifications(targetIds, payload);
+    await this.sendPushForGroup(payload);
   }
 
   async notifyUsers(userIds: string[], payload: GroupNotificationPayload) {
     if (userIds.length === 0) return;
     await this.writeNotifications(userIds, payload);
-    await this.sendPushToMembers(userIds, payload);
   }
 
   private async writeNotifications(userIds: string[], payload: GroupNotificationPayload) {
@@ -223,9 +226,8 @@ export class NotificationService {
     }
   }
 
-  private async sendPushToMembers(userIds: string[], payload: GroupNotificationPayload) {
-    const uniqueUserIds = Array.from(new Set(userIds.filter(Boolean)));
-    if (uniqueUserIds.length === 0) return;
+  private async sendPushForGroup(payload: GroupNotificationPayload) {
+    if (!payload.groupId) return;
     if (!this.isValidPushWorkerUrl(environment.cloudflareWorkerUrl)) return;
 
     const user = this.authService.currentUser();
@@ -241,19 +243,15 @@ export class NotificationService {
     // Ensure environment URL is used directly
     const url = environment.cloudflareWorkerUrl;
 
-    const body = {
-      userIds: uniqueUserIds,
-      notification: {
-        title: payload.title,
-        body: payload.body,
-      },
-      data: {
-        groupId: payload.groupId,
-        eventId: payload.eventId || '',
-        link: payload.link || '',
-        type: payload.type,
-      },
+    const body: Record<string, string | boolean> = {
+      groupId: payload.groupId,
+      eventId: payload.eventId || '',
+      type: payload.type,
+      title: payload.title,
+      body: payload.body,
+      writeInApp: false,
     };
+    if (payload.link) body['link'] = payload.link;
 
     try {
       const headers: Record<string, string> = { 'Content-Type': 'application/json' };
@@ -497,6 +495,51 @@ export class NotificationService {
       return typeof parsed?.ts === 'number' ? parsed.ts : 0;
     } catch {
       return 0;
+    }
+  }
+
+  private async showForegroundNotification(
+    title: string,
+    body: string,
+    data: Record<string, string>,
+  ) {
+    if (!this.canUsePush()) return;
+    if (Notification.permission !== 'granted') return;
+
+    const link = typeof data?.['link'] === 'string' ? data['link'] : '';
+    const notificationData: Record<string, string> = { ...(data || {}) };
+    if (link) notificationData['link'] = link;
+
+    try {
+      const registration = await navigator.serviceWorker.ready;
+      if (registration?.showNotification) {
+        await registration.showNotification(title || 'Értesítés', {
+          body: body || '',
+          icon: '/favicon.ico',
+          badge: '/favicon.ico',
+          data: notificationData,
+          tag: notificationData['type'] || 'general',
+        });
+        return;
+      }
+    } catch (error) {
+      console.warn('Foreground notification via service worker failed:', error);
+    }
+
+    try {
+      const instance = new Notification(title || 'Értesítés', {
+        body: body || '',
+        icon: '/favicon.ico',
+      });
+      if (link) {
+        instance.onclick = () => {
+          window.focus();
+          window.location.assign(link);
+          instance.close();
+        };
+      }
+    } catch (error) {
+      console.warn('Foreground notification fallback failed:', error);
     }
   }
 

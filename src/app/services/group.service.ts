@@ -13,7 +13,6 @@ import {
   updateDoc,
   increment,
   deleteDoc,
-  collectionGroup,
   writeBatch,
   documentId,
   collectionData,
@@ -154,6 +153,7 @@ export class GroupService {
     });
 
     const fullGroup: Group = { id: groupRef.id, ...groupData };
+    await this.upsertUserGroupSummary(user.uid, groupRef.id, fullGroup);
     this.setCachedGroup(groupRef.id, fullGroup);
     this.invalidateGroupsListCache();
     this.invalidateUserGroupsCache(user.uid);
@@ -199,32 +199,9 @@ export class GroupService {
 
   getGroupsForMember(userId: string): Observable<Group[]> {
     return defer(() => {
-      if (!userId) return of([]);
-
-      // Strictly query MEMBERSHIP only.
-      // If a user is owner but NOT in members (e.g. left), they should not see the group.
-      const membersQuery = query(
-        collectionGroup(this.firestore, 'members'),
-        where('userId', '==', userId),
-      );
-
-      return from(getDocs(membersQuery)).pipe(
-        switchMap((membersSnap) => {
-          const ids = membersSnap.docs
-            .map((d) => d.ref.parent?.parent?.id)
-            .filter(Boolean) as string[];
-
-          const uniqueIds = Array.from(new Set(ids));
-
-          if (uniqueIds.length === 0) {
-            return of([]);
-          }
-
-          return from(this.fetchGroupsByIds(uniqueIds)).pipe(
-            map((groups) => groups.sort((a, b) => a.name.localeCompare(b.name))),
-          );
-        }),
-      );
+      const viewerUid = this.authService.currentUser()?.uid;
+      if (!userId || !viewerUid || viewerUid !== userId) return of([]);
+      return this.getUserGroupsInternal(userId);
     });
   }
 
@@ -353,18 +330,8 @@ export class GroupService {
       targetUserName: user.displayName || 'Ismeretlen',
     });
 
-    // Notify Owner and Admins
-    const members = await this.fsGetDocs(this.fsCollection(`groups/${groupId}/members`));
-    const adminIds = (members.docs as any[])
-      .filter((d) => d.data()['isAdmin'] === true || d.id === group.ownerId) // Owner might not be marked isAdmin explicitly in members sometimes based on logic, but usually is. Checking ownerId is safe.
-      .map((d) => d.data()['userId']);
-
-    // Always include owner
-    if (!adminIds.includes(group.ownerId)) adminIds.push(group.ownerId);
-
-    const uniqueAdminIds = [...new Set(adminIds)];
-
-    await this.notificationService.notifyUsers(uniqueAdminIds, {
+    // Notify only the owner from client side. Non-members cannot list members after hardened rules.
+    await this.notificationService.notifyUsers([group.ownerId], {
       type: 'group_join', // using group_join type for now or add new type
       groupId,
       title: 'Csatlakozási kérelem',
@@ -702,6 +669,7 @@ export class GroupService {
     const group = await this.getGroupOnce(groupId);
     if (group) {
       const updatedGroup = { ...group, memberCount: (group.memberCount || 0) + 1 };
+      await this.upsertUserGroupSummary(memberData.userId, groupId, updatedGroup);
       this.setCachedGroup(groupId, updatedGroup);
       this.invalidateUserGroupsCache(memberData.userId); // Invalidate cache so next fetch gets fresh list
     }
@@ -726,12 +694,16 @@ export class GroupService {
     return getDocs(ref);
   }
 
-  private fsSetDoc(ref: any, data: any) {
-    return setDoc(ref, data);
+  private fsSetDoc(ref: any, data: any, options?: any) {
+    return setDoc(ref, data, options);
   }
 
   private fsUpdateDoc(ref: any, data: any) {
     return updateDoc(ref, data);
+  }
+
+  private fsDeleteDoc(ref: any) {
+    return deleteDoc(ref);
   }
 
   private fsServerTimestamp() {
@@ -865,6 +837,7 @@ export class GroupService {
     }
 
     if (memberData?.userId) {
+      await this.removeUserGroupSummary(memberData.userId, groupId);
       // Removed userGroupRef deletion
       this.invalidateUserGroupsCache(memberData.userId);
     }
@@ -889,8 +862,39 @@ export class GroupService {
     return group;
   }
 
-  //   private async upsertUserGroupSummary... removed
-  //   private buildGroupSummary... removed
+  private async upsertUserGroupSummary(userId: string, groupId: string, group: Group) {
+    if (!userId || !groupId) return;
+    const summaryRef = this.fsDoc(`users/${userId}/groups/${groupId}`);
+    await this.fsSetDoc(summaryRef, this.buildGroupSummary(groupId, group), { merge: true });
+  }
+
+  private async removeUserGroupSummary(userId: string, groupId: string) {
+    if (!userId || !groupId) return;
+    const summaryRef = this.fsDoc(`users/${userId}/groups/${groupId}`);
+    await this.fsDeleteDoc(summaryRef);
+  }
+
+  private buildGroupSummary(groupId: string, group: Group): Partial<Group> {
+    const summary: Partial<Group> = {
+      id: groupId,
+      name: group.name,
+      type: group.type,
+      ownerId: group.ownerId,
+      ownerName: group.ownerName,
+      ownerPhoto: group.ownerPhoto ?? null,
+      createdAt: group.createdAt,
+      memberCount: group.memberCount ?? 0,
+      image: group.image,
+      description: group.description ?? '',
+    };
+    Object.keys(summary).forEach((key) => {
+      const typedKey = key as keyof Group;
+      if (summary[typedKey] === undefined) {
+        delete summary[typedKey];
+      }
+    });
+    return summary;
+  }
 
   private getUserGroupsInternal(uid: string): Observable<Group[]> {
     return defer(() => {
@@ -909,21 +913,14 @@ export class GroupService {
   }
 
   private async fetchUserGroupsFromSource(uid: string): Promise<Group[]> {
-    // Strictly query MEMBERSHIP only.
-    // We do NOT query ownedGroups separately.
-    // Valid owners MUST be in the members collection.
-    // If they left, they are out.
-
-    const memberSnap = await getDocs(
-      query(collectionGroup(this.firestore, 'members'), where('userId', '==', uid)),
+    const userGroupsSnap = await getDocs(this.fsCollection(`users/${uid}/groups`));
+    const uniqueIds = Array.from(
+      new Set(
+        userGroupsSnap.docs
+          .map((d) => d.id)
+          .filter((id): id is string => !!id),
+      ),
     );
-
-    const joinedIds = memberSnap.docs
-      .map((d) => d.ref.parent?.parent?.id)
-      .filter(Boolean) as string[];
-
-    // Remove duplicates
-    const uniqueIds = Array.from(new Set(joinedIds));
 
     const groups = await this.fetchGroupsByIds(uniqueIds);
     return groups.sort((a, b) => a.name.localeCompare(b.name));
@@ -1190,3 +1187,4 @@ export class GroupService {
     );
   }
 }
+

@@ -432,7 +432,7 @@ describe('GroupService flows', () => {
     const groupRef = await service.createGroup('Test Group', 'closed', 'desc');
 
     expect(groupRef.id).toBe('g1');
-    expect(setDocSpy.calls.count()).toBe(2);
+    expect(setDocSpy.calls.count()).toBe(3);
     expect(setDocSpy.calls.argsFor(0)[0]).toEqual(jasmine.objectContaining({ path: 'groups/g1' }));
     expect(setDocSpy.calls.argsFor(0)[1]).toEqual(
       jasmine.objectContaining({
@@ -450,9 +450,13 @@ describe('GroupService flows', () => {
         isAdmin: true,
       }),
     );
+    expect(setDocSpy.calls.argsFor(2)[0]).toEqual(
+      jasmine.objectContaining({ path: 'users/owner1/groups/g1' }),
+    );
+    expect(setDocSpy.calls.argsFor(2)[2]).toEqual(jasmine.objectContaining({ merge: true }));
   });
 
-  it('requestJoinGroup stores pending request and notifies owner/admin', async () => {
+  it('requestJoinGroup stores pending request and notifies owner', async () => {
     currentUser = { uid: 'u-requester', displayName: 'Requester', photoURL: 'user.png' };
 
     spyOn(service as any, 'fsCollection').and.callFake((path: string) => ({ path }));
@@ -464,17 +468,6 @@ describe('GroupService flows', () => {
       if (ref.path === 'groups/g1/members/u-requester') return makeSnap(false);
       if (ref.path === 'groups/g1/joinRequests/u-requester') return makeSnap(false);
       return makeSnap(true, { name: 'Group 1' }, 'g1');
-    });
-    spyOn(service as any, 'fsGetDocs').and.callFake(async (ref: any) => {
-      if (ref.path === 'groups/g1/members') {
-        return {
-          docs: [
-            { id: 'member-admin', data: () => ({ isAdmin: true, userId: 'u-admin' }) },
-            { id: 'u-owner', data: () => ({ isAdmin: false, userId: 'u-owner' }) },
-          ],
-        } as any;
-      }
-      return { docs: [] } as any;
     });
     const setDocSpy = spyOn(service as any, 'fsSetDoc').and.returnValue(
       Promise.resolve() as any,
@@ -505,7 +498,7 @@ describe('GroupService flows', () => {
     );
     expect(notificationServiceStub.notifyUsers).toHaveBeenCalled();
     const notifyArgs = notificationServiceStub.notifyUsers.calls.mostRecent().args as any[];
-    expect(notifyArgs[0]).toEqual(['u-admin', 'u-owner']);
+    expect(notifyArgs[0]).toEqual(['u-owner']);
     expect(notifyArgs[1]).toEqual(
       jasmine.objectContaining({
         type: 'group_join',

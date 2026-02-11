@@ -90,7 +90,18 @@ service cloud.firestore {
 
       // User group summaries
       match /groups/{groupId} {
-        allow read, write: if isSignedIn() && request.auth.uid == userId;
+        allow read: if isSignedIn() && request.auth.uid == userId;
+        allow create, update: if isSignedIn() && (
+          request.auth.uid == userId ||
+          (
+            isGroupAdmin(groupId) &&
+            exists(/databases/$(database)/documents/groups/$(groupId)/members/$(userId))
+          )
+        );
+        allow delete: if isSignedIn() && (
+          request.auth.uid == userId ||
+          isGroupAdmin(groupId)
+        );
       }
 
       // User notifications
@@ -205,7 +216,13 @@ service cloud.firestore {
       }
 
       match /members/{memberId} {
-        allow read: if isSignedIn() && (
+        allow get: if isSignedIn() && (
+          request.auth.uid == memberId ||
+          isSiteAdmin() ||
+          isGroupAdmin(groupId) ||
+          exists(/databases/$(database)/documents/groups/$(groupId)/members/$(request.auth.uid))
+        );
+        allow list: if isSignedIn() && (
           isSiteAdmin() ||
           isGroupAdmin(groupId) ||
           exists(/databases/$(database)/documents/groups/$(groupId)/members/$(request.auth.uid))

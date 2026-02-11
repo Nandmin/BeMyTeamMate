@@ -73,6 +73,28 @@ ng e2e
 
 Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
 
+## Firestore migration scripts
+
+Available scripts:
+
+- `npm run migrate:group-members`
+- `npm run migrate:fcm-tokens`
+
+Required configuration for migration scripts:
+
+1. Copy `scripts/migrations/migrations.env.example` to `.env.migrations`
+2. Fill:
+   - `FIREBASE_PROJECT_ID`
+   - `FIREBASE_SERVICE_ACCOUNT_PATH` (path to your service account JSON)
+
+Alternative run (without `.env.migrations`):
+
+```powershell
+$env:FIREBASE_PROJECT_ID="your-project-id"
+$env:FIREBASE_SERVICE_ACCOUNT_PATH="C:\path\service-account.json"
+npm run migrate:group-members
+```
+
 ## Firebase Configuration
 
 ### App Check Setup

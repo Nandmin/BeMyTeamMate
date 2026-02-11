@@ -1,32 +1,118 @@
+const fs = require('fs');
+const path = require('path');
 const admin = require('firebase-admin');
 
-const projectId = process.env.FIREBASE_PROJECT_ID;
-const serviceAccountJson = process.env.FIREBASE_SERVICE_ACCOUNT_JSON;
-const serviceAccountPath = process.env.FIREBASE_SERVICE_ACCOUNT_PATH;
+function loadOptionalEnvFile(fileName) {
+  const filePath = path.resolve(process.cwd(), fileName);
+  if (!fs.existsSync(filePath)) return;
 
-function resolveCredential() {
-  if (serviceAccountJson) {
-    try {
-      const parsed = JSON.parse(serviceAccountJson);
-      return admin.credential.cert(parsed);
-    } catch (error) {
-      throw new Error('Invalid FIREBASE_SERVICE_ACCOUNT_JSON value.');
+  const content = fs.readFileSync(filePath, 'utf8');
+  const lines = content.split(/\r?\n/);
+  for (const rawLine of lines) {
+    const line = rawLine.trim();
+    if (!line || line.startsWith('#')) continue;
+    const match = line.match(/^([A-Za-z_][A-Za-z0-9_]*)\s*=\s*(.*)$/);
+    if (!match) continue;
+
+    const key = match[1];
+    let value = match[2].trim();
+    if (
+      (value.startsWith('"') && value.endsWith('"')) ||
+      (value.startsWith("'") && value.endsWith("'"))
+    ) {
+      value = value.slice(1, -1);
+    }
+    if (process.env[key] === undefined) {
+      process.env[key] = value;
     }
   }
-  if (serviceAccountPath) {
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const serviceAccount = require(serviceAccountPath);
+}
+
+function parseArgs(argv) {
+  const result = {
+    projectId: null,
+    serviceAccountPath: null,
+    serviceAccountJson: null,
+  };
+
+  for (const arg of argv) {
+    if (arg.startsWith('--project=')) {
+      result.projectId = arg.split('=')[1]?.trim() || null;
+      continue;
+    }
+    if (arg.startsWith('--service-account=')) {
+      result.serviceAccountPath = arg.split('=')[1]?.trim() || null;
+      continue;
+    }
+    if (arg.startsWith('--service-account-json=')) {
+      result.serviceAccountJson = arg.slice('--service-account-json='.length).trim() || null;
+      continue;
+    }
+    if (arg === '--help' || arg === '-h') {
+      console.log('Usage: node scripts/migrations/migrate-group-members.js [options]');
+      console.log('');
+      console.log('Options:');
+      console.log('  --project=<projectId>                 Firebase project ID');
+      console.log('  --service-account=<path>              Path to service account JSON file');
+      console.log('  --service-account-json=<json>         Service account JSON inline');
+      console.log('  -h, --help                            Show this help');
+      process.exit(0);
+    }
+  }
+
+  return result;
+}
+
+function parseServiceAccountJson(rawJson) {
+  if (!rawJson) return null;
+  try {
+    return JSON.parse(rawJson);
+  } catch (error) {
+    throw new Error('Invalid FIREBASE_SERVICE_ACCOUNT_JSON (or --service-account-json) value.');
+  }
+}
+
+function parseServiceAccountFile(rawPath) {
+  if (!rawPath) return null;
+  const resolvedPath = path.resolve(process.cwd(), rawPath);
+  if (!fs.existsSync(resolvedPath)) {
+    throw new Error(`Service account file not found: ${resolvedPath}`);
+  }
+  try {
+    const raw = fs.readFileSync(resolvedPath, 'utf8');
+    return JSON.parse(raw);
+  } catch (error) {
+    throw new Error(`Invalid service account JSON file: ${resolvedPath}`);
+  }
+}
+
+function resolveRuntimeConfig() {
+  loadOptionalEnvFile('.env.migrations');
+  loadOptionalEnvFile('.env');
+
+  const cli = parseArgs(process.argv.slice(2));
+
+  const serviceAccount =
+    parseServiceAccountJson(cli.serviceAccountJson || process.env.FIREBASE_SERVICE_ACCOUNT_JSON) ||
+    parseServiceAccountFile(cli.serviceAccountPath || process.env.FIREBASE_SERVICE_ACCOUNT_PATH);
+
+  const projectId =
+    cli.projectId ||
+    process.env.FIREBASE_PROJECT_ID ||
+    process.env.GOOGLE_CLOUD_PROJECT ||
+    process.env.GCLOUD_PROJECT ||
+    serviceAccount?.project_id ||
+    null;
+
+  return { projectId, serviceAccount };
+}
+
+function resolveCredential(serviceAccount) {
+  if (serviceAccount) {
     return admin.credential.cert(serviceAccount);
   }
   return admin.credential.applicationDefault();
 }
-
-admin.initializeApp({
-  credential: resolveCredential(),
-  projectId: projectId || undefined,
-});
-
-const db = admin.firestore();
 
 function buildGroupSummary(groupId, group) {
   const summary = {
@@ -46,6 +132,26 @@ function buildGroupSummary(groupId, group) {
 }
 
 async function migrate() {
+  const { projectId, serviceAccount } = resolveRuntimeConfig();
+  if (!projectId) {
+    throw new Error(
+      [
+        'Missing Firebase project ID.',
+        'Set one of: FIREBASE_PROJECT_ID, GOOGLE_CLOUD_PROJECT, GCLOUD_PROJECT, or pass --project=<id>.',
+        'Also provide credentials via FIREBASE_SERVICE_ACCOUNT_PATH/FIREBASE_SERVICE_ACCOUNT_JSON (or --service-account).',
+        'Example (PowerShell):',
+        '$env:FIREBASE_PROJECT_ID="your-project-id"; ' +
+          '$env:FIREBASE_SERVICE_ACCOUNT_PATH="C:\\path\\service-account.json"; npm run migrate:group-members',
+      ].join('\n'),
+    );
+  }
+
+  admin.initializeApp({
+    credential: resolveCredential(serviceAccount),
+    projectId,
+  });
+
+  const db = admin.firestore();
   const groupsSnap = await db.collection('groups').get();
   let updatedMembers = 0;
   let createdSummaries = 0;
@@ -106,6 +212,10 @@ async function migrate() {
 }
 
 migrate().catch((error) => {
-  console.error('Migration failed:', error);
+  if (error instanceof Error) {
+    console.error(`Migration failed: ${error.message}`);
+  } else {
+    console.error('Migration failed:', error);
+  }
   process.exitCode = 1;
 });

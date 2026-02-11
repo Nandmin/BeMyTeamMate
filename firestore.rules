@@ -148,12 +148,7 @@ service cloud.firestore {
       allow read, write: if isSiteAdmin();
     }
 
-    // 2. Collection group match for members (for queries)
-    match /{path=**}/members/{memberId} {
-      allow read: if isSignedIn();
-    }
-
-    // 3. Groups
+    // 2. Groups
     match /groups/{groupId} {
       allow read: if isSignedIn();
 
@@ -210,7 +205,11 @@ service cloud.firestore {
       }
 
       match /members/{memberId} {
-        allow read: if isSignedIn();
+        allow read: if isSignedIn() && (
+          isSiteAdmin() ||
+          isGroupAdmin(groupId) ||
+          exists(/databases/$(database)/documents/groups/$(groupId)/members/$(request.auth.uid))
+        );
         
         // Joining or Owner Setup:
         allow create: if isSignedIn() && (

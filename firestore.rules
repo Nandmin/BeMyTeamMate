@@ -152,7 +152,9 @@ service cloud.firestore {
     // 1b. Contact messages (site admin only)
     match /contactMessages/{messageId} {
       allow read, update, delete: if isSiteAdmin();
-      allow create: if isSignedIn();
+      // Client-side write is BLOCKED to enforce Turnstile + rate limiting via Worker.
+      // Only the Worker (using service account) can write to this collection.
+      allow create: if false;
     }
 
     match /contactMessages_Archived/{messageId} {

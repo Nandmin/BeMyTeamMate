@@ -1,17 +1,15 @@
 ﻿<div class="font-lexend min-h-[calc(100vh-4rem)] text-white relative overflow-hidden">
   <div class="fixed inset-0 z-0">
-    <img
-      alt="Abstract arena glow"
-      class="h-full w-full object-cover opacity-20"
-      src="https://lh3.googleusercontent.com/aida-public/AB6AXuA7zaqn7BxzQiE2m0VgjRh7mZwiOVp3oM1q1c-3Z_p0FjM0WpA1Y3a1xQwS3pCS6jZ5xZcV5x4Dox7o6d5pC2Vcbzq-N5VbJ7q1E2dXBGc5W4mS5mQ1zLxg2oKfT2tLkG0k7thRrI3Z8hL4Idco9iue0dZyd3_2dMIbC2lqQxHBBXQkct1p3c4q6e2c-Q8X1oW0Arcsq1bqW5oXx5n3l5gT1Qd2dR8xQ"
-    />
-    <div class="absolute inset-0 bg-gradient-to-b from-background-dark/95 via-background-dark/80 to-background-dark/95"></div>
+    <img alt="Abstract arena glow" class="h-full w-full object-cover opacity-20"
+      src="https://lh3.googleusercontent.com/aida-public/AB6AXuA7zaqn7BxzQiE2m0VgjRh7mZwiOVp3oM1q1c-3Z_p0FjM0WpA1Y3a1xQwS3pCS6jZ5xZcV5x4Dox7o6d5pC2Vcbzq-N5VbJ7q1E2dXBGc5W4mS5mQ1zLxg2oKfT2tLkG0k7thRrI3Z8hL4Idco9iue0dZyd3_2dMIbC2lqQxHBBXQkct1p3c4q6e2c-Q8X1oW0Arcsq1bqW5oXx5n3l5gT1Qd2dR8xQ" />
+    <div class="absolute inset-0 bg-gradient-to-b from-background-dark/95 via-background-dark/80 to-background-dark/95">
+    </div>
     <div class="absolute -top-24 -left-24 h-[420px] w-[420px] rounded-full bg-primary/12 blur-[120px]"></div>
     <div class="absolute -bottom-16 -right-20 h-[360px] w-[360px] rounded-full bg-emerald-400/10 blur-[120px]"></div>
   </div>
 
   <section class="relative z-10 mx-auto w-full max-w-5xl px-4 sm:px-6 lg:px-8 py-12">
-    <div class="privacy-shell"  style="text-align: justify;">
+    <div class="privacy-shell" style="text-align: justify;">
       <header class="privacy-header">
         <h1>Adatkezelési Tájékoztató</h1>
         <div class="privacy-divider" role="presentation"></div>
@@ -28,12 +26,13 @@
             <li><strong>Név: </strong> Be My Team Mate</li>
             <li>
               <strong>E-mail: </strong>
-              <a class="privacy-link" href="mailto:bemyteammate@gmail.com">bemyteammate@gmail.com</a>
+              <a class="privacy-link select-none" [href]="'mailto:' + contactEmail" oncontextmenu="return false"
+                (dragstart)="false">{{ contactEmail }}</a>
             </li>
             <li>
               <strong>Weboldal: </strong>
-              <a class="privacy-link" href="https://bemyteammate.com" target="_blank" rel="noreferrer">
-                https://bemyteammate.com
+              <a class="privacy-link" href="https://bemyteammate.eu" target="_blank" rel="noreferrer">
+                https://bemyteammate.eu
               </a>
             </li>
           </ul>
@@ -90,10 +89,13 @@
             <p><strong>Kezelt adatok köre:</strong></p>
             <ul>
               <li>E-mail cím: a felhasználó által megadott e-mail cím a regisztráció és bejelentkezés során,</li>
-              <li>Felhasználónév (username / megjelenített név): a felhasználó által választott név, amely a rendszerben megjelenik,</li>
-              <li>UID (Firebase azonosító): a Firebase Authentication által automatikusan generált egyedi felhasználói azonosító,</li>
-              <li>Szerepkör (role): a felhasználó jogosultsági szintje (user / admin),</li>
-              <li>Utolsó belépés időpontja (lastLoginAt): a felhasználó legutóbbi sikeres bejelentkezésének időbélyege.</li>
+              <li>Felhasználónév: a felhasználó által választott név, amely a rendszerben
+                megjelenik,</li>
+              <li>Firebase azonosító: a Firebase Authentication által automatikusan generált egyedi felhasználói
+                azonosító,</li>
+              <li>Szerepkör: a felhasználó jogosultsági szintje,</li>
+              <li>Utolsó belépés időpontja: a felhasználó legutóbbi sikeres bejelentkezésének időbélyege.
+              </li>
             </ul>
             <p><br /><strong>Az adatkezelés célja:</strong></p>
             <ul>
@@ -107,13 +109,16 @@
             </ul>
             <p><br /><strong>Az adatkezelés jogalapja:</strong></p>
             <ul>
-              <li>GDPR 6. cikk (1) b) pont – a szerződés teljesítése: a regisztráció a szolgáltatás igénybevételéhez szükséges, az adatkezelés a felhasználói fiók működtetéséhez elengedhetetlen,</li>
-              <li>GDPR 6. cikk (1) f) pont – jogos érdek: az Adatkezelő jogos érdeke a szolgáltatás biztonságos és átlátható üzemeltetése, valamint a visszaélések megelőzése.</li>
+              <li>GDPR 6. cikk (1) b) pont – a szerződés teljesítése: a regisztráció a szolgáltatás igénybevételéhez
+                szükséges, az adatkezelés a felhasználói fiók működtetéséhez elengedhetetlen,</li>
+              <li>GDPR 6. cikk (1) f) pont – jogos érdek: az Adatkezelő jogos érdeke a szolgáltatás biztonságos és
+                átlátható üzemeltetése, valamint a visszaélések megelőzése.</li>
             </ul>
             <p><br /><strong>Adatkezelés időtartama:</strong></p>
             <ul>
               <li>a felhasználói fiók fennállásáig, illetve annak törléséig,</li>
-              <li>a felhasználó bármikor kérheti fiókja és az ahhoz kapcsolódó személyes adatok törlését a felhasználói profil beállításaiban vagy az Adatkezelő elérhetőségein keresztül.</li>
+              <li>a felhasználó bármikor kérheti fiókja és az ahhoz kapcsolódó személyes adatok törlését a felhasználói
+                profil beállításaiban vagy az Adatkezelő elérhetőségein keresztül.</li>
             </ul>
           </div>
 
@@ -137,7 +142,8 @@
               <li><strong>Székhely:</strong> 1600 Amphitheatre Parkway, Mountain View, CA 94043, USA</li>
               <li>
                 <strong>További információ:</strong>
-                <a class="privacy-link" href="https://firebase.google.com/support/privacy" target="_blank" rel="noreferrer">
+                <a class="privacy-link" href="https://firebase.google.com/support/privacy" target="_blank"
+                  rel="noreferrer">
                   https://firebase.google.com/support/privacy
                 </a>
               </li>
@@ -148,7 +154,8 @@
               használata során. Az Adatkezelő és a Google között létrejött adatfeldolgozói szerződés (Data Processing
               Agreement - DPA) a Google Workspace / Cloud / Firebase feltételek részét képezi.
             </p>
-            <p><br /><strong>Adattovábbítás helye:</strong> Az adatok az Egyesült Államokba (USA) kerülnek továbbításra.</p>
+            <p><br /><strong>Adattovábbítás helye:</strong> Az adatok az Egyesült Államokba (USA) kerülnek továbbításra.
+            </p>
             <p><br /><strong>Jogalap és garanciák:</strong></p>
             <ul>
               <li>
@@ -164,9 +171,11 @@
                 (pl. titkosítás, hozzáférés-korlátozás) az adatok védelme érdekében.
               </li>
             </ul>
-            <br><p>
+            <br>
+            <p>
               Az adatfeldolgozói szerződésről és a Google adatvédelmi gyakorlatáról további információ:
-              <a class="privacy-link" href="https://cloud.google.com/terms/data-processing-addendum" target="_blank" rel="noreferrer">
+              <a class="privacy-link" href="https://cloud.google.com/terms/data-processing-addendum" target="_blank"
+                rel="noreferrer">
                 Google Cloud Data Processing Addendum
               </a>
             </p>
@@ -187,7 +196,8 @@
               <li>a látogatás időpontja, időtartama,</li>
               <li>meglátogatott oldalak, kattintások.</li>
             </ul>
-            <br><p>
+            <br>
+            <p>
               A Google Analytics gyűjtött adatai nem azonosítják közvetlenül a látogatót, ugyanakkor a GDPR értelmében
               ezek az adatok – különösen az IP-cím és egyedi azonosítók – személyes adatnak minősülhetnek.
             </p>
@@ -199,7 +209,8 @@
             </ul>
             <p><br /><strong>Jogalap:</strong> hozzájárulás</p>
             <p>
-              A Google Analytics sütik használatának jogalapja a GDPR 6. cikk (1) bekezdés a) pontja szerinti hozzájárulás.
+              A Google Analytics sütik használatának jogalapja a GDPR 6. cikk (1) bekezdés a) pontja szerinti
+              hozzájárulás.
             </p>
             <p>
               A sütik elhelyezéséhez és a Google Analytics futtatásához a felhasználó a weboldalon megjelenő cookie
@@ -231,6 +242,47 @@
               legnagyobb védelmet nyújtsa.
             </p>
           </div>
+
+          <div class="privacy-subsection">
+            <h3>4.4. Cloudflare szolgáltatások (Weboldal hosting és biztonság)</h3>
+            <p>
+              A weboldal a Cloudflare szolgáltatásait használja a tartalom kiszolgálására (hosting), a biztonság
+              fokozására és a visszaélések elleni védelemre (pl. botok elleni védelem). A Cloudflare sütiket és
+              technikai adatokat gyűjthet a webhely biztonságos és gyors működése érdekében.
+            </p>
+            <p><br /><strong>Kezelt adatok köre:</strong></p>
+            <ul>
+              <li>IP-cím,</li>
+              <li>böngésző és eszköz adatai,</li>
+              <li>a weboldal látogatásával kapcsolatos technikai naplófájlok,</li>
+              <li>Turnstile CAPTCHA adatok: a botok elleni védelem során a felhasználói interakciók elemzése.</li>
+            </ul>
+            <p><br /><strong>Az adatkezelés célja:</strong></p>
+            <ul>
+              <li>a weboldal kiszolgálása (Cloudflare Pages),</li>
+              <li>biztonsági fenyegetések (pl. DDOS támadások, botok) észlelése és megelőzése,</li>
+              <li>gyors és zavartalan tartalmi elérés biztosítása (CDN szolgáltatás).</li>
+            </ul>
+            <p><br /><strong>Adatfeldolgozó:</strong></p>
+            <ul>
+              <li><strong>Név:</strong> Cloudflare, Inc.</li>
+              <li><strong>Székhely:</strong> 101 Townsend St, San Francisco, CA 94107, USA</li>
+              <li>
+                <strong>További információ:</strong>
+                <a class="privacy-link" href="https://www.cloudflare.com/trust-hub/privacy-and-data-protection/"
+                  target="_blank" rel="noreferrer">
+                  https://www.cloudflare.com/trust-hub/privacy-and-data-protection/
+                </a>
+              </li>
+            </ul>
+            <p><br /><strong>Jogalap és adattovábbítás:</strong></p>
+            <ul>
+              <li>Jogos érdek (GDPR 6. cikk (1) f) pont): a weboldal biztonságos üzemeltetése és a támadások elleni
+                védelem.</li>
+              <li>Adattovábbítás: a Cloudflare globális hálózatot üzemeltet, így az adatok az USA-ba vagy más országokba
+                is továbbításra kerülhetnek a megfelelőségi mechanizmusok (pl. SCC) alapján.</li>
+            </ul>
+          </div>
         </section>
 
         <section class="privacy-section">
@@ -241,11 +293,17 @@
           <p>Az Adatkezelő az adatkezelés során az alábbi adatfeldolgozókat veheti igénybe:</p>
           <ul>
             <li>
-              <strong>Tárhelyszolgáltató:</strong> A felhasználói adatokat a Firebase (Google Cloud Platform)
-              szolgáltatásában tároljuk, amely megfelelő technikai és szervezési intézkedésekkel biztosítja az adatok
-              védelmét. Az adatokat csak a szükséges ideig tároljuk, és rendszeresen töröljük a már nem szükséges adatokat.
+              <strong>Weboldal tárhelyszolgáltató (Hosting):</strong> Cloudflare, Inc. (San Francisco, USA) – a weboldal
+              kiszolgálása és statikus tartalmak tárolása.
+            </li>
+            <li>
+              <strong>Adattárolás és Autentikáció:</strong> Google LLC (Firebase / Google Cloud Platform) – A
+              felhasználói adatokat a Firebase szolgáltatásban tároljuk, amely megfelelő technikai és szervezési
+              intézkedésekkel biztosítja az adatok védelmét.
             </li>
             <li><strong>Analitikai szolgáltató:</strong> Google LLC – Google Analytics (lásd fent).</li>
+            <li><strong>Biztonsági szolgáltató (CAPTCHA):</strong> Cloudflare, Inc. – Cloudflare Turnstile bot-védelem.
+            </li>
           </ul>
           <p>
             Az Adatkezelő személyes adatot kizárólag a jelen tájékoztatóban meghatározott célból, az érintett megfelelő
@@ -260,7 +318,8 @@
           </div>
           <ul>
             <li>Utolsó belépés időpontja: a felhasználói fiók fennállásáig / törléséig,</li>
-            <li>Google Analytics sütik: a sütik lejártáig (legfeljebb 2 év), illetve a böngésző által történő törlésig.</li>
+            <li>Google Analytics sütik: a sütik lejártáig (legfeljebb 2 év), illetve a böngésző által történő törlésig.
+            </li>
           </ul>
           <p>Az adatmegőrzési idő leteltét követően a személyes adatok törlésre vagy anonimizálásra kerülnek.</p>
         </section>
@@ -272,17 +331,20 @@
           </div>
           <p>Az érintett (a weboldal látogatója, felhasználója) a GDPR alapján az alábbi jogokkal rendelkezik:</p>
           <ul>
-            <li>Hozzáféréshez való jog – tájékoztatást kérhet arról, hogy az Adatkezelő kezeli-e a rá vonatkozó személyes adatokat, és ha igen, melyeket, milyen célból, jogalapon és mennyi ideig.</li>
+            <li>Hozzáféréshez való jog – tájékoztatást kérhet arról, hogy az Adatkezelő kezeli-e a rá vonatkozó
+              személyes adatokat, és ha igen, melyeket, milyen célból, jogalapon és mennyi ideig.</li>
             <li>Helyesbítéshez való jog – kérheti a pontatlan vagy hiányos adatok módosítását, kiegészítését.</li>
             <li>Törléshez való jog („elfeledtetés joga") – bizonyos esetekben kérheti személyes adataik törlését.</li>
-            <li>Az adatkezelés korlátozásához való jog – kérheti az adatkezelés korlátozását (pl. vitatott adat pontossága esetén).</li>
-            <li>Adathordozhatósághoz való jog – meghatározott esetekben kérheti, hogy az Adatkezelő a rá vonatkozó adatokat géppel olvasható formátumban kiadja számára vagy más adatkezelőnek továbbítsa.</li>
+            <li>Az adatkezelés korlátozásához való jog – kérheti az adatkezelés korlátozását (pl. vitatott adat
+              pontossága esetén).</li>
+            <li>Adathordozhatósághoz való jog – meghatározott esetekben kérheti, hogy az Adatkezelő a rá vonatkozó
+              adatokat géppel olvasható formátumban kiadja számára vagy más adatkezelőnek továbbítsa.</li>
             <li>Tiltakozáshoz való jog – jogosult tiltakozni a jogos érdeken alapuló adatkezelés ellen.</li>
           </ul>
           <p>Az érintett jogainak gyakorlására irányuló kérelmét az alábbi elérhetőségen nyújthatja be:</p>
           <p>
             <strong>E-mail: </strong>
-            <a class="privacy-link" href="mailto:bemyteammate@gmail.com">bemyteammate@gmail.com</a>
+            <a class="privacy-link select-none" [href]="'mailto:' + contactEmail">{{ contactEmail }}</a>
           </p>
           <p>
             Az Adatkezelő a kérelem beérkezésétől számított legfeljebb 1 hónapon belül tájékoztatja az érintettet a
@@ -327,9 +389,9 @@
             Fenntartjuk a jogot jelen Adatkezelési Tájékoztató módosítására jogszabályi vagy technológiai változás
             esetén. A mindenkor hatályos verzió mindig megtalálható a weboldalon.
           </p>
-          <p><br /><strong>Hatályos:</strong> 2025. december 10. napjától visszavonásig.</p>
+          <p><br /><strong>Hatályos:</strong> 2026. február 12. napjától visszavonásig.</p>
           <div class="privacy-footer text-center">
-            <p style="padding-top: 35px;"><br /><strong>Utolsó frissítés:</strong> 2025. december 10.</p>
+            <p><br /><strong>Utolsó frissítés:</strong> 2026. február 12.</p>
           </div>
         </section>
       </div>

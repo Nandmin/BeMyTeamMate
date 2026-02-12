@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-privacy-policy-page',
@@ -8,4 +9,6 @@ import { CommonModule } from '@angular/common';
   templateUrl: './privacy-policy.page.html',
   styleUrl: './privacy-policy.page.scss',
 })
-export class PrivacyPolicyPage {}
+export class PrivacyPolicyPage {
+  contactEmail = environment.contactEmail;
+}

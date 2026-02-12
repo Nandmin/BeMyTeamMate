@@ -1,11 +1,9 @@
 ﻿<div class="font-lexend min-h-[calc(100vh-4rem)] text-white relative overflow-hidden">
   <div class="fixed inset-0 z-0">
-    <img
-      alt="Abstract arena glow"
-      class="h-full w-full object-cover opacity-20"
-      src="https://lh3.googleusercontent.com/aida-public/AB6AXuA7zaqn7BxzQiE2m0VgjRh7mZwiOVp3oM1q1c-3Z_p0FjM0WpA1Y3a1xQwS3pCS6jZ5xZcV5x4Dox7o6d5pC2Vcbzq-N5VbJ7q1E2dXBGc5W4mS5mQ1zLxg2oKfT2tLkG0k7thRrI3Z8hL4Idco9iue0dZyd3_2dMIbC2lqQxHBBXQkct1p3c4q6e2c-Q8X1oW0Arcsq1bqW5oXx5n3l5gT1Qd2dR8xQ"
-    />
-    <div class="absolute inset-0 bg-gradient-to-b from-background-dark/95 via-background-dark/80 to-background-dark/95"></div>
+    <img alt="Abstract arena glow" class="h-full w-full object-cover opacity-20"
+      src="https://lh3.googleusercontent.com/aida-public/AB6AXuA7zaqn7BxzQiE2m0VgjRh7mZwiOVp3oM1q1c-3Z_p0FjM0WpA1Y3a1xQwS3pCS6jZ5xZcV5x4Dox7o6d5pC2Vcbzq-N5VbJ7q1E2dXBGc5W4mS5mQ1zLxg2oKfT2tLkG0k7thRrI3Z8hL4Idco9iue0dZyd3_2dMIbC2lqQxHBBXQkct1p3c4q6e2c-Q8X1oW0Arcsq1bqW5oXx5n3l5gT1Qd2dR8xQ" />
+    <div class="absolute inset-0 bg-gradient-to-b from-background-dark/95 via-background-dark/80 to-background-dark/95">
+    </div>
     <div class="absolute -top-24 -left-24 h-[420px] w-[420px] rounded-full bg-primary/12 blur-[120px]"></div>
     <div class="absolute -bottom-16 -right-20 h-[360px] w-[360px] rounded-full bg-emerald-400/10 blur-[120px]"></div>
   </div>
@@ -32,7 +30,8 @@
           <ul>
             <li>A BeMyTeamMate egy ingyenes, hobbiprojekt jellegű szolgáltatás sportcsoportok szervezéséhez.</li>
             <li>A szolgáltatás „ahogy van” alapon működik: lehetnek hibák, kiesések, és a funkciók változhatnak.</li>
-            <li>Csoporthoz csatlakozva bizonyos adataid (pl. megjelenített név, részvételi jelzések) a csoport tagjai számára láthatóvá válnak.</li>
+            <li>Csoporthoz csatlakozva bizonyos adataid (pl. megjelenített név, részvételi jelzések) a csoport tagjai
+              számára láthatóvá válnak.</li>
             <li>A részletes adatkezelési szabályokat az Adatkezelési tájékoztató tartalmazza.</li>
           </ul>
         </section>
@@ -63,12 +62,13 @@
             <li><strong>Üzemeltető/Fejlesztő:</strong> Németh András</li>
             <li>
               <strong>Kapcsolat: </strong>
-              <a class="terms-link" href="mailto:bemyteammate@gmail.com">bemyteammate@gmail.com</a>
+              <a class="terms-link select-none" [href]="'mailto:' + contactEmail" oncontextmenu="return false"
+                (dragstart)="false">{{ contactEmail }}</a>
             </li>
             <li>
               <strong>Webcím: </strong>
-              <a class="terms-link" href="https://bemyteammate.com" target="_blank" rel="noreferrer">
-                https://bemyteammate.com
+              <a class="terms-link" href="https://bemyteammate.eu" target="_blank" rel="noreferrer">
+                https://bemyteammate.eu
               </a>
             </li>
           </ul>
@@ -130,8 +130,10 @@
             <li>jogosulatlan hozzáférés, biztonsági rések keresése/kihasználása,</li>
             <li>a Szolgáltatás túlterhelése, automatizált visszaélésszerű használat,</li>
             <li>adatok manipulálása, más Felhasználók zavarása vagy megtévesztése,</li>
-            <li>jogsértő, fenyegető, sértő, gyűlöletkeltő, zaklató vagy személyiségi jogot sértő tartalom közzététele,</li>
-            <li>harmadik személyek személyes adatainak jogellenes megadása (pl. telefonszám, cím, e-mail, képmás engedély nélkül).</li>
+            <li>jogsértő, fenyegető, sértő, gyűlöletkeltő, zaklató vagy személyiségi jogot sértő tartalom közzététele,
+            </li>
+            <li>harmadik személyek személyes adatainak jogellenes megadása (pl. telefonszám, cím, e-mail, képmás
+              engedély nélkül).</li>
           </ul>
         </section>
 
@@ -146,7 +148,8 @@
             a közzétételhez szükséges jogosultságokkal.
           </p>
           <p>
-            Az Üzemeltető jogosult a jogsértő vagy a Szolgáltatás céljával össze nem egyeztethető tartalmat eltávolítani,
+            Az Üzemeltető jogosult a jogsértő vagy a Szolgáltatás céljával össze nem egyeztethető tartalmat
+            eltávolítani,
             illetve a hozzáférést korlátozni.
           </p>
           <p>
@@ -177,8 +180,10 @@
               <li>a Felhasználó csoporttagsága,</li>
               <li>a csoporthoz tartozó események/meccsek adatai (pl. időpont, helyszín, létszám),</li>
               <li>a Felhasználó részvételi visszajelzései (pl. „jövök / nem jövök / bizonytalan”),</li>
-              <li>csoporton belüli aktivitáshoz kapcsolódó adatok (pl. eseményhez fűzött megjegyzés, amennyiben ilyen funkció elérhető),</li>
-              <li>a csoporthoz kötődő, a Szolgáltatás által megjelenített statisztikák/összesítések (amennyiben elérhető).</li>
+              <li>csoporton belüli aktivitáshoz kapcsolódó adatok (pl. eseményhez fűzött megjegyzés, amennyiben ilyen
+                funkció elérhető),</li>
+              <li>a csoporthoz kötődő, a Szolgáltatás által megjelenített statisztikák/összesítések (amennyiben
+                elérhető).</li>
             </ul>
           </div>
 
@@ -202,7 +207,8 @@
               <li>tagsági kérelmek elfogadására/elutasítására,</li>
               <li>csoporttagok eltávolítására,</li>
               <li>csoportesemények létrehozására, szerkesztésére, törlésére,</li>
-              <li>csoporton belüli, jogsértő vagy a közösségi normákat sértő tartalmak eltávolítására (amennyiben ilyen funkció elérhető).</li>
+              <li>csoporton belüli, jogsértő vagy a közösségi normákat sértő tartalmak eltávolítására (amennyiben ilyen
+                funkció elérhető).</li>
             </ul>
             <p>
               A Felhasználó tudomásul veszi, hogy az adminisztrátori jogosultságok gyakorlása a Szolgáltatáson belüli
@@ -249,10 +255,12 @@
           <ul>
             <li>kiesésért, hibás működésért, elérhetetlenségért vagy megszűnésért,</li>
             <li>adatvesztésért, elmaradt haszonért, közvetett károkért,</li>
-            <li>harmadik fél szolgáltatásából eredő hibákért/kiesésekért (pl. tárhely, hitelesítés, értesítési infrastruktúra).</li>
+            <li>harmadik fél szolgáltatásából eredő hibákért/kiesésekért (pl. tárhely, hitelesítés, értesítési
+              infrastruktúra).</li>
           </ul>
           <p>
-            A Felhasználó tudomásul veszi, hogy a hobbiprojekt jelleg miatt az Üzemeltető nem vállal rendelkezésre állási
+            A Felhasználó tudomásul veszi, hogy a hobbiprojekt jelleg miatt az Üzemeltető nem vállal rendelkezésre
+            állási
             kötelezettséget.
           </p>
         </section>

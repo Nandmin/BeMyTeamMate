@@ -1,5 +1,6 @@
 ﻿import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-termofuse-page',
@@ -8,4 +9,6 @@ import { CommonModule } from '@angular/common';
   templateUrl: './termofuse.page.html',
   styleUrl: './termofuse.page.scss',
 })
-export class TermOfUsePage {}
+export class TermOfUsePage {
+  contactEmail = environment.contactEmail;
+}

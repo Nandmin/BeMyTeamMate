@@ -3,7 +3,8 @@ type RuntimePublicConfig = {
   turnstileSiteKey?: string;
 };
 
-const runtimePublicConfig = ((globalThis as any).__BMT_RUNTIME_CONFIG__ || {}) as RuntimePublicConfig;
+const runtimePublicConfig = ((globalThis as any).__BMT_RUNTIME_CONFIG__ ||
+  {}) as RuntimePublicConfig;
 
 const getRuntimePublicValue = (value: string | undefined, fallback = ''): string => {
   const normalized = typeof value === 'string' ? value.trim() : '';
@@ -29,4 +30,5 @@ export const environment = {
   cloudflareWorkerUrl: 'https://bemyteammate-push.andras78-nemeth.workers.dev/send-notification',
   contactWorkerUrl: 'https://bemyteammate-push.andras78-nemeth.workers.dev/contact-message',
   turnstileSiteKey: getRuntimePublicValue(runtimePublicConfig.turnstileSiteKey),
+  contactEmail: 'bemyteammate@gmail.com',
 };

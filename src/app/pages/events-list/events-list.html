@@ -208,21 +208,22 @@
     <!-- Right Column (Sidebar) -->
     <div class="lg:col-span-4 flex flex-col gap-6">
       <!-- Calendar Widget -->
-      <div class="bg-gradient-to-b from-dark-accent to-background-dark rounded-2xl p-6 border border-border-dark">
-        <div class="flex items-center justify-between mb-6">
-          <h3 class="text-white font-bold text-lg">{{ calendarMonthLabel() }}</h3>
+      <div
+        class="bg-gradient-to-b from-dark-accent to-background-dark rounded-2xl p-4 border border-border-dark w-full sm:max-w-[340px]">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="text-white font-bold text-base">{{ calendarMonthLabel() }}</h3>
           <div class="flex gap-2">
             <button (click)="goToPreviousMonth()" aria-label="Előző hónap"
               class="p-1 rounded-full hover:bg-white/10 text-gray-400 hover:text-white transition-colors">
-              <span class="material-symbols-outlined text-lg">chevron_left</span>
+              <span class="material-symbols-outlined text-base">chevron_left</span>
             </button>
             <button (click)="goToNextMonth()" aria-label="Következő hónap"
               class="p-1 rounded-full hover:bg-white/10 text-gray-400 hover:text-white transition-colors">
-              <span class="material-symbols-outlined text-lg">chevron_right</span>
+              <span class="material-symbols-outlined text-base">chevron_right</span>
             </button>
           </div>
         </div>
-        <div class="grid grid-cols-7 gap-y-4 gap-x-1 text-center text-sm mb-2">
+        <div class="grid grid-cols-7 gap-y-2 gap-x-0.5 text-center text-xs mb-1">
           <div class="text-gray-500 text-xs font-medium">H</div>
           <div class="text-gray-500 text-xs font-medium">K</div>
           <div class="text-gray-500 text-xs font-medium">Sz</div>
@@ -232,7 +233,7 @@
           <div class="text-gray-500 text-xs font-medium">V</div>
           @for (day of calendarDays(); track day.key) {
           <button
-            class="relative h-8 w-8 mx-auto flex items-center justify-center rounded-full text-sm transition-colors"
+            class="relative h-7 w-7 mx-auto flex items-center justify-center rounded-full text-xs transition-colors"
             [disabled]="!day.inMonth" (click)="day.inMonth && selectDay(day.date)" [ngClass]="{
               'text-gray-600 cursor-default': !day.inMonth,
               'text-white hover:bg-white/5 cursor-pointer': day.inMonth && !day.isToday,

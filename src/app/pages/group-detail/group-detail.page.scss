@@ -173,6 +173,23 @@ main {
   }
 }
 
+@media (max-width: 430px) {
+  .group-detail-action-buttons {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .group-detail-action-btn {
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+  }
+
+  .group-detail-settings-btn {
+    flex-shrink: 0;
+    white-space: nowrap;
+  }
+}
+
 // Light mode overrides
 // Light mode overrides
 :host-context(html.light) {

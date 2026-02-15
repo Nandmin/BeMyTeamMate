@@ -53,12 +53,16 @@
                                         csoport</span>
                                 </div>
                             </div>
+                            <p class="text-gray-400 max-w-2xl leading-relaxed mt-3">
+                                {{ group()?.description || 'Nincs le�r�s megadva.' }}
+                            </p>
+
                         </div>
                         <!-- Action Buttons -->
-                        <div class="flex flex-nowrap gap-2 sm:gap-3">
+                        <div class="group-detail-action-buttons flex flex-nowrap gap-2 sm:gap-3">
                             @if (!isMember()) {
                             <button (click)="onJoinGroup()" [disabled]="isSubmitting()"
-                                class="flex items-center gap-2 px-4 sm:px-5 py-2 sm:py-2.5 rounded-xl bg-primary text-white font-bold text-xs sm:text-sm hover:bg-primary-hover transition-all shadow-[0_0_15px_rgba(43,238,124,0.3)] hover:scale-105 active:scale-95 disabled:opacity-50 min-w-0 text-center whitespace-normal leading-tight">
+                                class="group-detail-action-btn flex items-center gap-2 px-4 sm:px-5 py-2 sm:py-2.5 rounded-xl bg-primary text-white font-bold text-xs sm:text-sm hover:bg-primary-hover transition-all shadow-[0_0_15px_rgba(43,238,124,0.3)] hover:scale-105 active:scale-95 disabled:opacity-50 min-w-0 text-center whitespace-normal leading-tight">
                                 <span class="material-symbols-outlined text-lg">{{ isSubmitting() ? 'sync' :
                                     'person_add' }}</span>
                                 <span>{{
@@ -70,30 +74,27 @@
                             }
                             @if (isAdmin()) {
                             <a [routerLink]="['/groups', group()?.id, 'settings']"
-                                class="flex items-center gap-2 px-4 sm:px-5 py-2 sm:py-2.5 rounded-xl bg-white/5 border border-white/10 text-white font-bold text-xs sm:text-sm hover:bg-white/10 transition-all hover:scale-105 active:scale-95 min-w-0 text-center whitespace-normal leading-tight">
+                                class="group-detail-action-btn group-detail-settings-btn flex items-center gap-2 px-4 sm:px-5 py-2 sm:py-2.5 rounded-xl bg-white/5 border border-white/10 text-white font-bold text-xs sm:text-sm hover:bg-white/10 transition-all hover:scale-105 active:scale-95 min-w-0 text-center whitespace-normal leading-tight">
                                 <span class="material-symbols-outlined text-lg">settings</span>
                                 <span>Beállítások</span>
                             </a>
                             }
                             @if (isAdmin()) {
                             <button (click)="openInviteModal()"
-                                class="flex items-center gap-2 px-4 sm:px-5 py-2 sm:py-2.5 rounded-xl bg-primary text-white font-bold text-xs sm:text-sm hover:bg-primary-hover transition-all shadow-[0_0_15px_rgba(43,238,124,0.3)] hover:scale-105 active:scale-95 keep-white min-w-0 text-center whitespace-normal leading-tight">
+                                class="group-detail-action-btn flex items-center gap-2 px-4 sm:px-5 py-2 sm:py-2.5 rounded-xl bg-primary text-white font-bold text-xs sm:text-sm hover:bg-primary-hover transition-all shadow-[0_0_15px_rgba(43,238,124,0.3)] hover:scale-105 active:scale-95 keep-white min-w-0 text-center whitespace-normal leading-tight">
                                 <span class="material-symbols-outlined text-lg">person_add</span>
                                 <span>Tag meghívása</span>
                             </button>
                             }
                             @if (isMember()) {
                             <button [routerLink]="['/groups', group()?.id, 'create-event']"
-                                class="flex items-center gap-2 px-4 sm:px-5 py-2 sm:py-2.5 rounded-xl bg-primary text-white font-bold text-xs sm:text-sm hover:bg-primary-hover transition-all shadow-[0_0_15px_rgba(43,238,124,0.3)] hover:scale-105 active:scale-95 keep-white min-w-0 text-center whitespace-normal leading-tight">
+                                class="group-detail-action-btn flex items-center gap-2 px-4 sm:px-5 py-2 sm:py-2.5 rounded-xl bg-primary text-white font-bold text-xs sm:text-sm hover:bg-primary-hover transition-all shadow-[0_0_15px_rgba(43,238,124,0.3)] hover:scale-105 active:scale-95 keep-white min-w-0 text-center whitespace-normal leading-tight">
                                 <span class="material-symbols-outlined text-lg">event</span>
                                 <span>Esemény létrehozása</span>
                             </button>
                             }
                         </div>
                     </div>
-                    <p class="text-gray-400 max-w-2xl leading-relaxed">
-                        {{ group()?.description || 'Nincs leírás megadva.' }}
-                    </p>
                     <!-- Stats Row -->
                     <div class="flex flex-wrap gap-4 pt-2">
                         <div class="flex items-center gap-3 bg-white/5 px-3 py-2 rounded-lg border border-white/10">

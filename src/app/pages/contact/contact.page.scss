@@ -1,9 +1,16 @@
 :host {
   display: block;
   min-height: 100%;
+  background-color: var(--bg-primary);
+  background:
+    radial-gradient(circle at 50% 0%, rgba(43, 238, 124, 0.05) 0%, transparent 50%),
+    radial-gradient(circle at 0% 100%, rgba(168, 85, 247, 0.03) 0%, transparent 40%);
+  transition: background-color 0.3s ease;
 }
 
 :host-context(html.light) {
+  background: radial-gradient(circle at 50% 0%, rgba(31, 58, 43, 0.03) 0%, transparent 50%);
+
   .bg-card-dark\/70 {
     background-color: rgba(255, 255, 255, 0.9);
     border-color: rgba(0, 0, 0, 0.1);
@@ -23,14 +30,6 @@
   .text-white\/50,
   .text-white\/40 {
     color: #64748b !important;
-  }
-
-  .from-background-dark\/95,
-  .via-background-dark\/85,
-  .to-background-dark\/95 {
-    --tw-gradient-from: rgba(248, 250, 252, 0.85) !important;
-    --tw-gradient-to: rgba(248, 250, 252, 0.95) !important;
-    --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to) !important;
   }
 }
 

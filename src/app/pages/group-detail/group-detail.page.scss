@@ -2,6 +2,9 @@
   display: block;
   min-height: 100vh;
   background-color: var(--bg-primary);
+  background:
+    radial-gradient(circle at 50% 0%, rgba(43, 238, 124, 0.05) 0%, transparent 50%),
+    radial-gradient(circle at 0% 100%, rgba(168, 85, 247, 0.03) 0%, transparent 40%);
   transition: background-color 0.3s ease;
 }
 
@@ -266,6 +269,8 @@ main {
 // Light mode overrides
 // Light mode overrides
 :host-context(html.light) {
+  background: radial-gradient(circle at 50% 0%, rgba(31, 58, 43, 0.03) 0%, transparent 50%);
+
   // Main background Override
   .bg-background-dark {
     background-color: #f8fafc;
@@ -405,14 +410,6 @@ main {
     background-color: #b91c1c;
   }
 
-  .group-hero {
-    background-color: #f8fafc;
-  }
-
-  .group-hero .hero-overlay,
-  .group-hero .hero-image {
-    display: none;
-  }
 }
 
 

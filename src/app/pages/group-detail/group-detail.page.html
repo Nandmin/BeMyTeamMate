@@ -96,32 +96,32 @@
                         </div>
                     </div>
                     <!-- Stats Row -->
-                    <div class="flex flex-wrap gap-4 pt-2">
-                        <div class="flex items-center gap-3 bg-white/5 px-3 py-2 rounded-lg border border-white/10">
+                    <div class="group-detail-stats flex flex-wrap gap-4 pt-2">
+                        <div class="group-detail-stat-card flex items-center gap-3 bg-white/5 px-3 py-2 rounded-lg border border-white/10">
                             <div class="p-2 bg-white/5 rounded-lg">
                                 <span class="material-symbols-outlined text-primary">groups</span>
                             </div>
-                            <div class="flex items-center gap-2">
-                                <p class="text-xl font-bold text-white">{{ group()?.memberCount || 0 }}</p>
-                                <p class="text-xs text-gray-400 uppercase tracking-wider">Csapattag</p>
+                            <div class="group-detail-stat-meta flex items-center gap-2">
+                                <p class="group-detail-stat-value text-xl font-bold text-white">{{ group()?.memberCount || 0 }}</p>
+                                <p class="group-detail-stat-label text-xs text-gray-400 uppercase tracking-wider">Csapattag</p>
                             </div>
                         </div>
-                        <div class="flex items-center gap-3 bg-white/5 px-3 py-2 rounded-lg border border-white/10">
+                        <div class="group-detail-stat-card flex items-center gap-3 bg-white/5 px-3 py-2 rounded-lg border border-white/10">
                             <div class="p-2 bg-white/5 rounded-lg">
                                 <span class="material-symbols-outlined text-primary">scoreboard</span>
                             </div>
-                            <div class="flex items-center gap-2">
-                                <p class="text-xl font-bold text-white">{{ matchStats().played }}</p>
-                                <p class="text-xs text-gray-400 uppercase tracking-wider">Lejátszott meccs</p>
+                            <div class="group-detail-stat-meta flex items-center gap-2">
+                                <p class="group-detail-stat-value text-xl font-bold text-white">{{ matchStats().played }}</p>
+                                <p class="group-detail-stat-label text-xs text-gray-400 uppercase tracking-wider">Lejátszott meccs</p>
                             </div>
                         </div>
-                        <div class="flex items-center gap-3 bg-white/5 px-3 py-2 rounded-lg border border-white/10">
+                        <div class="group-detail-stat-card flex items-center gap-3 bg-white/5 px-3 py-2 rounded-lg border border-white/10">
                             <div class="p-2 bg-white/5 rounded-lg">
                                 <span class="material-symbols-outlined text-primary">schedule</span>
                             </div>
-                            <div class="flex items-center gap-2">
-                                <p class="text-xl font-bold text-white">{{ matchStats().pending }}</p>
-                                <p class="text-xs text-gray-400 uppercase tracking-wider">Várakozó meccs</p>
+                            <div class="group-detail-stat-meta flex items-center gap-2">
+                                <p class="group-detail-stat-value text-xl font-bold text-white">{{ matchStats().pending }}</p>
+                                <p class="group-detail-stat-label text-xs text-gray-400 uppercase tracking-wider">Várakozó meccs</p>
                             </div>
                         </div>
                     </div>

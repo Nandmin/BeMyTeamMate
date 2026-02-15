@@ -142,6 +142,75 @@ main {
       max-width: none;
     }
   }
+
+  .group-detail-stats {
+    justify-content: center;
+    gap: 0.75rem;
+  }
+
+  .group-detail-stat-card {
+    flex: 0 1 calc((100% - 0.75rem) / 2);
+    max-width: 15.5rem;
+    min-width: 0;
+    justify-content: center;
+    gap: clamp(0.35rem, 1.4vw, 0.75rem);
+    padding: clamp(0.45rem, 1.8vw, 0.6rem) clamp(0.5rem, 2.2vw, 0.75rem);
+  }
+
+  .group-detail-stat-card > .p-2 {
+    padding: clamp(0.3rem, 1.2vw, 0.5rem);
+  }
+
+  .group-detail-stat-card > .p-2 .material-symbols-outlined {
+    font-size: clamp(0.95rem, 3.6vw, 1.25rem);
+    line-height: 1;
+  }
+
+  .group-detail-stat-meta {
+    min-width: 0;
+    display: flex;
+    justify-content: center;
+    gap: clamp(0.25rem, 1vw, 0.5rem);
+    align-items: center;
+  }
+
+  .group-detail-stat-value {
+    font-size: clamp(0.95rem, 4.1vw, 1.25rem);
+    line-height: 1.2;
+    white-space: nowrap;
+  }
+
+  .group-detail-stat-label {
+    font-size: clamp(0.72rem, 2.35vw, 0.82rem);
+    letter-spacing: clamp(0.01em, 0.08vw, 0.03em);
+    white-space: nowrap;
+    text-align: center;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
+
+@media (max-width: 465px) {
+  .group-detail-stat-card {
+    padding: 0.45rem 0.5rem;
+  }
+
+  .group-detail-stat-card > .p-2 {
+    padding: 0.28rem;
+  }
+
+  .group-detail-stat-card > .p-2 .material-symbols-outlined {
+    font-size: 0.9rem;
+  }
+
+  .group-detail-stat-value {
+    font-size: 0.95rem;
+  }
+
+  .group-detail-stat-label {
+    font-size: 0.7rem;
+    letter-spacing: 0.01em;
+  }
 }
 
 @media (min-width: 640px) {
@@ -170,6 +239,10 @@ main {
     .event-card__action {
       align-self: center;
     }
+  }
+
+  .group-detail-stats {
+    justify-content: flex-start;
   }
 }
 

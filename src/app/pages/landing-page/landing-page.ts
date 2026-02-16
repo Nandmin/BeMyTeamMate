@@ -1,10 +1,11 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 import { RouterLink } from '@angular/router';
 import { Meta, Title } from '@angular/platform-browser';
 import { DOCUMENT } from '@angular/common';
 import { Inject } from '@angular/core';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-landing-page',
@@ -13,6 +14,8 @@ import { Inject } from '@angular/core';
   styleUrl: './landing-page.scss',
 })
 export class LandingPage {
+  protected authService = inject(AuthService);
+
   constructor(
     private readonly title: Title,
     private readonly meta: Meta,

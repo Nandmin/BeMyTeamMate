@@ -1,4 +1,47 @@
-# BeMyTeamMateApp
+# BeMyTeamMate
+
+Overview of the application's technical architecture and solutions.
+
+## Technical Stack & Solutions
+
+### 1. Frontend
+
+- **Framework:** [Angular 20](https://angular.dev/) (latest stable version).
+- **Styling:** [Tailwind CSS](https://tailwindcss.com/) (modern, utility-first CSS framework) + PostCSS.
+- **Display:** Responsive design optimized for mobile, tablet, and desktop.
+- **SEO & Social:** Automated SEO optimization with dynamic meta tags, structured data, and Open Graph support via `SeoService`.
+- **PWA:** Progressive Web App support (Service Worker) with offline capabilities.
+
+### 2. Backend & Data Management
+
+- **Database:** [Google Firebase Firestore](https://firebase.google.com/products/firestore) (NoSQL, real-time data management).
+- **Authentication:** Firebase Authentication (secure user login and management).
+- **Edge Computing:** [Cloudflare Workers](https://workers.cloudflare.com/) (extending server-side logic to the edge, handling push notifications and security validations).
+
+### 3. Services & Integrations
+
+- **Push Notifications:** [Firebase Cloud Messaging (FCM)](https://firebase.google.com/products/cloud-messaging) – real-time browser notifications.
+- **Security (CAPTCHA):** [Cloudflare Turnstile](https://www.cloudflare.com/products/turnstile/) – modern, user-friendly bot protection on the contact form.
+- **Analytics:** [Google Analytics 4 (GA4)](https://analytics.google.com/) integration with privacy-first configuration (IP anonymization and consent management).
+- **Hosting:** [Cloudflare Pages](https://pages.cloudflare.com/) – lightning-fast global content delivery and automatic deployment.
+
+### 4. Advanced Solutions
+
+- **Multi-level Caching:**
+  - **In-Memory:** Fast access during the session.
+  - **LocalStorage:** Persistent storage across sessions.
+  - **TTL (Time To Live):** 5-minute automatic refresh cycle to keep data fresh.
+  - **Result:** Significantly reduced Firestore read costs and instant loading experience.
+- **Security Protection:**
+  - **Firebase App Check:** reCAPTCHA v3 based protection against API abuse.
+  - **Rate Limiting:** Cloudflare KV based IP/User level limitation to prevent spam.
+  - **Spam Protection:** "Honeypot" fields implementation in public forms to filter out automated bot submissions.
+- **Data Handling:** Excel-based data export support (`exceljs`, `xlsx`).
+- **Runtime Configuration:** Custom script-based environment variable management tailored for Cloudflare Pages (`runtime-config.js`).
+
+---
+
+# BeMyTeamMateApp (Original README)
 
 This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 20.3.13.
 
@@ -99,20 +142,21 @@ npm run migrate:group-members
 
 ### App Check Setup
 
-The application uses Firebase App Check with reCAPTCHA v3 to protect against abuse. 
+The application uses Firebase App Check with reCAPTCHA v3 to protect against abuse.
 For Cloud Firestore, enforcement must be enabled in Firebase Console under **App Check -> Cloud Firestore**.
 Firestore Security Rules cannot directly validate an App Check token claim.
 
 **Development Environment:**
+
 - Debug token is NOT stored in the repository.
 - Set your local token in browser console on localhost:
   ```js
-  localStorage.setItem('FIREBASE_APPCHECK_DEBUG_TOKEN', 'YOUR_DEBUG_TOKEN')
+  localStorage.setItem('FIREBASE_APPCHECK_DEBUG_TOKEN', 'YOUR_DEBUG_TOKEN');
   ```
 - If no token is set on localhost, the app enables `FIREBASE_APPCHECK_DEBUG_TOKEN = true` automatically to generate one.
 - You can also set a temporary global value before app bootstrap:
   ```js
-  window.__APP_CHECK_DEBUG_TOKEN__ = 'YOUR_DEBUG_TOKEN'
+  window.__APP_CHECK_DEBUG_TOKEN__ = 'YOUR_DEBUG_TOKEN';
   ```
 - **Important:** Your local debug token must be registered in Firebase Console:
   1. Go to [Firebase Console](https://console.firebase.google.com/)
@@ -122,6 +166,7 @@ Firestore Security Rules cannot directly validate an App Check token claim.
   5. Add your local debug token value
 
 **Production Environment:**
+
 - Uses reCAPTCHA v3 Site Key: `YOUR_RECAPTCHAV3_TOKEN`
 - Debug token is set to `undefined`
 - Cloudflare Worker endpoints also validate `X-Firebase-AppCheck` tokens (requires `FIREBASE_PROJECT_NUMBER` worker var)
@@ -131,17 +176,20 @@ Firestore Security Rules cannot directly validate an App Check token claim.
 The application implements Firebase Cloud Messaging (FCM) for push notifications:
 
 **Service Worker:**
+
 - Location: `public/firebase-messaging-sw.js`
 - Registered in `app.config.ts` via `provideServiceWorker`
 - VAPID key is loaded from `window.__BMT_RUNTIME_CONFIG__.vapidKey` (`public/runtime-config.js`)
 
 **Implementation:**
+
 - `NotificationService` handles FCM token management
 - Tokens are stored in Firestore under `users/{uid}/private/pushTokens`
 - Cloudflare Worker endpoint: `https://bemyteammate-push.andras78-nemeth.workers.dev/send-notification`
 - Contact captcha verification is done in Worker using `TURNSTILE_SECRET_KEY` (Worker secret)
 
 **Features:**
+
 - Push notification permission management
 - Foreground and background message handling
 - Token synchronization on user login
@@ -152,22 +200,26 @@ The application implements Firebase Cloud Messaging (FCM) for push notifications
 The application implements a comprehensive caching strategy to minimize Firestore reads and improve performance:
 
 **Cache Layers:**
+
 1. **In-Memory Cache**: `Map` objects for fast access during the session
 2. **LocalStorage Cache**: Persistent cache across sessions
 3. **TTL (Time To Live)**: 5 minutes default cache expiration
 
 **Cached Data:**
+
 - User profiles (`AuthService`)
 - Groups list and individual groups (`GroupService`)
 - Events (upcoming and past) (`EventService`)
 - User's group memberships
 
 **Cache Invalidation:**
+
 - Automatic invalidation on data mutations (create, update, delete)
 - Manual invalidation methods available in services
 - TTL-based expiration for stale data prevention
 
 **Benefits:**
+
 - Reduced Firestore read operations (cost savings)
 - Faster page loads and navigation
 - Improved offline experience
@@ -178,43 +230,49 @@ The application implements a comprehensive caching strategy to minimize Firestor
 ### Firebase API Injection Context Warnings
 
 You may see console warnings like:
+
 ```
 [warning] Firebase API called outside injection context: getDocs
 [warning] Firebase API called outside injection context: getDoc
 ```
 
 **What does this mean?**
+
 - This is an **architectural warning**, not a security issue
 - Occurs when Firebase SDK functions are called outside Angular's dependency injection context
 - Related to AngularFire 18+ changes in how it integrates with Angular's zone system
 
 **Is it a problem?**
+
 - ❌ **NOT a security risk** - Firebase Security Rules still protect your data
 - ❌ **NOT a data leak** - No unauthorized access to Firestore
 - ❌ **NOT a functional bug** - The application works correctly
 - ⚠️ **Potential issues**: May cause subtle change-detection problems or memory leaks in edge cases
 
 **Why haven't we fixed it?**
+
 1. **No security impact**: Firebase Security Rules are enforced server-side
 2. **No functional impact**: All features work as expected
 3. **Cache is preserved**: Our caching strategy remains effective
 4. **Time vs. benefit**: Fixing would require significant refactoring with minimal practical benefit
 
 **Mitigation:**
+
 - Used `defer()` operator from RxJS to wrap Firebase calls where possible
 - This reduces (but doesn't eliminate) the warnings
 - Services use proper dependency injection via `inject()`
 
 **Future improvements (if needed):**
+
 - Migrate from native Firebase SDK (`getDoc`, `getDocs`) to AngularFire wrappers (`docData`, `collectionData`)
 - This would eliminate warnings but requires refactoring all Firebase queries
 - Current cache implementation would remain compatible
 
 **References:**
+
 - [AngularFire Zones Documentation](https://github.com/angular/angularfire/blob/main/docs/zones.md)
 - [Firebase API Injection Context Issue](https://github.com/angular/angularfire/issues)
 
 ## Additional Resources
 
 For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
-

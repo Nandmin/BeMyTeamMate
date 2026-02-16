@@ -171,9 +171,21 @@ service cloud.firestore {
         request.resource.data.get('memberCount', 0) == 1;
 
       allow update: if isSignedIn() && (
+        // Owner and site admin keep full update rights.
         resource.data.ownerId == request.auth.uid ||
         isSiteAdmin() ||
-        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['memberCount'])
+        // System counters can be updated without owner/admin privileges.
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['memberCount']) ||
+        // Group admins can edit group settings, but cannot touch ownership/meta fields.
+        (
+          isGroupAdmin(groupId) &&
+          request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+            'name',
+            'description',
+            'type',
+            'image'
+          ])
+        )
       );
 
       allow delete: if isSignedIn() && (resource.data.ownerId == request.auth.uid || isSiteAdmin());

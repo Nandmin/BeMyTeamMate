@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, Output, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, EventEmitter, Input, Output, OnChanges, SimpleChanges, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { CoverImageEntry } from '../../services/cover-images.service';
 
@@ -21,7 +21,8 @@ export class CoverImageSelectorComponent implements OnChanges {
 
   selectedTag = '';
   availableTags: string[] = [];
-  private readonly pageSize = 12;
+  private readonly desktopPageSize = 12;
+  private readonly mobilePageSize = 9;
   currentPage = 0;
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -55,6 +56,13 @@ export class CoverImageSelectorComponent implements OnChanges {
     return this.filteredImages.slice(start, start + this.pageSize);
   }
 
+  private get pageSize(): number {
+    if (typeof window !== 'undefined' && window.innerWidth < 530) {
+      return this.mobilePageSize;
+    }
+    return this.desktopPageSize;
+  }
+
   get canGoPrev(): boolean {
     return this.currentPage > 0;
   }
@@ -86,6 +94,11 @@ export class CoverImageSelectorComponent implements OnChanges {
   goNextPage() {
     if (!this.canGoNext) return;
     this.currentPage += 1;
+  }
+
+  @HostListener('window:resize')
+  onWindowResize() {
+    this.ensurePageInRange();
   }
 
   private buildTags(images: CoverImageEntry[]): string[] {

@@ -31,7 +31,7 @@
         </div>
 
         <div class="flex-1 min-h-0 flex flex-col">
-            <div class="cover-image-grid grid grid-cols-4 grid-rows-3 gap-4 pr-1 pb-4 flex-1 min-h-0">
+            <div class="cover-image-grid grid gap-4 pr-1 pb-4 flex-1 min-h-0">
                 @for (img of pagedImages; track img.id) {
                 <button (click)="onSelect(img.id)" [disabled]="disabled"
                     class="relative w-full aspect-video rounded-xl overflow-hidden group border-2 transition-all hover:scale-[1.02]"
@@ -56,27 +56,29 @@
             }
         </div>
 
-        <div class="mt-6 pt-4 border-t border-white/10 relative">
-            <div class="flex items-center justify-end gap-4">
+        <div class="mt-6 pt-4 border-t border-white/10">
+            <div class="flex items-center gap-4">
                 @if (totalPages > 1) {
-                <div class="absolute left-1/2 -translate-x-1/2 flex items-center gap-4">
-                    <button (click)="goPrevPage()" [disabled]="disabled || !canGoPrev"
-                        class="px-2 py-0 rounded-lg border border-white/10 text-sm text-white hover:bg-white/5 transition-all disabled:opacity-50 disabled:hover:bg-transparent">
-                        <span class="material-symbols-outlined">chevron_left</span>
-                    </button>
-                    <div class="text-sm text-gray-300">
-                        {{ currentPage + 1 }} / {{ totalPages }}
+                <div class="flex-1 min-w-0 flex justify-center pr-2 sm:pr-4">
+                    <div class="flex items-center gap-4">
+                        <button (click)="goPrevPage()" [disabled]="disabled || !canGoPrev"
+                            class="px-2 py-0 rounded-lg border border-white/10 text-sm text-white hover:bg-white/5 transition-all disabled:opacity-50 disabled:hover:bg-transparent">
+                            <span class="material-symbols-outlined">chevron_left</span>
+                        </button>
+                        <div class="text-sm text-gray-300">
+                            {{ currentPage + 1 }} / {{ totalPages }}
+                        </div>
+                        <button (click)="goNextPage()" [disabled]="disabled || !canGoNext"
+                            class="px-2 py-0 rounded-lg border border-white/10 text-sm text-white hover:bg-white/5 transition-all disabled:opacity-50 disabled:hover:bg-transparent">
+                            <span class="material-symbols-outlined">chevron_right</span>
+                        </button>
                     </div>
-                    <button (click)="goNextPage()" [disabled]="disabled || !canGoNext"
-                        class="px-2 py-0 rounded-lg border border-white/10 text-sm text-white hover:bg-white/5 transition-all disabled:opacity-50 disabled:hover:bg-transparent">
-                        <span class="material-symbols-outlined">chevron_right</span>
-                    </button>
                 </div>
                 } @else {
-                <div></div>
+                <div class="flex-1"></div>
                 }
                 <button (click)="close.emit()"
-                    class="px-6 py-2.5 border border-white/10 rounded-xl text-white font-bold hover:bg-white/5 transition-all">
+                    class="shrink-0 px-6 py-2.5 border border-white/10 rounded-xl text-white font-bold hover:bg-white/5 transition-all">
                     Mégse
                 </button>
             </div>

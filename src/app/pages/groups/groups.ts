@@ -98,6 +98,8 @@ export class GroupsPage implements AfterViewInit, OnDestroy {
   showCreateModal = false;
   groupForm: FormGroup;
   isSubmitting = false;
+  readonly groupNameMaxLength = 50;
+  readonly groupDescriptionMaxLength = 250;
 
   constructor() {
     this.seo.setPageMeta({
@@ -108,9 +110,12 @@ export class GroupsPage implements AfterViewInit, OnDestroy {
     });
     void this.coverImagesService.getCoverImages();
     this.groupForm = this.fb.group({
-      name: ['', [Validators.required, Validators.minLength(3)]],
+      name: [
+        '',
+        [Validators.required, Validators.minLength(3), Validators.maxLength(this.groupNameMaxLength)],
+      ],
       type: ['closed', Validators.required],
-      description: [''],
+      description: ['', [Validators.maxLength(this.groupDescriptionMaxLength)]],
     });
   }
 
@@ -133,12 +138,17 @@ export class GroupsPage implements AfterViewInit, OnDestroy {
   }
 
   async onCreateGroup() {
-    if (this.groupForm.invalid) return;
+    if (this.groupForm.invalid) {
+      this.groupForm.markAllAsTouched();
+      return;
+    }
 
     this.isSubmitting = true;
     try {
       const { name, type, description } = this.groupForm.value;
-      await this.groupService.createGroup(name, type, description);
+      const normalizedName = (name ?? '').trim();
+      const normalizedDescription = (description ?? '').trim();
+      await this.groupService.createGroup(normalizedName, type, normalizedDescription);
       this.toggleCreateModal();
     } catch (error) {
       console.error('Error creating group:', error);

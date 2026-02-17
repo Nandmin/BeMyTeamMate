@@ -151,6 +151,8 @@ export class GroupSettingsPage {
 
   // Image selector modal state
   showImageSelector = signal(false);
+  readonly groupNameMaxLength = 50;
+  readonly groupDescriptionMaxLength = 250;
 
   constructor() {
     this.seo.setPageMeta({
@@ -257,8 +259,19 @@ export class GroupSettingsPage {
   // --- Group Settings ---
   async saveGroupSettings() {
     const form = this.editGroupForm();
-    if (!form.name.trim()) {
+    const name = form.name.trim();
+    const description = form.description.trim();
+
+    if (!name) {
       this.errorMessage.set('A csoport neve kötelező.');
+      return;
+    }
+    if (name.length > this.groupNameMaxLength) {
+      this.errorMessage.set('A csoport neve legfeljebb ' + this.groupNameMaxLength + ' karakter lehet.');
+      return;
+    }
+    if (description.length > this.groupDescriptionMaxLength) {
+      this.errorMessage.set('A leírás legfeljebb ' + this.groupDescriptionMaxLength + ' karakter lehet.');
       return;
     }
 
@@ -266,8 +279,8 @@ export class GroupSettingsPage {
     this.errorMessage.set('');
     try {
       await this.groupService.updateGroup(this.groupId, {
-        name: form.name.trim(),
-        description: form.description.trim(),
+        name,
+        description,
         type: form.type,
         image: form.image ?? undefined,
       });
@@ -284,7 +297,16 @@ export class GroupSettingsPage {
     field: 'name' | 'description' | 'type' | 'image',
     value: string | number | null,
   ) {
-    this.editGroupForm.update((form) => ({ ...form, [field]: value }));
+    let nextValue: string | number | null = value;
+
+    if (field === 'name' && typeof nextValue === 'string') {
+      nextValue = nextValue.slice(0, this.groupNameMaxLength);
+    }
+    if (field === 'description' && typeof nextValue === 'string') {
+      nextValue = nextValue.slice(0, this.groupDescriptionMaxLength);
+    }
+
+    this.editGroupForm.update((form) => ({ ...form, [field]: nextValue }));
   }
 
   // --- Image Selector ---

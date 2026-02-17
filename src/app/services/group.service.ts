@@ -92,9 +92,28 @@ export class GroupService {
   private listCacheVersion = this.readCacheVersion('groups:list:version');
   private groupItemCacheVersion = this.readCacheVersion('groups:item:version');
   private readonly maxCacheEntries = 100;
+  private readonly groupNameMaxLength = 50;
+  private readonly groupDescriptionMaxLength = 250;
 
   private get groupsCollection() {
     return this.fsCollection('groups');
+  }
+
+  private normalizeGroupName(name: string): string {
+    const normalizedName = (name ?? '').trim();
+    if (!normalizedName) throw new Error('A csoport neve kötelező.');
+    if (normalizedName.length > this.groupNameMaxLength) {
+      throw new Error(`A csoport neve legfeljebb ${this.groupNameMaxLength} karakter lehet.`);
+    }
+    return normalizedName;
+  }
+
+  private normalizeGroupDescription(description: string): string {
+    const normalizedDescription = (description ?? '').trim();
+    if (normalizedDescription.length > this.groupDescriptionMaxLength) {
+      throw new Error(`A leírás legfeljebb ${this.groupDescriptionMaxLength} karakter lehet.`);
+    }
+    return normalizedDescription;
   }
 
   private async writeGroupAuditLog(
@@ -121,12 +140,14 @@ export class GroupService {
   async createGroup(name: string, type: 'open' | 'closed', description: string = '') {
     const user = this.authService.currentUser();
     if (!user) throw new Error('User must be logged in to create a group');
+    const normalizedName = this.normalizeGroupName(name);
+    const normalizedDescription = this.normalizeGroupDescription(description);
 
     const groupRef = this.fsDoc(this.groupsCollection);
     const groupData: Omit<Group, 'id'> = {
-      name,
+      name: normalizedName,
       type,
-      description,
+      description: normalizedDescription,
       ownerId: user.uid,
       ownerName: user.displayName || 'Ismeretlen',
       ownerPhoto: user.photoURL || null,
@@ -148,7 +169,7 @@ export class GroupService {
       elo: 1200,
     });
     await this.writeGroupAuditLog(groupRef.id, 'group_create', {
-      groupName: name,
+      groupName: normalizedName,
       groupType: type,
     });
 
@@ -712,12 +733,20 @@ export class GroupService {
 
   // --- Group Management ---
   async updateGroup(groupId: string, data: Partial<Omit<Group, 'id' | 'ownerId' | 'createdAt'>>) {
+    const normalizedData = { ...data };
+    if (typeof normalizedData.name === 'string') {
+      normalizedData.name = this.normalizeGroupName(normalizedData.name);
+    }
+    if (typeof normalizedData.description === 'string') {
+      normalizedData.description = this.normalizeGroupDescription(normalizedData.description);
+    }
+
     const groupRef = doc(this.firestore, `groups/${groupId}`);
-    const result = await updateDoc(groupRef, data);
+    const result = await updateDoc(groupRef, normalizedData);
     await this.writeGroupAuditLog(groupId, 'group_update');
     const cached = this.getCachedGroup(groupId);
     if (cached) {
-      const updated = { ...cached, ...data } as Group;
+      const updated = { ...cached, ...normalizedData } as Group;
       this.setCachedGroup(groupId, updated);
     }
     const user = this.authService.currentUser();

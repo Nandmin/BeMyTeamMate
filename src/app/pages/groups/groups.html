@@ -175,10 +175,14 @@
             <!-- Group Name -->
             <div class="space-y-2">
                 <label class="text-sm font-medium text-gray-400">Csoport neve</label>
-                <input type="text" formControlName="name" placeholder="Pl. Szerdai Foci"
+                <input type="text" formControlName="name" [attr.maxlength]="groupNameMaxLength"
+                    [placeholder]="'Pl. Szerdai Foci (max. ' + groupNameMaxLength + ' karakter)'"
                     class="group-creation-input w-full bg-background-dark border border-border-green rounded-xl p-3 text-white placeholder-gray-600 focus:ring-2 focus:ring-primary focus:border-transparent transition-all" />
                 @if (groupForm.get('name')?.touched && groupForm.get('name')?.errors?.['required']) {
                 <p class="text-xs text-red-500 mt-1">A csoport név megadása kötelező.</p>
+                }
+                @if (groupForm.get('name')?.touched && groupForm.get('name')?.errors?.['maxlength']) {
+                <p class="text-xs text-red-500 mt-1">A csoport név legfeljebb {{ groupNameMaxLength }} karakter lehet.</p>
                 }
             </div>
 
@@ -210,8 +214,12 @@
             <!-- Description (Optional) -->
             <div class="space-y-2">
                 <label class="text-sm font-medium text-gray-400">Leírás (opcionális)</label>
-                <textarea formControlName="description" rows="3" placeholder="Miről szól ez a csoport?"
+                <textarea formControlName="description" rows="3" [attr.maxlength]="groupDescriptionMaxLength"
+                    [placeholder]="'Miről szól ez a csoport? (max. ' + groupDescriptionMaxLength + ' karakter)'"
                     class="group-creation-input w-full bg-background-dark border border-border-green rounded-xl p-3 text-white placeholder-gray-600 focus:ring-2 focus:ring-primary focus:border-transparent transition-all resize-none"></textarea>
+                @if (groupForm.get('description')?.touched && groupForm.get('description')?.errors?.['maxlength']) {
+                <p class="text-xs text-red-500 mt-1">A leírás legfeljebb {{ groupDescriptionMaxLength }} karakter lehet.</p>
+                }
             </div>
 
             <!-- Submit Button -->

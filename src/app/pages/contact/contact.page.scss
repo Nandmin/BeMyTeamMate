@@ -33,7 +33,17 @@
   }
 }
 
+.turnstile-shell {
+  --turnstile-scale: 1;
+  --turnstile-height: 65px;
+  width: 100%;
+  min-height: var(--turnstile-height);
+  overflow: hidden;
+}
+
 .turnstile-container {
-  min-height: 72px;
-  max-width: 100%;
+  width: 300px;
+  height: 65px;
+  transform: scale(var(--turnstile-scale));
+  transform-origin: top left;
 }

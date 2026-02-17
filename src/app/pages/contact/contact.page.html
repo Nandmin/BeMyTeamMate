@@ -90,8 +90,10 @@
             <input id="contact-website" type="text" formControlName="honeypot" autocomplete="off" tabindex="-1" />
           </div>
 
-          <div class="max-w-full rounded-xl border border-white/10 bg-white/5 p-4 overflow-x-auto">
-            <div #turnstileContainer class="turnstile-container"></div>
+          <div class="max-w-full rounded-xl border border-white/10 bg-white/5 p-4">
+            <div #turnstileShell class="turnstile-shell">
+              <div #turnstileContainer class="turnstile-container"></div>
+            </div>
             @if (turnstileError()) {
               <p class="mt-2 text-xs text-red-300">{{ turnstileError() }}</p>
             }

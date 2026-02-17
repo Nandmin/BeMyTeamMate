@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, ElementRef, ViewChild, inject, signal } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, OnDestroy, ViewChild, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { AppCheck } from '@angular/fire/app-check';
@@ -14,7 +14,7 @@ import { getAppCheckTokenOrNull } from '../../utils/app-check.util';
   templateUrl: './contact.page.html',
   styleUrl: './contact.page.scss',
 })
-export class ContactPage implements AfterViewInit {
+export class ContactPage implements AfterViewInit, OnDestroy {
   private authService = inject(AuthService);
   private appCheck = inject(AppCheck, { optional: true });
   private fb = inject(FormBuilder);
@@ -22,6 +22,8 @@ export class ContactPage implements AfterViewInit {
 
   @ViewChild('turnstileContainer', { static: false })
   turnstileContainer?: ElementRef<HTMLDivElement>;
+  @ViewChild('turnstileShell', { static: false })
+  turnstileShell?: ElementRef<HTMLDivElement>;
 
   contactForm = this.fb.group({
     email: ['', [Validators.required, Validators.email]],
@@ -36,6 +38,10 @@ export class ContactPage implements AfterViewInit {
   turnstileError = signal('');
 
   private turnstileWidgetId: string | null = null;
+  private resizeObserver?: ResizeObserver;
+  private readonly turnstileBaseWidth = 300;
+  private readonly turnstileBaseHeight = 65;
+  private readonly onWindowResize = () => this.updateTurnstileScale();
   private readonly cooldownMs = 60 * 1000;
   private readonly cooldownKey = 'contact:lastSentAt';
 
@@ -50,6 +56,10 @@ export class ContactPage implements AfterViewInit {
 
   ngAfterViewInit() {
     this.loadTurnstile();
+  }
+
+  ngOnDestroy() {
+    this.cleanupTurnstileScaling();
   }
 
   get messageCount() {
@@ -196,6 +206,7 @@ export class ContactPage implements AfterViewInit {
           'error-callback': () => this.turnstileToken.set(''),
         }
       );
+      this.initializeTurnstileScaling();
     };
 
     if (document.getElementById('cf-turnstile-script')) {
@@ -219,5 +230,42 @@ export class ContactPage implements AfterViewInit {
     if (this.turnstileWidgetId && (window as any).turnstile) {
       (window as any).turnstile.reset(this.turnstileWidgetId);
     }
+  }
+
+  private initializeTurnstileScaling() {
+    const shell = this.turnstileShell?.nativeElement;
+    if (!shell) return;
+
+    this.cleanupTurnstileScaling();
+    this.updateTurnstileScale();
+    requestAnimationFrame(() => this.updateTurnstileScale());
+
+    if (typeof ResizeObserver !== 'undefined') {
+      this.resizeObserver = new ResizeObserver(() => this.updateTurnstileScale());
+      this.resizeObserver.observe(shell);
+      return;
+    }
+
+    window.addEventListener('resize', this.onWindowResize, { passive: true });
+  }
+
+  private cleanupTurnstileScaling() {
+    if (this.resizeObserver) {
+      this.resizeObserver.disconnect();
+      this.resizeObserver = undefined;
+    }
+    window.removeEventListener('resize', this.onWindowResize);
+  }
+
+  private updateTurnstileScale() {
+    const shell = this.turnstileShell?.nativeElement;
+    if (!shell) return;
+
+    const availableWidth = shell.clientWidth;
+    if (!availableWidth) return;
+
+    const scale = Math.min(1, availableWidth / this.turnstileBaseWidth);
+    shell.style.setProperty('--turnstile-scale', scale.toString());
+    shell.style.setProperty('--turnstile-height', `${this.turnstileBaseHeight * scale}px`);
   }
 }

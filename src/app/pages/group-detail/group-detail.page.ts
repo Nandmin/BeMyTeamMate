@@ -1,4 +1,4 @@
-import { Component, inject, signal, computed, effect, Renderer2 } from '@angular/core';
+import { Component, inject, signal, computed, effect, Renderer2, DestroyRef } from '@angular/core';
 import { Timestamp } from '@angular/fire/firestore';
 import { CommonModule, DOCUMENT } from '@angular/common';
 import { ActivatedRoute, RouterModule, Router } from '@angular/router';
@@ -6,7 +6,7 @@ import { FormsModule } from '@angular/forms';
 import { GroupService, Group, GroupMember, GroupInvite } from '../../services/group.service';
 import { AuthService } from '../../services/auth.service';
 import { toSignal, toObservable } from '@angular/core/rxjs-interop';
-import { switchMap, combineLatest, map, of, catchError } from 'rxjs';
+import { switchMap, combineLatest, map, of, catchError, tap } from 'rxjs';
 import { EventService, SportEvent } from '../../services/event.service';
 import { ModalService } from '../../services/modal.service';
 import { CoverImageSelectorComponent } from '../../components/cover-image-selector/cover-image-selector.component';
@@ -14,6 +14,8 @@ import { RoleLabelPipe } from '../../pipes/role-label.pipe';
 import { SeoService } from '../../services/seo.service';
 import { CoverImageEntry, CoverImagesService } from '../../services/cover-images.service';
 import { AppUser } from '../../models/user.model';
+
+type GroupDetailMobileTab = 'overview' | 'events' | 'members' | 'settings';
 
 @Component({
   selector: 'app-group-detail',
@@ -31,12 +33,26 @@ export class GroupDetailPage {
   private modalService = inject(ModalService);
   private renderer = inject(Renderer2);
   private document = inject(DOCUMENT);
+  private destroyRef = inject(DestroyRef);
   private seo = inject(SeoService);
   private coverImagesService = inject(CoverImagesService);
   protected math = Math;
   private inviteParams = toSignal(this.route.queryParams, { initialValue: {} as any });
+  private mobileViewportQuery = this.document.defaultView?.matchMedia('(max-width: 767px)');
+  private readonly mobileTabs: readonly GroupDetailMobileTab[] = [
+    'overview',
+    'events',
+    'members',
+    'settings',
+  ];
+  private readonly mobileLeaveConfirmToken = 'KILEPEK';
 
   selectedView = signal<'upcoming' | 'previous'>('upcoming');
+  mobileTab = signal<GroupDetailMobileTab>('overview');
+  isMobileViewport = signal(this.mobileViewportQuery?.matches ?? false);
+  showMobileActionSheet = signal(false);
+  showMobileLeaveConfirm = signal(false);
+  mobileLeaveConfirmText = signal('');
 
   constructor() {
     this.seo.setPageMeta({
@@ -45,6 +61,21 @@ export class GroupDetailPage {
       path: '/groups',
       noindex: true,
     });
+    const viewportQuery = this.mobileViewportQuery;
+    if (viewportQuery) {
+      const onViewportChange = (event: MediaQueryListEvent) => {
+        this.isMobileViewport.set(event.matches);
+      };
+      this.isMobileViewport.set(viewportQuery.matches);
+      if (typeof viewportQuery.addEventListener === 'function') {
+        viewportQuery.addEventListener('change', onViewportChange);
+        this.destroyRef.onDestroy(() => viewportQuery.removeEventListener('change', onViewportChange));
+      } else {
+        viewportQuery.addListener(onViewportChange);
+        this.destroyRef.onDestroy(() => viewportQuery.removeListener(onViewportChange));
+      }
+    }
+
     void this.loadCoverImages();
     effect(() => {
       const isModalOpen = !!this.selectedEventForRecurrence();
@@ -93,6 +124,28 @@ export class GroupDetailPage {
         this.inviteAcceptedGrace.set(false);
       }
     });
+    effect(() => {
+      const nextTab = this.coerceMobileTab(this.inviteParams()['tab']);
+      if (this.mobileTab() !== nextTab) {
+        this.mobileTab.set(nextTab);
+      }
+    });
+    effect(() => {
+      if (this.mobileTab() !== 'overview' && this.showMobileActionSheet()) {
+        this.showMobileActionSheet.set(false);
+      }
+    });
+    effect(() => {
+      if (this.mobileTab() !== 'settings' && this.showMobileLeaveConfirm()) {
+        this.showMobileLeaveConfirm.set(false);
+      }
+    });
+  }
+
+  private coerceMobileTab(value: unknown): GroupDetailMobileTab {
+    return typeof value === 'string' && this.mobileTabs.includes(value as GroupDetailMobileTab)
+      ? (value as GroupDetailMobileTab)
+      : 'overview';
   }
 
   private async loadCoverImages(tag?: string) {
@@ -160,6 +213,10 @@ export class GroupDetailPage {
   });
 
   canViewEvents = computed(() => this.isMember() || this.isAdmin());
+  hasMobileSecondaryActions = computed(() => !this.isMember() || this.isAdmin());
+  canConfirmMobileLeave = computed(
+    () => this.mobileLeaveConfirmText().trim().toUpperCase() === this.mobileLeaveConfirmToken,
+  );
 
   canViewGroupContent = computed(() => {
     const group = this.group();
@@ -170,10 +227,23 @@ export class GroupDetailPage {
     return this.isMember() || this.isAdmin();
   });
 
+  eventsReload = signal(0);
+  eventsLoading = signal(true);
+  eventsError = signal('');
+
   events = toSignal(
-    combineLatest([this.route.params, toObservable(this.canViewEvents)]).pipe(
+    combineLatest([
+      this.route.params,
+      toObservable(this.canViewEvents),
+      toObservable(this.eventsReload),
+    ]).pipe(
       switchMap(([params, canView]) => {
-        if (!canView) return of([] as SportEvent[]);
+        this.eventsError.set('');
+        if (!canView) {
+          this.eventsLoading.set(false);
+          return of([] as SportEvent[]);
+        }
+        this.eventsLoading.set(true);
         return combineLatest([
           this.eventService.getUpcomingEventsInternal(params['id'], {
             daysAhead: 3650,
@@ -183,14 +253,24 @@ export class GroupDetailPage {
             daysBack: 3650,
             limit: 500,
           }),
-        ]).pipe(map(([upcoming, past]) => [...upcoming, ...past]));
-      })
+        ]).pipe(
+          map(([upcoming, past]) => [...upcoming, ...past]),
+          tap(() => this.eventsLoading.set(false)),
+          catchError((err) => {
+            console.error('Events load error:', err);
+            this.eventsError.set('Hiba tortent az esemenyek betoltesekor.');
+            this.eventsLoading.set(false);
+            return of([] as SportEvent[]);
+          }),
+        );
+      }),
     ),
-    { initialValue: [] as SportEvent[] }
+    { initialValue: [] as SportEvent[] },
   );
 
   currentPage = signal(1);
   pageSize = 5;
+  mobileVisibleEventsCount = signal(5);
 
   totalPages = computed(() => Math.ceil(this.sortedEvents().length / this.pageSize));
 
@@ -241,9 +321,39 @@ export class GroupDetailPage {
     return events.slice(start, start + this.pageSize);
   });
 
+  mobileVisibleEvents = computed(() => {
+    const events = this.sortedEvents();
+    return events.slice(0, this.mobileVisibleEventsCount());
+  });
+
+  eventsForViewport = computed(() =>
+    this.isMobileViewport() ? this.mobileVisibleEvents() : this.paginatedEvents(),
+  );
+
+  hasMoreMobileEvents = computed(
+    () => this.mobileVisibleEvents().length < this.sortedEvents().length,
+  );
+
   setView(view: 'upcoming' | 'previous') {
     this.selectedView.set(view);
     this.currentPage.set(1);
+    this.mobileVisibleEventsCount.set(this.pageSize);
+  }
+
+  setMobileTab(tab: GroupDetailMobileTab) {
+    if (!this.mobileTabs.includes(tab)) return;
+    if (this.showMobileActionSheet()) {
+      this.showMobileActionSheet.set(false);
+    }
+    if (this.showMobileLeaveConfirm()) {
+      this.showMobileLeaveConfirm.set(false);
+    }
+
+    void this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { tab },
+      queryParamsHandling: 'merge',
+    });
   }
 
   nextPage() {
@@ -309,6 +419,53 @@ export class GroupDetailPage {
 
   get groupId(): string {
     return this.route.snapshot.params['id'];
+  }
+
+  goBackToGroups() {
+    void this.router.navigate(['/groups']);
+  }
+
+  loadMoreEvents() {
+    const total = this.sortedEvents().length;
+    this.mobileVisibleEventsCount.update((count) => Math.min(count + this.pageSize, total));
+  }
+
+  reloadEvents() {
+    this.eventsReload.update((value) => value + 1);
+  }
+
+  toggleMobileActionSheet() {
+    this.showMobileActionSheet.update((isOpen) => !isOpen);
+  }
+
+  closeMobileActionSheet() {
+    this.showMobileActionSheet.set(false);
+  }
+
+  onMobileInviteAction() {
+    this.closeMobileActionSheet();
+    this.openInviteModal();
+  }
+
+  onMobileJoinAction() {
+    this.closeMobileActionSheet();
+    void this.onJoinGroup();
+  }
+
+  openMobileLeaveConfirm() {
+    this.mobileLeaveConfirmText.set('');
+    this.showMobileLeaveConfirm.set(true);
+  }
+
+  closeMobileLeaveConfirm() {
+    this.mobileLeaveConfirmText.set('');
+    this.showMobileLeaveConfirm.set(false);
+  }
+
+  onConfirmMobileLeave() {
+    if (!this.canConfirmMobileLeave()) return;
+    this.closeMobileLeaveConfirm();
+    void this.onLeaveGroup(true);
   }
 
   openImageSelector() {
@@ -582,7 +739,7 @@ export class GroupDetailPage {
     }
   }
 
-  async onLeaveGroup() {
+  async onLeaveGroup(skipConfirmation = false) {
     const groupId = this.route.snapshot.params['id'];
     if (!groupId) return;
 
@@ -596,12 +753,13 @@ export class GroupDetailPage {
       );
       return;
     }
-
-    const confirmed = await this.modalService.confirm(
-      'Biztosan kilépsz a csoportból? Ezután nem láthatod az eseményeket.',
-      'Kilépés'
-    );
-    if (!confirmed) return;
+    if (!skipConfirmation) {
+      const confirmed = await this.modalService.confirm(
+        'Biztosan kilépsz a csoportból? Ezután nem láthatod az eseményeket.',
+        'Kilépés',
+      );
+      if (!confirmed) return;
+    }
 
     this.isSubmitting.set(true);
     try {
@@ -711,6 +869,7 @@ formatEventDate(timestamp: any) {
     return members.filter((m) => attendeeIds.includes(m.userId));
   }
 }
+
 
 
 

@@ -22,7 +22,7 @@ export class CoverImageSelectorComponent implements OnChanges {
   selectedTag = '';
   availableTags: string[] = [];
   private readonly desktopPageSize = 12;
-  private readonly mobilePageSize = 9;
+  private readonly mobilePageSize = 4;
   currentPage = 0;
 
   ngOnChanges(changes: SimpleChanges): void {

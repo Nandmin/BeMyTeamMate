@@ -7,6 +7,251 @@
   transition: background-color 0.3s ease;
 }
 
+@media (max-width: 639.98px) {
+  .results-mobile-sticky {
+    position: sticky;
+    top: calc(env(safe-area-inset-top) + var(--results-mobile-sticky-offset, 0px));
+    z-index: 45;
+  }
+
+  .results-mobile-filter-bar {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem;
+    border: 1px solid rgba(146, 201, 169, 0.2);
+    border-radius: 14px;
+    background:
+      linear-gradient(180deg, rgba(13, 27, 21, 0.9) 0%, rgba(9, 20, 15, 0.86) 100%);
+    backdrop-filter: blur(10px);
+    box-shadow: 0 10px 26px rgba(5, 15, 10, 0.35);
+  }
+
+  .results-mobile-chip {
+    transition: border-color 180ms ease, transform 180ms ease;
+  }
+
+  .results-mobile-chip:active {
+    transform: scale(0.98);
+  }
+
+  .kpi-card {
+    min-height: 112px;
+    border-radius: 14px;
+    transform: none !important;
+    filter: none !important;
+    box-shadow: 0 8px 20px rgba(5, 15, 10, 0.26);
+  }
+
+  .kpi-card:hover,
+  .kpi-card:focus-within {
+    transform: none !important;
+    filter: none !important;
+    box-shadow: 0 10px 24px rgba(5, 15, 10, 0.3) !important;
+  }
+
+  .kpi-card__header {
+    align-items: center;
+  }
+
+  .kpi-card__meta {
+    gap: 0.45rem;
+  }
+
+  .kpi-card__icon {
+    flex-shrink: 0;
+  }
+
+  .kpi-card__icon .material-symbols-outlined {
+    font-size: 20px;
+  }
+
+  .kpi-title {
+    font-size: 0.7rem !important;
+    line-height: 1.15;
+  }
+
+  .kpi-title::before {
+    content: none;
+  }
+
+  .kpi-value {
+    font-size: 1.8rem;
+    line-height: 1;
+    font-weight: 900;
+  }
+
+  .kpi-card .info-tooltip {
+    min-width: 32px;
+    min-height: 32px;
+    touch-action: manipulation;
+  }
+
+  .kpi-card .info-tooltip__icon {
+    width: 26px;
+    height: 26px;
+    font-size: 14px;
+  }
+
+  .kpi-card .info-tooltip__bubble {
+    min-width: 180px;
+    max-width: min(250px, 84vw);
+  }
+
+  .results-chart-card {
+    border-radius: 14px;
+    overflow: hidden;
+  }
+
+  .results-chart-head {
+    align-items: flex-start;
+  }
+
+  .results-chart-head > .text-right {
+    flex-shrink: 0;
+  }
+
+  .results-legend {
+    max-width: 160px;
+  }
+
+  .results-legend__item {
+    padding: 2px 8px;
+    border-radius: 999px;
+    border: 1px solid rgba(146, 201, 169, 0.2);
+    background: rgba(11, 26, 19, 0.5);
+    white-space: nowrap;
+  }
+
+  .results-chart .elo-label--zero,
+  .results-chart .bar-label--zero {
+    display: none;
+  }
+
+  .results-chart-card .info-tooltip {
+    min-width: 32px;
+    min-height: 32px;
+    touch-action: manipulation;
+  }
+
+  .results-chart-card .info-tooltip__icon {
+    width: 24px;
+    height: 24px;
+    font-size: 14px;
+  }
+
+  .results-chart-card .info-tooltip__bubble {
+    min-width: 180px;
+    max-width: min(250px, 86vw);
+  }
+
+  .recent-table.recent-table--open {
+    max-height: 20000px;
+    overflow: visible;
+  }
+
+  .recent-table .recent-table__inner {
+    padding-bottom: 10px;
+  }
+
+  .results-mobile-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .results-mobile-empty {
+    padding: 1rem 0.75rem;
+    border-radius: 12px;
+    border: 1px solid rgba(146, 201, 169, 0.2);
+    color: #92c9a9;
+    text-align: center;
+    font-weight: 600;
+    background: rgba(11, 26, 19, 0.45);
+  }
+
+  .results-mobile-row {
+    width: 100%;
+    text-align: left;
+    border-radius: 12px;
+    border: 1px solid rgba(146, 201, 169, 0.2);
+    padding: 0.7rem 0.75rem;
+    background:
+      linear-gradient(180deg, rgba(13, 27, 21, 0.92) 0%, rgba(9, 20, 15, 0.88) 100%);
+    box-shadow: 0 8px 20px rgba(5, 15, 10, 0.24);
+    transition: border-color 180ms ease, transform 180ms ease;
+  }
+
+  .results-mobile-row:active {
+    transform: scale(0.99);
+  }
+
+  .results-mobile-row:focus-visible {
+    outline: 2px solid rgba(43, 238, 124, 0.55);
+    outline-offset: 2px;
+  }
+
+  .results-mobile-row__top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    margin-bottom: 0.45rem;
+  }
+
+  .results-mobile-date {
+    color: #2bee7c;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+  }
+
+  .results-mobile-elo {
+    font-size: 11px;
+    font-weight: 800;
+  }
+
+  .results-mobile-row__main {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    margin-bottom: 0.45rem;
+  }
+
+  .results-mobile-sport,
+  .results-mobile-details {
+    color: #ffffff;
+  }
+
+  .results-mobile-row__meta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    color: #92c9a9;
+    font-size: 11px;
+    font-weight: 700;
+  }
+
+  .results-mobile-ga {
+    color: #2bee7c;
+    font-weight: 800;
+  }
+
+  .results-mobile-load-more {
+    margin-top: 0.15rem;
+    height: 2.25rem;
+    border-radius: 10px;
+    border: 1px solid rgba(146, 201, 169, 0.3);
+    color: #ffffff;
+    font-size: 12px;
+    font-weight: 800;
+    background:
+      linear-gradient(180deg, rgba(13, 27, 21, 0.92) 0%, rgba(9, 20, 15, 0.88) 100%);
+  }
+}
+
 //.results-container {
   // Already handled by HTML classes, but we can add extra polish here if needed
 //}
@@ -131,6 +376,24 @@ circle {
   .border-border-dark {
     border-color: rgba(0, 0, 0, 0.08);
   }
+
+  .results-mobile-row,
+  .results-mobile-load-more,
+  .results-mobile-empty {
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.98) 0%, rgba(240, 255, 247, 0.96) 100%);
+    border-color: rgba(31, 58, 43, 0.14);
+    color: #0f172a;
+  }
+
+  .results-mobile-sport,
+  .results-mobile-details,
+  .results-mobile-row__meta {
+    color: #1F3A2B;
+  }
+
+  .results-mobile-date {
+    color: #2bee7c;
+  }
 }
 
 // Dark mode re-assertion for green text tones
@@ -190,7 +453,8 @@ h1, h3 {
 }
 
 .info-tooltip:hover .info-tooltip__icon,
-.info-tooltip:focus-visible .info-tooltip__icon {
+.info-tooltip:focus-visible .info-tooltip__icon,
+.info-tooltip:focus-within .info-tooltip__icon {
   transform: translateY(-1px) scale(1.03);
   filter: brightness(1.03);
   box-shadow:
@@ -244,7 +508,8 @@ h1, h3 {
 }
 
 .info-tooltip:hover .info-tooltip__bubble,
-.info-tooltip:focus-visible .info-tooltip__bubble {
+.info-tooltip:focus-visible .info-tooltip__bubble,
+.info-tooltip:focus-within .info-tooltip__bubble {
   opacity: 1;
   visibility: visible;
   transform: translateX(-50%) translateY(0) scale(1);

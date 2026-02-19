@@ -1,5 +1,5 @@
-import { Component, DestroyRef, computed, effect, inject, signal, untracked } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, DestroyRef, HostListener, computed, effect, inject, signal, untracked } from '@angular/core';
+import { CommonModule, DOCUMENT } from '@angular/common';
 import { Router } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { combineLatest, map, of, switchMap } from 'rxjs';
@@ -22,6 +22,7 @@ export class Results {
   private router = inject(Router);
   private seo = inject(SeoService);
   private destroyRef = inject(DestroyRef);
+  private document = inject(DOCUMENT);
   private chartAnimationFrame: number | null = null;
 
   user = toSignal(this.authService.user$, { initialValue: null });
@@ -66,13 +67,25 @@ export class Results {
     { id: 'other', name: 'Egyéb', icon: 'more_horiz' },
   ];
 
-  selectedPeriod = signal('1m');
-  selectedSport = signal('all');
-  selectedTeam = signal('all');
+  private readonly filterStorageKey = 'results_filter_state_v1';
+  private readonly initialFilterState = this.readStoredFilterState();
+
+  selectedPeriod = signal(this.initialFilterState.period);
+  selectedSport = signal(this.initialFilterState.sport);
+  selectedTeam = signal(this.initialFilterState.team);
+  mobileFiltersOpen = signal(false);
+  mobileAdvancedFilterCount = computed(() => {
+    let count = 0;
+    if (this.selectedSport() !== 'all') count += 1;
+    if (this.selectedTeam() !== 'all') count += 1;
+    return count;
+  });
   recentTableOpen = signal(true);
   pageSizeOptions = [10, 20, 30, 50] as const;
   pageSize = signal<number>(10);
   currentPage = signal<number>(1);
+  private readonly mobileRecentChunkSize = 8;
+  mobileRecentVisibleCount = signal<number>(this.mobileRecentChunkSize);
 
   recentMatches = toSignal(
     combineLatest([this.authService.user$, this.groupService.getUserGroups()]).pipe(
@@ -119,6 +132,15 @@ export class Results {
     return matches;
   });
 
+  mobileRecentMatches = computed(() => {
+    const limit = Math.max(this.mobileRecentChunkSize, this.mobileRecentVisibleCount());
+    return this.filteredMatches().slice(0, limit);
+  });
+
+  mobileCanLoadMoreRecentMatches = computed(() => {
+    return this.mobileRecentMatches().length < this.filteredMatches().length;
+  });
+
   totalPages = computed(() => {
     const total = this.filteredMatches().length;
     const size = Math.max(1, this.pageSize());
@@ -163,6 +185,46 @@ export class Results {
     }
   });
 
+  private persistFilterStateEffect = effect(() => {
+    this.persistFilterState({
+      period: this.selectedPeriod(),
+      sport: this.selectedSport(),
+      team: this.selectedTeam(),
+    });
+  });
+
+  private ensureValidTeamFilterEffect = effect(() => {
+    const teamId = this.selectedTeam();
+    if (teamId === 'all') return;
+
+    const groups = this.userGroups();
+    if (!groups || groups.length === 0) return;
+    const exists = groups.some((group) => group.id === teamId);
+    if (!exists) {
+      this.selectedTeam.set('all');
+      this.currentPage.set(1);
+    }
+  });
+
+  private resetMobileRecentListEffect = effect(() => {
+    this.selectedPeriod();
+    this.selectedSport();
+    this.selectedTeam();
+    this.mobileRecentVisibleCount.set(this.mobileRecentChunkSize);
+  });
+
+  private mobileSheetScrollLockEffect = effect((onCleanup) => {
+    if (!this.mobileFiltersOpen()) return;
+    const body = this.document?.body;
+    if (!body) return;
+
+    const previousOverflow = body.style.overflow;
+    body.style.overflow = 'hidden';
+    onCleanup(() => {
+      body.style.overflow = previousOverflow;
+    });
+  });
+
   setPeriod(periodId: string) {
     this.selectedPeriod.set(periodId);
     this.currentPage.set(1);
@@ -178,8 +240,30 @@ export class Results {
     this.currentPage.set(1);
   }
 
-  toggleRecentTable() {
+  openMobileFilters() {
+    this.mobileFiltersOpen.set(true);
+  }
+
+  closeMobileFilters() {
+    this.mobileFiltersOpen.set(false);
+  }
+
+  resetMobileAdvancedFilters() {
+    this.setSport('all');
+    this.setTeam('all');
+  }
+
+  @HostListener('window:resize')
+  onWindowResize() {
+    if (typeof window !== 'undefined' && window.innerWidth >= 640 && this.mobileFiltersOpen()) {
+      this.closeMobileFilters();
+    }
+  }
+
+  toggleRecentTable(event?: Event) {
     this.recentTableOpen.update((open) => !open);
+    const trigger = event?.currentTarget as HTMLElement | null;
+    trigger?.blur();
   }
 
   setPageSize(size: string | number) {
@@ -203,6 +287,12 @@ export class Results {
     this.goToPage(this.currentPage() - 1);
   }
 
+  loadMoreRecentMatchesMobile() {
+    if (!this.mobileCanLoadMoreRecentMatches()) return;
+    const next = this.mobileRecentVisibleCount() + this.mobileRecentChunkSize;
+    this.mobileRecentVisibleCount.set(next);
+  }
+
   selectedPeriodLabel(): string {
     const id = this.selectedPeriod();
     return this.periodOptions.find((p) => p.id === id)?.label || 'Időszak';
@@ -218,6 +308,16 @@ export class Results {
     const id = this.selectedTeam();
     if (id === 'all') return 'Minden csapatom';
     return this.userGroups().find((g) => g.id === id)?.name || 'A csapat';
+  }
+
+  compactMonthLabel(label: string): string {
+    const normalized = (label || '').replace(/\./g, '').trim();
+    if (!normalized) return '';
+
+    const lettersOnly = normalized.replace(/[^A-Za-zÀ-ÿ\u0100-\u017f]/g, '');
+    const base = lettersOnly || normalized;
+    const short = base.slice(0, 3);
+    return short ? short[0].toUpperCase() + short.slice(1) : '';
   }
 
   openMatch(match: RecentMatchRow) {
@@ -729,6 +829,39 @@ export class Results {
     };
   }
 
+  private readStoredFilterState(): FilterState {
+    const defaults: FilterState = { period: '1m', sport: 'all', team: 'all' };
+    if (typeof window === 'undefined' || !window.localStorage) return defaults;
+
+    try {
+      const raw = window.localStorage.getItem(this.filterStorageKey);
+      if (!raw) return defaults;
+
+      const parsed = JSON.parse(raw) as Partial<FilterState>;
+      const period = this.periodOptions.some((option) => option.id === parsed.period)
+        ? parsed.period!
+        : defaults.period;
+      const sport =
+        parsed.sport === 'all' || this.sportOptions.some((option) => option.id === parsed.sport)
+          ? parsed.sport!
+          : defaults.sport;
+      const team = typeof parsed.team === 'string' && parsed.team.length > 0 ? parsed.team : 'all';
+      return { period, sport, team };
+    } catch {
+      return defaults;
+    }
+  }
+
+  private persistFilterState(state: FilterState): void {
+    if (typeof window === 'undefined' || !window.localStorage) return;
+
+    try {
+      window.localStorage.setItem(this.filterStorageKey, JSON.stringify(state));
+    } catch {
+      // Ignore quota / privacy storage errors and keep runtime behavior intact.
+    }
+  }
+
   private coerceDate(value: any): Date {
     if (!value) return new Date(NaN);
     if (value instanceof Date) return value;
@@ -752,6 +885,12 @@ interface RecentMatchRow {
   eloDelta: number;
   mvpWinnerId: string | null;
   sortTime: number;
+}
+
+interface FilterState {
+  period: string;
+  sport: string;
+  team: string;
 }
 
 interface EloChartPoint {

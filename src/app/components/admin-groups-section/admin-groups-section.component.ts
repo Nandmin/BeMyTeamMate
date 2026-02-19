@@ -22,6 +22,7 @@ export class AdminGroupsSectionComponent {
   private modalService = inject(ModalService);
   private router = inject(Router);
   private adminGroupsCacheKey = 'admin:groups:list';
+  private cacheTtlMs = 5 * 60 * 1000;
 
   isQuerying = false;
   isDeleting = false;
@@ -129,7 +130,14 @@ export class AdminGroupsSectionComponent {
       const raw = window.localStorage.getItem(this.adminGroupsCacheKey);
       if (!raw) return;
       const parsed = JSON.parse(raw) as { data: AdminGroupsSectionComponent['groups']; ts: number };
-      if (!parsed?.data?.length) return;
+      if (!parsed?.data?.length || typeof parsed.ts !== 'number') {
+        window.localStorage.removeItem(this.adminGroupsCacheKey);
+        return;
+      }
+      if (Date.now() - parsed.ts > this.cacheTtlMs) {
+        window.localStorage.removeItem(this.adminGroupsCacheKey);
+        return;
+      }
       this.groups = parsed.data;
     } catch {
       // ignore cache errors
@@ -240,4 +248,3 @@ export class AdminGroupsSectionComponent {
     this.saveCachedGroups(this.groups);
   }
 }
-

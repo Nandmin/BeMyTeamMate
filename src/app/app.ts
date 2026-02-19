@@ -35,6 +35,7 @@ export class App {
   private authService = inject(AuthService);
   private analyticsService = inject(AnalyticsService);
   private swUpdate = inject(SwUpdate);
+  private readonly swReloadMarkerKey = 'sw:updated-hash';
   protected readonly title = signal('BeMyTeamMate');
   protected showNav = signal(true);
   protected showFooter = signal(true);
@@ -45,10 +46,14 @@ export class App {
     this.redirectEmailVerificationCallbacks();
     this.analyticsService.init();
     if (this.swUpdate.isEnabled) {
+      void this.checkForAppUpdate();
+      setInterval(() => {
+        void this.checkForAppUpdate();
+      }, 10 * 60 * 1000);
       this.swUpdate.versionUpdates.subscribe({
         next: (event: VersionEvent) => {
           if (event.type === 'VERSION_READY') {
-            // TODO: notify user about the new version.
+            void this.activateAndReload(event.latestVersion.hash);
           }
           if (event.type === 'VERSION_INSTALLATION_FAILED') {
             console.error('Service worker update failed:', event);
@@ -94,6 +99,29 @@ export class App {
           mainContent.scrollTop = 0;
         }
       });
+  }
+
+  private async checkForAppUpdate() {
+    try {
+      await this.swUpdate.checkForUpdate();
+    } catch (err) {
+      console.error('Service worker checkForUpdate failed:', err);
+    }
+  }
+
+  private async activateAndReload(nextHash: string) {
+    if (typeof window === 'undefined') return;
+
+    try {
+      const lastReloadedHash = window.sessionStorage.getItem(this.swReloadMarkerKey);
+      if (lastReloadedHash === nextHash) return;
+
+      await this.swUpdate.activateUpdate();
+      window.sessionStorage.setItem(this.swReloadMarkerKey, nextHash);
+      window.location.reload();
+    } catch (err) {
+      console.error('Service worker activateUpdate failed:', err);
+    }
   }
 
   private redirectEmailVerificationCallbacks() {

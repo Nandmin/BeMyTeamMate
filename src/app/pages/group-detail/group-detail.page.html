@@ -25,7 +25,7 @@
             <!-- Mobile Hero -->
             <div class="md:hidden mb-4 rounded-2xl p-4">
                 <!-- <div class="md:hidden mb-4 rounded-2xl border border-white/10 bg-white/5 p-4"></div> -->
-            <div class="flex items-center gap-3">
+                <div class="flex items-start gap-3">
                     <div class="relative group">
                         <div class="h-16 w-16 rounded-xl bg-cover bg-center border border-white/10"
                             [style.backgroundImage]="'url(' + resolveCoverImage(group()?.image) + ')'">
@@ -37,8 +37,11 @@
                         </button>
                         }
                     </div>
-                    <div class="min-w-0 flex-1 flex items-center">
-                        <h1 class="text-xl font-extrabold text-white truncate">{{ group()?.name }}</h1>
+                    <div class="min-w-0 flex-1 flex flex-col items-start justify-start">
+                        <h1 class="w-full text-xl font-extrabold text-white leading-tight line-clamp-2">{{ group()?.name }}</h1>
+                        <p class="mt-1 w-full text-sm text-gray-400 line-clamp-2">
+                            {{ group()?.description || 'Nincs leírás megadva.' }}
+                        </p>
                         <!-- <div class="mt-1 flex items-center gap-3 text-xs text-gray-400">
                             <span class="inline-flex items-center gap-1">
                                 <span class="material-symbols-outlined text-sm text-primary">groups</span>
@@ -57,7 +60,7 @@
             </div>
 
             <!-- Mobile Tabs -->
-            <div class="md:hidden sticky top-0 z-20 mb-4 border border-white/10 rounded-xl bg-white/5 p-1 backdrop-blur">
+            <div class="md:hidden sticky top-0 z-20 mb-4 border border-white/10 bg-white/5 p-1 backdrop-blur" style="border-radius: 10px;">
                 <div class="grid grid-cols-4 gap-1">
                     <button (click)="setMobileTab('overview')"
                         class="rounded-lg px-2 py-2 text-xs font-semibold transition-colors"
@@ -158,17 +161,6 @@
                     <p class="text-sm text-gray-400">Csak adminisztrator tud csoport beállításokat módosítani.</p>
                     }
                 </div>
-
-                @if (isMember()) {
-                <div class="rounded-2xl border border-red-900/30 bg-red-900/10 p-4">
-                    <h3 class="text-base font-bold text-white mb-2">Veszélyes művelet</h3>
-                    <p class="text-sm text-gray-400 mb-3">A csoport elhagyása után az eseményekhez újra meghívó kellhet.</p>
-                    <button (click)="openMobileLeaveConfirm()" [disabled]="isSubmitting()"
-                        class="w-full rounded-xl bg-red-600 px-4 py-2.5 text-sm font-bold text-white hover:bg-red-500 disabled:opacity-50">
-                        Kilépés a csoportból
-                    </button>
-                </div>
-                }
             </div>
             }
             @if (showMobileActionSheet() && hasMobileSecondaryActions()) {
@@ -202,7 +194,7 @@
                 (click)="closeMobileLeaveConfirm()"></div>
             <div
                 class="md:hidden fixed left-1/2 top-1/2 z-[93] w-[calc(100%-2rem)] max-w-sm -translate-x-1/2 -translate-y-1/2 rounded-2xl border border-red-900/30 bg-background-dark p-4 shadow-2xl">
-                <h3 class="text-base font-bold text-white">Veszelyes muvelet</h3>
+                <h3 class="text-base font-bold text-white">Veszélyes művelet</h3>
                 <p class="mt-2 text-sm text-gray-400">
                     A kilépéshez írd be, hogy <span class="font-bold text-white">KILÉPEK</span>.
                 </p>
@@ -583,29 +575,9 @@
                             Összes tag megtekintése
                         </button>
                     </div>
+                
                 </div>
             </div>
-
-            @if (isMember()) {
-            <!-- Danger Zone -->
-            <div class="hidden md:block mt-16 border-t border-white/10 pt-8">
-                <h3 class="text-lg font-bold text-white mb-4">Veszélyes műveletek</h3>
-                <div
-                    class="flex flex-col sm:flex-row items-center justify-between gap-4 p-4 rounded-xl bg-red-900/10 border border-red-900/30">
-                    <div>
-                        <p class="text-white font-medium">Társaság elhagyása</p>
-                        <p class="text-sm text-gray-400">Ha elhagyod a csoportot, nem láthatod többé az eseményeket és
-                            újra meghívót
-                            kell kérned.</p>
-                    </div>
-                    <button
-                        (click)="onLeaveGroup()" [disabled]="isSubmitting()"
-                        class="shrink-0 px-4 py-2 rounded-lg bg-red-600 border border-red-500/50 text-white keep-white font-bold text-sm hover:bg-red-500 hover:text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
-                        Kilépés a csoportból
-                    </button>
-                </div>
-            </div>
-            }
         </div>
     </div>
     } @else {
@@ -776,6 +748,7 @@
     }
 
 </main>
+
 
 
 

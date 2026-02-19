@@ -212,6 +212,15 @@ export class GroupDetailPage {
     return members.some((m) => m.userId === user.uid && m.isAdmin);
   });
 
+  isOwner = computed(() => {
+    const user = this.authService.currentUser();
+    const group = this.group();
+    if (!user || !group) return false;
+    return group.ownerId === user.uid;
+  });
+
+  canLeaveGroup = computed(() => this.isMember() && !this.isOwner());
+
   canViewEvents = computed(() => this.isMember() || this.isAdmin());
   hasMobileSecondaryActions = computed(() => !this.isMember() || this.isAdmin());
   canConfirmMobileLeave = computed(
@@ -745,6 +754,7 @@ export class GroupDetailPage {
 
     const user = this.authService.currentUser();
     const group = this.group();
+    if (!user || !group || !this.isMember()) return;
     if (group?.ownerId && user?.uid && group.ownerId === user.uid) {
       await this.modalService.alert(
         `A csoport tulajdonosa nem léphet ki.\nElőbb add át a tulajdonjogot, vagy töröld a csoportot.`,

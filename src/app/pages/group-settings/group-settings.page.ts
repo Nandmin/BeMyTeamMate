@@ -11,6 +11,7 @@ import { CoverImageSelectorComponent } from '../../components/cover-image-select
 import { RoleLabelPipe } from '../../pipes/role-label.pipe';
 import { SeoService } from '../../services/seo.service';
 import { CoverImageEntry, CoverImagesService } from '../../services/cover-images.service';
+import { ModalService } from '../../services/modal.service';
 
 export type MemberRole = 'owner' | 'admin' | 'member';
 
@@ -28,6 +29,7 @@ export class GroupSettingsPage {
   protected authService = inject(AuthService);
   private seo = inject(SeoService);
   private coverImagesService = inject(CoverImagesService);
+  private modalService = inject(ModalService);
 
   group = toSignal(
     this.route.params.pipe(
@@ -121,6 +123,12 @@ export class GroupSettingsPage {
   isSiteAdmin = computed(() => this.authService.fullCurrentUser()?.role === 'siteadmin');
 
   canManageMembers = computed(() => this.isOwner() || this.isAdmin() || this.isSiteAdmin());
+  isMember = computed(() => {
+    const user = this.authService.currentUser();
+    const members = this.members();
+    if (!user || !members) return false;
+    return members.some((m) => m.userId === user.uid || m.id === user.uid);
+  });
 
   // Form states
   isSubmitting = signal(false);
@@ -379,6 +387,40 @@ export class GroupSettingsPage {
     } catch (error: any) {
       console.error('Revoke invite error:', error);
       this.errorMessage.set('Hiba történt a meghívó visszavonásakor.');
+    } finally {
+      this.isSubmitting.set(false);
+    }
+  }
+
+  async onLeaveGroup() {
+    const group = this.group();
+    const user = this.authService.currentUser();
+    if (!group || !user || !this.isMember()) return;
+
+    if (group.ownerId === user.uid) {
+      await this.modalService.alert(
+        `A csoport tulajdonosa nem léphet ki.\nElőbb add át a tulajdonjogot, vagy töröld a csoportot.`,
+        'Nem lehetséges',
+        'warning',
+      );
+      return;
+    }
+
+    const confirmed = await this.modalService.confirm(
+      'Biztosan kilépsz a csoportból? Ezután nem láthatod az eseményeket.',
+      'Kilépés',
+    );
+    if (!confirmed) return;
+
+    this.isSubmitting.set(true);
+    this.errorMessage.set('');
+    try {
+      await this.groupService.leaveGroup(this.groupId);
+      await this.modalService.alert('Sikeresen kiléptél a csoportból.', 'Kész', 'success');
+      await this.router.navigate(['/groups']);
+    } catch (error: any) {
+      console.error('Error leaving group:', error);
+      this.errorMessage.set(error?.message || 'Hiba történt a kilépés során.');
     } finally {
       this.isSubmitting.set(false);
     }

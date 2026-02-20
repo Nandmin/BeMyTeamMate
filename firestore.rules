@@ -149,6 +149,29 @@ service cloud.firestore {
       }
     }
 
+    // 1a. Username reservations
+    match /usernames/{usernameKey} {
+      allow get: if isSignedIn();
+      allow list: if false;
+
+      allow create: if isSignedIn() &&
+        request.resource.data.get('uid', '') == request.auth.uid &&
+        request.resource.data.get('usernameKey', '') == usernameKey &&
+        request.resource.data.get('usernameNormalized', '') is string &&
+        request.resource.data.get('usernameNormalized', '').size() > 0;
+
+      allow update: if isSignedIn() &&
+        resource.data.get('uid', '') == request.auth.uid &&
+        request.resource.data.get('uid', '') == resource.data.get('uid', '') &&
+        request.resource.data.get('usernameKey', '') == usernameKey &&
+        request.resource.data.get('usernameNormalized', '') == resource.data.get('usernameNormalized', '');
+
+      allow delete: if isSignedIn() && (
+        resource.data.get('uid', '') == request.auth.uid ||
+        isSiteAdmin()
+      );
+    }
+
     // 1b. Contact messages (site admin only)
     match /contactMessages/{messageId} {
       allow read, update, delete: if isSiteAdmin();

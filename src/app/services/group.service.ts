@@ -116,6 +116,14 @@ export class GroupService {
     return normalizedDescription;
   }
 
+  private normalizeUsername(value: string): string {
+    return (value ?? '')
+      .trim()
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '');
+  }
+
   private async writeGroupAuditLog(
     groupId: string,
     action: string,
@@ -392,6 +400,12 @@ export class GroupService {
 
     if (value.includes('@')) {
       return fetchSingle('email', value);
+    }
+
+    const normalizedValue = this.normalizeUsername(value);
+    if (normalizedValue) {
+      const byNormalizedUsername = await fetchSingle('usernameNormalized', normalizedValue);
+      if (byNormalizedUsername) return byNormalizedUsername;
     }
 
     const byUsername = await fetchSingle('username', value);

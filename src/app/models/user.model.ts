@@ -3,6 +3,8 @@ import { Timestamp } from '@angular/fire/firestore';
 export interface AppUser {
   uid: string;
   email?: string;
+  username?: string;
+  usernameNormalized?: string;
   displayName: string;
   photoURL?: string;
   elo: number;

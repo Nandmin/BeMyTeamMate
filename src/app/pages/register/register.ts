@@ -105,6 +105,10 @@ export class RegisterPage {
     switch (code) {
       case 'auth/email-already-in-use':
         return 'Ez az e-mail cím már használatban van.';
+      case 'auth/username-already-in-use':
+        return 'Ez a felhasználónév már használatban van.';
+      case 'auth/invalid-username':
+        return 'Érvénytelen felhasználónév.';
       case 'auth/invalid-email':
         return 'Érvénytelen e-mail cím formátum.';
       case 'auth/operation-not-allowed':
@@ -120,5 +124,3 @@ export class RegisterPage {
     }
   }
 }
-
-

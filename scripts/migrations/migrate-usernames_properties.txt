@@ -1,0 +1,33 @@
+Mit csinál a script:
+
+Végigmegy a users kollekción.
+Username forrást választ (username, displayName, vagy fallback mód).
+Normalizál (trim + lowercase + ékezetek eltávolítása).
+usernames/{encodeURIComponent(usernameNormalized)} dokumentumot létrehozza/frissíti.
+Konfliktusnál (más UID-é a foglalás) kihagyja és listázza.
+Igény esetén a users/{uid} dokumentumba is visszaírja a username + usernameNormalized mezőket.
+Támogatja a --dry-run módot.
+
+Dry run:
+npm run migrate:usernames -- --dry-run --source=username-or-displayName
+vagy
+npm run migrate:usernames -- --dry-run --source=username-or-displayName --project=.. --service-account="c:\...\…...-firebase-adminsdk-fbsvc-.....json"
+
+PS:
+npm run migrate:usernames -- --dry-run --source=username-or-displayName --project=.. --service-account="C:\path\to\service-account.json"
+
+
+
+Prod:
+npm run migrate:usernames -- --source=username-or-displayName
+vagy
+npm run migrate:usernames -- --source=username-or-displayName --project=... --service-account="c:\….\….-firebase-adminsdk-fbsvc-......json"
+
+
+Flags:
+--limit=1000
+--page-size=300
+--source=username|displayName|username-or-displayName
+--allow-placeholder
+--project=...
+--service-account=...

@@ -22,7 +22,14 @@ import {
   reauthenticateWithCredential,
   updatePassword,
 } from '@angular/fire/auth';
-import { Firestore, doc, setDoc, serverTimestamp, getDoc } from '@angular/fire/firestore';
+import {
+  Firestore,
+  doc,
+  setDoc,
+  serverTimestamp,
+  getDoc,
+  runTransaction,
+} from '@angular/fire/firestore';
 import { Router } from '@angular/router';
 import { defer, Observable, of, from } from 'rxjs';
 import { map, switchMap, tap } from 'rxjs/operators';
@@ -102,16 +109,34 @@ export class AuthService {
     try {
       const credential = await createUserWithEmailAndPassword(this.auth, email, pass);
       createdUser = credential.user;
-      if (username) {
-        await updateProfile(credential.user, { displayName: username });
+      const cleanUsername = String(username ?? '').trim();
+      const normalizedUsername = this.normalizeUsername(cleanUsername);
+
+      if (username && !normalizedUsername) {
+        throw this.createInvalidUsernameError();
       }
-      await this.updateUserData(credential.user, { username, ...additionalData }); // Save extra data
+
+      if (cleanUsername) {
+        await updateProfile(credential.user, { displayName: cleanUsername });
+      }
+      if (normalizedUsername) {
+        await this.reserveUsernameAndUpdateUserData(credential.user, cleanUsername, normalizedUsername, {
+          ...additionalData,
+        });
+      } else {
+        await this.updateUserData(credential.user, { ...additionalData });
+      }
 
       await this.sendVerificationEmailWithFallback(credential.user);
       return credential.user;
     } catch (error: any) {
       console.error('Registration error:', error);
-      throw this.toSafeError(error, 'Sikertelen regisztráció.');
+      const safeError = this.toSafeError(error, 'Sikertelen regisztráció.');
+      if (createdUser && this.shouldRollbackCreatedUser(safeError)) {
+        await this.deleteCreatedUser(createdUser);
+        createdUser = null;
+      }
+      throw safeError;
     } finally {
       if (createdUser) {
         try {
@@ -270,12 +295,76 @@ export class AuthService {
     return null;
   }
 
+  private normalizeUsername(username?: string | null): string {
+    return String(username ?? '')
+      .trim()
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '');
+  }
+
+  private usernameKey(normalizedUsername: string): string {
+    return encodeURIComponent(normalizedUsername);
+  }
+
+  private async reserveUsernameAndUpdateUserData(
+    firebaseUser: User,
+    username: string,
+    normalizedUsername: string,
+    additionalData: any = {},
+  ) {
+    const usernameKey = this.usernameKey(normalizedUsername);
+    const usernameRef = doc(this.firestore, `usernames/${usernameKey}`);
+    const userRef = doc(this.firestore, `users/${firebaseUser.uid}`);
+
+    await runTransaction(this.firestore, async (tx) => {
+      const usernameSnap = await tx.get(usernameRef);
+      const reservedUid = usernameSnap.exists() ? String(usernameSnap.data()['uid'] || '') : '';
+      if (usernameSnap.exists() && reservedUid && reservedUid !== firebaseUser.uid) {
+        throw this.createUsernameAlreadyInUseError();
+      }
+
+      const existingSnap = await tx.get(userRef);
+      const existingData = existingSnap.exists() ? existingSnap.data() : {};
+      const data = this.buildUserDataPayload(firebaseUser, existingData, {
+        ...additionalData,
+        username,
+        usernameNormalized: normalizedUsername,
+      });
+
+      tx.set(userRef, data, { merge: true });
+      tx.set(
+        usernameRef,
+        {
+          uid: firebaseUser.uid,
+          username,
+          usernameNormalized: normalizedUsername,
+          usernameKey,
+          createdAt: usernameSnap.exists()
+            ? usernameSnap.data()['createdAt'] || serverTimestamp()
+            : serverTimestamp(),
+          updatedAt: serverTimestamp(),
+        },
+        { merge: true },
+      );
+    });
+
+    this.clearCachedProfile(firebaseUser.uid);
+  }
+
   // --- Firestore User Data Logic ---
   private async updateUserData(firebaseUser: any, additionalData: any = {}) {
     const userRef = doc(this.firestore, `users/${firebaseUser.uid}`);
     const existingSnap = await getDoc(userRef);
     const existingData = existingSnap.exists() ? existingSnap.data() : {};
+    const data = this.buildUserDataPayload(firebaseUser, existingData, additionalData);
 
+    const result = await setDoc(userRef, data, { merge: true });
+    this.clearCachedProfile(firebaseUser.uid);
+    return result;
+  }
+
+  private buildUserDataPayload(firebaseUser: any, existingData: any = {}, additionalData: any = {}) {
     const data: any = {
       uid: firebaseUser.uid,
       email: firebaseUser.email,
@@ -298,10 +387,11 @@ export class AuthService {
     if (additionalData.bio) {
       data.bio = additionalData.bio;
     }
+    if (typeof additionalData.username === 'string' && !additionalData.usernameNormalized) {
+      data.usernameNormalized = this.normalizeUsername(additionalData.username);
+    }
 
-    const result = await setDoc(userRef, data, { merge: true });
-    this.clearCachedProfile(firebaseUser.uid);
-    return result;
+    return data;
   }
 
   private getCachedProfile(uid: string): AppUser | null {
@@ -482,6 +572,30 @@ export class AuthService {
     return error;
   }
 
+  private createUsernameAlreadyInUseError() {
+    const error = new Error('Ez a felhasználónév már használatban van.');
+    (error as any).code = 'auth/username-already-in-use';
+    return error;
+  }
+
+  private createInvalidUsernameError() {
+    const error = new Error('Érvénytelen felhasználónév.');
+    (error as any).code = 'auth/invalid-username';
+    return error;
+  }
+
+  private shouldRollbackCreatedUser(error: any) {
+    return error?.code === 'auth/username-already-in-use' || error?.code === 'auth/invalid-username';
+  }
+
+  private async deleteCreatedUser(firebaseUser: User) {
+    try {
+      await firebaseUser.delete();
+    } catch (deleteError) {
+      console.warn('Failed to rollback newly created user after username conflict:', deleteError);
+    }
+  }
+
   private toSafeError(error: any, fallbackMessage?: string) {
     const safeMessage = this.getSafeErrorMessage(
       error,
@@ -502,7 +616,9 @@ export class AuthService {
       'auth/weak-password': 'Az új jelszó túl gyenge.',
       'auth/user-not-found': 'A felhasználó nem található.',
       'auth/invalid-email': 'Érvénytelen e-mail cím.',
+      'auth/invalid-username': 'Érvénytelen felhasználónév.',
       'auth/email-already-in-use': 'Ez az e-mail cím már használatban van.',
+      'auth/username-already-in-use': 'Ez a felhasználónév már használatban van.',
       'auth/popup-closed-by-user': 'A bejelentkezési ablak bezárult.',
       'auth/cancelled-popup-request': 'A bejelentkezési ablak már meg van nyitva.',
       'auth/too-many-requests': 'Túl sok próbálkozás. Próbáld újra később.',

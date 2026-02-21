@@ -11,6 +11,7 @@ import { RoleLabelPipe } from '../../../../pipes/role-label.pipe';
   standalone: true,
   imports: [CommonModule, RouterModule, DragDropModule, RoleLabelPipe],
   templateUrl: './match-step-teams.component.html',
+  styleUrl: './match-step-teams.component.scss',
 })
 export class MatchStepTeamsComponent {
   @Input() event: SportEvent | undefined;

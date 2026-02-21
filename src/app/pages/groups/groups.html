@@ -29,7 +29,7 @@
                 </button>
                 <button (click)="toggleJoinModal()" [disabled]="!authService.currentUser()"
                     [title]="!authService.currentUser() ? 'Jelentkezz be a csatlakozáshoz!' : ''"
-                    class="flex-1 md:flex-none flex min-w-[140px] cursor-pointer items-center justify-center rounded-xl h-10 px-5 bg-transparent border border-border-green hover:border-white text-white text-sm font-bold leading-normal transition-colors active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed">
+                    class="group-join-btn flex-1 md:flex-none flex min-w-[140px] cursor-pointer items-center justify-center rounded-xl h-10 px-5 bg-transparent border border-border-green hover:border-white text-white text-sm font-bold leading-normal transition-colors active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed">
                     <span class="mr-2 material-symbols-outlined text-[20px]">key</span>
                     Csatlakozás
                 </button>

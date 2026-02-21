@@ -8,6 +8,7 @@ import { SportEvent } from '../../../../services/event.service';
   standalone: true,
   imports: [CommonModule],
   templateUrl: './match-step-feedback.component.html',
+  styleUrl: './match-step-feedback.component.scss',
 })
 export class MatchStepFeedbackComponent {
   @Input() event: SportEvent | undefined;

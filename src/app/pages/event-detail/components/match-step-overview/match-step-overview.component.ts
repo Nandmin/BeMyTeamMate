@@ -9,6 +9,7 @@ import { GroupMember } from '../../../../services/group.service';
   standalone: true,
   imports: [CommonModule, RouterModule],
   templateUrl: './match-step-overview.component.html',
+  styleUrl: './match-step-overview.component.scss',
 })
 export class MatchStepOverviewComponent {
   @Input() event: SportEvent | undefined;

@@ -49,6 +49,22 @@
       color: #64748b;
     }
 
+    .group-join-btn {
+      color: #1e293b;
+      border-color: rgba(31, 58, 43, 0.22);
+      background-color: rgba(255, 255, 255, 0.9);
+
+      .material-symbols-outlined {
+        color: #16a34a;
+      }
+
+      &:hover {
+        border-color: rgba(31, 58, 43, 0.38);
+        background-color: #ffffff;
+        color: #0f172a;
+      }
+    }
+
     // Search input
     input.bg-surface-card {
       background: #ffffff;

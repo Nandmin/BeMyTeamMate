@@ -1,0 +1,177 @@
+<section class="space-y-4" (click)="closeAverageInfo()">
+  <div class="rounded-3xl border border-card-border card-gradient bg-dark-bg/80 backdrop-blur-xl mt-4 p-3 shadow-xl">
+    <div class="space-y-2">
+      <p class="text-[11px] uppercase tracking-[0.18em] font-black text-white text-center">Erőegyensúly</p>
+      <div class="flex items-center justify-between text-xs font-bold uppercase tracking-[0.2em]">
+        <span class="text-primary">A: {{ teamABalance | number: '1.0-2' }}%</span>
+        <span class="text-white">B: {{ (100 - teamABalance) | number: '1.0-2' }}%</span>
+      </div>
+      <div class="h-2 rounded-full bg-white/10 overflow-hidden">
+        <div class="h-full bg-primary transition-all duration-300" [style.width.%]="teamABalance"></div>
+      </div>
+      <!-- <div class="grid grid-cols-2 gap-2 text-[11px]">
+        <div class="rounded-xl border border-white/10 bg-white/5 p-2 text-white">
+          A átlag: <span class="font-black">{{ teamAAverage }}</span>
+        </div>
+        <div class="rounded-xl border border-white/10 bg-white/5 p-2 text-white">
+          B átlag: <span class="font-black">{{ teamBAverage }}</span>
+        </div>
+      </div> -->
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 gap-2.5" cdkDropListGroup>
+    <div id="teamA" cdkDropList [cdkDropListData]="teamA" [cdkDropListDisabled]="teamsLocked"
+      (cdkDropListDropped)="dropped.emit($event)"
+      class="rounded-2xl border border-card-border card-gradient bg-dark-bg/80 backdrop-blur-xl p-2.5 shadow-xl min-h-[92px]">
+      <div class="relative -mx-2.5 -mt-2.5 mb-2 rounded-t-2xl border-b border-white/10 px-3 py-2.5 bg-gradient-to-b from-white/10 via-white/[0.04] to-transparent">
+        <div class="flex items-center justify-between gap-2">
+          <div class="flex items-center gap-2">
+            <span class="material-symbols-outlined text-primary text-[20px]">local_fire_department</span>
+            <p class="text-[18px] italic font-black tracking-tighter text-white">"A" csapat</p>
+          </div>
+          <div class="relative text-right">
+            <!-- <p class="text-[10px] font-black uppercase tracking-[0.15em] text-gray-400">
+              @if (event?.status === 'active' || event?.status === 'finished') {
+              ELO átlag
+              } @else {
+              Átlag
+              }
+            </p> -->
+            <div class="inline-flex items-center justify-end gap-1.5">
+              <p class="text-[18px] leading-tight font-black text-white">{{ teamAAverage }}</p>
+              <button
+                type="button"
+                (click)="toggleAverageInfo('A', $event)"
+                class="relative -top-0.5 inline-flex h-4 w-4 items-center justify-center rounded-full border border-primary/60 bg-primary/20 text-[9px] font-black text-primary shadow-[0_0_10px_rgba(34,197,94,0.45)]"
+                aria-label="ELO atlag magyarazat">
+                i
+              </button>
+            </div>
+            @if (averageInfoTeam === 'A') {
+            <div
+              (click)="preventAverageInfoClose($event)"
+              class="absolute right-0 top-full z-30 mt-2 w-60 rounded-xl border border-white/15 bg-dark-bg/95 px-3 py-2 text-left text-[11px] leading-snug text-gray-200 shadow-2xl">
+               A csapat játékosainak adott pillanatban érvényes ELO értékeinek átlaga
+            </div>
+            }
+          </div>
+        </div>
+        <div class="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-primary/90 via-primary/35 to-transparent"></div>
+      </div>
+      @for (player of teamA; track player.userId) {
+      <div cdkDrag [cdkDragDisabled]="teamsLocked"
+        class="mb-1.5 last:mb-0 rounded-xl border border-white/10 bg-white/5 p-2 flex items-center gap-2">
+        <span cdkDragHandle class="material-symbols-outlined text-[15px] text-gray-500">drag_indicator</span>
+        <div [routerLink]="['/profile', player.userId]"
+          class="h-8 w-8 overflow-hidden rounded-full border border-white/10">
+          <img [src]="player.photo || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + player.userId"
+            class="h-full w-full object-cover">
+        </div>
+        <div class="min-w-0 flex-1">
+          <p class="truncate text-[13px] font-bold text-white">{{ player.name }}</p>
+          <p class="truncate text-[9px] uppercase tracking-widest text-gray-400">
+            {{ player.role | roleLabel }} • Elo: {{ getDisplayedElo(player) }}
+          </p>
+        </div>
+      </div>
+      } @empty {
+      <div class="rounded-xl border border-dashed border-white/15 bg-white/5 p-2 text-[11px] text-gray-400">
+        Még nincs játékos.
+      </div>
+      }
+    </div>
+
+    <div class="mx-auto -my-0.5 rounded-full border border-white/15 bg-white/5 px-3 py-0.5 text-[10px] font-black uppercase tracking-[0.2em] text-white/80">
+      VS
+    </div>
+
+    <div id="teamB" cdkDropList [cdkDropListData]="teamB" [cdkDropListDisabled]="teamsLocked"
+      (cdkDropListDropped)="dropped.emit($event)"
+      class="rounded-2xl border border-card-border card-gradient bg-dark-bg/80 backdrop-blur-xl p-2.5 shadow-xl min-h-[92px]">
+      <div class="relative -mx-2.5 -mt-2.5 mb-2 rounded-t-2xl border-b border-white/10 px-3 py-2.5 bg-gradient-to-b from-white/10 via-white/[0.04] to-transparent">
+        <div class="flex items-center justify-between gap-2">
+          <div class="flex items-center gap-2">
+            <span class="material-symbols-outlined text-[#0d6efd] text-[20px]">nights_stay</span>
+            <p class="text-[18px] italic font-black tracking-tighter text-white">"B" csapat</p>
+          </div>
+          <div class="relative text-right">
+            <!-- <p class="text-[10px] font-black uppercase tracking-[0.15em] text-gray-400">
+              @if (event?.status === 'active' || event?.status === 'finished') {
+              Átlag (kezdéskor)
+              } @else {
+              Átlag
+              }
+            </p> -->
+            <div class="inline-flex items-center justify-end gap-1.5">
+              <p class="text-[18px] leading-tight font-black text-white">{{ teamBAverage }}</p>
+              <button
+                type="button"
+                (click)="toggleAverageInfo('B', $event)"
+                class="relative -top-0.5 inline-flex h-4 w-4 items-center justify-center rounded-full border border-primary/60 bg-primary/20 text-[9px] font-black text-primary shadow-[0_0_10px_rgba(34,197,94,0.45)]"
+                aria-label="ELO atlag magyarazat">
+                i
+              </button>
+            </div>
+            @if (averageInfoTeam === 'B') {
+            <div
+              (click)="preventAverageInfoClose($event)"
+              class="absolute right-0 top-full z-30 mt-2 w-60 rounded-xl border border-white/15 bg-dark-bg/95 px-3 py-2 text-left text-[11px] leading-snug text-gray-200 shadow-2xl">
+              A csapat játékosainak adott pillanatban érvényes ELO értékeinek átlaga
+            </div>
+            }
+          </div>
+        </div>
+        <div class="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-[#0d6efd] via-[#4ea1ff]/55 to-transparent"></div>
+      </div>
+      @for (player of teamB; track player.userId) {
+      <div cdkDrag [cdkDragDisabled]="teamsLocked"
+        class="mb-1.5 last:mb-0 rounded-xl border border-white/10 bg-white/5 p-2 flex items-center gap-2">
+        <span cdkDragHandle class="material-symbols-outlined text-[15px] text-gray-500">drag_indicator</span>
+        <div [routerLink]="['/profile', player.userId]"
+          class="h-8 w-8 overflow-hidden rounded-full border border-white/10">
+          <img [src]="player.photo || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + player.userId"
+            class="h-full w-full object-cover">
+        </div>
+        <div class="min-w-0 flex-1">
+          <p class="truncate text-[13px] font-bold text-white">{{ player.name }}</p>
+          <p class="truncate text-[9px] uppercase tracking-widest text-gray-400">
+            {{ player.role | roleLabel }} • Elo: {{ getDisplayedElo(player) }}
+          </p>
+        </div>
+      </div>
+      } @empty {
+      <div class="rounded-xl border border-dashed border-white/15 bg-white/5 p-2 text-[11px] text-gray-400">
+        Még nincs játékos.
+      </div>
+      }
+    </div>
+  </div>
+
+  <!-- <div class="grid grid-cols-2 gap-2">
+    <button type="button" (click)="backStep.emit()"
+      class="h-11 rounded-xl border border-white/10 bg-white/5 text-sm font-bold text-white">
+      Vissza
+    </button>
+
+    @if (canReshuffle) {
+    <button type="button" [disabled]="!canDrawTeams" (click)="onSecondaryReshuffle()"
+      class="h-11 rounded-xl border border-white/10 bg-white/5 text-sm font-bold text-white disabled:opacity-50">
+      Újrasorsolás
+    </button>
+    } @else {
+    <button type="button" [disabled]="!hasTeams" (click)="nextStep.emit()"
+      class="h-11 rounded-xl border border-white/10 bg-white/5 text-sm font-bold text-white disabled:opacity-50">
+      Tovább
+    </button>
+    }
+  </div> -->
+
+  <button type="button" [disabled]="primaryDisabled" (click)="onPrimaryAction()"
+    class="group h-12 w-full rounded-2xl bg-primary text-sm font-black text-background-dark disabled:opacity-50 inline-flex items-center justify-center gap-2">
+    @if (isPrimaryDrawAction) {
+    <span class="material-symbols-outlined group-hover:rotate-180 transition-transform duration-700 font-black">refresh</span>
+    }
+    <span>{{ primaryLabel }}</span>
+  </button>
+</section>

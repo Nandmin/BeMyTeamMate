@@ -1,0 +1,107 @@
+<section class="rounded-3xl border border-card-border card-gradient bg-dark-bg/80 backdrop-blur-xl mt-4 p-4 shadow-xl">
+  <div class="space-y-4">
+    <div class="space-y-2">
+      <p class="text-[11px] font-black uppercase tracking-[0.2em] text-center text-white" style="font-family: 'Newsreader';">Gyors áttekintés</p>
+      <!-- <h1 class="text-lg font-black text-white leading-tight truncate">{{ event?.title }}</h1>
+      @if (groupName) {
+      <p class="text-xs text-gray-400">{{ groupName }}</p> -->
+      <!-- } -->
+    </div>
+
+    <div class="rounded-2xl border border-white/10 bg-white/5 p-2.5 text-xs">
+      <div class="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-2 gap-y-2">
+        <div class="min-w-0 flex items-center gap-1.5">
+          <span class="material-symbols-outlined text-[15px] text-primary">calendar_today</span>
+          <p class="truncate font-bold text-white">{{ formattedDate || '-' }}</p>
+        </div>
+        <div class="flex items-center gap-1.5 text-right">
+          <span class="material-symbols-outlined text-[15px] text-primary">schedule</span>
+          <p class="font-bold text-white">{{ event?.time || '-' }}</p>
+          <span class="text-[10px] text-gray-400">({{ event?.duration || 0 }}p)</span>
+        </div>
+
+        <div class="min-w-0 flex items-center gap-1.5">
+          <span class="material-symbols-outlined text-[15px] text-primary">location_on</span>
+          <p class="truncate font-bold text-white">{{ event?.location || '-' }}</p>
+        </div>
+        <div class="flex items-center gap-1.5 text-right">
+          <span class="material-symbols-outlined text-[15px] text-primary">group</span>
+          <p class="font-bold text-white">{{ event?.currentAttendees || 0 }} / {{ event?.maxAttendees || 0 }}</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="rounded-2xl border border-card-border bg-dark-bg/60 p-2.5">
+      <button
+        type="button"
+        (click)="toggleParticipants()"
+        class="flex w-full items-center justify-between rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-left">
+        <div class="flex items-center gap-2">
+          <span class="material-symbols-outlined text-[16px] text-primary">groups</span>
+          <p class="text-[11px] font-black uppercase tracking-[0.16em] text-white">Résztvevők</p>
+        </div>
+        <div class="flex items-center gap-2">
+          <span class="rounded-full border border-primary/30 bg-primary/10 px-2 py-0.5 text-[10px] font-black text-primary">
+            {{ attendingMembers.length }}
+          </span>
+          <span
+            class="material-symbols-outlined text-[16px] text-gray-300 transition-transform"
+            [class.rotate-180]="isParticipantsOpen">
+            expand_more
+          </span>
+        </div>
+      </button>
+
+      @if (isParticipantsOpen) {
+      <div class="mt-2 space-y-2">
+        <div class="rounded-xl border border-primary/20 bg-primary/5 p-2">
+          <div class="mb-1.5 flex items-center justify-between">
+            <p class="text-[10px] font-black uppercase tracking-[0.12em] text-primary">Jelentkezők</p>
+            <span class="text-[10px] font-bold text-primary">{{ attendingMembers.length }} fő</span>
+          </div>
+          <div class="space-y-1">
+            @for (member of attendingMembers; track member.userId) {
+            <a [routerLink]="['/profile', member.userId]"
+              class="flex items-center justify-between rounded-lg border border-white/10 bg-white/5 px-2.5 py-1.5">
+              <span class="truncate text-xs font-bold text-white">{{ member.name }}</span>
+              <span class="material-symbols-outlined text-[14px] text-primary">check</span>
+            </a>
+            } @empty {
+            <p class="text-[11px] text-gray-400">Nincs még jelentkező.</p>
+            }
+          </div>
+        </div>
+
+        <div class="rounded-xl border border-white/10 bg-white/5 p-2">
+          <div class="mb-1.5 flex items-center justify-between">
+            <p class="text-[10px] font-black uppercase tracking-[0.12em] text-gray-300">Nincs válasz</p>
+            <span class="text-[10px] font-bold text-gray-300">{{ notRespondingMembers.length }} fő</span>
+          </div>
+          <div class="space-y-1">
+            @for (member of notRespondingMembers; track member.userId) {
+            <a [routerLink]="['/profile', member.userId]"
+              class="flex items-center rounded-lg border border-white/10 bg-white/5 px-2.5 py-1.5">
+              <span class="truncate text-xs font-bold text-white/90">{{ member.name }}</span>
+            </a>
+            } @empty {
+            <p class="text-[11px] text-primary">Mindenki visszajelzett.</p>
+            }
+          </div>
+        </div>
+      </div>
+      }
+    </div>
+
+    <button type="button" (click)="nextStep.emit()"
+      class="h-12 w-full rounded-2xl bg-primary text-background-dark font-black active:scale-[0.99]">
+      {{ primaryCtaLabel }}
+    </button>
+
+    <!-- <div class="flex items-center justify-between">
+      <a [routerLink]="['/groups', groupId]"
+        class="text-xs font-bold text-gray-300 underline decoration-white/20 underline-offset-4 hover:text-white">
+        Részletek
+      </a>
+    </div> -->
+  </div>
+</section>

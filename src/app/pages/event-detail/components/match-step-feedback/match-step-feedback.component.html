@@ -1,0 +1,67 @@
+﻿<section class="space-y-4">
+  <div class="mt-4 rounded-3xl border border-card-border card-gradient bg-dark-bg/80 backdrop-blur-xl p-3.5 shadow-xl space-y-3">
+        <div class="flex items-center justify-center gap-1.5">
+      <span class="material-symbols-outlined text-xs font-bold leading-none text-primary" style="transform: translatey(-2px);">trophy</span>
+      <p class="text-xs font-black uppercase tracking-[0.1em] text-center text-white" style="font-family: 'Newsreader';">MVP szavazás</p>
+    </div>
+
+    @if (!showMvp) {
+    <div class="rounded-2xl border border-white/10 bg-white/5 p-3 text-xs text-gray-300">
+      Az MVP szavazás a meccs lezárása után érhető el.
+    </div>
+    } @else if (!mvpEnabled) {
+    <div class="rounded-2xl border border-white/10 bg-white/5 p-3 text-xs text-gray-300">
+      Ennél az eseménynél az MVP szavazás nincs bekapcsolva.
+    </div>
+    } @else if (mvpWinnerMember) {
+    <div class="rounded-2xl border border-primary/40 bg-primary/10 p-3">
+      <p class="text-xs text-gray-300">Győztes</p>
+      <p class="text-lg font-black text-white">{{ mvpWinnerMember.name }}</p>
+    </div>
+    } @else {
+    @if (mvpVotingEndAt) {
+    <p class="text-[11px] text-white">
+      Szavazás vége: {{ mvpVotingEndAt | date:'yyyy.MM.dd. HH:mm' }}
+    </p>
+    }
+
+    @if (mvpUserVote) {
+    <p class="text-xs font-bold text-primary">Leadott szavazat: {{ mvpUserVotedName || '-' }}</p>
+    }
+
+    <div class="space-y-1.5">
+      @for (member of mvpCandidates; track member.userId) {
+      <label
+        class="flex items-center gap-2 rounded-xl border p-2 transition-all duration-200"
+        [class.opacity-60]="!canVoteMvp"
+        [ngClass]="
+          selectedMvpId === member.userId
+            ? 'border-[#2bee7c] bg-[#2bee7c]/10 shadow-[0_0_0_1px_rgba(43,238,124,0.55),0_0_14px_rgba(43,238,124,0.35)]'
+            : 'border-white/10 bg-white/5'
+        ">
+        <input type="radio" name="mvpVoteMobile" [checked]="selectedMvpId === member.userId" [disabled]="!canVoteMvp"
+          (change)="selectMvp.emit(member.userId)" class="accent-primary">
+        <span class="h-6 w-6 shrink-0 overflow-hidden rounded-full border border-white/15 bg-white/5">
+          <img
+            [src]="member.photo || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + member.userId"
+            [alt]="member.name"
+            class="h-full w-full object-cover" />
+        </span>
+        <span class="text-[13px] font-bold text-white">{{ member.name }}</span>
+      </label>
+      }
+    </div>
+    }
+  </div>
+
+  <div class="grid grid-cols-1 gap-2">
+    <!-- <button type="button" (click)="backStep.emit()"
+      class="h-11 rounded-xl border border-white/10 bg-white/5 text-sm font-bold text-white">
+      Vissza az eredmĂ©nyrĂ¶gzĂ­tĂ©shez
+    </button> -->
+    <button type="button" [disabled]="primaryDisabled" (click)="onPrimaryAction()"
+      class="h-11 rounded-xl bg-primary text-sm font-black text-background-dark disabled:opacity-50">
+      {{ primaryCtaLabel }}
+    </button>
+  </div>
+</section>

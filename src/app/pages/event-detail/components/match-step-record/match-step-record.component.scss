@@ -1,0 +1,39 @@
+@property --record-neon-angle {
+  syntax: '<angle>';
+  initial-value: 0deg;
+  inherits: false;
+}
+
+.record-neon-border {
+  --record-neon-angle: 0deg;
+  position: relative;
+  isolation: isolate;
+  background: conic-gradient(
+    from var(--record-neon-angle),
+    rgba(43, 238, 124, 0.14) 0deg,
+    rgba(43, 238, 124, 0.14) 332deg,
+    rgba(43, 238, 124, 0.98) 346deg,
+    rgba(43, 238, 124, 0.38) 354deg,
+    rgba(43, 238, 124, 0.14) 360deg
+  );
+  animation: record-neon-angle-spin 15s linear infinite;
+}
+
+.record-neon-border > * {
+  border-radius: inherit;
+}
+
+@keyframes record-neon-angle-spin {
+  from {
+    --record-neon-angle: 0deg;
+  }
+  to {
+    --record-neon-angle: 360deg;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .record-neon-border {
+    animation: none;
+  }
+}

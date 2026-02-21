@@ -1,0 +1,168 @@
+﻿<section class="space-y-4" [class.pb-24]="canEdit && isEditingResults">
+  <div class="mt-4 rounded-3xl border border-card-border card-gradient bg-dark-bg/80 backdrop-blur-xl p-2.5 shadow-xl">
+    <!-- <div class="flex items-center justify-between">
+      <p class="text-xs font-black uppercase tracking-[0.2em] text-gray-400">ĂllĂˇs</p>
+      <p class="text-xs font-bold text-white/80">{{ event?.status || 'planned' }}</p>
+    </div> -->
+    <div class="flex items-center justify-center gap-4">
+      <div class="text-center">
+        <p class="text-2xl leading-none font-black text-primary">{{ goalsA }}</p>
+      </div>
+      <span class="text-lg leading-none font-black text-white/50">:</span>
+      <div class="text-center">
+        <p class="text-2xl leading-none font-black text-[#0d6efd]">{{ goalsB }}</p>
+      </div>
+    </div>
+  </div>
+
+  @if (!hasTeams) {
+  <div class="rounded-2xl border border-card-border card-gradient bg-dark-bg/80 backdrop-blur-xl p-4 text-sm text-gray-300">
+    Először csapatokat kell rögzíteni.
+  </div>
+  <button type="button" (click)="backStep.emit()"
+    class="h-12 w-full rounded-2xl bg-primary font-black text-background-dark">
+    Vissza: Csapatok
+  </button>
+  } @else {
+  <div class="record-neon-border rounded-3xl p-[1px]">
+  <div class="rounded-3xl border border-card-border card-gradient bg-dark-bg/80 backdrop-blur-xl p-3 shadow-xl">
+    <p class="mb-2 text-center text-xs font-black uppercase tracking-[0.2em] text-white">Eredmény rögzítése</p>
+
+    <div class="mb-2 grid grid-cols-2 gap-2">
+      <button
+        type="button"
+        (click)="selectTeamTab('A')"
+        [ngClass]="
+          activeTeamTab === 'A'
+            ? 'bg-primary text-background-dark border-primary shadow-[0_0_12px_rgba(34,197,94,0.35)]'
+            : 'bg-primary/15 text-primary border-primary/40'
+        "
+        class="h-9 rounded-xl border text-sm font-black transition-all">
+        A csapat
+      </button>
+      <button
+        type="button"
+        (click)="selectTeamTab('B')"
+        [ngClass]="
+          activeTeamTab === 'B'
+            ? 'bg-[#0d6efd] text-white border-[#0d6efd] shadow-[0_0_14px_rgba(13,110,253,0.55)]'
+            : 'bg-[#0d6efd]/15 text-[#4ea1ff] border-[#0d6efd]/45'
+        "
+        class="h-9 rounded-xl border text-sm font-black transition-all">
+        B csapat
+      </button>
+    </div>
+
+    <div class="my-4">
+      <div
+        [ngClass]="
+          activeTeamTab === 'A'
+            ? 'bg-gradient-to-r from-primary/90 via-primary/35 to-transparent'
+            : 'bg-gradient-to-r from-[#0d6efd] via-[#4ea1ff]/55 to-transparent'
+        "
+        class="h-px rounded-full">
+      </div>
+    </div>
+
+    <div class="mt-2.5 grid grid-cols-2 gap-2">
+      @for (player of activeTeamPlayers; track player.userId) {
+      <button
+        type="button"
+        (click)="selectTeamPlayer(player.userId)"
+        [ngClass]="
+          activeTeamTab === 'A'
+            ? (selectedPlayerId === player.userId
+                ? 'bg-primary text-background-dark border-primary/80'
+                : 'bg-primary/15 text-primary border-primary/40')
+            : (selectedPlayerId === player.userId
+                ? 'bg-[#0d6efd] text-white border-[#0d6efd]/80 shadow-[0_0_10px_rgba(13,110,253,0.45)]'
+                : 'bg-[#0d6efd]/15 text-[#4ea1ff] border-[#0d6efd]/40')
+        "
+        class="h-9 w-full rounded-full border px-2 text-xs font-bold text-center truncate transition-all">
+        {{ player.name }}
+      </button>
+      } @empty {
+      <div class="col-span-2 rounded-xl border border-dashed border-white/15 bg-white/5 px-3 py-2 text-[11px] text-gray-400">
+        Nincs játékos a kiválasztott csapatban.
+      </div>
+      }
+    </div>
+  </div>
+  </div>
+
+  <div class="record-neon-border rounded-3xl p-[1px]">
+  <div class="rounded-3xl border border-card-border card-gradient bg-dark-bg/80 backdrop-blur-xl p-3.5 shadow-xl">
+    <div class="flex items-center justify-between gap-2">
+      <p class="text-md font-black text-white">Kiválasztott játékos:</p>
+      <p class="min-w-0 text-md font-black text-primary-light text-right truncate">
+        {{ selectedPlayerName || '' }}
+      </p>
+    </div>
+
+    <div class="mt-3 grid grid-cols-2 gap-2.5">
+      <div class="rounded-2xl border border-white/10 bg-white/5 p-2.5">
+        <div class="flex items-center justify-center gap-1.5">
+          <span class="material-symbols-outlined text-[20px] leading-none text-primary">sports_soccer</span>
+          <p class="text-md text-primary font-black text-center">Gól</p>
+        </div>
+        <div class="mt-1.5 flex items-center justify-between">
+          <button type="button" [disabled]="!canAdjustStats || !selectedPlayerId" (click)="goalsDelta.emit(-1)"
+            class="inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-white/[0.07] text-white text-[22px] font-black leading-none shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] transition-[background-color,box-shadow,transform] duration-150 active:bg-white/[0.16] active:shadow-[0_0_0_2px_rgba(255,255,255,0.08),inset_0_1px_0_rgba(255,255,255,0.16)] active:scale-[0.97] disabled:opacity-40 disabled:cursor-not-allowed">
+            <span class="relative -translate-y-px leading-none">-</span>
+          </button>
+          <span class="text-lg font-black text-white">{{ selectedGoals }}</span>
+          <button type="button" [disabled]="!canAdjustStats || !selectedPlayerId" (click)="goalsDelta.emit(1)"
+            class="inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-white/[0.07] text-white text-[22px] font-black leading-none shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] transition-[background-color,box-shadow,transform] duration-150 active:bg-white/[0.16] active:shadow-[0_0_0_2px_rgba(255,255,255,0.08),inset_0_1px_0_rgba(255,255,255,0.16)] active:scale-[0.97] disabled:opacity-40 disabled:cursor-not-allowed">
+            <span class="relative -translate-y-px leading-none">+</span>
+          </button>
+        </div>
+      </div>
+      <div class="rounded-2xl border border-white/10 bg-white/5 p-2.5">
+        <div class="flex items-center justify-center gap-1.5">
+          <span class="material-symbols-outlined text-[20px] leading-none text-[#0d6efd]">handshake</span>
+          <p class="text-md font-black text-center text-[#0d6efd]">Gólpassz</p>
+        </div>
+        <div class="mt-1.5 flex items-center justify-between">
+          <button type="button" [disabled]="!canAdjustStats || !selectedPlayerId" (click)="assistsDelta.emit(-1)"
+            class="inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-white/[0.07] text-white text-[22px] font-black leading-none shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] transition-[background-color,box-shadow,transform] duration-150 active:bg-white/[0.16] active:shadow-[0_0_0_2px_rgba(255,255,255,0.08),inset_0_1px_0_rgba(255,255,255,0.16)] active:scale-[0.97] disabled:opacity-40 disabled:cursor-not-allowed">
+            <span class="relative -translate-y-px leading-none">-</span>
+          </button>
+          <span class="text-lg font-black text-white">{{ selectedAssists }}</span>
+          <button type="button" [disabled]="!canAdjustStats || !selectedPlayerId" (click)="assistsDelta.emit(1)"
+            class="inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-white/[0.07] text-white text-[22px] font-black leading-none shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] transition-[background-color,box-shadow,transform] duration-150 active:bg-white/[0.16] active:shadow-[0_0_0_2px_rgba(255,255,255,0.08),inset_0_1px_0_rgba(255,255,255,0.16)] active:scale-[0.97] disabled:opacity-40 disabled:cursor-not-allowed">
+            <span class="relative -translate-y-px leading-none">+</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+  </div>
+
+  @if (canEdit && !isEditingResults) {
+  <button type="button" (click)="saveResults.emit()" [disabled]="isSubmitting"
+    class="h-11 w-full rounded-xl bg-primary text-sm font-black text-background-dark disabled:opacity-50">
+    Eredmény mentése
+  </button>
+  } @else if (!canEdit) {
+  <button type="button" (click)="nextStep.emit()"
+    class="h-11 w-full rounded-xl bg-primary text-sm font-black text-background-dark">
+    Tovább
+  </button>
+  }
+  }
+
+  @if (canEdit && isEditingResults) {
+  <div class="fixed inset-x-0 bottom-0 z-40 border-t border-white/10 bg-dark-bg/95 backdrop-blur">
+    <div class="mx-auto max-w-2xl px-4 py-3 grid grid-cols-2 gap-2">
+      <button type="button" (click)="toggleEdit.emit()"
+        class="h-11 rounded-xl border border-red-400/50 bg-red-500/20 text-sm font-bold text-white">
+        Mégse
+      </button>
+      <button type="button" [disabled]="isSubmitting" (click)="saveResults.emit()"
+        class="h-11 rounded-xl bg-primary text-sm font-black text-background-dark disabled:opacity-50">
+        Mentés
+      </button>
+    </div>
+  </div>
+  }
+</section>

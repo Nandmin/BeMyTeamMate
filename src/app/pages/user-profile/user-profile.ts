@@ -5,6 +5,7 @@ import {
   effect,
   computed,
   AfterViewInit,
+  OnDestroy,
   ViewChild,
   ElementRef,
 } from '@angular/core';
@@ -58,6 +59,8 @@ export class UserProfilePage implements AfterViewInit {
   turnstileToken = signal('');
   turnstileError = signal('');
   private turnstileWidgetId: string | null = null;
+  private turnstileThemeObserver: MutationObserver | null = null;
+  private lastTurnstileTheme: 'light' | 'dark' | null = null;
 
   // Viewed user data
   profileUser = toSignal<AppUser | null>(
@@ -186,6 +189,18 @@ export class UserProfilePage implements AfterViewInit {
 
   ngAfterViewInit() {
     this.loadTurnstile();
+    this.observeThemeChanges();
+  }
+
+  ngOnDestroy() {
+    if (this.turnstileThemeObserver) {
+      this.turnstileThemeObserver.disconnect();
+      this.turnstileThemeObserver = null;
+    }
+  }
+
+  private resolveTurnstileTheme(): 'light' | 'dark' {
+    return document.documentElement.classList.contains('light') ? 'light' : 'dark';
   }
 
   private loadTurnstile() {
@@ -216,22 +231,20 @@ export class UserProfilePage implements AfterViewInit {
       }
 
       // 3. Check if already rendered (has children that are not text nodes or we have token)
-      // If we have token, we assume it's good.
-      if (this.turnstileToken()) return;
-
-      // If the container has content but it is just our "Loading..." text, clear it
-      // Note: Turnstile iframe might be added.
+      // If the container already has Turnstile iframe, skip re-render.
       if (this.turnstileContainer.nativeElement.querySelector('iframe')) return; // Already has iframe
 
       // Clear text content (Loading...)
       this.turnstileContainer.nativeElement.textContent = '';
 
       try {
+        const theme = this.resolveTurnstileTheme();
+        this.lastTurnstileTheme = theme;
         this.turnstileWidgetId = (window as any).turnstile.render(
           this.turnstileContainer.nativeElement,
           {
             sitekey: environment.turnstileSiteKey,
-            theme: 'auto',
+            theme,
             callback: (token: string) => {
               this.turnstileToken.set(token);
               this.turnstileError.set('');
@@ -264,6 +277,43 @@ export class UserProfilePage implements AfterViewInit {
     script.defer = true;
     script.onload = () => tryRender();
     document.head.appendChild(script);
+  }
+
+  private observeThemeChanges() {
+    if (typeof MutationObserver === 'undefined') return;
+
+    const root = document.documentElement;
+    this.lastTurnstileTheme = this.resolveTurnstileTheme();
+
+    this.turnstileThemeObserver = new MutationObserver(() => {
+      const nextTheme = this.resolveTurnstileTheme();
+      if (nextTheme === this.lastTurnstileTheme) return;
+      this.lastTurnstileTheme = nextTheme;
+      this.rerenderTurnstileForTheme();
+    });
+
+    this.turnstileThemeObserver.observe(root, {
+      attributes: true,
+      attributeFilter: ['class'],
+    });
+  }
+
+  private rerenderTurnstileForTheme() {
+    if (!this.turnstileContainer?.nativeElement || !(window as any).turnstile) return;
+
+    try {
+      if (this.turnstileWidgetId && typeof (window as any).turnstile.remove === 'function') {
+        (window as any).turnstile.remove(this.turnstileWidgetId);
+      }
+    } catch (err) {
+      console.warn('Turnstile remove failed', err);
+    }
+
+    this.turnstileWidgetId = null;
+    this.turnstileToken.set('');
+    this.turnstileError.set('');
+    this.turnstileContainer.nativeElement.textContent = '';
+    this.loadTurnstile();
   }
 
   private resetTurnstile() {
@@ -550,7 +600,7 @@ export class UserProfilePage implements AfterViewInit {
 
   async onDeleteRegistration() {
     const confirmed = await this.modalService.confirm(
-      'Biztosan törölni szeretnéd a regisztrációdat? A művelet nem vonható vissza, és minden adatod véglegesen törlésre kerül.',
+      'Biztosan törölni szeretnéd a regisztrációdat? A művelet nem vonható vissza és minden adatod véglegesen törlésre kerül.',
       'Regisztráció törlése',
       'Végleges törlés',
       'Mégse',

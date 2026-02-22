@@ -26,7 +26,7 @@
                         <span class="material-symbols-outlined group-hover:scale-110 transition-transform"
                             [ngClass]="activeSection() === 'personal' ? 'text-primary' : 'text-text-secondary group-hover:text-white'">person</span>
                         <p class="text-sm font-medium leading-normal"
-                            [ngClass]="activeSection() === 'personal' ? 'text-white' : 'text-[#2bee7c] group-hover:text-white'">
+                            [ngClass]="activeSection() === 'personal' ? 'text-white' : 'profile-nav-inactive group-hover:text-white'">
                             Személyes adatok</p>
                     </a>
                     <a class="group flex items-center gap-3 px-4 py-3 rounded-xl border-l-4 transition-all duration-200"
@@ -35,7 +35,7 @@
                         <span class="material-symbols-outlined transition-colors"
                             [ngClass]="activeSection() === 'groups' ? 'text-primary' : 'text-text-secondary group-hover:text-white'">groups</span>
                         <p class="text-sm font-medium leading-normal"
-                            [ngClass]="activeSection() === 'groups' ? 'text-white' : 'text-[#2bee7c] group-hover:text-white'">
+                            [ngClass]="activeSection() === 'groups' ? 'text-white' : 'profile-nav-inactive group-hover:text-white'">
                             Társaságaim
                         </p>
                     </a>
@@ -46,7 +46,7 @@
                         <span class="material-symbols-outlined transition-colors"
                             [ngClass]="activeSection() === 'notifications' ? 'text-primary' : 'text-text-secondary group-hover:text-white'">notifications</span>
                         <p class="text-sm font-medium leading-normal"
-                            [ngClass]="activeSection() === 'notifications' ? 'text-white' : 'text-[#2bee7c] group-hover:text-white'">
+                            [ngClass]="activeSection() === 'notifications' ? 'text-white' : 'profile-nav-inactive group-hover:text-white'">
                             Értesítések
                         </p>
                     </a>
@@ -56,7 +56,7 @@
                         <span class="material-symbols-outlined transition-colors"
                             [ngClass]="activeSection() === 'privacy' ? 'text-primary' : 'text-text-secondary group-hover:text-white'">security</span>
                         <p class="text-sm font-medium leading-normal"
-                            [ngClass]="activeSection() === 'privacy' ? 'text-white' : 'text-[#2bee7c] group-hover:text-white'">
+                            [ngClass]="activeSection() === 'privacy' ? 'text-white' : 'profile-nav-inactive group-hover:text-white'">
                             Adatvédelem
                         </p>
                     </a>

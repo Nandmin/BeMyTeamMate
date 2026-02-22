@@ -65,6 +65,7 @@
                     <button (click)="setMobileTab('overview')"
                         class="rounded-lg px-2 py-2 text-xs font-semibold transition-colors"
                         [class.bg-primary]="mobileTab() === 'overview'" [class.text-white]="mobileTab() === 'overview'"
+                        [class.keep-white]="mobileTab() === 'overview'"
                         [class.text-gray-400]="mobileTab() !== 'overview'">
                         Áttekintés
                     </button>
@@ -72,18 +73,21 @@
                     <button (click)="setMobileTab('events')"
                         class="rounded-lg px-2 py-2 text-xs font-semibold transition-colors"
                         [class.bg-primary]="mobileTab() === 'events'" [class.text-white]="mobileTab() === 'events'"
+                        [class.keep-white]="mobileTab() === 'events'"
                         [class.text-gray-400]="mobileTab() !== 'events'">
                         Események
                     </button>
                     <button (click)="setMobileTab('members')"
                         class="rounded-lg px-2 py-2 text-xs font-semibold transition-colors"
                         [class.bg-primary]="mobileTab() === 'members'" [class.text-white]="mobileTab() === 'members'"
+                        [class.keep-white]="mobileTab() === 'members'"
                         [class.text-gray-400]="mobileTab() !== 'members'">
                         Tagok
                     </button>
                     <button (click)="setMobileTab('settings')"
                         class="rounded-lg px-2 py-2 text-xs font-semibold transition-colors"
                         [class.bg-primary]="mobileTab() === 'settings'" [class.text-white]="mobileTab() === 'settings'"
+                        [class.keep-white]="mobileTab() === 'settings'"
                         [class.text-gray-400]="mobileTab() !== 'settings'">
                         Beállítások
                     </button>

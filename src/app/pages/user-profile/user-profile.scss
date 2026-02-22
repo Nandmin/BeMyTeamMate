@@ -41,6 +41,10 @@ aside a {
     color: #92c9a9;
 }
 
+.profile-nav-inactive {
+  color: #2bee7c;
+}
+
 .bg-surface-dark {
     background-color: #162e21;
 }
@@ -196,6 +200,10 @@ section {
 
   .text-text-secondary {
     color: #64748b;
+  }
+
+  .profile-nav-inactive {
+    color: #0f766e !important;
   }
 
   .profile-delete-btn {

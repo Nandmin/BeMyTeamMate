@@ -42,21 +42,21 @@
                   class="flex h-12 w-12 items-center justify-center rounded-lg bg-background-dark/80 backdrop-blur-sm border border-white/10 text-primary text-xl font-bold">
                   {{ countdown().hours }}
                 </div>
-                <span class="text-xs text-gray-400 uppercase">Óra</span>
+                <span class="countdown-label text-xs text-gray-400 uppercase">Óra</span>
               </div>
               <div class="flex flex-col items-center gap-1">
                 <div
                   class="flex h-12 w-12 items-center justify-center rounded-lg bg-background-dark/80 backdrop-blur-sm border border-white/10 text-primary text-xl font-bold">
                   {{ countdown().minutes }}
                 </div>
-                <span class="text-xs text-gray-400 uppercase">Perc</span>
+                <span class="countdown-label text-xs text-gray-400 uppercase">Perc</span>
               </div>
               <div class="flex flex-col items-center gap-1">
                 <div
                   class="flex h-12 w-12 items-center justify-center rounded-lg bg-background-dark/80 backdrop-blur-sm border border-white/10 text-primary text-xl font-bold">
                   {{ countdown().seconds }}
                 </div>
-                <span class="text-xs text-gray-400 uppercase">Mp</span>
+                <span class="countdown-label text-xs text-gray-400 uppercase">Mp</span>
               </div>
             </div>
             <!-- Action Box -->
@@ -116,7 +116,7 @@
             <div class="grid grid-cols-1 min-[710px]:grid-cols-2 gap-4">
               @if (upcomingUserEvents().length === 0) {
               <div
-                class="bg-gradient-to-b from-dark-accent to-background-dark rounded-xl p-4 border border-border-dark text-gray-400 text-sm">
+                class="events-empty-state bg-gradient-to-b from-dark-accent to-background-dark rounded-xl p-4 border border-border-dark text-gray-400 text-sm">
                 Nincs közelgő esemény.
               </div>
               }
@@ -213,7 +213,7 @@
             </div>
             <div class="space-y-3">
               @if (selectedDayEvents().length === 0) {
-              <div class="text-sm text-gray-400 bg-[#193324]/40 border border-white/5 rounded-xl p-4">
+              <div class="events-empty-state text-sm text-gray-400 bg-[#193324]/40 border border-white/5 rounded-xl p-4">
                 Erre a napra nincs eseményed.
               </div>
               }
@@ -340,7 +340,7 @@
         </div>
         <div class="space-y-3">
           @if (selectedDayEvents().length === 0) {
-          <div class="text-sm text-gray-400 bg-[#193324]/40 border border-white/5 rounded-xl p-4">
+          <div class="events-empty-state text-sm text-gray-400 bg-[#193324]/40 border border-white/5 rounded-xl p-4">
             Erre a napra nincs eseményed.
           </div>
           }

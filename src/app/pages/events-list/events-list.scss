@@ -247,6 +247,14 @@
 
 // Light mode styles
 :host-context(html.light) {
+  .border-border-dark {
+    border-color: rgba(71, 85, 105, 0.14) !important;
+  }
+
+  .border-white\/5 {
+    border-color: rgba(71, 85, 105, 0.12) !important;
+  }
+
   .dashboard-title {
     color: #0f172a;
   }
@@ -262,6 +270,10 @@
     .text-white {
       color: #ffffff;
     }
+  }
+
+  .next-match-card .countdown-label {
+    color: #ffffff !important;
   }
 
   .filter-active {
@@ -322,6 +334,48 @@
   .event-icon {
     background: linear-gradient(135deg, rgba(34, 197, 94, 0.1) 0%, rgba(139, 92, 246, 0.1) 100%);
     border: 1px solid rgba(34, 197, 94, 0.2);
+  }
+
+  .events-empty-state {
+    background: linear-gradient(180deg, rgba(248, 250, 252, 0.98) 0%, rgba(241, 245, 249, 0.96) 100%) !important;
+    border-color: rgba(71, 85, 105, 0.16) !important;
+    color: #64748b !important;
+    box-shadow: 5px 10px 10px -6px rgba(0, 0, 0, 0.35);
+  }
+
+  // Results-like softer border + depth for event cards/panels in light mode
+  .next-match-card,
+  .bg-gradient-to-b.from-dark-accent.to-background-dark.border.border-border-dark {
+    position: relative;
+    isolation: isolate;
+    border-color: rgba(71, 85, 105, 0.16) !important;
+    box-shadow: 5px 10px 10px -6px rgba(0, 0, 0, 0.75);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+
+    &::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      pointer-events: none;
+      border: 1px solid rgba(255, 255, 255, 0.72);
+      box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.88),
+        0 0 0 1px rgba(31, 58, 43, 0.08);
+    }
+  }
+
+  a.bg-gradient-to-b.from-dark-accent.to-background-dark.border.border-border-dark:hover {
+    border-color: rgba(63, 143, 107, 0.28) !important;
+    box-shadow: 0 16px 30px rgba(15, 23, 42, 0.16);
+  }
+
+  .bg-\[\#193324\]\/40.border.border-white\/5.rounded-xl,
+  .bg-\[\#193324\]\/50.border.border-white\/5.rounded-xl {
+    background: linear-gradient(180deg, rgba(248, 250, 252, 0.96) 0%, rgba(241, 245, 249, 0.94) 100%);
+    border-color: rgba(71, 85, 105, 0.14) !important;
+    box-shadow: 5px 10px 10px -6px rgba(0, 0, 0, 0.55);
   }
 }
 

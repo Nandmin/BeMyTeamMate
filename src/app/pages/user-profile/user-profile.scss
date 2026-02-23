@@ -60,6 +60,16 @@ aside a {
   border-color: rgba(146, 201, 169, 0.22);
 }
 
+:host-context(html.dark) {
+  .profile-group-card {
+    border-color: rgba(146, 201, 169, 0.24);
+  }
+
+  .profile-group-card:hover {
+    border-color: rgba(34, 197, 94, 0.42);
+  }
+}
+
 // Reset some styles that might conflict with global ones
 section {
     scroll-margin-top: 100px;

@@ -11,9 +11,12 @@ import { SportEvent } from '../../../../services/event.service';
   styleUrl: './match-step-feedback.component.scss',
 })
 export class MatchStepFeedbackComponent {
+  readonly mvpEloReward = 5;
+
   @Input() event: SportEvent | undefined;
   @Input() mvpVotingEndAt: Date | null = null;
   @Input() mvpWinnerMember: GroupMember | null = null;
+  @Input() mvpWinnerExists = false;
   @Input() mvpCandidates: GroupMember[] = [];
   @Input() canVoteMvp = false;
   @Input() mvpVotingOpen = false;
@@ -46,6 +49,10 @@ export class MatchStepFeedbackComponent {
   get primaryDisabled(): boolean {
     if (!this.canSubmitMvpVote) return false;
     return this.isSubmitting || !this.selectedMvpId;
+  }
+
+  get showPrimaryAction(): boolean {
+    return !this.mvpWinnerExists;
   }
 
   onPrimaryAction() {

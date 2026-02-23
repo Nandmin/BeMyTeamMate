@@ -221,6 +221,13 @@ export class EventDetailPage {
         .catch((error) => console.error('Error finalizing MVP vote:', error))
         .finally(() => this.isFinalizingMvp.set(false));
     });
+
+    effect(() => {
+      if (!this.resultsEditingLocked()) return;
+      if (this.isEditingResults()) {
+        this.isEditingResults.set(false);
+      }
+    });
   }
 
   attendingMembers = computed(() => {
@@ -318,6 +325,9 @@ export class EventDetailPage {
     if (!event?.mvpWinnerId || !members) return null;
     return members.find((m) => m.userId === event.mvpWinnerId) || null;
   });
+
+  mvpWinnerExists = computed(() => !!this.event()?.mvpWinnerId);
+  resultsEditingLocked = computed(() => this.mvpWinnerExists());
 
   mvpUserVotedMember = computed(() => {
     const votedFor = this.mvpUserVote();
@@ -706,6 +716,7 @@ export class EventDetailPage {
   // --- Result Management Logic ---
 
   toggleResultsEdit() {
+    if (this.resultsEditingLocked()) return;
     const nextValue = !this.isEditingResults();
     this.isEditingResults.set(nextValue);
     if (nextValue) {
@@ -734,6 +745,7 @@ export class EventDetailPage {
   }
 
   updateStat(userId: string, type: 'goals' | 'assists', delta: number) {
+    if (this.resultsEditingLocked()) return;
     if (!this.event() || (this.event()?.status !== 'active' && !this.isEditingResults())) return;
 
     // Determine user's team
@@ -802,6 +814,7 @@ export class EventDetailPage {
   }
 
   async saveResults(): Promise<boolean> {
+    if (this.resultsEditingLocked()) return false;
     if (!this.groupId || !this.eventId) return false;
 
     const confirmed = await this.modalService.confirm(

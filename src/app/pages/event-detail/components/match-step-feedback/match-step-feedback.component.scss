@@ -1,3 +1,60 @@
+:host {
+  display: block;
+}
+
+.mvp-winner-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.35rem 0.25rem 0.2rem;
+  text-align: center;
+}
+
+.mvp-winner-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.mvp-winner-label-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 999px;
+  font-size: 1rem;
+  line-height: 1;
+  color: #16a34a;
+  background: rgba(34, 197, 94, 0.18);
+}
+
+.mvp-winner-label-text {
+  font-size: 0.75rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  color: #64748b;
+}
+
+.mvp-winner-name {
+  margin: 0;
+  font-size: clamp(2rem, 8vw, 2.35rem);
+  line-height: 1;
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  color: #f8fafc;
+}
+
+.mvp-winner-reward {
+  margin: 0;
+  font-size: 1.35rem;
+  font-weight: 900;
+  letter-spacing: 0.01em;
+  color: #22c55e;
+}
+
 :host-context(html.light) {
   .card-gradient {
     background: linear-gradient(
@@ -40,5 +97,22 @@
 
   .text-gray-300 {
     color: #475569;
+  }
+
+  .mvp-winner-label-icon {
+    color: #16a34a;
+    background: rgba(34, 197, 94, 0.18);
+  }
+
+  .mvp-winner-label-text {
+    color: #64748b;
+  }
+
+  .mvp-winner-name {
+    color: #1e293b;
+  }
+
+  .mvp-winner-reward {
+    color: #22c55e;
   }
 }

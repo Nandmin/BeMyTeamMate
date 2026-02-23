@@ -55,11 +55,12 @@
   }
 
   .kpi-card__meta {
-    gap: 0.45rem;
+    gap: 0.32rem;
   }
 
   .kpi-card__icon {
     flex-shrink: 0;
+    padding: 0.25rem !important;
   }
 
   .kpi-card__icon .material-symbols-outlined {
@@ -266,6 +267,14 @@
   will-change: transform, box-shadow;
   transform: translateY(0) scale(1);
   z-index: 1;
+}
+
+.kpi-card__meta {
+  gap: 0.5rem;
+}
+
+.kpi-card__icon {
+  padding: 0.35rem !important;
 }
 
 .kpi-card:hover,

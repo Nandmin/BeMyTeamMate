@@ -396,7 +396,8 @@ main {
     border-color: rgba(0, 0, 0, 0.1) !important;
   }
 
-  .keep-white {
+  .keep-white,
+  .keep-white .material-symbols-outlined {
     color: #ffffff !important;
   }
 

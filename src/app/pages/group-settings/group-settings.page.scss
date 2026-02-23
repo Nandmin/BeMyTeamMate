@@ -69,6 +69,11 @@
     color: #94a3b8 !important;
   }
 
+  .keep-white,
+  .keep-white .material-symbols-outlined {
+    color: #ffffff !important;
+  }
+
   // Backgrounds that were white-transparent (for dark mode) -> change to dark-transparent
   .bg-white\/5 {
     background-color: rgba(15, 23, 42, 0.05) !important;

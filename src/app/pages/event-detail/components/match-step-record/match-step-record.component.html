@@ -1,5 +1,5 @@
 ﻿<section class="space-y-4" [class.pb-24]="canEdit && isEditingResults">
-  <div class="mt-4 rounded-3xl border border-card-border card-gradient bg-dark-bg/80 backdrop-blur-xl p-2.5 shadow-xl">
+  <div class="match-flow-card mt-4 rounded-3xl border border-card-border card-gradient bg-dark-bg/80 backdrop-blur-xl p-2.5 shadow-xl">
     <!-- <div class="flex items-center justify-between">
       <p class="text-xs font-black uppercase tracking-[0.2em] text-gray-400">ĂllĂˇs</p>
       <p class="text-xs font-bold text-white/80">{{ event?.status || 'planned' }}</p>
@@ -16,7 +16,7 @@
   </div>
 
   @if (!hasTeams) {
-  <div class="rounded-2xl border border-card-border card-gradient bg-dark-bg/80 backdrop-blur-xl p-4 text-sm text-gray-300">
+  <div class="match-flow-card rounded-2xl border border-card-border card-gradient bg-dark-bg/80 backdrop-blur-xl p-4 text-sm text-gray-300">
     Először csapatokat kell rögzíteni.
   </div>
   <button type="button" (click)="backStep.emit()"
@@ -25,7 +25,7 @@
   </button>
   } @else {
   <div class="record-neon-border rounded-3xl p-[1px]">
-  <div class="rounded-3xl border border-card-border card-gradient bg-dark-bg/80 backdrop-blur-xl p-3 shadow-xl">
+  <div class="match-flow-card rounded-3xl border border-card-border card-gradient bg-dark-bg/80 backdrop-blur-xl p-3 shadow-xl">
     <p class="mb-2 text-center text-xs font-black uppercase tracking-[0.2em] text-white">Eredmény rögzítése</p>
 
     <div class="mb-2 grid grid-cols-2 gap-2">
@@ -91,7 +91,7 @@
   </div>
 
   <div class="record-neon-border rounded-3xl p-[1px]">
-  <div class="rounded-3xl border border-card-border card-gradient bg-dark-bg/80 backdrop-blur-xl p-3.5 shadow-xl">
+  <div class="match-flow-card rounded-3xl border border-card-border card-gradient bg-dark-bg/80 backdrop-blur-xl p-3.5 shadow-xl">
     <div class="flex items-center justify-between gap-2">
       <p class="text-md font-black text-white">Kiválasztott játékos:</p>
       <p class="min-w-0 text-md font-black text-primary-light text-right truncate">

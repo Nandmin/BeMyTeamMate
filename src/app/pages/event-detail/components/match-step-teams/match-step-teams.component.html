@@ -1,5 +1,5 @@
 <section class="space-y-4" (click)="closeAverageInfo()">
-  <div class="rounded-3xl border border-card-border card-gradient bg-dark-bg/80 backdrop-blur-xl mt-4 p-3 shadow-xl">
+  <div class="match-flow-card rounded-3xl border border-card-border card-gradient bg-dark-bg/80 backdrop-blur-xl mt-4 p-3 shadow-xl">
     <div class="space-y-2">
       <p class="text-[11px] uppercase tracking-[0.18em] font-black text-white text-center">Erőegyensúly</p>
       <div class="flex items-center justify-between text-xs font-bold uppercase tracking-[0.2em]">
@@ -23,7 +23,7 @@
   <div class="grid grid-cols-1 gap-2.5" cdkDropListGroup>
     <div id="teamA" cdkDropList [cdkDropListData]="teamA" [cdkDropListDisabled]="teamsLocked"
       (cdkDropListDropped)="dropped.emit($event)"
-      class="rounded-2xl border border-card-border card-gradient bg-dark-bg/80 backdrop-blur-xl p-2.5 shadow-xl min-h-[92px]">
+      class="match-flow-card rounded-2xl border border-card-border card-gradient bg-dark-bg/80 backdrop-blur-xl p-2.5 shadow-xl min-h-[92px]">
       <div class="relative -mx-2.5 -mt-2.5 mb-2 rounded-t-2xl border-b border-white/10 px-3 py-2.5 bg-gradient-to-b from-white/10 via-white/[0.04] to-transparent">
         <div class="flex items-center justify-between gap-2">
           <div class="flex items-center gap-2">
@@ -88,7 +88,7 @@
 
     <div id="teamB" cdkDropList [cdkDropListData]="teamB" [cdkDropListDisabled]="teamsLocked"
       (cdkDropListDropped)="dropped.emit($event)"
-      class="rounded-2xl border border-card-border card-gradient bg-dark-bg/80 backdrop-blur-xl p-2.5 shadow-xl min-h-[92px]">
+      class="match-flow-card rounded-2xl border border-card-border card-gradient bg-dark-bg/80 backdrop-blur-xl p-2.5 shadow-xl min-h-[92px]">
       <div class="relative -mx-2.5 -mt-2.5 mb-2 rounded-t-2xl border-b border-white/10 px-3 py-2.5 bg-gradient-to-b from-white/10 via-white/[0.04] to-transparent">
         <div class="flex items-center justify-between gap-2">
           <div class="flex items-center gap-2">

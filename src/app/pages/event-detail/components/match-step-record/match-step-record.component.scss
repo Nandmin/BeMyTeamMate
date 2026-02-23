@@ -39,6 +39,17 @@
 }
 
 :host-context(html.light) {
+  .record-neon-border {
+    background: conic-gradient(
+      from var(--record-neon-angle),
+      rgba(71, 85, 105, 0.12) 0deg,
+      rgba(71, 85, 105, 0.12) 334deg,
+      rgba(63, 143, 107, 0.75) 348deg,
+      rgba(63, 143, 107, 0.22) 356deg,
+      rgba(71, 85, 105, 0.12) 360deg
+    );
+  }
+
   .card-gradient {
     background: linear-gradient(
       180deg,

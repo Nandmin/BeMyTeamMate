@@ -9,6 +9,74 @@
   box-shadow: 0 0 12px rgba(43, 238, 124, 0.35);
 }
 
+.mobile-flow-root {
+  background:
+    radial-gradient(circle at 12% -4%, rgba(43, 238, 124, 0.08) 0%, transparent 44%),
+    radial-gradient(circle at 95% 18%, rgba(78, 161, 255, 0.09) 0%, transparent 36%),
+    linear-gradient(180deg, #09140f 0%, #0b1712 100%);
+}
+
+.mobile-flow-shell,
+.mobile-flow-menu {
+  border-color: rgba(146, 201, 169, 0.22);
+  background: linear-gradient(180deg, rgba(13, 27, 21, 0.94) 0%, rgba(9, 20, 15, 0.92) 100%);
+  box-shadow: 0 12px 28px rgba(5, 15, 10, 0.34);
+}
+
+.mobile-flow-shell-btn,
+.mobile-flow-step {
+  border-color: rgba(146, 201, 169, 0.2);
+  background: linear-gradient(180deg, rgba(19, 35, 28, 0.92) 0%, rgba(12, 24, 18, 0.9) 100%);
+  color: #e7fff0;
+  transition: transform 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
+}
+
+.mobile-flow-shell-btn:active,
+.mobile-flow-step:active {
+  transform: scale(0.98);
+}
+
+.mobile-flow-step.mobile-step-active {
+  background: #2bee7c !important;
+  background-image: none !important;
+  color: #ffffff !important;
+  border-color: rgba(43, 238, 124, 0.9) !important;
+  box-shadow: 0 0 12px rgba(43, 238, 124, 0.35) !important;
+}
+
+.mobile-flow-progress-track {
+  background: rgba(146, 201, 169, 0.18);
+}
+
+.mobile-flow-progress-fill {
+  background: linear-gradient(90deg, #2bee7c 0%, #27d86f 100%);
+}
+
+.mobile-flow-menu-item {
+  transition: background-color 180ms ease, color 180ms ease;
+}
+
+.mobile-flow-menu-item:hover {
+  background-color: rgba(146, 201, 169, 0.14);
+}
+
+:host ::ng-deep .mobile-flow-root .match-flow-card {
+  position: relative;
+  border-color: rgba(146, 201, 169, 0.22);
+  background: linear-gradient(180deg, rgba(13, 27, 21, 0.94) 0%, rgba(9, 20, 15, 0.9) 100%);
+  box-shadow: 0 10px 24px rgba(5, 15, 10, 0.3);
+}
+
+:host ::ng-deep .mobile-flow-root .match-flow-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
 @property --mobile-neon-angle {
   syntax: '<angle>';
   initial-value: 0deg;
@@ -169,6 +237,54 @@ h1, h2, h3 {
     background-color: #f8fafc;
   }
 
+  .mobile-flow-root {
+    background:
+      radial-gradient(circle at 10% 0%, rgba(148, 163, 184, 0.2) 0%, transparent 42%),
+      linear-gradient(180deg, #f5f7fb 0%, #eef2f7 100%);
+  }
+
+  .mobile-flow-shell,
+  .mobile-flow-menu {
+    border-color: rgba(71, 85, 105, 0.18);
+    background: linear-gradient(180deg, rgba(248, 250, 252, 0.98) 0%, rgba(241, 245, 249, 0.96) 100%);
+    box-shadow: 5px 10px 10px -6px rgba(0, 0, 0, 0.75);
+  }
+
+  .mobile-flow-shell-btn,
+  .mobile-flow-step {
+    border-color: rgba(71, 85, 105, 0.18);
+    background: linear-gradient(180deg, rgba(248, 250, 252, 0.98) 0%, rgba(241, 245, 249, 0.95) 100%);
+    color: #1f2937;
+  }
+
+  .mobile-flow-step.mobile-step-active {
+    background: #2bee7c !important;
+    background-image: none !important;
+    color: #ffffff !important;
+    border-color: rgba(43, 238, 124, 0.92) !important;
+    box-shadow: 0 0 12px rgba(43, 238, 124, 0.35) !important;
+  }
+
+  .mobile-flow-shell-btn .material-symbols-outlined {
+    color: #3f8f6b;
+  }
+
+  .mobile-flow-progress-track {
+    background: rgba(71, 85, 105, 0.14);
+  }
+
+  .mobile-flow-progress-fill {
+    background: linear-gradient(90deg, #2bee7c 0%, #3fcf89 100%);
+  }
+
+  .mobile-flow-menu-item {
+    color: #1f2937;
+  }
+
+  .mobile-flow-menu-item:hover {
+    background-color: rgba(15, 23, 42, 0.06);
+  }
+
   .text-white {
     color: #1e293b;
   }
@@ -289,6 +405,19 @@ h1, h2, h3 {
 
   .card-gradient {
     background: linear-gradient(180deg, rgba(15, 23, 42, 0.05) 0%, rgba(15, 23, 42, 0.02) 65%, rgba(15, 23, 42, 0) 100%);
+  }
+
+  ::ng-deep .mobile-flow-root .match-flow-card {
+    border-color: rgba(71, 85, 105, 0.18);
+    background: linear-gradient(180deg, rgba(248, 250, 252, 0.98) 0%, rgba(241, 245, 249, 0.96) 100%);
+    box-shadow: 5px 10px 10px -6px rgba(0, 0, 0, 0.75);
+  }
+
+  ::ng-deep .mobile-flow-root .match-flow-card::before {
+    border-color: rgba(255, 255, 255, 0.72);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.88),
+      0 0 0 1px rgba(31, 58, 43, 0.08);
   }
 
 }

@@ -1,10 +1,10 @@
 ﻿@if (isMobileFlow()) {
-<main class="flex-grow bg-sport-background text-white pb-6 pt-4">
+<main class="mobile-flow-root flex-grow bg-sport-background text-white pb-6 pt-4">
     <div class="mx-auto max-w-2xl px-4 space-y-4">
-        <section class="relative rounded-3xl border border-card-border bg-dark-bg/85 backdrop-blur-xl p-3 shadow-xl">
+        <section class="mobile-flow-shell relative rounded-3xl border border-card-border bg-dark-bg/85 backdrop-blur-xl p-3 shadow-xl">
             <div class="flex items-center gap-2">
                 <button type="button" (click)="onMobileShellBack()"
-                    class="h-9 w-9 shrink-0 rounded-xl border border-white/10 bg-white/5 text-white inline-flex items-center justify-center">
+                    class="mobile-flow-shell-btn h-9 w-9 shrink-0 rounded-xl border border-white/10 bg-white/5 text-white inline-flex items-center justify-center">
                     <span class="material-symbols-outlined text-[18px]">arrow_back</span>
                 </button>
 
@@ -32,14 +32,14 @@
 
                 @if (mobileHasOverflowActions()) {
                 <button type="button" (click)="toggleMobileOverflow()"
-                    class="h-9 w-9 shrink-0 rounded-xl border border-white/10 bg-white/5 text-white inline-flex items-center justify-center">
+                    class="mobile-flow-shell-btn h-9 w-9 shrink-0 rounded-xl border border-white/10 bg-white/5 text-white inline-flex items-center justify-center">
                     <span class="material-symbols-outlined text-[18px]">more_horiz</span>
                 </button>
                 }
             </div>
 
-            <div class="mt-3 h-1.5 rounded-full bg-white/10 overflow-hidden">
-                <div class="h-full bg-primary transition-all duration-300" [style.width.%]="mobileProgressPercent()">
+            <div class="mobile-flow-progress-track mt-3 h-1.5 rounded-full bg-white/10 overflow-hidden">
+                <div class="mobile-flow-progress-fill h-full bg-primary transition-all duration-300" [style.width.%]="mobileProgressPercent()">
                 </div>
             </div>
 
@@ -47,17 +47,17 @@
                 @for (step of flowStepOrder; track step) {
                 <button type="button" (click)="goToStep(step)"
                     [class.mobile-step-active]="currentStep() === step"
-                    class="h-7 rounded-lg border border-white/10 bg-white/5 px-1 text-[10px] font-black tracking-[0.1em] text-white leading-none">
+                    class="mobile-flow-step h-7 rounded-lg border border-white/10 bg-white/5 px-1 text-[10px] font-black tracking-[0.1em] text-white leading-none">
                     {{ flowStepLabels[step] }}
                 </button>
                 }
             </div>
 
             @if (isMobileOverflowOpen() && mobileHasOverflowActions()) {
-            <div class="absolute right-3 top-12 z-30 w-48 rounded-2xl border border-card-border bg-dark-bg/95 p-1.5 shadow-2xl">
+            <div class="mobile-flow-menu absolute right-3 top-12 z-30 w-48 rounded-2xl border border-card-border bg-dark-bg/95 p-1.5 shadow-2xl">
                 @if (mobileRsvpActionVisible()) {
                 <button type="button" (click)="onMobileOverflowRsvp()"
-                    class="w-full rounded-xl px-3 py-2 text-left text-sm font-bold hover:bg-white/10"
+                    class="mobile-flow-menu-item w-full rounded-xl px-3 py-2 text-left text-sm font-bold hover:bg-white/10"
                     [class.text-red-400]="isUserAttending()"
                     [class.text-white]="!isUserAttending()"
                     >
@@ -67,7 +67,7 @@
 
                 @if (mobileShowEventSettingsAction()) {
                 <a [routerLink]="['/groups', groupId, 'edit-event', eventId]" (click)="closeMobileOverflow()"
-                    class="block w-full rounded-xl px-3 py-2 text-left text-sm font-bold text-white hover:bg-white/10">
+                    class="mobile-flow-menu-item block w-full rounded-xl px-3 py-2 text-left text-sm font-bold text-white hover:bg-white/10">
                     Esemény beállítás
                 </a>
                 }

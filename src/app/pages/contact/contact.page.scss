@@ -47,3 +47,18 @@
   transform: scale(var(--turnstile-scale));
   transform-origin: top left;
 }
+
+.contact-submit-btn,
+.contact-submit-btn .material-symbols-outlined {
+  color: #ffffff !important;
+}
+
+.contact-submit-btn .relative.z-10 .material-symbols-outlined {
+  order: -1;
+}
+
+:host-context(html.light) .contact-submit-btn,
+:host-context(html.light) .contact-submit-btn .relative.z-10,
+:host-context(html.light) .contact-submit-btn .material-symbols-outlined {
+  color: #ffffff !important;
+}

@@ -61,6 +61,10 @@ header {
 
 // Light mode active link
 :host-context(html.light) {
+  header nav a:hover {
+    color: #1e293b;
+  }
+
   .active-link {
     color: #1e293b !important;
     background: transparent;

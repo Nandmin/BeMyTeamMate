@@ -5,6 +5,13 @@
       <p class="text-xs font-black uppercase tracking-[0.1em] text-center text-white" style="font-family: 'Newsreader';">MVP szavazás</p>
     </div>
 
+    @if (showMvp && mvpEnabled && mvpVotingEndAt) {
+    <p class="mvp-voting-deadline text-center">
+      {{ mvpVotingOpen ? 'Szavazás vége:' : 'Szavazás lezárult:' }}
+      <span class="font-black">{{ mvpVotingEndAt | date:'yyyy.MM.dd. HH:mm' }}</span>
+    </p>
+    }
+
     @if (!showMvp) {
     <div class="rounded-2xl border border-white/10 bg-white/5 p-3 text-xs text-gray-300">
       Az MVP szavazás a meccs lezárása után érhető el.
@@ -23,12 +30,6 @@
       <p class="mvp-winner-reward">+{{ mvpEloReward }} ELO</p>
     </div>
     } @else {
-    @if (mvpVotingEndAt) {
-    <p class="text-[11px] text-white">
-      Szavazás vége: {{ mvpVotingEndAt | date:'yyyy.MM.dd. HH:mm' }}
-    </p>
-    }
-
     @if (mvpUserVote) {
     <p class="text-xs font-bold text-primary">Leadott szavazat: {{ mvpUserVotedName || '-' }}</p>
     }

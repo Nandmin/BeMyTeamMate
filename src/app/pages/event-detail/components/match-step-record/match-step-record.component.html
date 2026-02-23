@@ -107,12 +107,12 @@
         </div>
         <div class="mt-1.5 flex items-center justify-between">
           <button type="button" [disabled]="!canAdjustStats || !selectedPlayerId" (click)="goalsDelta.emit(-1)"
-            class="inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-white/[0.07] text-white text-[22px] font-black leading-none shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] transition-[background-color,box-shadow,transform] duration-150 active:bg-white/[0.16] active:shadow-[0_0_0_2px_rgba(255,255,255,0.08),inset_0_1px_0_rgba(255,255,255,0.16)] active:scale-[0.97] disabled:opacity-40 disabled:cursor-not-allowed">
+            class="stat-adjust-btn inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-white/[0.07] text-white text-[22px] font-black leading-none shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] transition-[background-color,box-shadow,transform] duration-150 active:bg-white/[0.16] active:shadow-[0_0_0_2px_rgba(255,255,255,0.08),inset_0_1px_0_rgba(255,255,255,0.16)] active:scale-[0.97] disabled:opacity-40 disabled:cursor-not-allowed">
             <span class="relative -translate-y-px leading-none">-</span>
           </button>
           <span class="text-lg font-black text-white">{{ selectedGoals }}</span>
           <button type="button" [disabled]="!canAdjustStats || !selectedPlayerId" (click)="goalsDelta.emit(1)"
-            class="inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-white/[0.07] text-white text-[22px] font-black leading-none shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] transition-[background-color,box-shadow,transform] duration-150 active:bg-white/[0.16] active:shadow-[0_0_0_2px_rgba(255,255,255,0.08),inset_0_1px_0_rgba(255,255,255,0.16)] active:scale-[0.97] disabled:opacity-40 disabled:cursor-not-allowed">
+            class="stat-adjust-btn inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-white/[0.07] text-white text-[22px] font-black leading-none shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] transition-[background-color,box-shadow,transform] duration-150 active:bg-white/[0.16] active:shadow-[0_0_0_2px_rgba(255,255,255,0.08),inset_0_1px_0_rgba(255,255,255,0.16)] active:scale-[0.97] disabled:opacity-40 disabled:cursor-not-allowed">
             <span class="relative -translate-y-px leading-none">+</span>
           </button>
         </div>
@@ -124,12 +124,12 @@
         </div>
         <div class="mt-1.5 flex items-center justify-between">
           <button type="button" [disabled]="!canAdjustStats || !selectedPlayerId" (click)="assistsDelta.emit(-1)"
-            class="inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-white/[0.07] text-white text-[22px] font-black leading-none shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] transition-[background-color,box-shadow,transform] duration-150 active:bg-white/[0.16] active:shadow-[0_0_0_2px_rgba(255,255,255,0.08),inset_0_1px_0_rgba(255,255,255,0.16)] active:scale-[0.97] disabled:opacity-40 disabled:cursor-not-allowed">
+            class="stat-adjust-btn inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-white/[0.07] text-white text-[22px] font-black leading-none shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] transition-[background-color,box-shadow,transform] duration-150 active:bg-white/[0.16] active:shadow-[0_0_0_2px_rgba(255,255,255,0.08),inset_0_1px_0_rgba(255,255,255,0.16)] active:scale-[0.97] disabled:opacity-40 disabled:cursor-not-allowed">
             <span class="relative -translate-y-px leading-none">-</span>
           </button>
           <span class="text-lg font-black text-white">{{ selectedAssists }}</span>
           <button type="button" [disabled]="!canAdjustStats || !selectedPlayerId" (click)="assistsDelta.emit(1)"
-            class="inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-white/[0.07] text-white text-[22px] font-black leading-none shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] transition-[background-color,box-shadow,transform] duration-150 active:bg-white/[0.16] active:shadow-[0_0_0_2px_rgba(255,255,255,0.08),inset_0_1px_0_rgba(255,255,255,0.16)] active:scale-[0.97] disabled:opacity-40 disabled:cursor-not-allowed">
+            class="stat-adjust-btn inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-white/[0.07] text-white text-[22px] font-black leading-none shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] transition-[background-color,box-shadow,transform] duration-150 active:bg-white/[0.16] active:shadow-[0_0_0_2px_rgba(255,255,255,0.08),inset_0_1px_0_rgba(255,255,255,0.16)] active:scale-[0.97] disabled:opacity-40 disabled:cursor-not-allowed">
             <span class="relative -translate-y-px leading-none">+</span>
           </button>
         </div>

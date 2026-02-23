@@ -2,6 +2,13 @@
   display: block;
 }
 
+.mvp-voting-deadline {
+  margin: -0.35rem 0 0;
+  font-size: 0.7rem;
+  line-height: 1.25;
+  color: rgba(248, 250, 252, 0.8);
+}
+
 .mvp-winner-state {
   display: flex;
   flex-direction: column;
@@ -97,6 +104,10 @@
 
   .text-gray-300 {
     color: #475569;
+  }
+
+  .mvp-voting-deadline {
+    color: #64748b;
   }
 
   .mvp-winner-label-icon {

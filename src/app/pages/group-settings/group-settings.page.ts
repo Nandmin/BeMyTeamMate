@@ -351,9 +351,9 @@ export class GroupSettingsPage {
 
   getRoleBadgeClass(member: GroupMember): string {
     if (member.userId === this.group()?.ownerId)
-      return 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30';
-    if (member.isAdmin) return 'bg-primary/20 text-primary border-primary/30';
-    return 'bg-white/10 text-gray-300 border-white/10';
+      return 'role-badge role-badge--owner';
+    if (member.isAdmin) return 'role-badge role-badge--admin';
+    return 'role-badge role-badge--member';
   }
 
   getInviteStatusLabel(invite: GroupInvite): string {

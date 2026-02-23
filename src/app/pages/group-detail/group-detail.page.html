@@ -1,4 +1,4 @@
-<main class="flex-grow text-white">
+﻿<main class="flex-grow text-white">
     @if (canViewGroupContent()) {
     <div class="relative w-full">
         <div class="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-3">
@@ -547,7 +547,7 @@
                     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-3">
                         @for (member of members(); track member.id) {
                         <div [routerLink]="['/profile', member.userId]"
-                            class="group-member-card flex items-center gap-3 p-3 rounded-xl bg-white/5 border transition-all group cursor-pointer"
+                            class="group-member-card flex items-center gap-3 p-3 rounded-2xl bg-white/5 border transition-all group cursor-pointer"
                             [ngClass]="member.isAdmin ? 'border-primary/30 hover:bg-primary/5' : 'border-white/5 hover:border-white/20'">
                             <div class="relative">
                                 <img [src]="member.photo || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + member.userId"

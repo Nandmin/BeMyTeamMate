@@ -118,7 +118,7 @@
                         </div>
 
                         <!-- Role Badge -->
-                        <span class="hidden sm:inline-flex px-3 py-1 text-xs font-bold rounded-full border"
+                        <span class="hidden sm:inline-flex w-32 justify-center text-center px-3 py-1 text-xs font-bold rounded-full border"
                             [ngClass]="getRoleBadgeClass(member)">
                             {{ getRoleBadge(member) }}
                         </span>
@@ -449,7 +449,7 @@
         class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-background-dark/90 backdrop-blur-sm animate-fade-in">
         <div class="w-full max-w-md bg-card-dark border border-white/10 rounded-2xl p-6 shadow-2xl animate-slide-up">
             <div class="flex items-center gap-3 mb-4">
-                <div class="p-3 bg-primary/20 rounded-full">
+                <div class="p-3 rounded-full">
                     <span class="material-symbols-outlined text-primary text-2xl">manage_accounts</span>
                 </div>
                 <div>
@@ -489,11 +489,11 @@
 
             <div class="flex gap-4">
                 <button (click)="closeRoleModal()"
-                    class="flex-1 px-4 py-2.5 border border-white/10 rounded-xl text-white font-bold hover:bg-white/5 transition-all">
+                    class="flex-1 px-4 py-2.5 rounded-xl bg-red-600 text-white keep-white font-bold hover:bg-red-700 transition-all">
                     Mégse
                 </button>
                 <button (click)="confirmUpdateRole()" [disabled]="isSubmitting()"
-                    class="flex-1 px-4 py-2.5 bg-primary text-white font-bold rounded-xl hover:bg-primary-hover disabled:opacity-50 shadow-[0_0_15px_rgba(43,238,124,0.3)] transition-all">
+                    class="flex-1 px-4 py-2.5 bg-primary text-white keep-white font-bold rounded-xl hover:bg-primary-hover disabled:opacity-50 shadow-[0_0_15px_rgba(43,238,124,0.3)] transition-all">
                     @if (isSubmitting()) {
                     <span class="material-symbols-outlined animate-spin text-sm">progress_activity</span>
                     } @else {

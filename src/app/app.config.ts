@@ -17,6 +17,41 @@ import { provideServiceWorker } from '@angular/service-worker';
 import { getApp } from 'firebase/app';
 import { initializeAppCheck, ReCaptchaEnterpriseProvider } from 'firebase/app-check';
 
+const APP_CHECK_DEBUG_LOG_PATTERNS = [
+  'app check debug token',
+  'appcheck debug token',
+  'firebase_appcheck_debug_token',
+  "you will need to add it to your app's app check settings",
+];
+
+const shouldSuppressAppCheckDebugLog = (args: unknown[]): boolean =>
+  args.some(
+    (arg) =>
+      typeof arg === 'string' &&
+      APP_CHECK_DEBUG_LOG_PATTERNS.some((pattern) => arg.toLowerCase().includes(pattern))
+  );
+
+const installAppCheckDebugLogFilter = (): void => {
+  const filterFlag = '__BMT_APP_CHECK_LOG_FILTER_INSTALLED__';
+  if ((globalThis as any)[filterFlag]) {
+    return;
+  }
+  (globalThis as any)[filterFlag] = true;
+
+  const wrap = (original: (...args: any[]) => void) =>
+    (...args: any[]) => {
+      if (shouldSuppressAppCheckDebugLog(args)) {
+        return;
+      }
+      original(...args);
+    };
+
+  console.log = wrap(console.log.bind(console));
+  console.info = wrap(console.info.bind(console));
+  console.warn = wrap(console.warn.bind(console));
+  console.error = wrap(console.error.bind(console));
+};
+
 const getLocalAppCheckDebugToken = (): string | true | undefined => {
   if (environment.production) {
     return undefined;
@@ -67,6 +102,7 @@ export const appConfig: ApplicationConfig = {
             const debugToken = getLocalAppCheckDebugToken();
             if (debugToken) {
               (globalThis as any).FIREBASE_APPCHECK_DEBUG_TOKEN = debugToken;
+              installAppCheckDebugLogFilter();
             }
             return initializeAppCheck(getApp(), {
               provider: new ReCaptchaEnterpriseProvider(environment.firebase.appCheckSiteKey),

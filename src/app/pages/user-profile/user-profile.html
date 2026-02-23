@@ -168,24 +168,24 @@
                             <span
                                 class="absolute left-4 top-1/2 -translate-y-1/2 material-symbols-outlined text-text-secondary">badge</span>
                             <input
-                                class="w-full rounded-xl border text-white placeholder-text-secondary/50 focus:border-primary focus:ring-1 focus:ring-primary pl-12 pr-4 py-3.5 outline-none transition-all profile-input"
+                                class="w-full rounded-md text-white placeholder-text-secondary/50 focus:border-primary focus:ring-1 focus:ring-primary pl-12 pr-4 py-3.5 outline-none transition-all profile-input"
                                 type="text" [(ngModel)]="profileData.displayName" />
                         </div>
                     </label>
                     <label class="flex flex-col gap-2">
-                        <span class="text-white text-sm font-medium">Email cím</span>
+                        <span class="text-white text-sm font-medium">E-mail cím</span>
                         <div class="relative">
                             <span
                                 class="absolute left-4 top-1/2 -translate-y-1/2 material-symbols-outlined text-text-secondary">mail</span>
                             <input
-                                class="w-full rounded-xl bg-surface-darker border text-white placeholder-text-secondary/50 focus:border-primary focus:ring-1 focus:ring-primary pl-12 pr-4 py-3.5 outline-none transition-all profile-input"
+                                class="w-full rounded-md bg-surface-darker text-white placeholder-text-secondary/50 focus:border-primary focus:ring-1 focus:ring-primary pl-12 pr-4 py-3.5 outline-none transition-all profile-input"
                                 type="email" [(ngModel)]="profileData.email" disabled />
                         </div>
                     </label>
                     <label class="flex flex-col gap-2 md:col-span-2">
                         <span class="text-white text-sm font-medium">Bemutatkozás</span>
                         <textarea
-                            class="w-full rounded-xl bg-surface-darker border text-white placeholder-text-secondary/50 focus:border-primary focus:ring-1 focus:ring-primary px-4 py-3.5 outline-none transition-all resize-none profile-input"
+                            class="w-full rounded-md bg-surface-darker text-white placeholder-text-secondary/50 focus:border-primary focus:ring-1 focus:ring-primary px-4 py-3.5 outline-none transition-all resize-none profile-input"
                             rows="3" [(ngModel)]="profileData.bio" placeholder="Mesélj magadról..."></textarea>
                     </label>
                     } @else {
@@ -199,7 +199,7 @@
                 @if (isOwnProfile()) {
                 <!-- Accordion: Jelszó megváltoztatása (zárt alapértelmezés szerint) -->
                 <div class="mt-6">
-                    <details class="rounded-xl border p-4 profile-panel">
+                    <details class="rounded-md border p-4 profile-panel">
                         <summary
                             class="cursor-pointer flex items-center justify-between text-white font-medium py-2 px-2 select-none">
                             <div class="flex items-center gap-3">
@@ -212,17 +212,17 @@
                             <label class="flex flex-col gap-2 md:col-span-3">
                                 <span class="text-white text-sm font-medium">Jelenlegi jelszó</span>
                                 <input type="password" [(ngModel)]="passwordData.currentPassword"
-                                    class="w-full rounded-xl bg-surface-darker border text-white px-4 py-3.5 outline-none profile-input" />
+                                    class="w-full rounded-md border bg-surface-darker text-white px-4 py-3.5 outline-none profile-input" />
                             </label>
                             <label class="flex flex-col gap-2 md:col-span-1">
                                 <span class="text-white text-sm font-medium">Új jelszó</span>
                                 <input type="password" [(ngModel)]="passwordData.newPassword"
-                                    class="w-full rounded-xl bg-surface-darker border text-white px-4 py-3.5 outline-none profile-input" />
+                                    class="w-full rounded-md border bg-surface-darker text-white px-4 py-3.5 outline-none profile-input" />
                             </label>
                             <label class="flex flex-col gap-2 md:col-span-2">
                                 <span class="text-white text-sm font-medium">Új jelszó ismét</span>
                                 <input type="password" [(ngModel)]="passwordData.confirmNewPassword"
-                                    class="w-full rounded-xl border text-white px-4 py-3.5 outline-none profile-input" />
+                                    class="w-full rounded-md border text-white px-4 py-3.5 outline-none profile-input" />
                             </label>
                             <div class="md:col-span-3 flex items-center justify-end gap-4 mt-2">
                             </div>
@@ -342,7 +342,7 @@
                     <div class="flex items-center justify-between pb-4 border-b border-[#234833]">
                         <div class="flex gap-4">
                             <div
-                                class="size-10 rounded-full bg-[#112218] flex items-center justify-center text-primary">
+                                class="size-10 rounded-full flex items-center justify-center text-primary">
                                 <span class="material-symbols-outlined">notifications_active</span>
                             </div>
                             <div>
@@ -387,7 +387,7 @@
                     <div class="flex items-center justify-between">
                         <div class="flex gap-4">
                             <div
-                                class="size-10 rounded-full bg-[#112218] flex items-center justify-center text-primary">
+                                class="size-10 rounded-full flex items-center justify-center text-primary">
                                 <span class="material-symbols-outlined">group_add</span>
                             </div>
                             <div>

@@ -57,6 +57,7 @@ aside a {
 .profile-input,
 .profile-panel {
   background-color: #0d111b;
+  border-color: rgba(146, 201, 169, 0.22);
 }
 
 // Reset some styles that might conflict with global ones
@@ -133,6 +134,7 @@ section {
   .profile-panel {
     background-color: #ffffff;
     color: #1e293b;
+    border-color: rgba(148, 163, 184, 0.22);
   }
 
   .from-dark-accent {

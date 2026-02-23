@@ -52,7 +52,9 @@ export class MatchStepFeedbackComponent {
   }
 
   get showPrimaryAction(): boolean {
-    return !this.mvpWinnerExists;
+    if (this.mvpWinnerExists) return false;
+    if (this.showMvp && this.mvpEnabled && !this.mvpVotingOpen) return false;
+    return true;
   }
 
   onPrimaryAction() {

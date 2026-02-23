@@ -30,6 +30,7 @@ export class GroupSettingsPage {
   private seo = inject(SeoService);
   private coverImagesService = inject(CoverImagesService);
   private modalService = inject(ModalService);
+  private settingsQueryParams = toSignal(this.route.queryParams, { initialValue: {} as any });
 
   group = toSignal(
     this.route.params.pipe(
@@ -172,6 +173,13 @@ export class GroupSettingsPage {
     void this.loadCoverImages();
 
     // Initialize edit form when group loads
+    effect(() => {
+      const tab = this.settingsQueryParams()['tab'];
+      if (tab === 'settings' || tab === 'members') {
+        this.activeTab.set(tab);
+      }
+    });
+
     effect(() => {
       const group = this.group();
       if (group) {

@@ -365,6 +365,30 @@ export class GroupDetailPage {
     });
   }
 
+  goToMembersFlowFromOverview() {
+    if (!this.isMobileViewport()) return;
+    this.setMobileTab('members');
+  }
+
+  goToPreviousEventsFlowFromOverview() {
+    if (!this.isMobileViewport()) return;
+    this.setView('previous');
+    this.setMobileTab('events');
+  }
+
+  goToUpcomingEventsFlowFromOverview() {
+    if (!this.isMobileViewport()) return;
+    this.setView('upcoming');
+    this.setMobileTab('events');
+  }
+
+  goToGroupSettingsFromOverview() {
+    if (!this.isMobileViewport()) return;
+    void this.router.navigate(['/groups', this.groupId, 'settings'], {
+      queryParams: { tab: 'settings' },
+    });
+  }
+
   nextPage() {
     if (this.currentPage() < this.totalPages()) {
       this.currentPage.update((p) => p + 1);

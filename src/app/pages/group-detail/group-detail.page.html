@@ -100,22 +100,26 @@
                 <div class="rounded-2xl border border-white/10 bg-white/5 p-4 group-light-card">
                     <h3 class="text-base font-bold text-white mb-3">Áttekintés</h3>
                     <div class="grid grid-cols-2 gap-2">
-                        <div class="rounded-xl border border-white/10 bg-white/5 p-3 min-h-20 flex flex-col items-center justify-center text-center">
+                        <button type="button" (click)="goToMembersFlowFromOverview()"
+                            class="rounded-xl border border-white/10 bg-white/5 p-3 min-h-20 flex flex-col items-center justify-center text-center transition-all active:scale-[0.98]">
                             <p class="text-xs text-gray-400">Tagok száma</p>
                             <p class="text-lg font-bold text-white">{{ group()?.memberCount || 0 }}</p>
-                        </div>
-                        <div class="rounded-xl border border-white/10 bg-white/5 p-3 min-h-20 flex flex-col items-center justify-center text-center">
+                        </button>
+                        <button type="button" (click)="goToPreviousEventsFlowFromOverview()"
+                            class="rounded-xl border border-white/10 bg-white/5 p-3 min-h-20 flex flex-col items-center justify-center text-center transition-all active:scale-[0.98]">
                             <p class="text-xs text-gray-400">Lejátszott mérkőzések</p>
                             <p class="text-lg font-bold text-white">{{ matchStats().played }}</p>
-                        </div>
-                        <div class="rounded-xl border border-white/10 bg-white/5 p-3 min-h-20 flex flex-col items-center justify-center text-center">
+                        </button>
+                        <button type="button" (click)="goToUpcomingEventsFlowFromOverview()"
+                            class="rounded-xl border border-white/10 bg-white/5 p-3 min-h-20 flex flex-col items-center justify-center text-center transition-all active:scale-[0.98]">
                             <p class="text-xs text-gray-400">Várakozó események</p>
                             <p class="text-lg font-bold text-white">{{ matchStats().pending }}</p>
-                        </div>
-                        <div class="rounded-xl border border-white/10 bg-white/5 p-3 min-h-20 flex flex-col items-center justify-center text-center">
+                        </button>
+                        <button type="button" (click)="goToGroupSettingsFromOverview()"
+                            class="rounded-xl border border-white/10 bg-white/5 p-3 min-h-20 flex flex-col items-center justify-center text-center transition-all active:scale-[0.98]">
                             <p class="text-xs text-gray-400">Típus</p>
                             <p class="text-lg font-bold text-white">{{ group()?.type === 'open' ? 'Nyílt' : 'Zárt' }}</p>
-                        </div>
+                        </button>
                     </div>
                 </div>
 

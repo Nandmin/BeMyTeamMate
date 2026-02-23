@@ -169,12 +169,12 @@
                     </div>
                     <div class="flex items-center gap-2">
                         <button (click)="onApproveRequest(req)" [disabled]="isSubmitting()"
-                            class="h-10 w-10 rounded-full flex items-center justify-center bg-primary text-white hover:bg-primary-hover transition-all"
+                            class="h-10 w-10 rounded-full flex items-center justify-center bg-primary text-white keep-white hover:bg-primary-hover transition-all"
                             title="Jelentkezés elfogadása">
                             <span class="material-symbols-outlined">check</span>
                         </button>
                         <button (click)="openRejectModal(req)" [disabled]="isSubmitting()"
-                            class="h-10 w-10 rounded-full flex items-center justify-center bg-red-600 text-white hover:bg-red-700 transition-all"
+                            class="h-10 w-10 rounded-full flex items-center justify-center bg-red-600 text-white keep-white hover:bg-red-700 transition-all"
                             title="Jelentkezés elutasítása">
                             <span class="material-symbols-outlined">close</span>
                         </button>

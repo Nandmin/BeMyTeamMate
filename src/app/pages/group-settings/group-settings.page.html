@@ -64,7 +64,7 @@
             </div>
             } @else if (group()) {
             <!-- Tabs -->
-            <div class="flex bg-white/5 p-1 rounded-xl border border-white/10 mb-8 w-fit">
+            <div class="flex bg-white/5 p-1 rounded-xl border border-white/10 mb-8 w-fit settings-surface-card">
                 <button (click)="activeTab.set('members')"
                     class="px-6 py-2.5 rounded-lg text-sm font-medium transition-all flex items-center gap-2"
                     [class.bg-white/10]="activeTab() === 'members'" [class.text-white]="activeTab() === 'members'"
@@ -83,7 +83,7 @@
 
             <!-- Members Tab -->
             @if (activeTab() === 'members') {
-            <div class="bg-white/5 border border-white/10 rounded-2xl overflow-hidden">
+            <div class="bg-white/5 border border-white/10 rounded-2xl overflow-hidden settings-surface-card">
                 <div class="p-5 border-b border-white/10 flex items-center justify-between">
                     <h2 class="text-lg font-bold text-white flex items-center gap-2">
                         <span class="material-symbols-outlined text-primary">people</span>
@@ -148,7 +148,7 @@
             </div>
 
             @if ((joinRequests() || []).length > 0) {
-            <div class="mt-6 bg-white/5 border border-white/10 rounded-2xl overflow-hidden">
+            <div class="mt-6 bg-white/5 border border-white/10 rounded-2xl overflow-hidden settings-surface-card">
                 <div class="p-4 border-b border-white/10">
                     <h3 class="text-sm font-bold text-primary uppercase tracking-wider flex items-center gap-2">
                         <span class="material-symbols-outlined text-lg">pending_actions</span>
@@ -185,7 +185,7 @@
             }
 
             @if ((sortedInvites() || []).length > 0) {
-            <div class="mt-6 bg-white/5 border border-white/10 rounded-2xl overflow-hidden">
+            <div class="mt-6 bg-white/5 border border-white/10 rounded-2xl overflow-hidden settings-surface-card">
                 <div class="p-4 border-b border-white/10">
                     <h3 class="text-sm font-bold text-primary uppercase tracking-wider flex items-center gap-2">
                         <span class="material-symbols-outlined text-lg">outgoing_mail</span>
@@ -258,7 +258,7 @@
             }
 
             @if (isMember()) {
-            <div class="mt-6 rounded-2xl border border-red-900/30 bg-red-900/10 p-4">
+            <div class="mt-6 rounded-2xl border border-red-900/30 bg-red-900/10 p-4 settings-surface-card--danger">
                 <h3 class="text-base font-bold text-white mb-2">Veszélyes művelet</h3>
                 <p class="text-sm text-gray-400 mb-3">A csoport elhagyása után az eseményeken történő részvételhez újra meghívó kellhet.</p>
                 <div class="flex justify-end">
@@ -276,7 +276,7 @@
 
             <!-- Settings Tab -->
             @if (activeTab() === 'settings') {
-            <div class="bg-white/5 border border-white/10 rounded-2xl p-6">
+            <div class="bg-white/5 border border-white/10 rounded-2xl p-6 settings-surface-card">
                 <h2 class="text-lg font-bold text-white flex items-center gap-2 mb-6">
                     <span class="material-symbols-outlined text-primary">edit</span>
                     Csoport adatainak szerkesztése
@@ -388,7 +388,7 @@
                     Veszélyes műveletek
                 </h3>
                 <div
-                    class="flex flex-col sm:flex-row items-center justify-between gap-4 p-4 rounded-xl bg-red-900/10 border border-red-900/30">
+                    class="flex flex-col sm:flex-row items-center justify-between gap-4 p-4 rounded-xl bg-red-900/10 border border-red-900/30 settings-surface-card--danger">
                     <div>
                         <p class="text-white font-medium">Csoport törlése</p>
                         <p class="text-sm text-gray-400">A csoport és minden hozzátartozó adat véglegesen törlődik.</p>

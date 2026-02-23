@@ -35,6 +35,24 @@
     </a>
   </nav>
   }
+
+  @if (showPwaUpdateToast()) {
+  <section class="update-toast" [class.with-nav]="showNav()">
+    <div class="update-toast__text">
+      <span class="material-symbols-outlined">system_update_alt</span>
+      <span>Új verzió érhető el.</span>
+    </div>
+    <button
+      type="button"
+      class="update-toast__button"
+      [disabled]="isApplyingPwaUpdate()"
+      (click)="applyPwaUpdate()"
+    >
+      {{ isApplyingPwaUpdate() ? 'Frissítés...' : 'Frissítés' }}
+    </button>
+  </section>
+  }
+
   <app-cookie-consent />
   <app-modal />
 </div>

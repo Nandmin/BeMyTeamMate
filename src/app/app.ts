@@ -36,10 +36,13 @@ export class App {
   private analyticsService = inject(AnalyticsService);
   private swUpdate = inject(SwUpdate);
   private readonly swReloadMarkerKey = 'sw:updated-hash';
+  private pendingPwaUpdateHash = signal<string | null>(null);
   protected readonly title = signal('BeMyTeamMate');
   protected showNav = signal(true);
   protected showFooter = signal(true);
   protected showHeader = signal(true);
+  protected showPwaUpdateToast = signal(false);
+  protected isApplyingPwaUpdate = signal(false);
   private isMobile = signal(false);
 
   constructor() {
@@ -53,6 +56,9 @@ export class App {
       this.swUpdate.versionUpdates.subscribe({
         next: (event: VersionEvent) => {
           if (event.type === 'VERSION_READY') {
+            if (this.isStandalonePwa()) {
+              this.queuePwaUpdateToast(event.latestVersion.hash);
+            }
             void this.activateAndReload(event.latestVersion.hash);
           }
           if (event.type === 'VERSION_INSTALLATION_FAILED') {
@@ -122,6 +128,67 @@ export class App {
     } catch (err) {
       console.error('Service worker activateUpdate failed:', err);
     }
+  }
+
+  protected async applyPwaUpdate() {
+    const nextHash = this.pendingPwaUpdateHash();
+    if (!nextHash || this.isApplyingPwaUpdate()) return;
+
+    this.isApplyingPwaUpdate.set(true);
+    this.showPwaUpdateToast.set(false);
+
+    try {
+      await this.activateAndHardReload(nextHash);
+    } finally {
+      this.isApplyingPwaUpdate.set(false);
+    }
+  }
+
+  private queuePwaUpdateToast(nextHash: string) {
+    if (typeof window === 'undefined') return;
+
+    this.pendingPwaUpdateHash.set(nextHash);
+    this.showPwaUpdateToast.set(true);
+  }
+
+  private async activateAndHardReload(nextHash: string) {
+    if (typeof window === 'undefined') return;
+
+    try {
+      await this.swUpdate.activateUpdate();
+      window.sessionStorage.setItem(this.swReloadMarkerKey, nextHash);
+
+      await this.clearNgswCaches();
+
+      const reloadUrl = new URL(window.location.href);
+      reloadUrl.searchParams.set('sw-reset', Date.now().toString());
+      window.location.replace(reloadUrl.toString());
+    } catch (err) {
+      console.error('Service worker hard refresh failed:', err);
+      window.location.reload();
+    }
+  }
+
+  private async clearNgswCaches() {
+    if (typeof window === 'undefined' || !('caches' in window)) return;
+
+    try {
+      const cacheNames = await window.caches.keys();
+      const ngswCaches = cacheNames.filter((cacheName) => cacheName.startsWith('ngsw:'));
+      await Promise.all(ngswCaches.map((cacheName) => window.caches.delete(cacheName)));
+    } catch (err) {
+      console.warn('Failed to clear NGSW caches before hard refresh:', err);
+    }
+  }
+
+  private isStandalonePwa(): boolean {
+    if (typeof window === 'undefined' || typeof navigator === 'undefined') return false;
+
+    const standaloneDisplayMode =
+      window.matchMedia?.('(display-mode: standalone)')?.matches ?? false;
+    const iOSStandalone = (navigator as Navigator & { standalone?: boolean }).standalone === true;
+
+    return standaloneDisplayMode || iOSStandalone;
   }
 
   private redirectEmailVerificationCallbacks() {

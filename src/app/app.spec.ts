@@ -37,6 +37,8 @@ const themeServiceStub = {
 const swUpdateStub = {
   isEnabled: true,
   versionUpdates: of(),
+  checkForUpdate: () => Promise.resolve(false),
+  activateUpdate: () => Promise.resolve(true),
 };
 
 describe('App', () => {

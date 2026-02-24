@@ -791,12 +791,20 @@ export class Results {
           : `${goalsB} - ${goalsA}`
         : '-';
 
-    const isWin =
-      goalsA !== null && goalsB !== null
-        ? inTeamA
-          ? goalsA > goalsB
-          : goalsB > goalsA
-        : null;
+    const resultOutcome: MatchOutcome =
+      goalsA === null || goalsB === null
+        ? 'unknown'
+        : goalsA === goalsB
+          ? 'draw'
+          : inTeamA
+            ? goalsA > goalsB
+              ? 'win'
+              : 'loss'
+            : goalsB > goalsA
+              ? 'win'
+              : 'loss';
+
+    const isWin = resultOutcome === 'unknown' ? null : resultOutcome === 'win';
 
     const date = this.coerceDate(event.date);
     const dateLabel = date.toLocaleDateString('hu-HU', {
@@ -820,6 +828,7 @@ export class Results {
       sportLabel: this.getSportLabel(event.sport),
       opponent,
       resultLabel,
+      resultOutcome,
       isWin,
       goals,
       assists,
@@ -827,6 +836,19 @@ export class Results {
       mvpWinnerId: event.mvpWinnerId ?? null,
       sortTime: date.getTime(),
     };
+  }
+
+  resultBadgeClass(match: Pick<RecentMatchRow, 'resultOutcome'>): string {
+    switch (match.resultOutcome) {
+      case 'win':
+        return 'bg-primary';
+      case 'loss':
+        return 'bg-red-500';
+      case 'draw':
+        return 'bg-yellow-400';
+      default:
+        return 'bg-gray-500/20';
+    }
   }
 
   private readStoredFilterState(): FilterState {
@@ -879,6 +901,7 @@ interface RecentMatchRow {
   sportLabel: string;
   opponent: string;
   resultLabel: string;
+  resultOutcome: MatchOutcome;
   isWin: boolean | null;
   goals: number;
   assists: number;
@@ -886,6 +909,8 @@ interface RecentMatchRow {
   mvpWinnerId: string | null;
   sortTime: number;
 }
+
+type MatchOutcome = 'win' | 'loss' | 'draw' | 'unknown';
 
 interface FilterState {
   period: string;

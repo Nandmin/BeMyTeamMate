@@ -499,13 +499,9 @@
                     <span class="font-semibold">{{ match.sportLabel }}</span>
                   </span>
 
-                  <span class="inline-flex items-center justify-center px-2.5 py-0.5 rounded font-bold text-xs" [ngClass]="
-                    match.isWin === null
-                      ? 'bg-gray-500/20 text-gray-300'
-                      : match.isWin
-                      ? 'bg-primary/20 text-primary'
-                      : 'bg-red-500/20 text-red-400'
-                  ">
+                  <span
+                    class="result-badge inline-flex items-center justify-center px-2.5 py-0.5 rounded font-bold text-xs"
+                    [ngClass]="resultBadgeClass(match)">
                     {{ match.resultLabel }}
                   </span>
                 </div>
@@ -566,13 +562,9 @@
                     </div>
                   </td>
                   <td class="py-4 text-center">
-                    <span class="inline-flex items-center justify-center px-2.5 py-0.5 rounded font-bold" [ngClass]="
-                        match.isWin === null
-                          ? 'bg-gray-500/20 text-gray-300'
-                          : match.isWin
-                          ? 'bg-primary/20 text-primary'
-                          : 'bg-red-500/20 text-red-400'
-                      ">
+                    <span
+                      class="result-badge inline-flex items-center justify-center px-2.5 py-0.5 rounded font-bold"
+                      [ngClass]="resultBadgeClass(match)">
                       {{ match.resultLabel }}
                     </span>
                   </td>

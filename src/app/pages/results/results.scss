@@ -322,6 +322,10 @@
     0 0 2px rgba(255, 255, 255, 0.18);
 }
 
+.result-badge {
+  color: #ffffff !important;
+}
+
 // Custom styles for charts or special elements
 circle {
   transition: r 0.3s ease, stroke-width 0.3s ease;

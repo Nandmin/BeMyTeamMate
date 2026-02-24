@@ -12,6 +12,7 @@ export class AnalyticsService {
   private readonly scriptId = 'ga-gtag';
   private readonly router: Router;
   private scriptLoaded = false;
+  private scriptLoadAttempted = false;
   readonly consent = signal<ConsentState>('unknown');
   readonly isNativeWebView = signal(false);
 
@@ -30,26 +31,26 @@ export class AnalyticsService {
         this.trackPageView(event.urlAfterRedirects);
       });
 
-    this.loadGtag();
     if (this.isNativeWebView()) {
       this.setConsent('granted');
     }
-    this.applyConsent();
     if (this.consent() === 'granted') {
-      this.trackPageView(this.router.url);
+      this.loadGtag();
     }
   }
 
   grantConsent() {
     this.setConsent('granted');
-    this.loadGtag();
+    if (!this.scriptLoaded) {
+      this.loadGtag();
+      return;
+    }
     this.applyConsent();
     this.trackPageView(this.router.url);
   }
 
   denyConsent() {
     this.setConsent('denied');
-    this.loadGtag();
     this.applyConsent();
   }
 
@@ -94,10 +95,21 @@ export class AnalyticsService {
   }
 
   private loadGtag() {
-    if (this.scriptLoaded || typeof window === 'undefined' || !this.measurementId) return;
+    if (
+      this.scriptLoadAttempted ||
+      typeof window === 'undefined' ||
+      !this.measurementId ||
+      this.consent() !== 'granted'
+    ) {
+      return;
+    }
+    this.scriptLoadAttempted = true;
+
     if (document.getElementById(this.scriptId)) {
-      this.ensureGtag();
+      this.configureGtag();
       this.scriptLoaded = true;
+      this.applyConsent();
+      this.trackPageView(this.router.url);
       return;
     }
 
@@ -105,20 +117,18 @@ export class AnalyticsService {
     script.id = this.scriptId;
     script.async = true;
     script.src = `https://www.googletagmanager.com/gtag/js?id=${this.measurementId}`;
+    script.addEventListener('load', () => {
+      this.configureGtag();
+      this.scriptLoaded = true;
+      this.applyConsent();
+      this.trackPageView(this.router.url);
+    });
+    script.addEventListener('error', () => {
+      this.scriptLoaded = false;
+      this.scriptLoadAttempted = false;
+      document.getElementById(this.scriptId)?.remove();
+    });
     document.head.appendChild(script);
-
-    this.ensureGtag();
-    const gtag = (window as any).gtag as ((...args: unknown[]) => void) | undefined;
-    if (gtag && !(window as any).__bmtGtagConfigured) {
-      gtag('js', new Date());
-      gtag('config', this.measurementId, {
-        anonymize_ip: true,
-        send_page_view: false,
-      });
-      (window as any).__bmtGtagConfigured = true;
-    }
-
-    this.scriptLoaded = true;
   }
 
   private trackPageView(url: string) {
@@ -132,16 +142,6 @@ export class AnalyticsService {
     });
   }
 
-  private ensureGtag() {
-    const w = window as any;
-    w.dataLayer = w.dataLayer || [];
-    if (!w.gtag) {
-      w.gtag = (...args: unknown[]) => {
-        w.dataLayer.push(args);
-      };
-    }
-  }
-
   private applyConsent() {
     if (typeof window === 'undefined') return;
     const gtag = (window as any).gtag as ((...args: unknown[]) => void) | undefined;
@@ -149,6 +149,21 @@ export class AnalyticsService {
     gtag('consent', 'update', {
       analytics_storage: this.consent() === 'granted' ? 'granted' : 'denied',
     });
+  }
+
+  private configureGtag() {
+    if (typeof window === 'undefined') return;
+    const gtag = (window as any).gtag as ((...args: unknown[]) => void) | undefined;
+    if (!gtag || (window as any).__bmtGtagConfigured) return;
+    gtag('js', new Date());
+    gtag('consent', 'default', {
+      analytics_storage: 'denied',
+    });
+    gtag('config', this.measurementId, {
+      anonymize_ip: true,
+      send_page_view: false,
+    });
+    (window as any).__bmtGtagConfigured = true;
   }
 
   private detectNativeWebView() {

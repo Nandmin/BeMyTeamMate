@@ -4,6 +4,7 @@ import { AdminGroupsSectionComponent } from '../../components/admin-groups-secti
 import { AdminSidebarItemComponent } from '../../components/admin-sidebar-item/admin-sidebar-item.component';
 import { AdminMessagesSectionComponent } from '../../components/admin-messages-section/admin-messages-section.component';
 import { SeoService } from '../../services/seo.service';
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-admin-dashboard',
@@ -15,6 +16,7 @@ import { SeoService } from '../../services/seo.service';
 export class AdminDashboardPage {
   private seo = inject(SeoService);
 
+  readonly appVersion = environment.appVersion;
   isSidebarCollapsed = false;
   activeSection: 'overview' | 'groups' | 'users' | 'stats' | 'messages' = 'overview';
 

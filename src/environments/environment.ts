@@ -1,4 +1,7 @@
+import { APP_VERSION } from './app-version';
+
 type RuntimePublicConfig = {
+  appVersion?: string;
   vapidKey?: string;
   turnstileSiteKey?: string;
 };
@@ -13,6 +16,7 @@ const getRuntimePublicValue = (value: string | undefined, fallback = ''): string
 
 export const environment = {
   production: false,
+  appVersion: getRuntimePublicValue(runtimePublicConfig.appVersion, APP_VERSION),
   appBaseUrl: 'http://localhost:4200',
   firebase: {
     apiKey: 'AIzaSyCyPzPGm8lPwJ3fWgbrHciKIorRvJqUDyw',

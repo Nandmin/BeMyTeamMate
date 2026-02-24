@@ -1,4 +1,4 @@
-# BeMyTeamMate
+﻿# BeMyTeamMate
 
 Overview of the application's technical architecture and solutions.
 
@@ -20,10 +20,10 @@ Overview of the application's technical architecture and solutions.
 
 ### 3. Services & Integrations
 
-- **Push Notifications:** [Firebase Cloud Messaging (FCM)](https://firebase.google.com/products/cloud-messaging) – real-time browser notifications.
-- **Security (CAPTCHA):** [Cloudflare Turnstile](https://www.cloudflare.com/products/turnstile/) – modern, user-friendly bot protection on the contact form.
+- **Push Notifications:** [Firebase Cloud Messaging (FCM)](https://firebase.google.com/products/cloud-messaging) â€“ real-time browser notifications.
+- **Security (CAPTCHA):** [Cloudflare Turnstile](https://www.cloudflare.com/products/turnstile/) â€“ modern, user-friendly bot protection on the contact form.
 - **Analytics:** [Google Analytics 4 (GA4)](https://analytics.google.com/) integration with privacy-first configuration (IP anonymization and consent management).
-- **Hosting:** [Cloudflare Pages](https://pages.cloudflare.com/) – lightning-fast global content delivery and automatic deployment.
+- **Hosting:** [Cloudflare Pages](https://pages.cloudflare.com/) â€“ lightning-fast global content delivery and automatic deployment.
 
 ### 4. Advanced Solutions
 
@@ -97,6 +97,23 @@ Set these environment variables in Cloudflare Pages (Production and Preview):
 - `BMT_TURNSTILE_SITE_KEY`: Cloudflare Turnstile site key (public)
 
 If a variable is missing, fallback values are written (`YOUR_VAPID_KEY` / empty Turnstile key).
+
+## Automatic versioning
+
+`main` branch push after each commit automatically updates `package.json` and `package-lock.json` version via `.github/workflows/version-bump.yml`.
+The same workflow also syncs `src/environments/app-version.ts`, so localhost UI can display a stable version fallback.
+
+Version bump rules from the latest commit message:
+
+- `feat:` -> minor bump (`x.Y.0`)
+- `BREAKING CHANGE` or `type!:` (for example `feat!:`) -> major bump (`X.0.0`)
+- everything else -> patch bump (`x.y.Z`)
+
+The workflow also creates and pushes a matching git tag: `vX.Y.Z`.
+
+feat: -> minor (1.0.0 -> 1.1.0)
+BREAKING CHANGE vagy type!: -> major (1.0.0 -> 2.0.0)
+Every others (f.e. fix:, chore:) -> patch (1.0.0 -> 1.0.1)
 
 ## Running unit tests
 
@@ -244,10 +261,10 @@ You may see console warnings like:
 
 **Is it a problem?**
 
-- ❌ **NOT a security risk** - Firebase Security Rules still protect your data
-- ❌ **NOT a data leak** - No unauthorized access to Firestore
-- ❌ **NOT a functional bug** - The application works correctly
-- ⚠️ **Potential issues**: May cause subtle change-detection problems or memory leaks in edge cases
+- âťŚ **NOT a security risk** - Firebase Security Rules still protect your data
+- âťŚ **NOT a data leak** - No unauthorized access to Firestore
+- âťŚ **NOT a functional bug** - The application works correctly
+- âš ď¸Ź **Potential issues**: May cause subtle change-detection problems or memory leaks in edge cases
 
 **Why haven't we fixed it?**
 

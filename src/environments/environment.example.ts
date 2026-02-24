@@ -1,5 +1,6 @@
 export const environment = {
   production: false,
+  appVersion: '1.0.0', // Prefer runtime-config.js generated from package.json
   appBaseUrl: 'https://your-app-domain.example',
   firebase: {
     apiKey: 'YOUR_API_KEY',

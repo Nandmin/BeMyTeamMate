@@ -64,3 +64,70 @@ select option {
     display: none;
   }
 }
+
+:host-context(html.light) {
+  .admin-messages-header,
+  .admin-messages-card {
+    background: rgba(255, 255, 255, 0.94);
+    border-color: rgba(148, 163, 184, 0.3);
+    box-shadow: 0 12px 30px rgba(15, 23, 42, 0.06);
+  }
+
+  .admin-messages-actions button:last-child {
+    background: #f8fafc;
+    border-color: rgba(148, 163, 184, 0.45);
+    color: #334155;
+  }
+
+  .admin-messages-actions button:last-child:hover {
+    background: #eef2f7;
+    border-color: rgba(59, 130, 246, 0.45);
+    color: #0f172a;
+  }
+
+  select {
+    color: #334155;
+    background-color: #f8fafc;
+    border-color: rgba(148, 163, 184, 0.4);
+  }
+
+  select option {
+    color: #334155;
+    background-color: #ffffff;
+  }
+
+  .admin-messages-table tbody tr {
+    background: #f8fafc;
+    border-color: rgba(148, 163, 184, 0.35);
+  }
+
+  .admin-messages-table tbody tr td {
+    color: #334155;
+  }
+
+  .admin-messages-table tbody tr td:first-child p:first-child {
+    color: #0f172a;
+  }
+
+  .admin-messages-card-item,
+  .admin-messages-card > .rounded-2xl.border-dashed {
+    background: #f8fafc;
+    border-color: rgba(148, 163, 184, 0.35);
+  }
+
+  .text-white {
+    color: #0f172a;
+  }
+
+  .text-gray-200 {
+    color: #334155;
+  }
+
+  .text-gray-300 {
+    color: #475569;
+  }
+
+  .text-gray-400 {
+    color: #64748b;
+  }
+}

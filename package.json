@@ -1,12 +1,15 @@
 {
   "name": "be-my-team-mate-app",
-  "version": "0.0.0",
+  "version": "1.0.0",
   "scripts": {
     "ng": "ng",
-    "prestart": "node scripts/generate-runtime-config.mjs",
+    "sync:app-version": "node scripts/sync-app-version.mjs",
+    "sync:runtime-config": "node scripts/generate-runtime-config.mjs",
+    "prestart": "npm run sync:app-version && npm run sync:runtime-config",
     "start": "ng serve",
-    "prebuild": "node scripts/generate-runtime-config.mjs",
+    "prebuild": "npm run sync:app-version && npm run sync:runtime-config",
     "build": "ng build",
+    "prewatch": "npm run sync:app-version && npm run sync:runtime-config",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
     "migrate:group-members": "node scripts/migrations/migrate-group-members.js",

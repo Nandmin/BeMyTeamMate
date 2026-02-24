@@ -57,7 +57,9 @@
 
   // Keep primary button text white in light mode
   button.bg-primary,
-  a.bg-primary {
+  a.bg-primary,
+  .auth-submit-btn,
+  .auth-submit-btn span {
     color: #ffffff !important;
   }
   

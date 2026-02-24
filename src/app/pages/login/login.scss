@@ -39,6 +39,12 @@
   .text-gray-400 {
      color: #64748b !important;
   }
+
+  // Keep the primary submit button label white in light mode
+  .auth-submit-btn,
+  .auth-submit-btn span {
+    color: #ffffff !important;
+  }
   
   // Footer copyright
   .text-\[\#ffffff\]\/40, .text-white\/40 {

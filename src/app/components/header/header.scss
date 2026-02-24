@@ -65,6 +65,14 @@ header {
     color: #1e293b;
   }
 
+  .auth-login-link {
+    color: #475569;
+
+    &:hover {
+      color: #15803d !important;
+    }
+  }
+
   .active-link {
     color: #1e293b !important;
     background: transparent;

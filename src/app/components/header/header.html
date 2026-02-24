@@ -15,7 +15,7 @@
         </div>
 
         <!-- Center: Navigation Links (Desktop) -->
-        <nav class="hidden min-[769px]:flex items-center gap-1 h-full">
+        <nav class="hidden min-[987px]:flex items-center gap-1 h-full">
             <a routerLink="/" [routerLinkActiveOptions]="{exact: true}" routerLinkActive="active-link"
                 class="relative flex h-8 items-center px-4 text-base font-semibold text-gray-400 hover:text-white transition-all">
                 Kezdőlap
@@ -39,21 +39,21 @@
         </nav>
 
         <!-- Right: Auth Section -->
-        <div class="flex items-center gap-1.5 sm:gap-3">
+        <div class="flex items-center gap-1.5 sm:gap-3 shrink-0">
             @if (authService.currentUser(); as user) {
             <!-- Logged In View -->
-            <div class="flex items-center gap-2 sm:gap-4">
+            <div class="flex items-center gap-2 sm:gap-4 shrink-0 min-[769px]:max-[1064px]:gap-2">
                 <!-- Site Admin Button -->
                 @if (authService.fullCurrentUser()?.role === 'siteadmin') {
                 <a routerLink="/admin"
-                    class="hidden min-[769px]:flex h-9 w-9 items-center justify-center rounded-xl bg-dark-accent border border-white/5 hover:border-primary hover:text-white transition-all active:scale-95 shadow-sm"
+                    class="hidden min-[1065px]:flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-dark-accent border border-white/5 hover:border-primary hover:text-white transition-all active:scale-95 shadow-sm"
                     title="Admin Dashboard">
                     <span class="material-symbols-outlined text-[20px]">admin_panel_settings</span>
                 </a>
                 }
 
                 <!-- Theme Toggle Button -->
-                <button (click)="toggleTheme()" class="theme-toggle hidden min-[769px]:flex"
+                <button (click)="toggleTheme()" class="theme-toggle hidden min-[1065px]:flex shrink-0"
                     [title]="themeService.isDark() ? 'Váltás világos módra' : 'Váltás sötét módra'">
                     @if (themeService.isDark()) {
                     <span class="material-symbols-outlined icon">dark_mode</span>
@@ -63,7 +63,7 @@
                 </button>
 
                 <!-- Notifications -->
-                <div class="relative flex">
+                <div class="relative flex shrink-0">
                     <button (click)="toggleNotifications()" #notifButton
                         class="relative flex h-9 w-9 items-center justify-center rounded-xl bg-dark-accent border border-white/5 hover:border-primary hover:text-white transition-all active:scale-95 shadow-sm"
                         title="Értesítések">
@@ -126,15 +126,15 @@
                 </div>
 
                 <!-- User Profile -->
-                <div class="flex items-center gap-3 cursor-pointer group/user" routerLink="/profile">
-                    <div class="hidden min-[769px]:flex flex-col items-end">
-                        <span class="text-base font-bold leading-none group-hover/user:text-primary transition-colors"
+                <div class="flex items-center gap-3 shrink-0 cursor-pointer group/user" routerLink="/profile">
+                    <div class="hidden min-[1065px]:flex flex-col items-end">
+                        <span class="max-w-[10rem] truncate text-right text-base font-bold leading-none group-hover/user:text-primary transition-colors"
                             [class.text-white]="themeService.isDark()" [class.text-light-text]="themeService.isLight()">
                             {{ user.displayName || 'Játékos' }}
                         </span>
                     </div>
                     <div
-                        class="h-9 w-9 overflow-hidden rounded-full border border-white/10 p-0.5 group-hover/user:border-primary transition-colors">
+                        class="h-9 w-9 shrink-0 overflow-hidden rounded-full border border-white/10 p-0.5 group-hover/user:border-primary transition-colors">
                         <img [src]="getAvatarUrl(user)" class="h-full w-full rounded-full object-cover"
                             [alt]="user.displayName" />
                     </div>
@@ -142,15 +142,15 @@
 
                 <!-- Logout -->
                 <button (click)="onLogout()"
-                    class="hidden min-[769px]:flex h-9 w-9 items-center justify-center rounded-xl bg-dark-accent border border-white/5 hover:bg-red-600 hover:text-white hover:border-red-600 transition-all active:scale-95 shadow-sm"
+                    class="hidden min-[769px]:flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-dark-accent border border-white/5 hover:bg-red-600 hover:text-white hover:border-red-600 transition-all active:scale-95 shadow-sm"
                     title="Kijelentkezés">
                     <span class="material-symbols-outlined text-[20px]">logout</span>
                 </button>
             </div>
             } @else {
             <!-- Logged Out View -->
-            <div class="hidden min-[769px]:flex items-center gap-2">
-                <a routerLink="/login" class="px-4 py-2 text-sm font-bold  hover:text-white transition-colors">
+            <div class="hidden min-[769px]:flex items-center gap-2 shrink-0">
+                <a routerLink="/login" class="auth-login-link px-4 py-2 text-sm font-bold hover:text-white transition-colors">
                     Bejelentkezés
                 </a>
                 <a routerLink="/register"
@@ -160,9 +160,9 @@
             </div>
             }
 
-            <!-- Mobile Menu Toggle Button (Hamburger) - Visible below 769px -->
+            <!-- Mobile Menu Toggle Button (Hamburger) - Visible below 987px -->
             <button (click)="toggleMobileMenu()" id="mobile-menu-button"
-                class="flex min-[769px]:hidden h-10 w-10 items-center justify-center shrink-0 rounded-xl bg-dark-accent border border-white/5 hover:border-primary hover:text-white transition-all active:scale-95 shadow-sm"
+                class="flex min-[987px]:hidden h-10 w-10 items-center justify-center shrink-0 rounded-xl bg-dark-accent border border-white/5 hover:border-primary hover:text-white transition-all active:scale-95 shadow-sm"
                 [attr.aria-expanded]="isMobileMenuOpen()" aria-controls="mobile-menu">
                 <span class="material-symbols-outlined text-[28px]">
                     {{ isMobileMenuOpen() ? 'close' : 'menu' }}
@@ -174,7 +174,7 @@
 
 <!-- Mobile Menu Overlay -->
 @if (isMobileMenuOpen()) {
-<div id="mobile-menu" class="min-[769px]:hidden fixed inset-x-0 top-16 z-[55] animate-mobile-menu">
+<div id="mobile-menu" class="min-[987px]:hidden fixed inset-x-0 top-16 z-[55] animate-mobile-menu">
     <div class="bg-background-dark/95 backdrop-blur-2xl border-b border-white/10 shadow-2xl overflow-hidden">
         <nav class="flex flex-col p-4 gap-1 max-h-[calc(100vh-4.5rem)] overflow-y-auto">
             <a routerLink="/" [routerLinkActiveOptions]="{exact: true}" routerLinkActive="active-link-mobile"

@@ -135,19 +135,21 @@
                         }
                     </div>
 
-                    @if (isMember()) {
+                    @if (isAdmin()) {
                     <button [routerLink]="['/groups', group()?.id, 'create-event']"
                         class="w-full flex items-center justify-center gap-2 rounded-xl bg-primary px-4 py-3 text-sm font-bold text-white keep-white shadow-[0_0_15px_rgba(43,238,124,0.3)]">
                         <span class="material-symbols-outlined text-base">event</span>
                         Esemény létrehozása
                     </button>
-                    } @else {
+                    } @else if (!isMember()) {
                     <button type="button" disabled
                         class="w-full flex items-center justify-center gap-2 rounded-xl bg-primary/50 px-4 py-3 text-sm font-bold text-white/80 keep-white">
                         <span class="material-symbols-outlined text-base">event</span>
                         Esemény létrehozása
                     </button>
                     <p class="mt-2 text-xs text-gray-400">Csatlakozás után tudsz új eseményt létrehozni.</p>
+                    } @else {
+                    <p class="mt-1 text-xs text-gray-400">Csak adminisztrátor hozhat létre eseményt.</p>
                     }
                 </div>
             </div>
@@ -290,7 +292,7 @@
                                 <span>Tag meghívása</span>
                             </button>
                             }
-                            @if (isMember()) {
+                            @if (isAdmin()) {
                             <button [routerLink]="['/groups', group()?.id, 'create-event']"
                                 class="group-detail-action-btn flex items-center gap-2 px-4 sm:px-5 py-2 sm:py-2.5 rounded-xl bg-primary text-white font-bold text-xs sm:text-sm hover:bg-primary-hover transition-all shadow-[0_0_15px_rgba(43,238,124,0.3)] hover:scale-105 active:scale-95 keep-white min-w-0 text-center whitespace-normal leading-tight">
                                 <span class="material-symbols-outlined text-lg">event</span>
@@ -523,7 +525,7 @@
 
 
                     <!-- Create New Event CTA -->
-                    @if (isMember()) {
+                    @if (isAdmin()) {
                     <button [routerLink]="['/groups', group()?.id, 'create-event']"
                         class="w-full py-4 rounded-2xl border-2 border-dashed border-white/10 text-gray-400 font-medium hover:border-primary hover:text-primary hover:bg-white/5 transition-all flex items-center justify-center gap-2 group">
                         <span

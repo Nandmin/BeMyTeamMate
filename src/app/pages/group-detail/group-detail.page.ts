@@ -384,6 +384,14 @@ export class GroupDetailPage {
 
   goToGroupSettingsFromOverview() {
     if (!this.isMobileViewport()) return;
+    if (!this.isAdmin()) {
+      void this.modalService.alert(
+        'Csak adminisztrátor nyithatja meg a csoport beállításokat.',
+        'Nincs jogosultság',
+        'warning',
+      );
+      return;
+    }
     void this.router.navigate(['/groups', this.groupId, 'settings'], {
       queryParams: { tab: 'settings' },
     });

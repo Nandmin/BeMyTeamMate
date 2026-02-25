@@ -91,17 +91,10 @@
                 <!-- Profile Header Component -->
                 <div
                     class="flex flex-col md:flex-row items-center md:items-start gap-6 mb-10 pb-10 border-b border-[#234833]">
-                    <div class="relative group cursor-pointer" (click)="isOwnProfile() && fileInput.click()">
-                        <div class="bg-center bg-no-repeat bg-cover rounded-full size-32 border-4 border-[#234833] group-hover:border-primary transition-colors duration-300"
+                    <div class="relative">
+                        <div class="bg-center bg-no-repeat bg-cover rounded-full size-32 border-4 border-[#234833] transition-colors duration-300"
                             [style.backgroundImage]="'url(' + getAvatarUrl(profileUser()) + ')'">
                         </div>
-                        <input #fileInput type="file" class="hidden" accept="image/*" (change)="onFileSelected($event)">
-                        @if (isOwnProfile()) {
-                        <div
-                            class="absolute inset-0 bg-black/40 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                            <span class="material-symbols-outlined text-white text-3xl">edit</span>
-                        </div>
-                        }
                     </div>
                     <div class="flex flex-col flex-1 gap-4 text-center md:text-left w-full">
                         <div>

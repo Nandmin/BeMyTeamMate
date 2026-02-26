@@ -64,7 +64,7 @@
             </div>
             } @else if (group()) {
             <!-- Tabs -->
-            <div class="flex bg-white/5 p-1 rounded-xl border border-white/10 mb-8 w-fit settings-surface-card">
+            <div class="flex bg-white/5 p-1 rounded-2xl border border-white/10 mb-8 w-fit settings-surface-card">
                 <button (click)="activeTab.set('members')"
                     class="px-6 py-2.5 rounded-lg text-sm font-medium transition-all flex items-center gap-2"
                     [class.bg-white/10]="activeTab() === 'members'" [class.text-white]="activeTab() === 'members'"
@@ -289,7 +289,7 @@
                         <input type="text" [value]="editGroupForm().name"
                             (input)="updateFormField('name', $any($event.target).value)"
                             [attr.maxlength]="groupNameMaxLength"
-                            class="w-full bg-white/5 border border-white/10 rounded-xl py-3 px-4 text-white placeholder:text-gray-500 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all"
+                            class="w-full bg-white/5 border border-white/10 rounded-2xl py-3 px-4 text-white placeholder:text-gray-500 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all"
                             [placeholder]="'Add meg a csoport nevét (max. ' + groupNameMaxLength + ' karakter)'">
                     </div>
 
@@ -373,7 +373,7 @@
                             Mentés...
                             } @else {
                             <span class="material-symbols-outlined">save</span>
-                            Változtatások mentése
+                            Mentés
                             }
                         </button>
                     </div>

@@ -67,9 +67,7 @@ export class NotificationService {
 
   isPushEnabled() {
     if (!this.canUsePush()) return false;
-    return (
-      Notification.permission === 'granted' && !!this.safeGetItem(this.tokenStorageKey)
-    );
+    return Notification.permission === 'granted' && !!this.safeGetItem(this.tokenStorageKey);
   }
 
   async markAllAsRead(uid: string) {
@@ -251,9 +249,8 @@ export class NotificationService {
 
     // Ensure environment URL is used directly
     const url = environment.cloudflareWorkerUrl;
-    const chunks = uniqueTargetUserIds.length > 0
-      ? this.chunkArray(uniqueTargetUserIds, 200)
-      : [[]];
+    const chunks =
+      uniqueTargetUserIds.length > 0 ? this.chunkArray(uniqueTargetUserIds, 200) : [[]];
 
     try {
       const appCheckToken = await getAppCheckTokenOrNull(this.appCheck);
@@ -524,7 +521,8 @@ export class NotificationService {
     if (!this.canUsePush()) return;
     if (Notification.permission !== 'granted') return;
 
-    const link = typeof data?.['link'] === 'string' ? data['link'] : '';
+    const rawLink = typeof data?.['link'] === 'string' ? data['link'] : '';
+    const link = this.isValidAppLink(rawLink) ? rawLink : '';
     const notificationData: Record<string, string> = { ...(data || {}) };
     if (link) notificationData['link'] = link;
 
@@ -561,10 +559,23 @@ export class NotificationService {
     }
   }
 
+  /**
+   * Csak relatív, alkalmazáson belüli link engedélyezett.
+   * Megakadályozza a javascript: és egyéb protokollos URL-eket
+   * (ugyanaz a logika, mint a Cloudflare Worker isRelativeAppLink() függvénye).
+   */
+  private isValidAppLink(url: string): boolean {
+    if (!url || typeof url !== 'string') return false;
+    const trimmed = url.trim();
+    if (!trimmed.startsWith('/')) return false;
+    if (trimmed.startsWith('//')) return false;
+    return !/^[a-zA-Z][a-zA-Z\d+.-]*:/.test(trimmed);
+  }
+
   private toSafeError(error: any, fallbackMessage?: string) {
     const safeMessage = this.getSafeErrorMessage(
       error,
-      fallbackMessage || 'Váratlan hiba történt. Kérlek próbáld újra később.'
+      fallbackMessage || 'Váratlan hiba történt. Kérlek próbáld újra később.',
     );
     const safeError = new Error(safeMessage);
     if (error?.code) {

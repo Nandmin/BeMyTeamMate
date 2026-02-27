@@ -334,8 +334,7 @@
                     <!-- Toggle Item 1 -->
                     <div class="flex items-center justify-between pb-4 border-b border-[#234833]">
                         <div class="flex gap-4">
-                            <div
-                                class="size-10 rounded-full flex items-center justify-center text-primary">
+                            <div class="size-10 rounded-full flex items-center justify-center text-primary">
                                 <span class="material-symbols-outlined">notifications_active</span>
                             </div>
                             <div>
@@ -379,8 +378,7 @@
                     <!-- Toggle Item 3 -->
                     <div class="flex items-center justify-between">
                         <div class="flex gap-4">
-                            <div
-                                class="size-10 rounded-full flex items-center justify-center text-primary">
+                            <div class="size-10 rounded-full flex items-center justify-center text-primary">
                                 <span class="material-symbols-outlined">group_add</span>
                             </div>
                             <div>
@@ -406,8 +404,7 @@
                 class="relative bg-gradient-to-b from-dark-accent to-background-dark rounded-2xl border border-[#234833] p-6 md:p-8 mb-8"
                 id="privacy">
                 <!-- Icon in top right -->
-                <span
-                    class="material-symbols-outlined absolute top-6 right-6 text-3xl text-white">person_remove</span>
+                <span class="material-symbols-outlined absolute top-6 right-6 text-3xl text-white">person_remove</span>
 
                 <div class="mb-6">
                     <h2 class="text-2xl font-bold text-white tracking-tight">Adatvédelem</h2>
@@ -417,6 +414,30 @@
                 </div>
 
                 <div class="space-y-6">
+                    <!-- Cookie Consent Toggle -->
+                    <div class="flex items-center justify-between pb-4 border-b border-[#234833]">
+                        <div class="flex gap-4">
+                            <div class="size-10 rounded-full flex items-center justify-center text-primary">
+                                <span class="material-symbols-outlined">cookie</span>
+                            </div>
+                            <div>
+                                <p class="text-white font-medium">Analitikai sütik</p>
+                                <p class="text-text-secondary text-sm">Google Analytics alapú látogatottsági mérés
+                                    engedélyezése</p>
+                            </div>
+                        </div>
+                        <div
+                            class="relative inline-block w-12 mr-2 align-middle select-none transition duration-200 ease-in">
+                            <input
+                                class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer border-[#234833] checked:border-primary transition-all duration-300"
+                                id="toggleCookie" type="checkbox" [checked]="cookieConsentGranted()"
+                                (change)="toggleCookieConsent()" />
+                            <label
+                                class="toggle-label block overflow-hidden h-6 rounded-full bg-[#234833] cursor-pointer transition-colors duration-300"
+                                for="toggleCookie"></label>
+                        </div>
+                    </div>
+
                     <div class="flex flex-col gap-6">
                         <!-- Description Row (Top) -->
                         <div class="flex gap-4">

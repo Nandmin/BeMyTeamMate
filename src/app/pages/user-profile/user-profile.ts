@@ -25,6 +25,7 @@ import { switchMap, map, of, from, take, combineLatest, catchError } from 'rxjs'
 import { SeoService } from '../../services/seo.service';
 import { CoverImagesService } from '../../services/cover-images.service';
 import { getAppCheckTokenOrNull } from '../../utils/app-check.util';
+import { AnalyticsService } from '../../services/analytics.service';
 
 @Component({
   selector: 'app-user-profile',
@@ -39,7 +40,7 @@ export class UserProfilePage implements AfterViewInit {
     photoURL: 'Profilkép',
     bio: 'Bemutatkozás',
     elo: 'ELO pontszám',
-    email: 'Email cím'
+    email: 'E-mail cím',
   };
 
   protected authService = inject(AuthService);
@@ -52,6 +53,7 @@ export class UserProfilePage implements AfterViewInit {
   private router = inject(Router);
   private seo = inject(SeoService);
   private coverImagesService = inject(CoverImagesService);
+  private analyticsService = inject(AnalyticsService);
 
   @ViewChild('turnstileContainer', { static: false })
   turnstileContainer?: ElementRef<HTMLDivElement>;
@@ -146,6 +148,7 @@ export class UserProfilePage implements AfterViewInit {
   pushEnabled = signal(this.notificationService.isPushEnabled());
   pushBusy = signal(false);
   isLoading = signal(false);
+  cookieConsentGranted = computed(() => this.analyticsService.consent() === 'granted');
 
   // Form fields
   profileData = {
@@ -447,10 +450,28 @@ export class UserProfilePage implements AfterViewInit {
       }
     } catch (error: any) {
       console.error('Push toggle error:', error);
-      const msg = error?.message || 'Nem sikerult a push értesítések kezelése.';
+      const msg = error?.message || 'Nem sikerült a push értesítések kezelése.';
       await this.modalService.alert(msg, 'Hiba', 'error');
     } finally {
       this.pushBusy.set(false);
+    }
+  }
+
+  async toggleCookieConsent() {
+    if (this.cookieConsentGranted()) {
+      this.analyticsService.denyConsent();
+      await this.modalService.alert(
+        'Az analitikai sütik tiltása sikeres. A következő oldalbetöltéstől érvényes.',
+        'Adatvédelem',
+        'success',
+      );
+    } else {
+      this.analyticsService.grantConsent();
+      await this.modalService.alert(
+        'Az analitikai sütik engedélyezése sikeres.',
+        'Adatvédelem',
+        'success',
+      );
     }
   }
 

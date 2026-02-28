@@ -109,15 +109,7 @@ export class NotificationService {
     const token = await this.getOrCreateToken();
     if (!token) throw new Error('Unable to get FCM token');
 
-    await setDoc(
-      this.getPushTokensDocRef(user.uid),
-      {
-        tokens: arrayUnion(token),
-        updatedAt: serverTimestamp(),
-      },
-      { merge: true },
-    );
-    await this.clearLegacyFcmTokensField(user.uid);
+    await this.registerTokenSecurely(token);
     this.safeSetItem(this.tokenStorageKey, token);
     return token;
   }
@@ -151,30 +143,14 @@ export class NotificationService {
 
     const stored = this.safeGetItem(this.tokenStorageKey);
     if (stored) {
-      await setDoc(
-        this.getPushTokensDocRef(user.uid),
-        {
-          tokens: arrayUnion(stored),
-          updatedAt: serverTimestamp(),
-        },
-        { merge: true },
-      );
-      await this.clearLegacyFcmTokensField(user.uid);
+      await this.registerTokenSecurely(stored);
       return;
     }
 
     if (Notification.permission !== 'granted') return;
     const token = await this.getOrCreateToken();
     if (!token) return;
-    await setDoc(
-      this.getPushTokensDocRef(user.uid),
-      {
-        tokens: arrayUnion(token),
-        updatedAt: serverTimestamp(),
-      },
-      { merge: true },
-    );
-    await this.clearLegacyFcmTokensField(user.uid);
+    await this.registerTokenSecurely(token);
     this.safeSetItem(this.tokenStorageKey, token);
   }
 
@@ -381,6 +357,63 @@ export class NotificationService {
 
   private setCachedMemberIds(groupId: string, memberIds: string[]) {
     this.memberIdsCache.set(groupId, { data: memberIds, ts: Date.now() });
+  }
+
+  async issuePushChallenge(): Promise<string> {
+    const user = this.authService.currentUser();
+    if (!user) throw new Error('User must be logged in');
+
+    let authToken = '';
+    try {
+      authToken = await user.getIdToken();
+    } catch {}
+
+    const appCheckToken = await getAppCheckTokenOrNull(this.appCheck);
+    const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+    if (authToken) headers['Authorization'] = `Bearer ${authToken}`;
+    if (appCheckToken) headers['X-Firebase-AppCheck'] = appCheckToken;
+
+    const workerBaseUrl = new URL(environment.cloudflareWorkerUrl).origin;
+    const res = await fetch(`${workerBaseUrl}/issue-push-challenge`, { method: 'POST', headers });
+    if (!res.ok) throw new Error('Failed to issue challenge');
+    const data = await res.json();
+    if (!data.ok) throw new Error(data.error || 'Challenge API error');
+    return data.challengeId as string;
+  }
+
+  async registerPushToken(challengeId: string, token: string): Promise<void> {
+    const user = this.authService.currentUser();
+    if (!user) throw new Error('User must be logged in');
+
+    let authToken = '';
+    try {
+      authToken = await user.getIdToken();
+    } catch {}
+
+    const appCheckToken = await getAppCheckTokenOrNull(this.appCheck);
+    const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+    if (authToken) headers['Authorization'] = `Bearer ${authToken}`;
+    if (appCheckToken) headers['X-Firebase-AppCheck'] = appCheckToken;
+
+    const workerBaseUrl = new URL(environment.cloudflareWorkerUrl).origin;
+    const res = await fetch(`${workerBaseUrl}/register-push-token`, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({ challengeId, token }),
+    });
+    if (!res.ok) {
+      if (res.status === 429) throw new Error('Túl sok kérés. Kérlek próbáld újra később.');
+      throw new Error(`Failed to register token: ${res.statusText}`);
+    }
+    const data = await res.json();
+    if (!data.ok) throw new Error(data.error || 'Registration API error');
+
+    await this.clearLegacyFcmTokensField(user.uid);
+  }
+
+  private async registerTokenSecurely(token: string) {
+    const challengeId = await this.issuePushChallenge();
+    await this.registerPushToken(challengeId, token);
   }
 
   private getPushTokensDocRef(uid: string) {

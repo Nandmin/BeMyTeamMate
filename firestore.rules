@@ -37,6 +37,50 @@ service cloud.firestore {
         request.resource.data.diff(resource.data).affectedKeys().hasOnly(['fcmTokens']);
     }
 
+    // Explicit whitelist for client-side self profile updates.
+    function isAllowedSelfUserUpdate(userId) {
+      return isSignedIn() &&
+        request.auth.uid == userId &&
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+          'displayName',
+          'photoURL',
+          'bio',
+          'username',
+          'usernameNormalized',
+          'profileUpdatedAt',
+          'lastModifiedFields'
+        ]);
+    }
+
+    // Legacy bootstrap: allow adding default role only if it was missing.
+    function isAllowedSelfRoleBootstrap(userId) {
+      return isSignedIn() &&
+        request.auth.uid == userId &&
+        !('role' in resource.data) &&
+        request.resource.data.role == 'user' &&
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+          'displayName',
+          'photoURL',
+          'bio',
+          'username',
+          'usernameNormalized',
+          'profileUpdatedAt',
+          'lastModifiedFields',
+          'role'
+        ]);
+    }
+
+    // Explicit whitelist for client-side self member updates.
+    function isAllowedSelfMemberUpdate(memberId) {
+      return isSignedIn() &&
+        request.auth.uid == memberId &&
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+          'name',
+          'photo',
+          'skillLevel'
+        ]);
+    }
+
     function isGroupAdmin(groupId) {
       return isSignedIn() && (
         isSiteAdmin() ||
@@ -64,11 +108,9 @@ service cloud.firestore {
                     !('fcmTokens' in request.resource.data));
       
       allow update: if isLegacyFcmTokenSelfSync(userId) || (isSignedIn() && !touchesLegacyFcmTokensField() && (
-        // Self-update: cannot touch role (except adding default role if it was missing)
-        (request.auth.uid == userId && (
-          !request.resource.data.diff(resource.data).affectedKeys().hasAny(['role']) ||
-          (!('role' in resource.data) && request.resource.data.role == 'user')
-        )) ||
+        // Self-update: strict whitelist; system fields (elo/formFactor/role/etc.) are blocked.
+        isAllowedSelfUserUpdate(userId) ||
+        isAllowedSelfRoleBootstrap(userId) ||
         // Site Admin: can update anything
         isSiteAdmin() ||
         // Group Admin update: can update elo/formFactor if they prove shared membership
@@ -299,11 +341,11 @@ service cloud.firestore {
           )
         );
         
-        // Updating: Group Admin can change anything (role, isAdmin). 
-        // User can change their own data but NOT their role/isAdmin.
+        // Updating: Group Admin can change anything (role, isAdmin).
+        // User can only change an explicit whitelist of profile-like fields.
         allow update: if isSignedIn() && (
           isGroupAdmin(groupId) ||
-          (request.auth.uid == memberId && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['role', 'isAdmin']))
+          isAllowedSelfMemberUpdate(memberId)
         );
         
         // Leaving or Removing: User can delete own doc, Admin can delete any

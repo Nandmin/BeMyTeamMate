@@ -34,5 +34,5 @@ export const environment = {
   cloudflareWorkerUrl: 'https://bemyteammate-push.andras78-nemeth.workers.dev/send-notification',
   contactWorkerUrl: 'https://bemyteammate-push.andras78-nemeth.workers.dev/contact-message',
   turnstileSiteKey: getRuntimePublicValue(runtimePublicConfig.turnstileSiteKey),
-  contactEmail: 'bemyteammate@gmail.com',
+  contactEmail: 'contact@bemyteammate.eu',
 };

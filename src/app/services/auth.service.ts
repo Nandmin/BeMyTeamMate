@@ -357,11 +357,47 @@ export class AuthService {
     const userRef = doc(this.firestore, `users/${firebaseUser.uid}`);
     const existingSnap = await getDoc(userRef);
     const existingData = existingSnap.exists() ? existingSnap.data() : {};
-    const data = this.buildUserDataPayload(firebaseUser, existingData, additionalData);
+    const data = existingSnap.exists()
+      ? this.buildSelfUserUpdatePayload(firebaseUser, existingData, additionalData)
+      : this.buildUserDataPayload(firebaseUser, existingData, additionalData);
 
     const result = await setDoc(userRef, data, { merge: true });
     this.clearCachedProfile(firebaseUser.uid);
     return result;
+  }
+
+  private buildSelfUserUpdatePayload(
+    firebaseUser: any,
+    existingData: any = {},
+    additionalData: any = {},
+  ) {
+    const data: any = {
+      displayName:
+        firebaseUser.displayName ||
+        existingData['displayName'] ||
+        additionalData.username ||
+        'Névtelen',
+      photoURL: firebaseUser.photoURL || existingData['photoURL'] || null,
+    };
+
+    if (typeof additionalData.bio !== 'undefined') {
+      data.bio = additionalData.bio;
+    }
+    if (typeof additionalData.profileUpdatedAt !== 'undefined') {
+      data.profileUpdatedAt = additionalData.profileUpdatedAt;
+    }
+    if (typeof additionalData.lastModifiedFields !== 'undefined') {
+      data.lastModifiedFields = additionalData.lastModifiedFields;
+    }
+    if (typeof additionalData.username === 'string') {
+      data.username = additionalData.username;
+      data.usernameNormalized =
+        additionalData.usernameNormalized || this.normalizeUsername(additionalData.username);
+    } else if (typeof additionalData.usernameNormalized === 'string') {
+      data.usernameNormalized = additionalData.usernameNormalized;
+    }
+
+    return data;
   }
 
   private buildUserDataPayload(firebaseUser: any, existingData: any = {}, additionalData: any = {}) {

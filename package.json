@@ -1,6 +1,6 @@
 {
   "name": "be-my-team-mate-app",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "scripts": {
     "ng": "ng",
     "sync:app-version": "node scripts/sync-app-version.mjs",

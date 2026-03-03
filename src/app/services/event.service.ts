@@ -16,15 +16,16 @@ import {
   getDoc,
   limit,
   startAfter,
-  increment,
   docData,
 } from '@angular/fire/firestore';
+import { AppCheck } from '@angular/fire/app-check';
 import { AuthService } from './auth.service';
-import { EloService } from './elo.service';
 import { GroupMember } from './group.service';
 import { NotificationService } from './notification.service';
 import { Observable, Subject, defer, from, of, concat } from 'rxjs';
 import { map, tap, switchMap, catchError, startWith, filter } from 'rxjs/operators';
+import { environment } from '../../environments/environment';
+import { getAppCheckTokenOrNull } from '../utils/app-check.util';
 
 export interface PlayerStats {
   goals: number;
@@ -81,8 +82,8 @@ export interface SportEvent {
 })
 export class EventService {
   private firestore = inject(Firestore);
+  private appCheck = inject(AppCheck, { optional: true });
   private authService = inject(AuthService);
-  private eloService = inject(EloService);
   private notificationService = inject(NotificationService);
   private cacheTtlMs = 5 * 60 * 1000;
   private eventCache = new Map<string, { data: SportEvent; ts: number }>();
@@ -279,8 +280,8 @@ export class EventService {
           type: 'event_cancelled',
           groupId,
           eventId,
-          title: `${groupName} - esemeny lemondva`,
-          body: `${event.title || 'Egy esemeny'} lemondva.`,
+          title: `${groupName} - esemény lemondva`,
+          body: `${event.title || 'Egy esémeny'} lemondva.`,
           link: `/groups/${groupId}`,
           actorId: user?.uid,
           actorName: user?.displayName || 'Ismeretlen',
@@ -385,91 +386,44 @@ export class EventService {
     groupId: string,
     eventId: string,
     stats: { [userId: string]: PlayerStats },
-    goalsA: number,
-    goalsB: number,
-    teamAData: GroupMember[],
-    teamBData: GroupMember[]
+    _goalsA: number,
+    _goalsB: number,
+    _teamAData: GroupMember[],
+    _teamBData: GroupMember[]
   ) {
-    const batch = writeBatch(this.firestore);
-    const DEFAULT_ELO = 1200;
+    const user = this.authService.currentUser();
+    if (!user) throw new Error('User must be logged in');
 
-    // 1. Calculate and Update Elo
-    // We map GroupMember to the structure expected by EloService
-    const eloTeamA = teamAData.map((m) => ({ userId: m.userId, elo: m.elo }));
-    const eloTeamB = teamBData.map((m) => ({ userId: m.userId, elo: m.elo }));
+    const workerBaseUrl = this.getWorkerBaseUrl();
+    if (!workerBaseUrl) {
+      throw new Error('Cloudflare Worker URL is not configured correctly.');
+    }
 
-    const newRatings = this.eloService.calculateRatingChanges(
-      eloTeamA,
-      eloTeamB,
-      goalsA,
-      goalsB,
-      stats
-    );
+    let authToken = '';
+    try {
+      authToken = await user.getIdToken();
+    } catch {}
 
-    const allPlayers = [...teamAData, ...teamBData];
-    const statsWithElo: { [userId: string]: PlayerStats } = {};
+    const appCheckToken = await getAppCheckTokenOrNull(this.appCheck);
+    const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+    if (authToken) headers['Authorization'] = `Bearer ${authToken}`;
+    if (appCheckToken) headers['X-Firebase-AppCheck'] = appCheckToken;
 
-    allPlayers.forEach((player) => {
-      const currentElo = player.elo ?? DEFAULT_ELO;
-      const newElo = newRatings.get(player.userId) ?? currentElo;
-      const delta = Math.round(newElo - currentElo);
-      const playerStats = stats[player.userId] || { goals: 0, assists: 0 };
-      statsWithElo[player.userId] = {
-        goals: playerStats.goals || 0,
-        assists: playerStats.assists || 0,
-        eloDelta: delta,
-      };
+    const response = await fetch(`${workerBaseUrl}/finalize-match-results`, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({
+        groupId,
+        eventId,
+        stats,
+      }),
     });
 
-    // 2. Update Event
-    const eventRef = doc(this.firestore, `groups/${groupId}/events/${eventId}`);
-    const eventSnap = await getDoc(eventRef);
-    const existingEvent = eventSnap.exists() ? (eventSnap.data() as SportEvent) : null;
-    const shouldStartMvpVoting =
-      !!existingEvent?.mvpVotingEnabled && !existingEvent?.mvpVotingStartedAt;
+    if (!response.ok) {
+      throw new Error(await this.readWorkerError(response));
+    }
 
-    batch.update(eventRef, {
-      playerStats: statsWithElo,
-      goalsA,
-      goalsB,
-      status: 'finished',
-      endedAt: serverTimestamp(),
-      ...(shouldStartMvpVoting ? { mvpVotingStartedAt: serverTimestamp() } : {}),
-    });
-
-    // 3. Update Member Docs and Global User Docs
-    allPlayers.forEach((player) => {
-      const newElo = newRatings.get(player.userId);
-      if (newElo !== undefined) {
-        // A. Update Global User Document
-        const userRef = doc(this.firestore, `users/${player.userId}`);
-        batch.update(userRef, {
-          elo: newElo,
-          lastGroupId: groupId,
-        });
-
-        // B. Update Group Member Document
-        if (player.id === 'owner-fallback') {
-          const membersCollection = collection(this.firestore, `groups/${groupId}/members`);
-          const newMemberRef = doc(membersCollection);
-          batch.set(newMemberRef, {
-            userId: player.userId,
-            name: player.name,
-            photo: player.photo || null,
-            role: 'Csapatkapitány',
-            isAdmin: true,
-            joinedAt: player.joinedAt,
-            skillLevel: player.skillLevel || 50,
-            elo: newElo,
-          });
-        } else if (player.id) {
-          const memberRef = doc(this.firestore, `groups/${groupId}/members/${player.id}`);
-          batch.update(memberRef, { elo: newElo });
-        }
-      }
-    });
-
-    const result = await batch.commit();
+    const result = await response.json().catch(() => null);
     this.invalidateEventCaches(groupId, eventId);
     this.emitEventsChange(groupId);
     this.emitEventChange(groupId, eventId);
@@ -523,99 +477,45 @@ export class EventService {
   }
 
   async finalizeMvpVotingIfNeeded(groupId: string, eventId: string) {
-    const eventRef = doc(this.firestore, `groups/${groupId}/events/${eventId}`);
-    const snap = await getDoc(eventRef);
-    if (!snap.exists()) throw new Error('Event not found');
-    const event = { id: snap.id, ...(snap.data() as SportEvent) } as SportEvent;
+    const user = this.authService.currentUser();
+    if (!user) throw new Error('User must be logged in');
 
-    if (!event.mvpVotingEnabled) return;
-    if (event.status !== 'finished') return;
-    if (event.mvpEloAwarded) return;
-    const eventDate = this.coerceDate(event.date);
-    if (Number.isNaN(eventDate.getTime())) return;
-    const end = event.mvpVotingEndsAt
-      ? this.coerceDate(event.mvpVotingEndsAt)
-      : (eventDate.setHours(23, 59, 59, 999), eventDate);
-    if (new Date() < end) return;
+    const workerBaseUrl = this.getWorkerBaseUrl();
+    if (!workerBaseUrl) {
+      throw new Error('Cloudflare Worker URL is not configured correctly.');
+    }
 
-    const votes = event.mvpVotes || {};
-    const tally = new Map<string, number>();
-    Object.values(votes).forEach((playerId) => {
-      tally.set(playerId, (tally.get(playerId) || 0) + 1);
+    let authToken = '';
+    try {
+      authToken = await user.getIdToken();
+    } catch {}
+
+    const appCheckToken = await getAppCheckTokenOrNull(this.appCheck);
+    const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+    if (authToken) headers['Authorization'] = `Bearer ${authToken}`;
+    if (appCheckToken) headers['X-Firebase-AppCheck'] = appCheckToken;
+
+    const response = await fetch(`${workerBaseUrl}/mvp-cron-run-group`, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({
+        data: {
+          groupId,
+          dryRun: false,
+          eventId,
+        },
+      }),
     });
 
-    const DEFAULT_ELO = 1200;
-    let winnerId: string | null = null;
-    let topVotes = 0;
-    let topCandidates: string[] = [];
-    for (const [playerId, count] of tally.entries()) {
-      if (count > topVotes) {
-        topVotes = count;
-        topCandidates = count > 0 ? [playerId] : [];
-      } else if (count === topVotes && count > 0) {
-        topCandidates.push(playerId);
-      }
+    if (!response.ok) {
+      throw new Error(await this.readWorkerError(response));
     }
 
-    if (topCandidates.length === 1) {
-      winnerId = topCandidates[0];
-    } else if (topCandidates.length > 1) {
-      const membersCollection = collection(this.firestore, `groups/${groupId}/members`);
-      const eloByUser = new Map<string, number>();
-      let foundEloCount = 0;
-      for (let i = 0; i < topCandidates.length; i += 10) {
-        const chunk = topCandidates.slice(i, i + 10);
-        const memberQuery = query(membersCollection, where('userId', 'in', chunk));
-        const memberSnap = await getDocs(memberQuery);
-        memberSnap.docs.forEach((docSnap) => {
-          const data = docSnap.data() as GroupMember;
-          if (data?.userId) {
-            eloByUser.set(data.userId, data.elo ?? DEFAULT_ELO);
-            if (data.elo !== undefined && data.elo !== null) foundEloCount += 1;
-          }
-        });
-      }
-
-      if (foundEloCount === 0) {
-        winnerId = null;
-        topCandidates = [];
-      }
-
-      let lowestElo = Number.POSITIVE_INFINITY;
-      let lowestIds: string[] = [];
-      for (const candidateId of topCandidates) {
-        const elo = eloByUser.get(candidateId) ?? DEFAULT_ELO;
-        if (elo < lowestElo) {
-          lowestElo = elo;
-          lowestIds = [candidateId];
-        } else if (elo === lowestElo) {
-          lowestIds.push(candidateId);
-        }
-      }
-
-      winnerId = lowestIds.length > 0 ? lowestIds.sort()[0] : null;
+    const payload = await response.json().catch(() => null);
+    if (payload && payload.ok === false) {
+      throw new Error(typeof payload.error === 'string' ? payload.error : 'MVP finalize failed');
     }
 
-    const batch = writeBatch(this.firestore);
-    batch.update(eventRef, {
-      mvpWinnerId: winnerId,
-      mvpEloAwarded: true,
-    });
-
-    if (winnerId) {
-      const userRef = doc(this.firestore, `users/${winnerId}`);
-      batch.update(userRef, { elo: increment(5) });
-
-      const membersCollection = collection(this.firestore, `groups/${groupId}/members`);
-      const memberQuery = query(membersCollection, where('userId', '==', winnerId), limit(1));
-      const memberSnap = await getDocs(memberQuery);
-      const memberDoc = memberSnap.docs[0];
-      if (memberDoc) {
-        batch.update(memberDoc.ref, { elo: increment(5) });
-      }
-    }
-
-    await batch.commit();
     this.invalidateEventCaches(groupId, eventId);
     this.emitEventsChange(groupId);
     this.emitEventChange(groupId, eventId);
@@ -643,6 +543,32 @@ export class EventService {
 
   private fsServerTimestamp() {
     return serverTimestamp();
+  }
+
+  private getWorkerBaseUrl(): string | null {
+    const value = environment.cloudflareWorkerUrl;
+    if (!value) return null;
+    try {
+      return new URL(value).origin;
+    } catch {
+      return null;
+    }
+  }
+
+  private async readWorkerError(response: Response): Promise<string> {
+    const fallback = `Nem sikerült menteni az eredményeket (${response.status}).`;
+    try {
+      const payload = await response.json();
+      const message =
+        typeof payload?.error === 'string'
+          ? payload.error
+          : typeof payload?.detail === 'string'
+            ? payload.detail
+            : '';
+      return message ? `${fallback} ${message}` : fallback;
+    } catch {
+      return fallback;
+    }
   }
 
   private coerceDate(value: any): Date {
@@ -985,3 +911,4 @@ export class EventService {
     );
   }
 }
+

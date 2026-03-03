@@ -112,14 +112,7 @@ service cloud.firestore {
         isAllowedSelfUserUpdate(userId) ||
         isAllowedSelfRoleBootstrap(userId) ||
         // Site Admin: can update anything
-        isSiteAdmin() ||
-        // Group Admin update: can update elo/formFactor if they prove shared membership
-        (
-          request.resource.data.diff(resource.data).affectedKeys().hasOnly(['elo', 'formFactor', 'lastGroupId']) &&
-          'lastGroupId' in request.resource.data &&
-          isGroupAdmin(request.resource.data.lastGroupId) &&
-          exists(/databases/$(database)/documents/groups/$(request.resource.data.lastGroupId)/members/$(userId))
-        )
+        isSiteAdmin()
       ));
 
       // Private user data (e.g. push tokens) - only owner can access from client.

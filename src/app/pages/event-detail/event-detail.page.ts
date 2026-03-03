@@ -211,6 +211,7 @@ export class EventDetailPage {
       const event = this.event();
       if (!event?.mvpVotingEnabled || event.status !== 'finished') return;
       if (event.mvpEloAwarded || this.isFinalizingMvp()) return;
+      if (!this.isAdmin()) return;
       const end = this.mvpVotingEndAt();
       if (!end) return;
       if (new Date() < end) return;

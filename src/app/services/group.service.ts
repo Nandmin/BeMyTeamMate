@@ -259,7 +259,7 @@ export class GroupService {
       return from(getDocs(q)).pipe(
         map((snap) => snap.docs.map((d) => ({ id: d.id, ...(d.data() as GroupMember) }))),
         switchMap((members) => {
-          const hasOwner = members.some((m) => m.role === 'Csapatkapitány');
+          const hasOwner = members.some((m) => (m.role || '').toLowerCase().includes('csapatkapit'));
           if (hasOwner) return of(members);
 
           return this.getGroup(groupId).pipe(
@@ -279,8 +279,56 @@ export class GroupService {
             }),
           );
         }),
+        switchMap((members) => from(this.resolveMembersWithUserElo(members))),
       );
     });
+  }
+
+  private async resolveMembersWithUserElo(members: GroupMember[]): Promise<GroupMember[]> {
+    if (!Array.isArray(members) || members.length === 0) return [];
+
+    const deduped: GroupMember[] = [];
+    const indexByUserId = new Map<string, number>();
+    members.forEach((member) => {
+      const userId = (member?.userId || '').trim();
+      if (!userId) return;
+      const normalized = { ...member, userId };
+      const existingIndex = indexByUserId.get(userId);
+      if (existingIndex === undefined) {
+        indexByUserId.set(userId, deduped.length);
+        deduped.push(normalized);
+        return;
+      }
+
+      const existing = deduped[existingIndex];
+      const existingCanonical = existing?.id === userId;
+      const candidateCanonical = normalized?.id === userId;
+      if (!existingCanonical && candidateCanonical) {
+        deduped[existingIndex] = normalized;
+      }
+    });
+
+    const eloByUserId = new Map<string, number>();
+    const lookups = deduped.map(async (member) => {
+      try {
+        const userSnap = await this.fsGetDoc(this.fsDoc(`users/${member.userId}`));
+        if (!userSnap.exists()) return;
+        const rawElo = (userSnap.data() as any)?.elo;
+        const elo = Number(rawElo);
+        if (Number.isFinite(elo)) {
+          eloByUserId.set(member.userId, Math.round(elo));
+        }
+      } catch {
+        // Fallback to members elo when user doc is not readable in this context.
+      }
+    });
+
+    await Promise.all(lookups);
+
+    return deduped.map((member) => ({
+      ...member,
+      elo: eloByUserId.get(member.userId) ?? member.elo,
+    }));
   }
 
   async joinGroup(groupId: string) {
@@ -821,7 +869,7 @@ export class GroupService {
 
     const group = await this.getGroupOnce(groupId);
     if (group?.ownerId === user.uid) {
-      throw new Error('A csoport tulajdonosa nem lĂ©phet ki.');
+      throw new Error('A csoport tulajdonosa nem léphet ki.');
     }
 
     const memberRef = this.fsDoc(`groups/${groupId}/members/${user.uid}`);

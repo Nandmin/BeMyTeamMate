@@ -313,6 +313,11 @@ h1, h2, h3 {
     color: #94a3b8;
   }
 
+  .keep-white,
+  .keep-white .material-symbols-outlined {
+    color: #ffffff !important;
+  }
+
   .text-text-secondary {
     color: #64748b;
   }

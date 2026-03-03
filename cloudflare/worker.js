@@ -889,10 +889,43 @@ async function fetchGroupMemberRecords(projectId, accessToken, groupId, userIds)
       const fields = memberDoc.fields || {};
       const userId = typeof fields.userId?.stringValue === 'string' ? fields.userId.stringValue : '';
       if (!userId) continue;
-      records.set(userId, {
-        docName: memberDoc.name,
-        elo: parseFirestoreNumberValue(fields.elo, null),
-      });
+      const current = records.get(userId) || { docNames: [], elo: null };
+      current.docNames.push(memberDoc.name);
+      const eloValue = parseFirestoreNumberValue(fields.elo, null);
+      if (!Number.isFinite(current.elo) && Number.isFinite(eloValue)) {
+        current.elo = eloValue;
+      }
+      records.set(userId, current);
+    }
+  }
+
+  return records;
+}
+
+async function fetchCanonicalGroupMemberRecords(projectId, accessToken, groupId, userIds) {
+  const records = new Map();
+  if (!Array.isArray(userIds) || userIds.length === 0) return records;
+
+  const chunks = chunkArray(userIds, 20);
+  for (const chunk of chunks) {
+    const results = await Promise.all(
+      chunk.map(async (userId) => {
+        const memberDoc = await getFirestoreDocumentByUrl(
+          getGroupMemberDocUrl(projectId, groupId, userId),
+          accessToken
+        );
+        if (!memberDoc?.name) return { userId, docName: null, elo: null };
+        return {
+          userId,
+          docName: memberDoc.name,
+          elo: parseFirestoreNumberValue(memberDoc?.fields?.elo, null),
+        };
+      })
+    );
+
+    for (const result of results) {
+      if (!result.docName) continue;
+      records.set(result.userId, { docName: result.docName, elo: result.elo });
     }
   }
 
@@ -961,8 +994,9 @@ async function finalizeGroupMatchResult(projectId, accessToken, groupId, eventId
   const goalsA = teamAIds.reduce((sum, userId) => sum + (statsByUser.get(userId)?.goals || 0), 0);
   const goalsB = teamBIds.reduce((sum, userId) => sum + (statsByUser.get(userId)?.goals || 0), 0);
 
-  const [memberRecords, userElos] = await Promise.all([
+  const [memberRecords, canonicalMemberRecords, userElos] = await Promise.all([
     fetchGroupMemberRecords(projectId, accessToken, groupId, participantIds),
+    fetchCanonicalGroupMemberRecords(projectId, accessToken, groupId, participantIds),
     fetchUserElos(projectId, accessToken, participantIds),
   ]);
   const snapshotElos = parseRatingSnapshotField(fields.playerRatingSnapshot);
@@ -970,6 +1004,8 @@ async function finalizeGroupMatchResult(projectId, accessToken, groupId, eventId
   const getCurrentElo = (userId) => {
     const snapshotElo = snapshotElos.get(userId);
     if (Number.isFinite(snapshotElo)) return Number(snapshotElo);
+    const canonicalMemberElo = canonicalMemberRecords.get(userId)?.elo;
+    if (Number.isFinite(canonicalMemberElo)) return Number(canonicalMemberElo);
     const memberElo = memberRecords.get(userId)?.elo;
     if (Number.isFinite(memberElo)) return Number(memberElo);
     const userElo = userElos.get(userId);
@@ -1036,16 +1072,26 @@ async function finalizeGroupMatchResult(projectId, accessToken, groupId, eventId
       updateMask: { fieldPaths: ['elo', 'lastGroupId'] },
     });
 
+    const memberDocNames = new Set();
+    const canonicalMember = canonicalMemberRecords.get(userId);
+    if (canonicalMember?.docName) {
+      memberDocNames.add(canonicalMember.docName);
+    }
     const memberRecord = memberRecords.get(userId);
-    if (memberRecord?.docName) {
+    const legacyMemberDocNames = Array.isArray(memberRecord?.docNames) ? memberRecord.docNames : [];
+    legacyMemberDocNames.forEach((docName) => {
+      if (typeof docName === 'string' && docName.trim()) memberDocNames.add(docName);
+    });
+
+    memberDocNames.forEach((docName) => {
       writes.push({
         update: {
-          name: memberRecord.docName,
+          name: docName,
           fields: { elo: { integerValue: String(newElo) } },
         },
         updateMask: { fieldPaths: ['elo'] },
       });
-    }
+    });
   }
 
   if (writes.length > 499) {

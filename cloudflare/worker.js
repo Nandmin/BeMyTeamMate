@@ -1170,6 +1170,18 @@ async function finalizeGroupMatchResult(projectId, accessToken, groupId, eventId
       },
       updateMask: { fieldPaths: ['elo', 'lastGroupId'] },
     });
+    writes.push({
+      transform: {
+        document: `projects/${projectId}/databases/(default)/documents/users/${userId}`,
+        fieldTransforms: [
+          { fieldPath: 'profileUpdatedAt', setToServerValue: 'REQUEST_TIME' },
+          {
+            fieldPath: 'lastModifiedFields',
+            appendMissingElements: { values: [{ stringValue: 'elo' }] },
+          },
+        ],
+      },
+    });
 
     const memberDocNames = new Set();
     const canonicalMember = canonicalMemberRecords.get(userId);

@@ -1,6 +1,6 @@
 import { Component, signal, inject } from '@angular/core';
 import { Router, NavigationEnd, RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
-import { filter } from 'rxjs/operators';
+import { distinctUntilChanged, filter, map } from 'rxjs/operators';
 import { FooterComponent } from './components/footer/footer';
 import { HeaderComponent } from './components/header/header';
 import { ModalComponent } from './components/modal/modal.component';
@@ -81,11 +81,18 @@ export class App {
 
     this.notificationService.listenForForegroundMessages();
 
-    this.authService.user$.subscribe((user) => {
-      if (!user?.uid) return;
-      this.notificationService.syncTokenForCurrentUser();
-      this.notificationService.listenForForegroundMessages();
-    });
+    this.authService.user$
+      .pipe(
+        map((user) => user?.uid ?? null),
+        distinctUntilChanged()
+      )
+      .subscribe((uid) => {
+        if (!uid) return;
+        void this.notificationService.syncTokenForCurrentUser().catch((error) => {
+          console.warn('Push token sync failed:', error);
+        });
+        this.notificationService.listenForForegroundMessages();
+      });
 
     this.router.events
       .pipe(filter((event) => event instanceof NavigationEnd))

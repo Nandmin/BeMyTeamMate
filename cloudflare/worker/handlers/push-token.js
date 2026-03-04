@@ -10,12 +10,12 @@ export async function handleIssuePushChallenge(request, env) {
   }
 
   try {
-    await rateLimiter.checkGlobal(env, 'issue-push-challenge');
-    await rateLimiter.check(request, env, authResult.user);
+    await rateLimiter.check(request, env);
   } catch (error) {
     if (error instanceof RateLimitExceededError) {
       return jsonResponse(request, env, { error: 'Rate limit exceeded', message: error.message, retryAfter: error.retryAfter }, 429);
     }
+    console.error('Issue challenge rate limiter failed:', error);
   }
 
   const config = await getMinimalFirestoreAuth(env);
@@ -65,12 +65,12 @@ export async function handleRegisterPushToken(request, env) {
   }
 
   try {
-    await rateLimiter.checkGlobal(env, 'register-push-token');
-    await rateLimiter.check(request, env, authResult.user);
+    await rateLimiter.check(request, env);
   } catch (error) {
     if (error instanceof RateLimitExceededError) {
       return jsonResponse(request, env, { error: 'Rate limit exceeded', message: error.message, retryAfter: error.retryAfter }, 429);
     }
+    console.error('Register token rate limiter failed:', error);
   }
 
   const body = await readJsonBody(request);

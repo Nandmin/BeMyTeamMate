@@ -13,7 +13,6 @@ import {
   limit,
   updateDoc,
   deleteField,
-  arrayUnion,
   arrayRemove,
   collectionData,
 } from '@angular/fire/firestore';
@@ -46,12 +45,16 @@ export class NotificationService {
   private appCheck = inject(AppCheck, { optional: true });
   private authService = inject(AuthService);
   private tokenStorageKey = 'fcmToken';
+  private tokenSyncMetaStorageKey = 'fcmTokenSyncMeta';
+  private tokenSyncTtlMs = 24 * 60 * 60 * 1000;
   private notificationCacheTtlMs = 60 * 1000;
   private memberCacheTtlMs = 2 * 60 * 1000;
   private readonly maxCacheEntries = 100;
   private notificationCache = new Map<string, { data: AppNotification[]; ts: number }>();
   private memberIdsCache = new Map<string, { data: string[]; ts: number }>();
   private foregroundListenerInitialized = false;
+  private tokenSyncInFlight: Promise<void> | null = null;
+  private tokenSyncInFlightToken: string | null = null;
 
   watchNotifications(uid: string): Observable<AppNotification[]> {
     if (!uid) return of([]);
@@ -134,6 +137,7 @@ export class NotificationService {
     );
     await this.clearLegacyFcmTokensField(user.uid);
     this.safeRemoveItem(this.tokenStorageKey);
+    this.clearTokenSyncMeta();
   }
 
   async syncTokenForCurrentUser() {
@@ -143,6 +147,7 @@ export class NotificationService {
 
     const stored = this.safeGetItem(this.tokenStorageKey);
     if (stored) {
+      if (this.shouldSkipTokenSync(stored)) return;
       await this.registerTokenSecurely(stored);
       return;
     }
@@ -412,8 +417,66 @@ export class NotificationService {
   }
 
   private async registerTokenSecurely(token: string) {
-    const challengeId = await this.issuePushChallenge();
-    await this.registerPushToken(challengeId, token);
+    if (this.shouldSkipTokenSync(token)) {
+      return;
+    }
+
+    if (this.tokenSyncInFlight && this.tokenSyncInFlightToken === token) {
+      await this.tokenSyncInFlight;
+      return;
+    }
+
+    const syncJob = (async () => {
+      const challengeId = await this.issuePushChallenge();
+      await this.registerPushToken(challengeId, token);
+      this.markTokenSynced(token);
+    })();
+
+    this.tokenSyncInFlight = syncJob;
+    this.tokenSyncInFlightToken = token;
+
+    try {
+      await syncJob;
+    } finally {
+      if (this.tokenSyncInFlight === syncJob) {
+        this.tokenSyncInFlight = null;
+        this.tokenSyncInFlightToken = null;
+      }
+    }
+  }
+
+  private shouldSkipTokenSync(token: string) {
+    const meta = this.getTokenSyncMeta();
+    if (!meta) return false;
+    if (meta.token !== token) return false;
+    return Date.now() - meta.syncedAt < this.tokenSyncTtlMs;
+  }
+
+  private markTokenSynced(token: string) {
+    this.safeSetItem(
+      this.tokenSyncMetaStorageKey,
+      JSON.stringify({
+        token,
+        syncedAt: Date.now(),
+      })
+    );
+  }
+
+  private getTokenSyncMeta(): { token: string; syncedAt: number } | null {
+    const raw = this.safeGetItem(this.tokenSyncMetaStorageKey);
+    if (!raw) return null;
+    try {
+      const parsed = JSON.parse(raw) as { token?: unknown; syncedAt?: unknown };
+      if (typeof parsed?.token !== 'string') return null;
+      if (typeof parsed?.syncedAt !== 'number' || !Number.isFinite(parsed.syncedAt)) return null;
+      return { token: parsed.token, syncedAt: parsed.syncedAt };
+    } catch {
+      return null;
+    }
+  }
+
+  private clearTokenSyncMeta() {
+    this.safeRemoveItem(this.tokenSyncMetaStorageKey);
   }
 
   private getPushTokensDocRef(uid: string) {

@@ -1,6 +1,7 @@
 import { verifyAuth, verifyInternalAdminSecret } from '../auth.js';
 import { getAccessToken, normalizePrivateKey } from '../google-auth.js';
 import { jsonResponse, readJsonBody } from '../http.js';
+import { rateLimiter, RateLimitExceededError } from '../rate-limit.js';
 import {
   canFinalizeGroupMatchResult,
   commitWrites,
@@ -120,6 +121,15 @@ export async function handleMvpCronRunNow(request, env, ctx) {
   const internalAuth = verifyInternalAdminSecret(request, env);
   if (!internalAuth.authorized) {
     return jsonResponse(request, env, { error: 'Unauthorized', detail: internalAuth.error }, 401);
+  }
+  try {
+    await rateLimiter.checkGlobal(env, 'mvp-cron-run-now');
+  } catch (error) {
+    if (error instanceof RateLimitExceededError) {
+      return jsonResponse(request, env, { error: 'Rate limit exceeded', message: error.message, retryAfter: error.retryAfter }, 429);
+    }
+    console.error('MVP run-now rate limiter failed:', error);
+    return jsonResponse(request, env, { error: 'Rate limiter unavailable' }, 503);
   }
 
   if (ctx?.waitUntil) {

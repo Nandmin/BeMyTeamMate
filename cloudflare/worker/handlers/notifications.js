@@ -57,6 +57,7 @@ export async function handleSendNotification(request, env, ctx) {
       );
     }
     console.error('Rate limiter failed:', error);
+    return jsonResponse(request, env, { error: 'Rate limiter unavailable' }, 503);
   }
 
   const parsedBody = await readJsonBody(request);

@@ -57,6 +57,7 @@ export async function handleContactMessage(request, env) {
       );
     }
     console.error('Contact rate limiter failed:', error);
+    return jsonResponse(request, env, { error: 'Rate limiter unavailable' }, 503);
   }
 
   const projectId = env.FCM_PROJECT_ID;

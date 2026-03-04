@@ -20,12 +20,14 @@ export class RateLimiter {
     const kv = env?.RATE_LIMIT_KV;
     if (kv) return kv;
 
-    if (env?.ENVIRONMENT === 'production') {
-      throw new Error('RATE_LIMIT_KV not configured!');
+    const bypassRaw = env?.ALLOW_RATE_LIMIT_BYPASS;
+    const allowBypass = typeof bypassRaw === 'string' && bypassRaw.trim().toLowerCase() === 'true';
+    if (allowBypass) {
+      console.warn('Rate limits disabled by ALLOW_RATE_LIMIT_BYPASS');
+      return null;
     }
 
-    console.warn('Rate limits disabled (dev mode)');
-    return null;
+    throw new Error('RATE_LIMIT_KV not configured');
   }
 
   async checkGlobal(env, scope = 'all') {
@@ -52,20 +54,37 @@ export class RateLimiter {
     return true;
   }
 
-  async check(request, env, userId) {
+  async check(request, env, userId, options = {}) {
     const kv = this.getKvBinding(env);
     if (!kv) return true;
 
     const ip = this.getClientIp(request) || 'unknown';
     const now = Math.floor(Date.now() / 1000);
+    const checkIp = options.checkIp !== false;
+    const checkUser = options.checkUser !== false;
+    const ipLimit = Number.isFinite(options.ipLimit) ? Number(options.ipLimit) : this.limits.perIP.max;
+    const ipWindowSeconds = Number.isFinite(options.ipWindow)
+      ? Number(options.ipWindow)
+      : this.limits.perIP.window;
+    const userLimit = Number.isFinite(options.userLimit) ? Number(options.userLimit) : this.limits.perUser.max;
+    const userWindowSeconds = Number.isFinite(options.userWindow)
+      ? Number(options.userWindow)
+      : this.limits.perUser.window;
+    const keyPrefix = typeof options.keyPrefix === 'string' && options.keyPrefix.trim()
+      ? options.keyPrefix.trim()
+      : 'rl';
 
-    const ipWindow = Math.floor(now / this.limits.perIP.window);
-    const ipKey = `rl:ip:${ip}:${ipWindow}`;
-    const ipCountRaw = await kv.get(ipKey);
-    const ipCount = Number.parseInt(ipCountRaw || '0', 10) || 0;
+    let ipKey = '';
+    let ipCount = 0;
+    if (checkIp) {
+      const ipWindow = Math.floor(now / ipWindowSeconds);
+      ipKey = `${keyPrefix}:ip:${ip}:${ipWindow}`;
+      const ipCountRaw = await kv.get(ipKey);
+      ipCount = Number.parseInt(ipCountRaw || '0', 10) || 0;
+    }
 
-    if (ipCount >= this.limits.perIP.max) {
-      const retryAfter = this.secondsUntilWindowReset(now, this.limits.perIP.window);
+    if (checkIp && ipCount >= ipLimit) {
+      const retryAfter = this.secondsUntilWindowReset(now, ipWindowSeconds);
       throw new RateLimitExceededError(
         `IP rate limit exceeded. Try again in ${retryAfter}s`,
         retryAfter
@@ -74,14 +93,14 @@ export class RateLimiter {
 
     let userKey = '';
     let userCount = 0;
-    if (userId) {
-      const userWindow = Math.floor(now / this.limits.perUser.window);
-      userKey = `rl:user:${String(userId)}:${userWindow}`;
+    if (checkUser && userId) {
+      const userWindow = Math.floor(now / userWindowSeconds);
+      userKey = `${keyPrefix}:user:${String(userId)}:${userWindow}`;
       const userCountRaw = await kv.get(userKey);
       userCount = Number.parseInt(userCountRaw || '0', 10) || 0;
 
-      if (userCount >= this.limits.perUser.max) {
-        const retryAfter = this.secondsUntilWindowReset(now, this.limits.perUser.window);
+      if (userCount >= userLimit) {
+        const retryAfter = this.secondsUntilWindowReset(now, userWindowSeconds);
         throw new RateLimitExceededError(
           `User rate limit exceeded. Try again in ${retryAfter}s`,
           retryAfter
@@ -89,17 +108,22 @@ export class RateLimiter {
       }
     }
 
-    const writes = [
-      kv.put(ipKey, String(ipCount + 1), { expirationTtl: this.limits.perIP.window * 2 }),
-    ];
+    const writes = [];
+    if (checkIp) {
+      writes.push(
+        kv.put(ipKey, String(ipCount + 1), { expirationTtl: ipWindowSeconds * 2 })
+      );
+    }
     if (userKey) {
       writes.push(
         kv.put(userKey, String(userCount + 1), {
-          expirationTtl: this.limits.perUser.window * 2,
+          expirationTtl: userWindowSeconds * 2,
         })
       );
     }
-    await Promise.all(writes);
+    if (writes.length > 0) {
+      await Promise.all(writes);
+    }
     return true;
   }
 

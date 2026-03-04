@@ -2,20 +2,55 @@ import { verifyAuth } from '../auth.js';
 import { jsonResponse, readJsonBody } from '../http.js';
 import { rateLimiter, RateLimitExceededError } from '../rate-limit.js';
 import { commitWrites, getMinimalFirestoreAuth } from '../firestore.js';
+import { isLikelyFcmToken } from '../utils.js';
+
+function isPushAdminBypassEnabled(env) {
+  const value = typeof env?.ALLOW_PUSH_ADMIN_BYPASS === 'string'
+    ? env.ALLOW_PUSH_ADMIN_BYPASS.trim().toLowerCase()
+    : '';
+  return value === 'true';
+}
+
+function isFirebaseOrAllowedAdmin(authResult, env) {
+  if (authResult.authType === 'firebase' && authResult.user) return true;
+  if (
+    isPushAdminBypassEnabled(env)
+    && authResult.authType === 'admin-secret'
+    && authResult.user
+  ) {
+    return true;
+  }
+  return false;
+}
 
 export async function handleIssuePushChallenge(request, env) {
   const authResult = await verifyAuth(request, env);
   if (!authResult.authorized) {
     return jsonResponse(request, env, { error: 'Unauthorized', detail: authResult.error }, 401);
   }
+  if (!isFirebaseOrAllowedAdmin(authResult, env)) {
+    return jsonResponse(
+      request,
+      env,
+      { error: 'Firebase ID token required for this endpoint' },
+      401
+    );
+  }
 
   try {
-    await rateLimiter.check(request, env);
+    await rateLimiter.check(request, env, authResult.user, {
+      checkIp: false,
+      checkUser: true,
+      userLimit: 15,
+      userWindow: 60,
+      keyPrefix: 'rl:push-token',
+    });
   } catch (error) {
     if (error instanceof RateLimitExceededError) {
       return jsonResponse(request, env, { error: 'Rate limit exceeded', message: error.message, retryAfter: error.retryAfter }, 429);
     }
     console.error('Issue challenge rate limiter failed:', error);
+    return jsonResponse(request, env, { error: 'Rate limiter unavailable' }, 503);
   }
 
   const config = await getMinimalFirestoreAuth(env);
@@ -63,14 +98,29 @@ export async function handleRegisterPushToken(request, env) {
   if (!authResult.authorized) {
     return jsonResponse(request, env, { error: 'Unauthorized', detail: authResult.error }, 401);
   }
+  if (!isFirebaseOrAllowedAdmin(authResult, env)) {
+    return jsonResponse(
+      request,
+      env,
+      { error: 'Firebase ID token required for this endpoint' },
+      401
+    );
+  }
 
   try {
-    await rateLimiter.check(request, env);
+    await rateLimiter.check(request, env, authResult.user, {
+      checkIp: false,
+      checkUser: true,
+      userLimit: 15,
+      userWindow: 60,
+      keyPrefix: 'rl:push-token',
+    });
   } catch (error) {
     if (error instanceof RateLimitExceededError) {
       return jsonResponse(request, env, { error: 'Rate limit exceeded', message: error.message, retryAfter: error.retryAfter }, 429);
     }
     console.error('Register token rate limiter failed:', error);
+    return jsonResponse(request, env, { error: 'Rate limiter unavailable' }, 503);
   }
 
   const body = await readJsonBody(request);
@@ -81,6 +131,9 @@ export async function handleRegisterPushToken(request, env) {
 
   if (!challengeId || !token) {
     return jsonResponse(request, env, { error: 'Missing challengeId or token' }, 400);
+  }
+  if (!isLikelyFcmToken(token)) {
+    return jsonResponse(request, env, { error: 'Invalid FCM token format' }, 400);
   }
 
   const config = await getMinimalFirestoreAuth(env);
@@ -108,6 +161,11 @@ export async function handleRegisterPushToken(request, env) {
   const status = fields.status?.stringValue || '';
   const expiresAtStr = fields.expiresAt?.timestampValue || '';
   const challengeUserId = fields.userId?.stringValue || '';
+  const challengeUpdateTime = typeof doc?.updateTime === 'string' ? doc.updateTime : '';
+
+  if (!challengeUpdateTime) {
+    return jsonResponse(request, env, { error: 'Challenge metadata missing' }, 500);
+  }
 
   if (status === 'used') {
     console.warn(`Audit: Attempt to reuse used challenge '${challengeId}' by user ${authResult.user}`);
@@ -132,6 +190,7 @@ export async function handleRegisterPushToken(request, env) {
         },
       },
       updateMask: { fieldPaths: ['status'] },
+      currentDocument: { updateTime: challengeUpdateTime },
     },
     {
       transform: {
@@ -155,6 +214,10 @@ export async function handleRegisterPushToken(request, env) {
   try {
     await commitWrites(config.projectId, config.accessToken, writes);
   } catch (err) {
+    const detail = err instanceof Error ? err.message : String(err);
+    if (detail.includes('FAILED_PRECONDITION') || detail.includes('ABORTED')) {
+      return jsonResponse(request, env, { error: 'Challenge already used or changed' }, 409);
+    }
     console.error('Failed to register token:', err);
     return jsonResponse(request, env, { error: 'Database write error' }, 500);
   }

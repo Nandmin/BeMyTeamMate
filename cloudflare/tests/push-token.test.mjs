@@ -40,6 +40,8 @@ async function withMockedFetch(queue, fn) {
 function buildTestEnv(privateKeyPem) {
   return {
     ADMIN_SECRET: 'super-secret',
+    ALLOW_PUSH_ADMIN_BYPASS: 'true',
+    ALLOW_RATE_LIMIT_BYPASS: 'true',
     FCM_PROJECT_ID: 'demo-project',
     FCM_CLIENT_EMAIL: 'worker@demo-project.iam.gserviceaccount.com',
     FCM_PRIVATE_KEY: privateKeyPem,
@@ -103,6 +105,7 @@ test('handleRegisterPushToken validates challenge and commits writes', async () 
   const expiresAt = new Date(Date.now() + 5 * 60 * 1000).toISOString();
   const challengeDoc = {
     name: `projects/${env.FCM_PROJECT_ID}/databases/(default)/documents/pushChallenges/${challengeId}`,
+    updateTime: new Date().toISOString(),
     fields: {
       status: { stringValue: 'issued' },
       expiresAt: { timestampValue: expiresAt },

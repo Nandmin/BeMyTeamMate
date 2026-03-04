@@ -9,6 +9,10 @@ id = "bdbaa1ee442f4b75b490f9dce8a8d162"
 
 [vars]
 FIREBASE_PROJECT_NUMBER = "592557549877"
+# Keep limiter strictly enabled in deployed environments.
+ALLOW_RATE_LIMIT_BYPASS = "false"
+# Allow admin-secret auth on push-token endpoints only for local/test debugging.
+ALLOW_PUSH_ADMIN_BYPASS = "false"
 # Set in Cloudflare as secrets instead of here:
 # FCM_PROJECT_ID, FCM_CLIENT_EMAIL, FCM_PRIVATE_KEY
 

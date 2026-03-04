@@ -4,12 +4,14 @@
   Referrer-Policy: strict-origin-when-cross-origin
   Permissions-Policy: geolocation=(), microphone=(), camera=()
 
+/runtime-config.js
+  Cache-Control: no-store, no-cache, must-revalidate, max-age=0
 /ngsw.json
-  Cache-Control: no-cache
+  Cache-Control: no-store, no-cache, must-revalidate, max-age=0
 /ngsw-worker.js
-  Cache-Control: no-cache
+  Cache-Control: no-store, no-cache, must-revalidate, max-age=0
 /firebase-messaging-sw.js
-  Cache-Control: no-cache
+  Cache-Control: no-store, no-cache, must-revalidate, max-age=0
 /mobile-config.json
   Content-Type: application/json
   Cache-Control: max-age=300

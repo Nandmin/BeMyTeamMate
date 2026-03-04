@@ -16,8 +16,20 @@ export class RateLimiter {
     this.limits = limits;
   }
 
-  async checkGlobal(env, scope = 'all') {
+  getKvBinding(env) {
     const kv = env?.RATE_LIMIT_KV;
+    if (kv) return kv;
+
+    if (env?.ENVIRONMENT === 'production') {
+      throw new Error('RATE_LIMIT_KV not configured!');
+    }
+
+    console.warn('Rate limits disabled (dev mode)');
+    return null;
+  }
+
+  async checkGlobal(env, scope = 'all') {
+    const kv = this.getKvBinding(env);
     if (!kv) return true;
 
     const now = Math.floor(Date.now() / 1000);
@@ -41,7 +53,7 @@ export class RateLimiter {
   }
 
   async check(request, env, userId) {
-    const kv = env?.RATE_LIMIT_KV;
+    const kv = this.getKvBinding(env);
     if (!kv) return true;
 
     const ip = this.getClientIp(request) || 'unknown';
@@ -92,7 +104,7 @@ export class RateLimiter {
   }
 
   async checkContact(request, env) {
-    const kv = env?.RATE_LIMIT_KV;
+    const kv = this.getKvBinding(env);
     if (!kv) return true;
 
     const ip = this.getClientIp(request) || 'unknown';

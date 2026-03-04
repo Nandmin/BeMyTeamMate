@@ -218,8 +218,9 @@ export class CreateEventPage implements OnInit {
   private cachedMapUrl: SafeResourceUrl | null = null;
   private cachedLocation: string = '';
   private cachedZoom: number = 15;
+  private readonly mapLocationPattern = /^[\p{L}\p{N}\s,.\-]+$/u;
 
-  getMapUrl(): SafeResourceUrl {
+  getMapUrl(): SafeResourceUrl | null {
     // Cache the URL to avoid regenerating on every change detection cycle
     if (
       this.cachedLocation === this.eventData.location &&
@@ -229,14 +230,31 @@ export class CreateEventPage implements OnInit {
       return this.cachedMapUrl;
     }
 
-    const encodedLocation = encodeURIComponent(this.eventData.location);
-    // Google Maps embed with parameters for better interactivity
-    const url = `https://maps.google.com/maps?q=${encodedLocation}&z=${this.mapZoom}&hl=hu&output=embed`;
+    const loc = this.eventData.location?.trim();
+    if (!this.isValidMapLocation(loc)) {
+      this.cachedMapUrl = null;
+      return null;
+    }
 
-    this.cachedLocation = this.eventData.location;
-    this.cachedZoom = this.mapZoom;
-    this.cachedMapUrl = this.sanitizer.bypassSecurityTrustResourceUrl(url);
+    const safeZoom = Number.isInteger(this.mapZoom) ? Math.min(18, Math.max(3, this.mapZoom)) : 15;
+    const mapUrl = new URL('https://maps.google.com/maps');
+    mapUrl.search = new URLSearchParams({
+      q: loc,
+      z: String(safeZoom),
+      hl: 'hu',
+      output: 'embed',
+    }).toString();
+
+    this.cachedLocation = loc;
+    this.cachedZoom = safeZoom;
+    this.cachedMapUrl = this.sanitizer.bypassSecurityTrustResourceUrl(mapUrl.toString());
     return this.cachedMapUrl;
+  }
+
+  private isValidMapLocation(loc: string | undefined): loc is string {
+    if (!loc) return false;
+    if (loc.length < 3 || loc.length > 200) return false;
+    return this.mapLocationPattern.test(loc);
   }
 
   zoomIn() {

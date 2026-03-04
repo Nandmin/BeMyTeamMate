@@ -12,6 +12,7 @@
     "prewatch": "npm run sync:app-version && npm run sync:runtime-config",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
+    "test:worker": "node --test --test-concurrency=1 cloudflare/tests/*.test.mjs",
     "deploy:worker": "npx wrangler@latest deploy --config cloudflare/wrangler.toml",
     "deploy:worker:dry": "npx wrangler@latest deploy --config cloudflare/wrangler.toml --dry-run",
     "migrate:group-members": "node scripts/migrations/migrate-group-members.js",

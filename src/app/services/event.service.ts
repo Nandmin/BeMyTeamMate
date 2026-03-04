@@ -495,7 +495,7 @@ export class EventService {
     if (authToken) headers['Authorization'] = `Bearer ${authToken}`;
     if (appCheckToken) headers['X-Firebase-AppCheck'] = appCheckToken;
 
-    const response = await fetch(`${workerBaseUrl}/mvp-cron-run-group`, {
+    const response = await fetch(`${workerBaseUrl}/mvp-group-finalize`, {
       method: 'POST',
       headers,
       body: JSON.stringify({
@@ -911,4 +911,3 @@ export class EventService {
     );
   }
 }
-

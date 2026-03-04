@@ -295,60 +295,7 @@ export default {
       return handleFinalizeMatchResults(request, env);
     }
 
-    if (url.pathname === '/mvp-cron-run-now') {
-      const authResult = await verifyAuth(request, env);
-      if (!authResult.authorized) {
-        return jsonResponse(request, env, { error: 'Unauthorized', detail: authResult.error }, 401);
-      }
-
-      if (ctx?.waitUntil) {
-        ctx.waitUntil(handleMvpCron(env, { force: true, trigger: 'manual' }));
-        return jsonResponse(request, env, { ok: true, queued: true }, 202);
-      }
-
-      await handleMvpCron(env, { force: true, trigger: 'manual' });
-      return jsonResponse(request, env, { ok: true, queued: false }, 200);
-    }
-
-    if (url.pathname === '/mvp-cron-list-group') {
-      const authResult = await verifyAuth(request, env);
-      if (!authResult.authorized) {
-        return jsonResponse(request, env, { error: 'Unauthorized', detail: authResult.error }, 401);
-      }
-
-      const body = await readJsonBody(request);
-      if (!body.ok) return jsonResponse(request, env, { error: body.error }, 400);
-      const groupId = typeof body.data?.groupId === 'string' ? body.data.groupId.trim() : '';
-      if (!groupId) return jsonResponse(request, env, { error: 'Missing groupId' }, 400);
-
-      const config = await getFirestoreAuth(env);
-      if (!config.ok) return jsonResponse(request, env, { error: config.error }, 500);
-
-      const now = new Date();
-      const cutoffIso = now.toISOString();
-      const events = await fetchEligibleMvpEvents(
-        config.projectId,
-        config.accessToken,
-        groupId,
-        cutoffIso
-      );
-      const legacyEvents = await fetchLegacyMvpEvents(
-        config.projectId,
-        config.accessToken,
-        groupId
-      );
-      const mergedEvents = mergeEventDocs(events, legacyEvents);
-      const items = mergedEvents.map((doc) =>
-        summarizeMvpEventDoc(doc, now)
-      );
-      const eligible = items.filter((item) => item.eligible);
-      return jsonResponse(request, env,
-        { ok: true, groupId, total: items.length, eligible: eligible.length, items },
-        200
-      );
-    }
-
-    if (url.pathname === '/mvp-cron-run-group') {
+    if (url.pathname === '/mvp-group-finalize') {
       const authResult = await verifyAuth(request, env);
       if (!authResult.authorized) {
         return jsonResponse(request, env, { error: 'Unauthorized', detail: authResult.error }, 401);
@@ -373,16 +320,38 @@ export default {
       const dryRun = Boolean(payload.dryRun);
       const eventId = typeof payload.eventId === 'string' ? payload.eventId.trim() : '';
       if (!groupId) return jsonResponse(request, env, { error: 'Missing groupId' }, 400);
+      if (!isValidFirestoreDocId(groupId)) {
+        return jsonResponse(request, env, { error: 'Invalid groupId format' }, 400);
+      }
+      if (eventId && !isValidFirestoreDocId(eventId)) {
+        return jsonResponse(request, env, { error: 'Invalid eventId format' }, 400);
+      }
 
       const config = await getFirestoreAuth(env);
       if (!config.ok) return jsonResponse(request, env, { error: config.error }, 500);
+
+      const [isSiteAdmin, isMember] = await Promise.all([
+        isUserSiteAdmin(config.projectId, config.accessToken, authResult.user),
+        isUserGroupMember(config.projectId, config.accessToken, groupId, authResult.user),
+      ]);
+      if (!isSiteAdmin && !isMember) {
+        return jsonResponse(
+          request,
+          env,
+          { error: 'Forbidden: group membership required' },
+          403
+        );
+      }
+
       const allowed = await canFinalizeGroupMatchResult(
         config.projectId,
         config.accessToken,
         groupId,
         authResult.user
       );
-      if (!allowed) return jsonResponse(request, env, { error: 'Forbidden' }, 403);
+      if (!allowed) {
+        return jsonResponse(request, env, { error: 'Forbidden: group admin required' }, 403);
+      }
 
       const now = new Date();
       const cutoffIso = now.toISOString();
@@ -431,10 +400,140 @@ export default {
       );
     }
 
-    if (url.pathname === '/mvp-cron-get-event') {
-      const authResult = await verifyAuth(request, env);
-      if (!authResult.authorized) {
-        return jsonResponse(request, env, { error: 'Unauthorized', detail: authResult.error }, 401);
+    if (url.pathname === '/mvp-cron-run-now' || url.pathname === '/internal/mvp-cron/run-now') {
+      const internalAuth = verifyInternalAdminSecret(request, env);
+      if (!internalAuth.authorized) {
+        return jsonResponse(request, env, { error: 'Unauthorized', detail: internalAuth.error }, 401);
+      }
+
+      if (ctx?.waitUntil) {
+        ctx.waitUntil(handleMvpCron(env, { force: true, trigger: 'manual' }));
+        return jsonResponse(request, env, { ok: true, queued: true }, 202);
+      }
+
+      await handleMvpCron(env, { force: true, trigger: 'manual' });
+      return jsonResponse(request, env, { ok: true, queued: false }, 200);
+    }
+
+    if (url.pathname === '/mvp-cron-list-group' || url.pathname === '/internal/mvp-cron/list-group') {
+      const internalAuth = verifyInternalAdminSecret(request, env);
+      if (!internalAuth.authorized) {
+        return jsonResponse(request, env, { error: 'Unauthorized', detail: internalAuth.error }, 401);
+      }
+
+      const body = await readJsonBody(request);
+      if (!body.ok) return jsonResponse(request, env, { error: body.error }, 400);
+      const groupId = typeof body.data?.groupId === 'string' ? body.data.groupId.trim() : '';
+      if (!groupId) return jsonResponse(request, env, { error: 'Missing groupId' }, 400);
+      if (!isValidFirestoreDocId(groupId)) {
+        return jsonResponse(request, env, { error: 'Invalid groupId format' }, 400);
+      }
+
+      const config = await getFirestoreAuth(env);
+      if (!config.ok) return jsonResponse(request, env, { error: config.error }, 500);
+
+      const now = new Date();
+      const cutoffIso = now.toISOString();
+      const events = await fetchEligibleMvpEvents(
+        config.projectId,
+        config.accessToken,
+        groupId,
+        cutoffIso
+      );
+      const legacyEvents = await fetchLegacyMvpEvents(
+        config.projectId,
+        config.accessToken,
+        groupId
+      );
+      const mergedEvents = mergeEventDocs(events, legacyEvents);
+      const items = mergedEvents.map((doc) =>
+        summarizeMvpEventDoc(doc, now)
+      );
+      const eligible = items.filter((item) => item.eligible);
+      return jsonResponse(request, env,
+        { ok: true, groupId, total: items.length, eligible: eligible.length, items },
+        200
+      );
+    }
+
+    if (url.pathname === '/mvp-cron-run-group' || url.pathname === '/internal/mvp-cron/run-group') {
+      const internalAuth = verifyInternalAdminSecret(request, env);
+      if (!internalAuth.authorized) {
+        return jsonResponse(request, env, { error: 'Unauthorized', detail: internalAuth.error }, 401);
+      }
+
+      const body = await readJsonBody(request);
+      if (!body.ok) return jsonResponse(request, env, { error: body.error }, 400);
+      const payloadRoot = body.data || {};
+      const payload =
+        payloadRoot && typeof payloadRoot.data === 'object' && payloadRoot.data !== null
+          ? payloadRoot.data
+          : payloadRoot;
+      const groupId = typeof payload.groupId === 'string' ? payload.groupId.trim() : '';
+      const dryRun = Boolean(payload.dryRun);
+      const eventId = typeof payload.eventId === 'string' ? payload.eventId.trim() : '';
+      if (!groupId) return jsonResponse(request, env, { error: 'Missing groupId' }, 400);
+      if (!isValidFirestoreDocId(groupId)) {
+        return jsonResponse(request, env, { error: 'Invalid groupId format' }, 400);
+      }
+      if (eventId && !isValidFirestoreDocId(eventId)) {
+        return jsonResponse(request, env, { error: 'Invalid eventId format' }, 400);
+      }
+
+      const config = await getFirestoreAuth(env);
+      if (!config.ok) return jsonResponse(request, env, { error: config.error }, 500);
+
+      const now = new Date();
+      const cutoffIso = now.toISOString();
+      const events = await fetchEligibleMvpEvents(
+        config.projectId,
+        config.accessToken,
+        groupId,
+        cutoffIso
+      );
+      const legacyEvents = await fetchLegacyMvpEvents(
+        config.projectId,
+        config.accessToken,
+        groupId
+      );
+      const mergedEvents = mergeEventDocs(events, legacyEvents);
+      const mergedCount = mergedEvents.length;
+      let total = mergedCount;
+      let eligible = mergedEvents.filter((doc) => summarizeMvpEventDoc(doc, now).eligible);
+      if (eligible.length === 0 && mergedEvents.length === 0) {
+        const allEvents = await listGroupEvents(config.projectId, config.accessToken, groupId);
+        const fallbackEvents = allEvents.filter(
+          (doc) => doc?.fields?.mvpVotingEnabled?.booleanValue
+        );
+        total = fallbackEvents.length;
+        eligible = fallbackEvents.filter((doc) => summarizeMvpEventDoc(doc, now).eligible);
+      }
+      if (eventId) {
+        eligible = eligible.filter((doc) => doc?.name?.split('/').pop() === eventId);
+      }
+      if (!dryRun) {
+        for (const eventDoc of eligible) {
+          await finalizeMvpEvent(config.projectId, config.accessToken, groupId, eventDoc);
+        }
+      }
+
+      return jsonResponse(request, env,
+        {
+          ok: true,
+          groupId,
+          eventId: eventId || null,
+          dryRun,
+          total,
+          eligible: eligible.length,
+        },
+        200
+      );
+    }
+
+    if (url.pathname === '/mvp-cron-get-event' || url.pathname === '/internal/mvp-cron/get-event') {
+      const internalAuth = verifyInternalAdminSecret(request, env);
+      if (!internalAuth.authorized) {
+        return jsonResponse(request, env, { error: 'Unauthorized', detail: internalAuth.error }, 401);
       }
 
       const body = await readJsonBody(request);
@@ -444,13 +543,16 @@ export default {
       if (!groupId || !eventId) {
         return jsonResponse(request, env, { error: 'Missing groupId or eventId' }, 400);
       }
+      if (!isValidFirestoreDocId(groupId) || !isValidFirestoreDocId(eventId)) {
+        return jsonResponse(request, env, { error: 'Invalid groupId or eventId format' }, 400);
+      }
 
       const config = await getFirestoreAuth(env);
       if (!config.ok) return jsonResponse(request, env, { error: config.error }, 500);
 
       const docName = `projects/${config.projectId}/databases/(default)/documents/groups/${groupId}/events/${eventId}`;
-      const url = `https://firestore.googleapis.com/v1/${docName}`;
-      const response = await fetch(url, {
+      const eventUrl = `https://firestore.googleapis.com/v1/${docName}`;
+      const response = await fetch(eventUrl, {
         headers: { Authorization: `Bearer ${config.accessToken}` },
       });
       if (!response.ok) {
@@ -460,13 +562,13 @@ export default {
 
       const doc = await response.json();
       const summary = summarizeMvpEventDoc(doc, new Date());
-      return jsonResponse(request, env, { ok: true, groupId, eventId, summary, raw: doc }, 200);
+      return jsonResponse(request, env, { ok: true, groupId, eventId, summary }, 200);
     }
 
-    if (url.pathname === '/mvp-cron-list-events') {
-      const authResult = await verifyAuth(request, env);
-      if (!authResult.authorized) {
-        return jsonResponse(request, env, { error: 'Unauthorized', detail: authResult.error }, 401);
+    if (url.pathname === '/mvp-cron-list-events' || url.pathname === '/internal/mvp-cron/list-events') {
+      const internalAuth = verifyInternalAdminSecret(request, env);
+      if (!internalAuth.authorized) {
+        return jsonResponse(request, env, { error: 'Unauthorized', detail: internalAuth.error }, 401);
       }
 
       const body = await readJsonBody(request);
@@ -476,6 +578,9 @@ export default {
       const pageSize = Number.isFinite(pageSizeRaw) ? Math.min(Math.max(pageSizeRaw, 1), 200) : 50;
       const pageToken = typeof body.data?.pageToken === 'string' ? body.data.pageToken.trim() : '';
       if (!groupId) return jsonResponse(request, env, { error: 'Missing groupId' }, 400);
+      if (!isValidFirestoreDocId(groupId)) {
+        return jsonResponse(request, env, { error: 'Invalid groupId format' }, 400);
+      }
 
       const config = await getFirestoreAuth(env);
       if (!config.ok) return jsonResponse(request, env, { error: config.error }, 500);
@@ -510,16 +615,19 @@ export default {
       );
     }
 
-    if (url.pathname === '/mvp-cron-normalize-group') {
-      const authResult = await verifyAuth(request, env);
-      if (!authResult.authorized) {
-        return jsonResponse(request, env, { error: 'Unauthorized', detail: authResult.error }, 401);
+    if (url.pathname === '/mvp-cron-normalize-group' || url.pathname === '/internal/mvp-cron/normalize-group') {
+      const internalAuth = verifyInternalAdminSecret(request, env);
+      if (!internalAuth.authorized) {
+        return jsonResponse(request, env, { error: 'Unauthorized', detail: internalAuth.error }, 401);
       }
 
       const body = await readJsonBody(request);
       if (!body.ok) return jsonResponse(request, env, { error: body.error }, 400);
       const groupId = typeof body.data?.groupId === 'string' ? body.data.groupId.trim() : '';
       if (!groupId) return jsonResponse(request, env, { error: 'Missing groupId' }, 400);
+      if (!isValidFirestoreDocId(groupId)) {
+        return jsonResponse(request, env, { error: 'Invalid groupId format' }, 400);
+      }
 
       const config = await getFirestoreAuth(env);
       if (!config.ok) return jsonResponse(request, env, { error: config.error }, 500);
@@ -534,16 +642,19 @@ export default {
       return jsonResponse(request, env, { ok: true, groupId, ...result }, 200);
     }
 
-    if (url.pathname === '/mvp-cron-report-group') {
-      const authResult = await verifyAuth(request, env);
-      if (!authResult.authorized) {
-        return jsonResponse(request, env, { error: 'Unauthorized', detail: authResult.error }, 401);
+    if (url.pathname === '/mvp-cron-report-group' || url.pathname === '/internal/mvp-cron/report-group') {
+      const internalAuth = verifyInternalAdminSecret(request, env);
+      if (!internalAuth.authorized) {
+        return jsonResponse(request, env, { error: 'Unauthorized', detail: internalAuth.error }, 401);
       }
 
       const body = await readJsonBody(request);
       if (!body.ok) return jsonResponse(request, env, { error: body.error }, 400);
       const groupId = typeof body.data?.groupId === 'string' ? body.data.groupId.trim() : '';
       if (!groupId) return jsonResponse(request, env, { error: 'Missing groupId' }, 400);
+      if (!isValidFirestoreDocId(groupId)) {
+        return jsonResponse(request, env, { error: 'Invalid groupId format' }, 400);
+      }
 
       const config = await getFirestoreAuth(env);
       if (!config.ok) return jsonResponse(request, env, { error: config.error }, 500);
@@ -828,19 +939,7 @@ async function canFinalizeGroupMatchResult(projectId, accessToken, groupId, user
   const ownerId = groupDoc?.fields?.ownerId?.stringValue || '';
   if (ownerId && ownerId === userId) return true;
 
-  let memberDoc = await getFirestoreDocumentByUrl(
-    getGroupMemberDocUrl(projectId, groupId, userId),
-    accessToken
-  );
-  if (!memberDoc) {
-    const memberDocName = await findGroupMemberDoc(projectId, accessToken, groupId, userId);
-    if (memberDocName) {
-      memberDoc = await getFirestoreDocumentByUrl(
-        `https://firestore.googleapis.com/v1/${memberDocName}`,
-        accessToken
-      );
-    }
-  }
+  const memberDoc = await getGroupMemberDocument(projectId, accessToken, groupId, userId);
   if (!memberDoc) return false;
   return Boolean(memberDoc?.fields?.isAdmin?.booleanValue);
 }
@@ -1504,16 +1603,28 @@ async function isUserSiteAdmin(projectId, accessToken, userId) {
   return role === 'siteadmin';
 }
 
+async function getGroupMemberDocument(projectId, accessToken, groupId, userId) {
+  if (!groupId || !userId) return null;
+
+  let memberDoc = await getFirestoreDocumentByUrl(
+    getGroupMemberDocUrl(projectId, groupId, userId),
+    accessToken
+  );
+  if (memberDoc) return memberDoc;
+
+  const memberDocName = await findGroupMemberDoc(projectId, accessToken, groupId, userId);
+  if (!memberDocName) return null;
+
+  memberDoc = await getFirestoreDocumentByUrl(
+    `https://firestore.googleapis.com/v1/${memberDocName}`,
+    accessToken
+  );
+  return memberDoc || null;
+}
+
 async function isUserGroupMember(projectId, accessToken, groupId, userId) {
-  const response = await fetch(getGroupMemberDocUrl(projectId, groupId, userId), {
-    headers: { Authorization: `Bearer ${accessToken}` },
-  });
-  if (response.status === 404) return false;
-  if (!response.ok) {
-    const detail = await response.text();
-    throw new Error(`Group member lookup failed (${groupId}/${userId}): ${response.status} ${detail}`);
-  }
-  return true;
+  const memberDoc = await getGroupMemberDocument(projectId, accessToken, groupId, userId);
+  return Boolean(memberDoc);
 }
 
 async function canSendGroupNotification(projectId, accessToken, groupId, userId, type) {
@@ -1626,6 +1737,21 @@ function isRelativeAppLink(link) {
   if (!value.startsWith('/')) return false;
   if (value.startsWith('//')) return false;
   return !/^[a-zA-Z][a-zA-Z\d+.-]*:/.test(value);
+}
+
+function verifyInternalAdminSecret(request, env) {
+  const configuredSecret = typeof env.ADMIN_SECRET === 'string' ? env.ADMIN_SECRET.trim() : '';
+  if (!configuredSecret) {
+    return { authorized: false, error: 'Missing ADMIN_SECRET configuration' };
+  }
+
+  const headerSecret = request.headers.get('X-Admin-Secret');
+  const receivedSecret = typeof headerSecret === 'string' ? headerSecret.trim() : '';
+  if (!receivedSecret || receivedSecret !== configuredSecret) {
+    return { authorized: false, error: 'Internal admin secret required' };
+  }
+
+  return { authorized: true };
 }
 
 /**

@@ -35,7 +35,7 @@
       <button
         type="button"
         (click)="toggleParticipants()"
-        class="flex w-full items-center justify-between rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-left">
+        class="flex w-full items-center justify-between rounded-2xl border border-white/10 bg-white/5 px-3 py-2 text-left">
         <div class="flex items-center gap-2">
           <span class="material-symbols-outlined text-[16px] text-primary">groups</span>
           <p class="text-[11px] font-black uppercase tracking-[0.16em] text-white">Résztvevők</p>
@@ -54,7 +54,7 @@
 
       @if (isParticipantsOpen) {
       <div class="mt-2 space-y-2">
-        <div class="rounded-xl border border-primary/20 bg-primary/5 p-2">
+        <div class="rounded-2xl border border-primary/20 bg-primary/5 p-2">
           <div class="mb-1.5 flex items-center justify-between">
             <p class="text-[10px] font-black uppercase tracking-[0.12em] text-primary">Jelentkezők</p>
             <span class="text-[10px] font-bold text-primary">{{ attendingMembers.length }} fő</span>
@@ -72,7 +72,7 @@
           </div>
         </div>
 
-        <div class="rounded-xl border border-white/10 bg-white/5 p-2">
+        <div class="rounded-2xl border border-white/10 bg-white/5 p-2">
           <div class="mb-1.5 flex items-center justify-between">
             <div class="flex items-center gap-1.5">
               <span class="material-symbols-outlined text-[13px] text-gray-300">hourglass_top</span>
@@ -83,7 +83,7 @@
           <div class="space-y-1">
             @for (member of notRespondingMembers; track member.userId) {
             <a [routerLink]="['/profile', member.userId]"
-              class="flex items-center rounded-lg border border-white/10 bg-white/5 px-2.5 py-1.5">
+              class="flex items-center rounded-2xl border border-white/10 bg-white/5 px-2.5 py-1.5">
               <span class="truncate text-xs font-bold text-white/90">{{ member.name }}</span>
             </a>
             } @empty {

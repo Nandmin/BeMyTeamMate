@@ -9,7 +9,7 @@ import { initializeApp, provideFirebaseApp } from '@angular/fire/app';
 import { provideAppCheck } from '@angular/fire/app-check';
 import { getAuth, provideAuth } from '@angular/fire/auth';
 import { getFirestore, provideFirestore } from '@angular/fire/firestore';
-import { enableIndexedDbPersistence } from 'firebase/firestore';
+import { initializeFirestore, memoryLocalCache, persistentLocalCache } from 'firebase/firestore';
 import { environment } from '../environments/environment';
 
 import { routes } from './app.routes';
@@ -84,6 +84,11 @@ const getLocalAppCheckDebugToken = (): string | true | undefined => {
   return undefined;
 };
 
+const isFirestoreAlreadyInitializedError = (error: unknown): boolean => {
+  if (!(error instanceof Error) || typeof error.message !== 'string') return false;
+  return /already been initialized|already started|already exists/i.test(error.message);
+};
+
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
@@ -113,11 +118,30 @@ export const appConfig: ApplicationConfig = {
       : []),
     provideAuth(() => getAuth()),
     provideFirestore(() => {
-      const firestore = getFirestore();
-      enableIndexedDbPersistence(firestore).catch((err) => {
-        console.warn('Firestore persistence disabled:', err);
-      });
-      return firestore;
+      const app = getApp();
+
+      try {
+        return initializeFirestore(app, {
+          localCache: persistentLocalCache(),
+        });
+      } catch (error) {
+        if (isFirestoreAlreadyInitializedError(error)) {
+          return getFirestore(app);
+        }
+        console.warn('Firestore persistent cache unavailable, using memory cache:', error);
+      }
+
+      try {
+        return initializeFirestore(app, {
+          localCache: memoryLocalCache(),
+        });
+      } catch (fallbackError) {
+        if (isFirestoreAlreadyInitializedError(fallbackError)) {
+          return getFirestore(app);
+        }
+        console.warn('Firestore memory cache init failed, using default Firestore instance:', fallbackError);
+        return getFirestore(app);
+      }
     }),
     provideServiceWorker('firebase-messaging-sw.js', {
       enabled: true, // Bekapcsolva fejlesztés alatt is a teszteléshez

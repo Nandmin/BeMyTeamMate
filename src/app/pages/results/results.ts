@@ -24,6 +24,7 @@ export class Results {
   private destroyRef = inject(DestroyRef);
   private document = inject(DOCUMENT);
   private chartAnimationFrame: number | null = null;
+  private readonly mobileBreakpoint = 640;
 
   user = toSignal(this.authService.user$, { initialValue: null });
   fullUser = this.authService.fullCurrentUser;
@@ -80,7 +81,7 @@ export class Results {
     if (this.selectedTeam() !== 'all') count += 1;
     return count;
   });
-  recentTableOpen = signal(true);
+  recentTableOpen = signal(!this.isMobileViewport());
   pageSizeOptions = [10, 20, 30, 50] as const;
   pageSize = signal<number>(10);
   currentPage = signal<number>(1);
@@ -255,9 +256,18 @@ export class Results {
 
   @HostListener('window:resize')
   onWindowResize() {
-    if (typeof window !== 'undefined' && window.innerWidth >= 640 && this.mobileFiltersOpen()) {
+    if (
+      typeof window !== 'undefined' &&
+      window.innerWidth >= this.mobileBreakpoint &&
+      this.mobileFiltersOpen()
+    ) {
       this.closeMobileFilters();
     }
+  }
+
+  private isMobileViewport(): boolean {
+    if (typeof window === 'undefined') return false;
+    return window.innerWidth < this.mobileBreakpoint;
   }
 
   toggleRecentTable(event?: Event) {

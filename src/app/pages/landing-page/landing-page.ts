@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 import { RouterLink } from '@angular/router';
@@ -13,7 +13,7 @@ import { AuthService } from '../../services/auth.service';
   templateUrl: './landing-page.html',
   styleUrl: './landing-page.scss',
 })
-export class LandingPage {
+export class LandingPage implements OnInit, OnDestroy {
   protected authService = inject(AuthService);
 
   constructor(
@@ -22,6 +22,16 @@ export class LandingPage {
     @Inject(DOCUMENT) private readonly document: Document,
   ) {
     this.setSeoMeta();
+  }
+
+  ngOnInit(): void {
+    this.document.documentElement.classList.add('landing-theme');
+    this.document.body?.classList.add('landing-theme');
+  }
+
+  ngOnDestroy(): void {
+    this.document.documentElement.classList.remove('landing-theme');
+    this.document.body?.classList.remove('landing-theme');
   }
 
   scrollToHowItWorks() {
@@ -103,9 +113,9 @@ export class LandingPage {
 
   private setPreloadImage(url: string) {
     if (!this.document?.head) return;
-    let link = this.document.querySelector('link[rel="preload"][as="image"]') as
-      | HTMLLinkElement
-      | null;
+    let link = this.document.querySelector(
+      'link[rel="preload"][as="image"]',
+    ) as HTMLLinkElement | null;
     if (!link) {
       link = this.document.createElement('link');
       link.setAttribute('rel', 'preload');

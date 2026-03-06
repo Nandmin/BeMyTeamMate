@@ -1,4 +1,3 @@
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -63,7 +62,73 @@ html.light .from-dark-accent .text-gray-500 {
   color: #64748b;
 }
 
+html.dark.landing-theme {
+  --bg-primary: #020304;
+  --bg-secondary: #05070b;
+  --bg-accent: #10182a;
+  --bg-card: #0b0f17;
+  --text-primary: #f8fafc;
+  --text-secondary: rgba(226, 232, 240, 0.74);
+  --text-muted: rgba(148, 163, 184, 0.72);
+  --border-color: rgba(129, 140, 248, 0.16);
+  --border-accent: rgba(129, 140, 248, 0.22);
+  --scrollbar-track: #05070b;
+  --scrollbar-thumb: #4f46e5;
+  --scrollbar-thumb-hover: #84cc16;
+}
 
+html.dark.landing-theme .bg-background-dark {
+  background-color: #020304 !important;
+}
+
+html.dark.landing-theme .bg-background-dark\/60 {
+  background-color: rgba(2, 3, 4, 0.6) !important;
+}
+
+html.dark.landing-theme .bg-background-dark\/80 {
+  background-color: rgba(2, 3, 4, 0.8) !important;
+}
+
+html.dark.landing-theme .bg-background-dark\/90 {
+  background-color: rgba(2, 3, 4, 0.9) !important;
+}
+
+html.dark.landing-theme .bg-background-dark\/95 {
+  background-color: rgba(2, 3, 4, 0.95) !important;
+}
+
+html.dark.landing-theme .bg-card-dark {
+  background-color: #0b0f17 !important;
+}
+
+html.dark.landing-theme .bg-card-dark\/60 {
+  background-color: rgba(11, 15, 23, 0.6) !important;
+}
+
+html.dark.landing-theme .bg-card-dark\/80 {
+  background-color: rgba(11, 15, 23, 0.8) !important;
+}
+
+html.dark.landing-theme .bg-dark-accent {
+  background-color: #10182a !important;
+}
+
+html.dark.landing-theme .bg-dark-accent\/50 {
+  background-color: rgba(16, 24, 42, 0.5) !important;
+}
+
+html.dark.landing-theme .border-border-dark {
+  border-color: rgba(129, 140, 248, 0.18) !important;
+}
+
+html.dark.landing-theme .from-dark-accent {
+  --tw-gradient-from: #10182a !important;
+  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to, rgba(16, 24, 42, 0));
+}
+
+html.dark.landing-theme .to-background-dark {
+  --tw-gradient-to: #020304 !important;
+}
 
 /* Global Styles */
 * {
@@ -82,7 +147,9 @@ body {
 body {
   background-color: var(--bg-primary);
   color: var(--text-primary);
-  transition: background-color 0.3s ease, color 0.3s ease;
+  transition:
+    background-color 0.3s ease,
+    color 0.3s ease;
 }
 
 /* Scrollbar Styling */
@@ -175,7 +242,6 @@ body {
 .theme-toggle:hover .icon {
   transform: rotate(15deg);
 }
-
 
 /* Global override for primary buttons to ensure text is always white */
 /* This overrides the light mode text inversion in .from-dark-accent sections */

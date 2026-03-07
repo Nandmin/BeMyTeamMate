@@ -22,8 +22,7 @@
     border: 1px solid rgba(146, 201, 169, 0.2);
     border-radius: 14px;
     background:
-      linear-gradient(180deg, rgba(13, 27, 21, 0.9) 0%, rgba(9, 20, 15, 0.86) 100%);
-    backdrop-filter: blur(10px);
+      linear-gradient(180deg, rgba(13, 27, 21, 0.98) 0%, rgba(9, 20, 15, 0.96) 100%);
     box-shadow: 0 10px 26px rgba(5, 15, 10, 0.35);
   }
 
@@ -411,9 +410,7 @@ circle {
   .results-mobile-empty {
     position: relative;
     isolation: isolate;
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-    box-shadow: 5px 10px 10px -6px rgba(0, 0, 0, 0.75);
+    box-shadow: 0 16px 32px rgba(15, 23, 42, 0.12);
 
     &::before {
       content: '';
@@ -598,12 +595,11 @@ h1, h3 {
   // color: #eafff2;
   color: white;
   background:
-    linear-gradient(135deg, rgba(20, 36, 29, 0.96) 0%, rgba(13, 27, 21, 0.96) 100%);
+    linear-gradient(135deg, #14241d 0%, #0d1b15 100%);
   border: 1px solid rgba(146, 201, 169, 0.24);
   box-shadow:
     0 18px 45px rgba(5, 15, 10, 0.55),
     0 0 0 1px rgba(43, 238, 124, 0.06) inset;
-  backdrop-filter: blur(8px) saturate(120%);
   opacity: 0;
   visibility: hidden;
   pointer-events: none;
@@ -646,7 +642,7 @@ h1, h3 {
 
   .info-tooltip__bubble {
     color: #1f2937;
-    background: linear-gradient(135deg, rgba(248, 250, 252, 0.98) 0%, rgba(241, 245, 249, 0.98) 100%);
+    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
     border-color: rgba(71, 85, 105, 0.18);
     box-shadow:
       0 18px 45px rgba(15, 23, 42, 0.16),

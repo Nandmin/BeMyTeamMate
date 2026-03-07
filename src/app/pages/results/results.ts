@@ -855,7 +855,7 @@ export class Results {
       case 'loss':
         return 'bg-red-500';
       case 'draw':
-        return 'bg-yellow-400';
+        return 'bg-blue-500';
       default:
         return 'bg-gray-500/20';
     }

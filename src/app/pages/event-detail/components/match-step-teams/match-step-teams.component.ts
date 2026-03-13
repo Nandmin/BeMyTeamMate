@@ -4,12 +4,11 @@ import { RouterModule } from '@angular/router';
 import { CdkDragDrop, DragDropModule } from '@angular/cdk/drag-drop';
 import { GroupMember } from '../../../../services/group.service';
 import { SportEvent } from '../../../../services/event.service';
-import { RoleLabelPipe } from '../../../../pipes/role-label.pipe';
 
 @Component({
   selector: 'app-match-step-teams',
   standalone: true,
-  imports: [CommonModule, RouterModule, DragDropModule, RoleLabelPipe],
+  imports: [CommonModule, RouterModule, DragDropModule],
   templateUrl: './match-step-teams.component.html',
   styleUrl: './match-step-teams.component.scss',
 })

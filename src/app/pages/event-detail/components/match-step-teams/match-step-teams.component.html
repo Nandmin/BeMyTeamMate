@@ -44,7 +44,7 @@
                 type="button"
                 (click)="toggleAverageInfo('A', $event)"
                 class="relative -top-0.5 inline-flex h-4 w-4 items-center justify-center rounded-full border border-primary/60 bg-primary/20 text-[9px] font-black text-primary shadow-[0_0_10px_rgba(34,197,94,0.45)]"
-                aria-label="ELO atlag magyarazat">
+                aria-label="ELO átlag magyarázat">
                 i
               </button>
             </div>
@@ -61,7 +61,7 @@
       </div>
       @for (player of teamA; track player.userId) {
       <div cdkDrag [cdkDragDisabled]="teamsLocked"
-        class="mb-1.5 last:mb-0 rounded-xl border border-white/10 bg-white/5 p-2 flex items-center gap-2">
+        class="mb-1.5 last:mb-0 rounded-2xl border border-white/10 bg-white/5 p-2 flex items-center gap-2">
         <span cdkDragHandle class="material-symbols-outlined text-[15px] text-gray-500">drag_indicator</span>
         <div [routerLink]="['/profile', player.userId]"
           class="h-8 w-8 overflow-hidden rounded-full border border-white/10">
@@ -71,7 +71,8 @@
         <div class="min-w-0 flex-1">
           <p class="truncate text-[13px] font-bold text-white">{{ player.name }}</p>
           <p class="truncate text-[9px] uppercase tracking-widest text-gray-400">
-            {{ player.role | roleLabel }} • Elo: {{ getDisplayedElo(player) }}
+            <!-- {{ player.role | roleLabel }} • Elo: {{ getDisplayedElo(player) }} -->
+            Elo: {{ getDisplayedElo(player) }}
           </p>
         </div>
       </div>
@@ -109,7 +110,7 @@
                 type="button"
                 (click)="toggleAverageInfo('B', $event)"
                 class="relative -top-0.5 inline-flex h-4 w-4 items-center justify-center rounded-full border border-primary/60 bg-primary/20 text-[9px] font-black text-primary shadow-[0_0_10px_rgba(34,197,94,0.45)]"
-                aria-label="ELO atlag magyarazat">
+                aria-label="ELO átlag magyarázat">
                 i
               </button>
             </div>
@@ -126,7 +127,7 @@
       </div>
       @for (player of teamB; track player.userId) {
       <div cdkDrag [cdkDragDisabled]="teamsLocked"
-        class="mb-1.5 last:mb-0 rounded-xl border border-white/10 bg-white/5 p-2 flex items-center gap-2">
+        class="mb-1.5 last:mb-0 rounded-2xl border border-white/10 bg-white/5 p-2 flex items-center gap-2">
         <span cdkDragHandle class="material-symbols-outlined text-[15px] text-gray-500">drag_indicator</span>
         <div [routerLink]="['/profile', player.userId]"
           class="h-8 w-8 overflow-hidden rounded-full border border-white/10">
@@ -136,7 +137,8 @@
         <div class="min-w-0 flex-1">
           <p class="truncate text-[13px] font-bold text-white">{{ player.name }}</p>
           <p class="truncate text-[9px] uppercase tracking-widest text-gray-400">
-            {{ player.role | roleLabel }} • Elo: {{ getDisplayedElo(player) }}
+            <!-- {{ player.role | roleLabel }} • Elo: {{ getDisplayedElo(player) }} -->
+            Elo: {{ getDisplayedElo(player) }}
           </p>
         </div>
       </div>

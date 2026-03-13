@@ -8,19 +8,61 @@
   --record-neon-angle: 0deg;
   position: relative;
   isolation: isolate;
+  background: transparent;
+}
+
+.record-neon-border::before,
+.record-neon-border::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+}
+
+.record-neon-border::before {
+  padding: 2px;
   background: conic-gradient(
     from var(--record-neon-angle),
-    rgba(43, 238, 124, 0.14) 0deg,
-    rgba(43, 238, 124, 0.14) 332deg,
-    rgba(43, 238, 124, 0.98) 346deg,
-    rgba(43, 238, 124, 0.38) 354deg,
-    rgba(43, 238, 124, 0.14) 360deg
+    rgba(43, 238, 124, 0) 0deg,
+    rgba(43, 238, 124, 0) 326deg,
+    rgba(43, 238, 124, 0.18) 336deg,
+    rgba(43, 238, 124, 1) 346deg,
+    rgba(43, 238, 124, 0.68) 356deg,
+    rgba(43, 238, 124, 0) 360deg
   );
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  mask-composite: exclude;
+  animation: record-neon-angle-spin 15s linear infinite;
+}
+
+.record-neon-border::after {
+  inset: -1px;
+  padding: 2px;
+  background: conic-gradient(
+    from var(--record-neon-angle),
+    rgba(43, 238, 124, 0) 0deg,
+    rgba(43, 238, 124, 0) 326deg,
+    rgba(43, 238, 124, 0.1) 336deg,
+    rgba(43, 238, 124, 0.6) 346deg,
+    rgba(43, 238, 124, 0.32) 356deg,
+    rgba(43, 238, 124, 0) 360deg
+  );
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  mask-composite: exclude;
+  filter: blur(4px);
+  opacity: 0.95;
   animation: record-neon-angle-spin 15s linear infinite;
 }
 
 .record-neon-border > * {
   border-radius: inherit;
+  position: relative;
+  z-index: 1;
 }
 
 @keyframes record-neon-angle-spin {
@@ -33,20 +75,34 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .record-neon-border {
+  .record-neon-border::before,
+  .record-neon-border::after {
     animation: none;
   }
 }
 
 :host-context(html.light) {
-  .record-neon-border {
+  .record-neon-border::before {
     background: conic-gradient(
       from var(--record-neon-angle),
-      rgba(71, 85, 105, 0.12) 0deg,
-      rgba(71, 85, 105, 0.12) 334deg,
-      rgba(63, 143, 107, 0.75) 348deg,
-      rgba(63, 143, 107, 0.22) 356deg,
-      rgba(71, 85, 105, 0.12) 360deg
+      rgba(63, 143, 107, 0) 0deg,
+      rgba(63, 143, 107, 0) 326deg,
+      rgba(63, 143, 107, 0.16) 336deg,
+      rgba(63, 143, 107, 0.88) 348deg,
+      rgba(63, 143, 107, 0.4) 358deg,
+      rgba(63, 143, 107, 0) 360deg
+    );
+  }
+
+  .record-neon-border::after {
+    background: conic-gradient(
+      from var(--record-neon-angle),
+      rgba(63, 143, 107, 0) 0deg,
+      rgba(63, 143, 107, 0) 326deg,
+      rgba(63, 143, 107, 0.08) 336deg,
+      rgba(63, 143, 107, 0.42) 348deg,
+      rgba(63, 143, 107, 0.18) 358deg,
+      rgba(63, 143, 107, 0) 360deg
     );
   }
 

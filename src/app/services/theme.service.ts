@@ -79,9 +79,11 @@ export class ThemeService {
       if (theme === 'dark') {
         html.classList.add('dark');
         html.classList.remove('light');
+        html.classList.add('landing-theme');
       } else {
         html.classList.add('light');
         html.classList.remove('dark');
+        html.classList.remove('landing-theme');
       }
     }
   }

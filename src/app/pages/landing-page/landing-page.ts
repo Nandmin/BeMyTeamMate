@@ -1,10 +1,8 @@
-import { Component, inject, OnDestroy, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, inject } from '@angular/core';
+import { CommonModule, DOCUMENT } from '@angular/common';
 
 import { RouterLink } from '@angular/router';
 import { Meta, Title } from '@angular/platform-browser';
-import { DOCUMENT } from '@angular/common';
-import { Inject } from '@angular/core';
 import { AuthService } from '../../services/auth.service';
 
 @Component({
@@ -13,25 +11,15 @@ import { AuthService } from '../../services/auth.service';
   templateUrl: './landing-page.html',
   styleUrl: './landing-page.scss',
 })
-export class LandingPage implements OnInit, OnDestroy {
+export class LandingPage {
   protected authService = inject(AuthService);
+  private readonly document = inject(DOCUMENT);
 
   constructor(
     private readonly title: Title,
     private readonly meta: Meta,
-    @Inject(DOCUMENT) private readonly document: Document,
   ) {
     this.setSeoMeta();
-  }
-
-  ngOnInit(): void {
-    this.document.documentElement.classList.add('landing-theme');
-    this.document.body?.classList.add('landing-theme');
-  }
-
-  ngOnDestroy(): void {
-    this.document.documentElement.classList.remove('landing-theme');
-    this.document.body?.classList.remove('landing-theme');
   }
 
   scrollToHowItWorks() {

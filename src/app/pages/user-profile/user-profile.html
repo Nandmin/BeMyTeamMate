@@ -332,18 +332,18 @@
                 </div>
                 <div class="space-y-6">
                     <!-- Toggle Item 1 -->
-                    <div class="flex items-center justify-between pb-4 border-b border-[#234833]">
-                        <div class="flex gap-4">
+                    <div class="flex flex-col gap-4 pb-4 border-b border-[#234833] sm:flex-row sm:items-center sm:justify-between">
+                        <div class="flex min-w-0 gap-4">
                             <div class="size-10 rounded-full flex items-center justify-center text-primary">
                                 <span class="material-symbols-outlined">notifications_active</span>
                             </div>
-                            <div>
+                            <div class="min-w-0">
                                 <p class="text-white font-medium">Push értesítések</p>
                                 <p class="text-text-secondary text-sm">Csoport eseményekről küldött értesítések.</p>
                             </div>
                         </div>
                         <div
-                            class="relative inline-block w-12 mr-2 align-middle select-none transition duration-200 ease-in">
+                            class="relative inline-block w-12 self-start sm:self-center sm:mr-2 align-middle select-none transition duration-200 ease-in flex-shrink-0">
                             <input
                                 class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer border-[#234833] checked:border-primary transition-all duration-300"
                                 id="toggle1" name="toggle" type="checkbox" [checked]="pushEnabled()"
@@ -376,18 +376,18 @@
                         </div>
                     </div> -->
                     <!-- Toggle Item 3 -->
-                    <div class="flex items-center justify-between">
-                        <div class="flex gap-4">
+                    <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                        <div class="flex min-w-0 gap-4">
                             <div class="size-10 rounded-full flex items-center justify-center text-primary">
                                 <span class="material-symbols-outlined">group_add</span>
                             </div>
-                            <div>
+                            <div class="min-w-0">
                                 <p class="text-white font-medium">Meghívások</p>
                                 <p class="text-text-secondary text-sm">Értesítés új társaság meghívásról.</p>
                             </div>
                         </div>
                         <div
-                            class="relative inline-block w-12 mr-2 align-middle select-none transition duration-200 ease-in">
+                            class="relative inline-block w-12 self-start sm:self-center sm:mr-2 align-middle select-none transition duration-200 ease-in flex-shrink-0">
                             <input checked
                                 class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer border-[#234833] checked:border-primary transition-all duration-300"
                                 id="toggle3" name="toggle" type="checkbox" />
@@ -415,19 +415,19 @@
 
                 <div class="space-y-6">
                     <!-- Cookie Consent Toggle -->
-                    <div class="flex items-center justify-between pb-4 border-b border-[#234833]">
-                        <div class="flex gap-4">
+                    <div class="flex flex-col gap-4 pb-4 border-b border-[#234833] sm:flex-row sm:items-center sm:justify-between">
+                        <div class="flex min-w-0 gap-4">
                             <div class="size-10 rounded-full flex items-center justify-center text-primary">
                                 <span class="material-symbols-outlined">cookie</span>
                             </div>
-                            <div>
+                            <div class="min-w-0">
                                 <p class="text-white font-medium">Analitikai sütik</p>
                                 <p class="text-text-secondary text-sm">Google Analytics alapú látogatottsági mérés
                                     engedélyezése</p>
                             </div>
                         </div>
                         <div
-                            class="relative inline-block w-12 mr-2 align-middle select-none transition duration-200 ease-in">
+                            class="relative inline-block w-12 self-start sm:self-center sm:mr-2 align-middle select-none transition duration-200 ease-in flex-shrink-0">
                             <input
                                 class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer border-[#234833] checked:border-primary transition-all duration-300"
                                 id="toggleCookie" type="checkbox" [checked]="cookieConsentGranted()"
@@ -440,25 +440,25 @@
 
                     <!-- Delete Registration Row -->
                     <div class="flex flex-col gap-3">
-                        <div class="flex items-center justify-between">
-                            <div class="flex gap-4">
+                        <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                            <div class="flex min-w-0 gap-4">
                                 <div class="size-12 rounded-full flex items-center justify-center text-red-500">
                                     <span class="material-symbols-outlined">delete</span>
                                 </div>
-                                <div>
+                                <div class="min-w-0">
                                     <p class="text-white font-medium">Regisztráció törlése</p>
                                     <p class="text-text-secondary text-sm">A fiók törlésének kérelmezése</p>
                                 </div>
                             </div>
                             <button (click)="onDeleteRegistration()"
-                                class="profile-delete-btn ml-4 h-10 px-5 rounded-xl bg-red-600 text-white border border-red-600 hover:bg-red-700 transition-all font-bold text-sm whitespace-nowrap flex items-center justify-center shadow-[0_0_15px_rgba(220,38,38,0.4)] hover:shadow-[0_0_20px_rgba(220,38,38,0.6)] flex-shrink-0">
+                                class="profile-delete-btn h-10 w-full self-start px-5 rounded-xl bg-red-600 text-white border border-red-600 hover:bg-red-700 transition-all font-bold text-sm whitespace-nowrap flex items-center justify-center shadow-[0_0_15px_rgba(220,38,38,0.4)] hover:shadow-[0_0_20px_rgba(220,38,38,0.6)] sm:ml-4 sm:w-auto sm:self-center flex-shrink-0">
                                 Fiók törlése
                             </button>
                         </div>
                         <!-- Turnstile CAPTCHA -->
                         <div class="flex flex-col gap-2">
                             <div
-                                class="turnstile-shell rounded-xl bg-surface-darker/50 p-1 w-full flex justify-center h-[67px] items-center">
+                                class="turnstile-shell rounded-xl bg-surface-darker/50 p-1 w-full flex justify-center h-[67px] items-center overflow-hidden">
                                 <div #turnstileContainer
                                     class="turnstile-host min-h-[65px] w-full min-w-0 md:min-w-[300px] flex items-center justify-center">
                                     <span class="text-xs text-text-secondary animate-pulse block text-center">Captcha

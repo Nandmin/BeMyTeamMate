@@ -29,7 +29,13 @@ export class Results {
   user = toSignal(this.authService.user$, { initialValue: null });
   fullUser = this.authService.fullCurrentUser;
   userGroups = toSignal(this.groupService.getUserGroups(), { initialValue: [] });
-  displayEloChart = signal<EloChartDisplay>({ points: [], path: '', midY: 25 });
+  displayEloChart = signal<EloChartDisplay>({
+    points: [],
+    path: '',
+    areaPath: '',
+    midY: 25,
+    floorY: 48,
+  });
   displayWinLossChart = signal<WinLossDisplay[]>([]);
 
   constructor() {
@@ -546,6 +552,7 @@ export class Results {
     const height = 50;
     const padding = 6;
     const midY = height / 2;
+    const floorY = height - 2;
     const safeMax = Math.max(1, maxAbs);
     const scale = (height / 2 - padding) / safeMax;
 
@@ -556,7 +563,15 @@ export class Results {
       return { ...point, y };
     });
 
-    return { points: mapped, path: this.buildSmoothPath(mapped), midY };
+    const path = this.buildSmoothPath(mapped);
+
+    return {
+      points: mapped,
+      path,
+      areaPath: this.buildAreaPath(mapped, floorY),
+      midY,
+      floorY,
+    };
   }
 
   private buildWinLossChart(
@@ -611,6 +626,16 @@ export class Results {
     }
 
     return d.join(' ');
+  }
+
+  private buildAreaPath(points: Pick<EloChartPoint, 'x' | 'y'>[], floorY: number): string {
+    if (points.length === 0) return '';
+    const linePath = this.buildSmoothPath(points);
+    const lastPoint = points[points.length - 1];
+    const firstPoint = points[0];
+    return `${linePath} L${lastPoint.x.toFixed(2)},${floorY.toFixed(2)} L${firstPoint.x.toFixed(
+      2
+    )},${floorY.toFixed(2)} Z`;
   }
 
   private prefersReducedMotion(): boolean {
@@ -940,7 +965,9 @@ interface EloChartPoint {
 interface EloChartDisplay {
   points: EloChartPoint[];
   path: string;
+  areaPath: string;
   midY: number;
+  floorY: number;
 }
 
 interface WinLossDisplay {

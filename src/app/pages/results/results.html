@@ -340,10 +340,26 @@
         <div
           class="relative flex-none w-full h-36 sm:h-56 min-h-[136px] sm:min-h-[224px] mt-3 sm:mt-4 flex flex-col results-chart">
           <svg class="w-full flex-1 overflow-hidden" preserveAspectRatio="none" viewBox="0 0 100 50">
-            <path [attr.d]="displayEloChart().path" class="elo-line" pathLength="1" fill="none" stroke="#2bee7c"
-              stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path>
+            <defs>
+              <linearGradient id="eloAreaGradient" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#2bee7c" stop-opacity="0.22"></stop>
+                <stop offset="60%" stop-color="#2bee7c" stop-opacity="0.1"></stop>
+                <stop offset="100%" stop-color="#2bee7c" stop-opacity="0.01"></stop>
+              </linearGradient>
+              <linearGradient id="eloPointGradient" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#163524"></stop>
+                <stop offset="100%" stop-color="#0b1a13"></stop>
+              </linearGradient>
+            </defs>
+            <path
+              [attr.d]="displayEloChart().areaPath"
+              class="elo-area"
+              fill="url(#eloAreaGradient)">
+            </path>
+            <path [attr.d]="displayEloChart().path" class="elo-line" pathLength="1" fill="none"
+              stroke="#2bee7c" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path>
             @for (point of displayEloChart().points; track point.key) {
-            <circle [attr.cx]="point.x" [attr.cy]="point.y" r="1.5" fill="#0b1a13" stroke="#2bee7c"
+            <circle [attr.cx]="point.x" [attr.cy]="point.y" r="1.5" fill="url(#eloPointGradient)" stroke="#2bee7c"
               stroke-width="0.8" class="elo-point">
             </circle>
             <text [attr.x]="point.x" [attr.y]="point.y - 3" text-anchor="middle" font-size="3"

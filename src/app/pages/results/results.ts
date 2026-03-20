@@ -527,7 +527,7 @@ export class Results {
     const maxAbs = Math.max(1, ...monthValues.map((entry) => Math.abs(entry.value)));
     const width = 100;
     const height = 50;
-    const padding = 6;
+    const padding = 10;
     const midY = height / 2;
     const scale = (height / 2 - padding) / maxAbs;
     const xPadding = 4;
@@ -549,8 +549,9 @@ export class Results {
     maxAbs: number,
     useExact = false
   ): EloChartDisplay {
+    const width = 100;
     const height = 50;
-    const padding = 6;
+    const padding = 10;
     const midY = height / 2;
     const floorY = height - 2;
     const safeMax = Math.max(1, maxAbs);
@@ -568,7 +569,7 @@ export class Results {
     return {
       points: mapped,
       path,
-      areaPath: this.buildAreaPath(mapped, floorY),
+      areaPath: this.buildAreaPath(mapped, floorY, width),
       midY,
       floorY,
     };
@@ -628,14 +629,14 @@ export class Results {
     return d.join(' ');
   }
 
-  private buildAreaPath(points: Pick<EloChartPoint, 'x' | 'y'>[], floorY: number): string {
+  private buildAreaPath(points: Pick<EloChartPoint, 'x' | 'y'>[], floorY: number, width: number): string {
     if (points.length === 0) return '';
     const linePath = this.buildSmoothPath(points);
     const lastPoint = points[points.length - 1];
     const firstPoint = points[0];
-    return `${linePath} L${lastPoint.x.toFixed(2)},${floorY.toFixed(2)} L${firstPoint.x.toFixed(
+    return `${linePath} L${width.toFixed(2)},${lastPoint.y.toFixed(2)} L${width.toFixed(
       2
-    )},${floorY.toFixed(2)} Z`;
+    )},${floorY.toFixed(2)} L0.00,${floorY.toFixed(2)} L0.00,${firstPoint.y.toFixed(2)} Z`;
   }
 
   private prefersReducedMotion(): boolean {

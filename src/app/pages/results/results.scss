@@ -1,6 +1,9 @@
 :host {
   display: block;
   min-height: 100vh;
+  --elo-point-fill: #e8fff1;
+  --elo-point-stroke: #2bee7c;
+  --elo-point-shadow: rgba(43, 238, 124, 0.32);
   background-color: var(--bg-primary);
   background: radial-gradient(circle at 50% 0%, rgba(43, 238, 124, 0.05) 0%, transparent 50%),
               radial-gradient(circle at 0% 100%, rgba(168, 85, 247, 0.03) 0%, transparent 40%);
@@ -334,7 +337,7 @@
 }
 
 .recent-range {
-  font-weight: 800;
+  font-weight: 500;
   color: #ffffff;
   text-shadow:
     0 0 12px rgba(43, 238, 124, 0.22),
@@ -373,6 +376,17 @@ circle {
     transform: none;
   }
 
+  .elo-point {
+    fill: var(--elo-point-fill);
+    stroke: var(--elo-point-stroke);
+    stroke-width: 0.8;
+    filter: drop-shadow(0 0 5px var(--elo-point-shadow));
+  }
+
+  .elo-label {
+    letter-spacing: 0.01em;
+  }
+
   .bar-fill {
     transform: none;
   }
@@ -385,6 +399,9 @@ circle {
 
 // Light mode overrides for results page
 :host-context(html.light) {
+  --elo-point-fill: #ffffff;
+  --elo-point-stroke: #1f8f61;
+  --elo-point-shadow: rgba(31, 143, 97, 0.2);
   background:
     radial-gradient(circle at 10% 0%, rgba(148, 163, 184, 0.18) 0%, transparent 42%),
     linear-gradient(180deg, #f5f7fb 0%, #eef2f7 100%);

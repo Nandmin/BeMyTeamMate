@@ -3,14 +3,16 @@ import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
 import { take } from 'rxjs/operators';
+import { TranslatePipe } from '../../pipes/translate.pipe';
 import { GroupService } from '../../services/group.service';
 import { EventService, SportEvent } from '../../services/event.service';
+import { LanguageService } from '../../services/language.service';
 import { ModalService } from '../../services/modal.service';
 
 @Component({
   selector: 'app-admin-groups-section',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, TranslatePipe],
   templateUrl: './admin-groups-section.component.html',
   styleUrl: './admin-groups-section.component.scss',
 })
@@ -19,6 +21,7 @@ export class AdminGroupsSectionComponent {
 
   private groupService = inject(GroupService);
   private eventService = inject(EventService);
+  private languageService = inject(LanguageService);
   private modalService = inject(ModalService);
   private router = inject(Router);
   private adminGroupsCacheKey = 'admin:groups:list';
@@ -79,10 +82,10 @@ export class AdminGroupsSectionComponent {
     }
 
     const confirmed = await this.modalService.confirm(
-      `Biztosan törlöd a(z) \"${group.name}\" csoportot?`,
-      'Törlés megerősítése',
-      'Törlés',
-      'Mégse'
+      this.languageService.t('admin.groups.confirm.deleteMessage', { groupName: group.name }),
+      this.languageService.t('admin.groups.confirm.deleteTitle'),
+      this.languageService.t('admin.groups.actions.delete'),
+      this.languageService.t('common.cancel')
     );
     if (!confirmed) {
       return;
@@ -92,12 +95,16 @@ export class AdminGroupsSectionComponent {
     try {
       await this.groupService.deleteGroup(groupId);
       this.removeFromList(groupId);
-      await this.modalService.alert('A csoport törlése sikeres volt.', 'Kész', 'success');
+      await this.modalService.alert(
+        this.languageService.t('admin.groups.alert.deleteSuccessMessage'),
+        this.languageService.t('admin.groups.alert.deleteSuccessTitle'),
+        'success'
+      );
     } catch (error) {
       console.error('Admin group delete failed:', error);
       await this.modalService.alert(
-        'Hiba történt a csoport törlésekor. Próbáld újra.',
-        'Hiba',
+        this.languageService.t('admin.groups.alert.deleteErrorMessage'),
+        this.languageService.t('admin.groups.alert.deleteErrorTitle'),
         'error'
       );
     } finally {
@@ -169,7 +176,7 @@ export class AdminGroupsSectionComponent {
           return {
             id: groupId,
             name: group.name,
-            creator: group.ownerName || 'Ismeretlen',
+            creator: group.ownerName || this.languageService.t('common.unknownUser'),
             createdAt: this.formatDate(group.createdAt),
             createdAtMs: this.toDate(group.createdAt)?.getTime() ?? 0,
             memberCount: group.memberCount ?? 0,

@@ -19,6 +19,7 @@ import {
 import { AppCheck } from '@angular/fire/app-check';
 import { getMessaging, getToken, deleteToken, onMessage } from 'firebase/messaging';
 import { AuthService } from './auth.service';
+import { LanguageService } from './language.service';
 import { environment } from '../../environments/environment';
 import { AppNotification, NotificationType } from '../models/notification.model';
 import { Observable, of, defer, concat } from 'rxjs';
@@ -32,6 +33,7 @@ export interface GroupNotificationPayload {
   body: string;
   link?: string;
   eventId?: string | null;
+  eventLabel?: string | null;
   actorId?: string | null;
   actorName?: string | null;
   actorPhoto?: string | null;
@@ -44,6 +46,7 @@ export class NotificationService {
   private firestore = inject(Firestore);
   private appCheck = inject(AppCheck, { optional: true });
   private authService = inject(AuthService);
+  private languageService = inject(LanguageService);
   private tokenStorageKey = 'fcmToken';
   private tokenSyncMetaStorageKey = 'fcmTokenSyncMeta';
   private tokenSyncTtlMs = 24 * 60 * 60 * 1000;
@@ -103,14 +106,16 @@ export class NotificationService {
 
   async enablePushForCurrentUser() {
     const user = this.authService.currentUser();
-    if (!user) throw new Error('User must be logged in');
-    if (!this.canUsePush()) throw new Error('Push not supported in this browser');
+    if (!user) throw new Error(this.languageService.t('common.error.authRequired'));
+    if (!this.canUsePush()) throw new Error(this.languageService.t('notification.error.pushUnsupported'));
 
     const permission = await Notification.requestPermission();
-    if (permission !== 'granted') throw new Error('Push permission denied');
+    if (permission !== 'granted') {
+      throw new Error(this.languageService.t('notification.error.pushPermissionDenied'));
+    }
 
     const token = await this.getOrCreateToken();
-    if (!token) throw new Error('Unable to get FCM token');
+    if (!token) throw new Error(this.languageService.t('notification.error.fcmTokenUnavailable'));
 
     await this.registerTokenSecurely(token);
     this.safeSetItem(this.tokenStorageKey, token);
@@ -119,7 +124,7 @@ export class NotificationService {
 
   async disablePushForCurrentUser() {
     const user = this.authService.currentUser();
-    if (!user) throw new Error('User must be logged in');
+    if (!user) throw new Error(this.languageService.t('common.error.authRequired'));
     if (!this.canUsePush()) return;
 
     const token = this.safeGetItem(this.tokenStorageKey);
@@ -165,7 +170,8 @@ export class NotificationService {
     this.foregroundListenerInitialized = true;
     const messaging = getMessaging();
     onMessage(messaging, (payload) => {
-      const title = payload.notification?.title || 'Értesítés';
+      const title =
+        payload.notification?.title || this.languageService.t('common.defaultNotificationTitle');
       const body = payload.notification?.body || '';
       const data = (payload.data || {}) as Record<string, string>;
       void this.showForegroundNotification(title, body, data);
@@ -198,13 +204,14 @@ export class NotificationService {
           type: payload.type,
           groupId: payload.groupId,
           eventId: payload.eventId ?? null,
+          eventLabel: payload.eventLabel ?? null,
           title: payload.title,
           body: payload.body,
           link: payload.link || '',
           createdAt: serverTimestamp(),
           read: false,
           actorId: payload.actorId || null,
-          actorName: payload.actorName || 'Ismeretlen',
+          actorName: payload.actorName || this.languageService.t('common.unknownUser'),
           actorPhoto: payload.actorPhoto ?? null,
         };
         batch.set(notificationRef, data);
@@ -274,7 +281,7 @@ export class NotificationService {
     const existing = this.safeGetItem(this.tokenStorageKey);
     if (existing) return existing;
     if (!environment.firebase.vapidKey || environment.firebase.vapidKey === 'YOUR_VAPID_KEY') {
-      throw new Error('Missing VAPID key configuration');
+      throw new Error(this.languageService.t('notification.error.vapidMissing'));
     }
     const messaging = getMessaging();
 
@@ -282,7 +289,7 @@ export class NotificationService {
     const registration = await navigator.serviceWorker.ready;
 
     if (!registration.active) {
-      throw new Error('Push service worker registration failed to activate.');
+      throw new Error(this.languageService.t('notification.error.serviceWorkerInactive'));
     }
 
     try {
@@ -309,10 +316,13 @@ export class NotificationService {
         } catch (retryErr) {
           console.error('Failed to recover from stale push registration:', retryErr);
           // If retry fails, throw the original error or the new one
-          throw this.toSafeError(err, 'Nem sikerült újra létrehozni az értesítési tokent.');
+          throw this.toSafeError(
+            err,
+            this.languageService.t('notification.error.tokenRecreateFailed')
+          );
         }
       }
-      throw this.toSafeError(err, 'Nem sikerült létrehozni az értesítési tokent.');
+      throw this.toSafeError(err, this.languageService.t('notification.error.tokenCreateFailed'));
     }
   }
 
@@ -366,7 +376,7 @@ export class NotificationService {
 
   async issuePushChallenge(): Promise<string> {
     const user = this.authService.currentUser();
-    if (!user) throw new Error('User must be logged in');
+    if (!user) throw new Error(this.languageService.t('common.error.authRequired'));
 
     let authToken = '';
     try {
@@ -380,15 +390,17 @@ export class NotificationService {
 
     const workerBaseUrl = new URL(environment.cloudflareWorkerUrl).origin;
     const res = await fetch(`${workerBaseUrl}/issue-push-challenge`, { method: 'POST', headers });
-    if (!res.ok) throw new Error('Failed to issue challenge');
+    if (!res.ok) throw new Error(this.languageService.t('notification.error.challengeIssueFailed'));
     const data = await res.json();
-    if (!data.ok) throw new Error(data.error || 'Challenge API error');
+    if (!data.ok) {
+      throw new Error(data.error || this.languageService.t('notification.error.challengeApi'));
+    }
     return data.challengeId as string;
   }
 
   async registerPushToken(challengeId: string, token: string): Promise<void> {
     const user = this.authService.currentUser();
-    if (!user) throw new Error('User must be logged in');
+    if (!user) throw new Error(this.languageService.t('common.error.authRequired'));
 
     let authToken = '';
     try {
@@ -407,11 +419,19 @@ export class NotificationService {
       body: JSON.stringify({ challengeId, token }),
     });
     if (!res.ok) {
-      if (res.status === 429) throw new Error('Túl sok kérés. Kérlek próbáld újra később.');
-      throw new Error(`Failed to register token: ${res.statusText}`);
+      if (res.status === 429) {
+        throw new Error(this.languageService.t('notification.error.tooManyRequests'));
+      }
+      throw new Error(
+        this.languageService.t('notification.error.tokenRegisterFailed', {
+          statusText: res.statusText,
+        })
+      );
     }
     const data = await res.json();
-    if (!data.ok) throw new Error(data.error || 'Registration API error');
+    if (!data.ok) {
+      throw new Error(data.error || this.languageService.t('notification.error.registrationApi'));
+    }
 
     await this.clearLegacyFcmTokensField(user.uid);
   }
@@ -625,13 +645,16 @@ export class NotificationService {
     try {
       const registration = await navigator.serviceWorker.ready;
       if (registration?.showNotification) {
-        await registration.showNotification(title || 'Értesítés', {
+        await registration.showNotification(
+          title || this.languageService.t('common.defaultNotificationTitle'),
+          {
           body: body || '',
           icon: '/favicon.ico',
           badge: '/favicon.ico',
           data: notificationData,
           tag: notificationData['type'] || 'general',
-        });
+          }
+        );
         return;
       }
     } catch (error) {
@@ -639,7 +662,7 @@ export class NotificationService {
     }
 
     try {
-      const instance = new Notification(title || 'Értesítés', {
+      const instance = new Notification(title || this.languageService.t('common.defaultNotificationTitle'), {
         body: body || '',
         icon: '/favicon.ico',
       });
@@ -671,7 +694,7 @@ export class NotificationService {
   private toSafeError(error: any, fallbackMessage?: string) {
     const safeMessage = this.getSafeErrorMessage(
       error,
-      fallbackMessage || 'Váratlan hiba történt. Kérlek próbáld újra később.',
+      fallbackMessage || this.languageService.t('common.error.unexpected'),
     );
     const safeError = new Error(safeMessage);
     if (error?.code) {
@@ -683,16 +706,20 @@ export class NotificationService {
   private getSafeErrorMessage(error: any, fallbackMessage: string) {
     const errorCode = error?.code || 'unknown';
     const errorMessages: Record<string, string> = {
-      'messaging/unsupported-browser': 'A böngésződ nem támogatja a push értesítéseket.',
-      'messaging/permission-blocked': 'Az értesítések engedélyezése le van tiltva a böngészőben.',
-      'messaging/permission-default': 'Az értesítési engedély nincs megadva.',
-      'messaging/invalid-vapid-key': 'Értesítési beállítási hiba történt.',
-      'messaging/invalid-registration-token': 'Érvénytelen értesítési token.',
-      'messaging/token-unsubscribe-failed': 'Nem sikerült frissíteni az értesítési tokent.',
-      'network-request-failed': 'Hálózati hiba. Ellenőrizd a kapcsolatot.',
-      'permission-denied': 'Nincs jogosultságod ehhez a művelethez.',
-      unauthenticated: 'Bejelentkezés szükséges.',
-      unavailable: 'A szolgáltatás jelenleg nem érhető el.',
+      'messaging/unsupported-browser': this.languageService.t('notification.error.unsupportedBrowser'),
+      'messaging/permission-blocked': this.languageService.t('notification.error.permissionBlocked'),
+      'messaging/permission-default': this.languageService.t('notification.error.permissionDefault'),
+      'messaging/invalid-vapid-key': this.languageService.t('notification.error.invalidVapidKey'),
+      'messaging/invalid-registration-token': this.languageService.t(
+        'notification.error.invalidRegistrationToken'
+      ),
+      'messaging/token-unsubscribe-failed': this.languageService.t(
+        'notification.error.tokenUnsubscribeFailed'
+      ),
+      'network-request-failed': this.languageService.t('notification.error.network'),
+      'permission-denied': this.languageService.t('notification.error.permissionDenied'),
+      unauthenticated: this.languageService.t('notification.error.unauthenticated'),
+      unavailable: this.languageService.t('notification.error.unavailable'),
     };
 
     return errorMessages[errorCode] || fallbackMessage;

@@ -1,11 +1,12 @@
-import { Component, inject, computed } from '@angular/core';
+﻿import { Component, inject, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ModalService } from '../../services/modal.service';
+import { TranslatePipe } from '../../pipes/translate.pipe';
 
 @Component({
   selector: 'app-modal',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, TranslatePipe],
   templateUrl: './modal.component.html',
   styleUrls: ['./modal.component.scss'],
 })
@@ -16,13 +17,7 @@ export class ModalComponent {
   isDeleteConfirm = computed(() => {
     const cfg = this.config();
     if (!cfg || cfg.type !== 'confirm') return false;
-    const fields = [
-      cfg.title || '',
-      cfg.message || '',
-      cfg.confirmText || '',
-    ]
-      .join(' ')
-      .toLowerCase();
+    const fields = [cfg.title || '', cfg.message || '', cfg.confirmText || ''].join(' ').toLowerCase();
     return fields.includes('torl') || fields.includes('delete');
   });
 
@@ -105,8 +100,6 @@ export class ModalComponent {
   }
 
   onBackdropClick() {
-    // Optional: close on backdrop click for types other than confirm?
-    // For now, let's allow closing info/success alerts by clicking backdrop, but maybe enforce choice for confirm.
     if (this.config()?.type !== 'confirm') {
       this.modalService.close(false);
     }

@@ -3,17 +3,21 @@ import { CommonModule, DOCUMENT } from '@angular/common';
 
 import { RouterLink } from '@angular/router';
 import { Meta, Title } from '@angular/platform-browser';
+import { TranslocoPipe } from '@jsverse/transloco';
 import { AuthService } from '../../services/auth.service';
+import { LanguageService } from '../../services/language.service';
 
 @Component({
   selector: 'app-landing-page',
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterLink, TranslocoPipe],
   templateUrl: './landing-page.html',
   styleUrl: './landing-page.scss',
 })
 export class LandingPage {
   protected authService = inject(AuthService);
+  protected languageService = inject(LanguageService);
   private readonly document = inject(DOCUMENT);
+
 
   constructor(
     private readonly title: Title,

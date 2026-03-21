@@ -1,224 +1,181 @@
-<div
-    class="relative w-full flex items-center justify-center p-4 lg:p-6 bg-background-dark font-display text-white overflow-x-hidden min-h-full box-border">
-    <!-- Abstract Sport Background -->
-    <div class="fixed inset-0 z-0 overflow-hidden">
-        <div
-            class="absolute inset-0 bg-gradient-to-b from-background-dark/90 via-background-dark/80 to-background-dark/95 z-10">
+<div class="relative w-full flex items-center justify-center p-4 lg:p-6 bg-background-dark font-display text-white overflow-x-hidden min-h-full box-border">
+  <div class="fixed inset-0 z-0 overflow-hidden">
+    <div class="absolute inset-0 bg-gradient-to-b from-background-dark/90 via-background-dark/80 to-background-dark/95 z-10"></div>
+    <img
+      alt="Abstract dark blurred stadium lights background"
+      class="w-full h-full object-cover opacity-30 animate-pulse"
+      src="https://lh3.googleusercontent.com/aida-public/AB6AXuClJ6bOmSnA5VkZdduDX16IXkPwHbaqenmAfvXZZ6Z56kWw6Wl-tXQa49mnw6acrkJJgXVGDzcmCVvDmO_tFY9TkYFX9Jsi0whx2JiKCJ1Pn1TLd_k1Fi_-gve_o7LWayDbNV1YyNwnSNKwf9xDoy9y0PplwsFT6beQRnNMQ4DHkcpqgNtryfKyFZ8Gaa9zQ1T4el0-F9wERWYKRKwG2DSrUMUs6YAc_4dLKuroXNurZHGW0ExAOu8P9uHcH0BDefhUX2GanmM7kdU"
+    />
+  </div>
+
+  <div class="relative z-20 w-full max-w-5xl bg-card-dark/60 backdrop-blur-md border border-border-dark rounded-3xl shadow-2xl overflow-hidden flex flex-col md:flex-row transition-all duration-500 hover:border-primary/30" style="margin-top: 60px;">
+    <div class="hidden md:flex md:w-1/3 bg-gradient-to-b from-dark-accent to-background-dark relative flex-col justify-between p-8 border-r border-border-dark">
+      <div>
+        <div class="h-12 w-13 rounded-xl flex items-center justify-center mb-8 text-primary">
+          <img src="assets/images/headerIcon_1282.webp" alt="BeMyTeamMate Logo" style="width: 128px; height: 128px;" />
         </div>
-        <img alt="Abstract dark blurred stadium lights background"
-            class="w-full h-full object-cover opacity-30 animate-pulse"
-            src="https://lh3.googleusercontent.com/aida-public/AB6AXuClJ6bOmSnA5VkZdduDX16IXkPwHbaqenmAfvXZZ6Z56kWw6Wl-tXQa49mnw6acrkJJgXVGDzcmCVvDmO_tFY9TkYFX9Jsi0whx2JiKCJ1Pn1TLd_k1Fi_-gve_o7LWayDbNV1YyNwnSNKwf9xDoy9y0PplwsFT6beQRnNMQ4DHkcpqgNtryfKyFZ8Gaa9zQ1T4el0-F9wERWYKRKwG2DSrUMUs6YAc_4dLKuroXNurZHGW0ExAOu8P9uHcH0BDefhUX2GanmM7kdU" />
+        <h3 class="text-2xl font-bold leading-tight mb-2">{{ 'register.side.title' | t }}</h3>
+        <p class="text-sm leading-relaxed">{{ 'register.side.description' | t }}</p>
+      </div>
+      <div class="space-y-4">
+        <div class="flex items-center gap-3">
+          <span class="material-symbols-outlined text-primary">check_circle</span>
+          <span class="text-sm /80">{{ 'register.side.feature.teams' | t }}</span>
+        </div>
+        <div class="flex items-center gap-3">
+          <span class="material-symbols-outlined text-primary">check_circle</span>
+          <span class="text-sm /80">{{ 'register.side.feature.sports' | t }}</span>
+        </div>
+        <div class="flex items-center gap-3">
+          <span class="material-symbols-outlined text-primary">check_circle</span>
+          <span class="text-sm /80">{{ 'register.side.feature.free' | t }}</span>
+        </div>
+      </div>
+      <div class="mt-8 pt-6 border-t border-border-dark">
+        <p class="text-xs /60">{{ 'common.allRightsReserved' | t:{ year: currentYear } }}</p>
+      </div>
     </div>
 
-    <!-- Registration Card -->
-    <div
-        class="relative z-20 w-full max-w-5xl bg-card-dark/60 backdrop-blur-md border border-border-dark rounded-3xl shadow-2xl overflow-hidden flex flex-col md:flex-row transition-all duration-500 hover:border-primary/30" style="margin-top: 60px;">
+    <div class="flex-1 p-5 md:p-6 lg:p-8">
+      <div class="mb-4">
+        <h1 class="text-xl md:text-2xl font-black tracking-tight text-white mb-0.5">{{ 'register.title' | t }}</h1>
+        <p class="text-base">{{ 'register.subtitle' | t }}</p>
+      </div>
 
-        <!-- Side Visual (Desktop Only) -->
-        <div
-            class="hidden md:flex md:w-1/3 bg-gradient-to-b from-dark-accent to-background-dark relative flex-col justify-between p-8 border-r border-border-dark">
-            <div>
-                <div class="h-12 w-13 rounded-xl flex items-center justify-center mb-8 text-primary">
-                    <!-- <span class="material-symbols-outlined text-3xl">sports_soccer</span> -->
-                    <img src="assets/images/headerIcon_1282.webp" alt="BeMyTeamMate Logo" style="width: 128px; height: 128px;">
-                </div>
-                <h3 class="text-2xl font-bold leading-tight mb-2">Csatlakozz a játékhoz</h3>
-                <p class=" text-sm leading-relaxed">Szervezd meg a csapatokat, kövesd a statisztikákat és
-                    élvezd a sportot barátaiddal egy helyen.</p>
+      <div *ngIf="errorMessage" class="mb-4 p-3 bg-red-600 border border-red-700 rounded-lg text-white font-medium text-sm text-center shadow-lg animate-shake whitespace-pre-line">
+        {{ errorMessage }}
+      </div>
+      <div *ngIf="successMessage()" class="mb-4 p-3 bg-green-600 border border-green-700 rounded-lg text-white font-medium text-sm text-center shadow-lg whitespace-pre-line">
+        {{ successMessage() }}
+      </div>
+
+      <form class="flex flex-col gap-3" [formGroup]="registerForm" (ngSubmit)="onRegister()">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <div class="flex flex-col gap-2 group">
+            <label class="text-sm font-medium text-gray-200 group-focus-within:text-primary transition-colors duration-300">{{ 'register.usernameLabel' | t }}</label>
+            <div class="relative">
+              <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 group-focus-within:text-primary transition-colors">person</span>
+              <input
+                class="w-full bg-dark-accent/50 border border-border-dark rounded-xl py-3.5 pl-12 pr-4 text-white placeholder:/50 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all duration-300"
+                [class.border-red-500]="registerForm.get('username')?.invalid && registerForm.get('username')?.touched"
+                [placeholder]="'register.usernamePlaceholder' | t"
+                type="text"
+                formControlName="username"
+              />
             </div>
-            <div class="space-y-4">
-                <div class="flex items-center gap-3">
-                    <span class="material-symbols-outlined text-primary">check_circle</span>
-                    <span class="text-sm /80">Gyors csapatosztás</span>
-                </div>
-                <div class="flex items-center gap-3">
-                    <span class="material-symbols-outlined text-primary">check_circle</span>
-                    <span class="text-sm /80">Minden sportág</span>
-                </div>
-                <div class="flex items-center gap-3">
-                    <span class="material-symbols-outlined text-primary">check_circle</span>
-                    <span class="text-sm /80">Ingyenes használat</span>
-                </div>
+            @if (registerForm.get('username')?.invalid && registerForm.get('username')?.touched) {
+            <span class="text-red-400 text-xs mt-1">
+              @if (registerForm.get('username')?.errors?.['required']) {
+              {{ 'register.usernameRequired' | t }}
+              } @else if (registerForm.get('username')?.errors?.['noAccents']) {
+              {{ 'register.usernameNoAccents' | t }}
+              }
+            </span>
+            }
+          </div>
+
+          <div class="flex flex-col gap-2 group">
+            <label class="text-sm font-medium text-gray-200 group-focus-within:text-primary transition-colors duration-300">{{ 'register.emailLabel' | t }}</label>
+            <div class="relative">
+              <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 group-focus-within:text-primary transition-colors">mail</span>
+              <input
+                class="w-full bg-dark-accent/50 border border-border-dark rounded-xl py-3.5 pl-12 pr-4 text-white placeholder:/50 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all duration-300"
+                [class.border-red-500]="registerForm.get('email')?.invalid && registerForm.get('email')?.touched"
+                [placeholder]="'register.emailPlaceholder' | t"
+                type="email"
+                formControlName="email"
+              />
             </div>
-            <div class="mt-8 pt-6 border-t border-border-dark">
-                <p class="text-xs /60">©{{ currentYear }} - BeMyTeamMate</p>
+            @if (registerForm.get('email')?.invalid && registerForm.get('email')?.touched) {
+            <span class="text-red-400 text-xs mt-1">
+              @if (registerForm.get('email')?.errors?.['required']) {
+              {{ 'register.emailRequired' | t }}
+              } @else if (registerForm.get('email')?.errors?.['email']) {
+              {{ 'register.emailInvalid' | t }}
+              }
+            </span>
+            }
+          </div>
+
+          <div class="flex flex-col gap-2 group">
+            <label class="text-sm font-medium text-gray-200 group-focus-within:text-primary transition-colors duration-300">{{ 'register.passwordLabel' | t }}</label>
+            <div class="relative">
+              <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 group-focus-within:text-primary transition-colors">lock</span>
+              <input
+                class="w-full bg-dark-accent/50 border border-border-dark rounded-xl py-3.5 pl-12 pr-4 text-white placeholder:/50 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all duration-300"
+                [class.border-red-500]="registerForm.get('password')?.invalid && registerForm.get('password')?.touched"
+                [placeholder]="'register.passwordPlaceholder' | t"
+                type="password"
+                formControlName="password"
+              />
             </div>
+            @if (registerForm.get('password')?.invalid && registerForm.get('password')?.touched) {
+            <span class="text-red-400 text-xs mt-1">
+              @if (registerForm.get('password')?.errors?.['required']) {
+              {{ 'register.passwordRequired' | t }}
+              } @else if (registerForm.get('password')?.errors?.['minlength']) {
+              {{ 'register.passwordMinLength' | t }}
+              }
+            </span>
+            }
+          </div>
+
+          <div class="flex flex-col gap-2 group">
+            <label class="text-sm font-medium text-gray-200 group-focus-within:text-primary transition-colors duration-300">{{ 'register.confirmPasswordLabel' | t }}</label>
+            <div class="relative">
+              <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 group-focus-within:text-primary transition-colors">lock_reset</span>
+              <input
+                class="w-full bg-dark-accent/50 border border-border-dark rounded-xl py-3.5 pl-12 pr-4 text-white placeholder:/50 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all duration-300"
+                [class.border-red-500]="registerForm.get('confirmPassword')?.invalid && registerForm.get('confirmPassword')?.touched"
+                [placeholder]="'register.confirmPasswordPlaceholder' | t"
+                type="password"
+                formControlName="confirmPassword"
+              />
+            </div>
+            @if (registerForm.get('confirmPassword')?.invalid && registerForm.get('confirmPassword')?.touched) {
+            <span class="text-red-400 text-xs mt-1">{{ 'register.confirmPasswordRequired' | t }}</span>
+            }
+          </div>
         </div>
 
-        <!-- Form Area -->
-        <div
-            class="flex-1 p-5 md:p-6 lg:p-8">
-            <!-- Header -->
-            <div class="mb-4">
-                <h1 class="text-xl md:text-2xl font-black tracking-tight text-white mb-0.5">Új játékos</h1>
-                <p class=" text-base">Hozd létre a profilod a folytatáshoz</p>
-            </div>
-
-            <!-- Error Message -->
-            <div *ngIf="errorMessage"
-                class="mb-4 p-3 bg-red-600 border border-red-700 rounded-lg text-white font-medium text-sm text-center shadow-lg animate-shake whitespace-pre-line">
-                {{ errorMessage }}
-            </div>
-            <div *ngIf="successMessage()"
-                class="mb-4 p-3 bg-green-600 border border-green-700 rounded-lg text-white font-medium text-sm text-center shadow-lg whitespace-pre-line">
-                {{ successMessage() }}
-            </div>
-
-            <form class="flex flex-col gap-3" [formGroup]="registerForm" (ngSubmit)="onRegister()">
-                <!-- Grid for Inputs -->
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    <!-- Username -->
-                    <div class="flex flex-col gap-2 group">
-                        <label
-                            class="text-sm font-medium text-gray-200 group-focus-within:text-primary transition-colors duration-300">Felhasználónév</label>
-                        <div class="relative">
-                            <span
-                                class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2  group-focus-within:text-primary transition-colors">person</span>
-                            <input
-                                class="w-full bg-dark-accent/50 border border-border-dark rounded-xl py-3.5 pl-12 pr-4 text-white placeholder:/50 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all duration-300"
-                                [class.border-red-500]="registerForm.get('username')?.invalid && registerForm.get('username')?.touched"
-                                placeholder="pl. KovacsJanos" type="text" formControlName="username" />
-                        </div>
-                        @if (registerForm.get('username')?.invalid && registerForm.get('username')?.touched) {
-                        <span class="text-red-400 text-xs mt-1">
-                            @if (registerForm.get('username')?.errors?.['required']) {
-                            A felhasználónév megadása kötelező.
-                            } @else if (registerForm.get('username')?.errors?.['noAccents']) {
-                            A felhasználónév nem tartalmazhat ékezetes karaktereket.
-                            }
-                        </span>
-                        }
-                    </div>
-                    <!-- Email -->
-                    <div class="flex flex-col gap-2 group">
-                        <label
-                            class="text-sm font-medium text-gray-200 group-focus-within:text-primary transition-colors duration-300">E-mail
-                            cím</label>
-                        <div class="relative">
-                            <span
-                                class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2  group-focus-within:text-primary transition-colors">mail</span>
-                            <input
-                                class="w-full bg-dark-accent/50 border border-border-dark rounded-xl py-3.5 pl-12 pr-4 text-white placeholder:/50 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all duration-300"
-                                [class.border-red-500]="registerForm.get('email')?.invalid && registerForm.get('email')?.touched"
-                                placeholder="pelda@email.com" type="email" formControlName="email" />
-                        </div>
-                        @if (registerForm.get('email')?.invalid && registerForm.get('email')?.touched) {
-                        <span class="text-red-400 text-xs mt-1">
-                            @if (registerForm.get('email')?.errors?.['required']) {
-                            Az e-mail cím megadása kötelező.
-                            } @else if (registerForm.get('email')?.errors?.['email']) {
-                            Érvénytelen e-mail formátum.
-                            }
-                        </span>
-                        }
-                    </div>
-                    <!-- Password -->
-                    <div class="flex flex-col gap-2 group">
-                        <label
-                            class="text-sm font-medium text-gray-200 group-focus-within:text-primary transition-colors duration-300">Jelszó</label>
-                        <div class="relative">
-                            <span
-                                class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2  group-focus-within:text-primary transition-colors">lock</span>
-                            <input
-                                class="w-full bg-dark-accent/50 border border-border-dark rounded-xl py-3.5 pl-12 pr-4 text-white placeholder:/50 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all duration-300"
-                                [class.border-red-500]="registerForm.get('password')?.invalid && registerForm.get('password')?.touched"
-                                placeholder="******" type="password" formControlName="password" />
-                        </div>
-                        @if (registerForm.get('password')?.invalid && registerForm.get('password')?.touched) {
-                        <span class="text-red-400 text-xs mt-1">
-                            @if (registerForm.get('password')?.errors?.['required']) {
-                            A jelszó megadása kötelező.
-                            } @else if (registerForm.get('password')?.errors?.['minlength']) {
-                            A jelszónak legalább 6 karakter hosszúnak kell lennie.
-                            }
-                        </span>
-                        }
-                    </div>
-                    <!-- Confirm Password -->
-                    <div class="flex flex-col gap-2 group">
-                        <label
-                            class="text-sm font-medium text-gray-200 group-focus-within:text-primary transition-colors duration-300">Jelszó
-                            megerősítése</label>
-                        <div class="relative">
-                            <span
-                                class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2  group-focus-within:text-primary transition-colors">lock_reset</span>
-                            <input
-                                class="w-full bg-dark-accent/50 border border-border-dark rounded-xl py-3.5 pl-12 pr-4 text-white placeholder:/50 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all duration-300"
-                                [class.border-red-500]="registerForm.get('confirmPassword')?.invalid && registerForm.get('confirmPassword')?.touched"
-                                placeholder="******" type="password" formControlName="confirmPassword" />
-                        </div>
-                        @if (registerForm.get('confirmPassword')?.invalid &&
-                        registerForm.get('confirmPassword')?.touched) {
-                        <span class="text-red-400 text-xs mt-1">A jelszó megerősítése kötelező.</span>
-                        }
-                    </div>
-                </div>
-
-                <!-- Sports Interests -->
-                <!-- <div class="space-y-3 pt-2">
-                    <h2 class="text-lg font-bold text-white flex items-center gap-2">
-                        <span class="material-symbols-outlined text-primary text-xl">favorite</span>
-                        Melyik sportágak érdekelnek?
-                    </h2>
-                    <div class="flex flex-wrap gap-3">
-                        @for (sport of sports; track sport.id) {
-                        <button type="button" (click)="toggleSport(sport.id)"
-                            class="group flex items-center gap-2 px-4 py-2 rounded-xl border transition-all"
-                            [class.bg-primary]="isSportSelected(sport.id)"
-                            [class.text-background-dark]="isSportSelected(sport.id)"
-                            [class.font-semibold]="isSportSelected(sport.id)"
-                            [class.border-primary]="isSportSelected(sport.id)"
-                            [class.bg-dark-accent]="!isSportSelected(sport.id)"
-                            [class.]="!isSportSelected(sport.id)"
-                            [class.border-border-dark]="!isSportSelected(sport.id)"
-                            [class.hover:border-primary]="!isSportSelected(sport.id)"
-                            [class.hover:text-primary]="!isSportSelected(sport.id)">
-                            <span class="material-symbols-outlined text-[18px]">{{ sport.icon }}</span>
-                            {{ sport.label }}
-                        </button>
-                        }
-                    </div>
-                </div> -->
-
-                <!-- Bio -->
-                <div class="flex flex-col gap-2 group pt-2">
-                    <label
-                        class="text-sm font-medium text-gray-200 group-focus-within:text-primary transition-colors duration-300">Rövid
-                        bemutatkozás <span class="/50 font-normal">(opcionális)</span></label>
-                    <textarea
-                        class="w-full bg-dark-accent/50 border border-border-dark rounded-xl p-3 text-white placeholder:/50 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all duration-300 min-h-[70px] resize-y"
-                        placeholder="Írj magadról pár mondatot... pl. milyen szinten játszol?"
-                        formControlName="bio"></textarea>
-                </div>
-
-                <!-- Actions -->
-                <div class="pt-1 flex flex-col gap-2">
-                    <button [disabled]="isLoading()"
-                        class="auth-submit-btn group relative w-full overflow-hidden bg-primary text-white text-lg font-bold py-4 rounded-xl transition-all duration-300 flex items-center justify-center disabled:opacity-70 disabled:cursor-not-allowed hover:shadow-[0_0_20px_rgba(34,197,94,0.4)] hover:scale-[1.02] active:scale-[0.98]"
-                        type="submit">
-                        <div
-                            class="absolute inset-0 bg-white/20 translate-y-full skew-y-12 transition-transform duration-500 group-hover:translate-y-[-150%]">
-                        </div>
-                        <span class="relative z-10 flex items-center gap-2">
-                        @if (isLoading()) {
-                        <span class="material-symbols-outlined animate-spin">progress_activity</span>
-                        Folyamatban...
-                        } @else {
-                        Regisztráció
-                        <span
-                            class="material-symbols-outlined text-[18px] transition-transform group-hover:translate-x-1">arrow_forward</span>
-                        }
-                        </span>
-                    </button>
-                    <div class="text-center">
-                        <p class="">Már van fiókod?
-                            <a class="text-primary font-bold hover:underline decoration-2 underline-offset-4 decoration-primary/50 hover:text-primary-hover transition-colors"
-                                routerLink="/login">Jelentkezz be</a>
-                        </p>
-                    </div>
-                </div>
-            </form>
+        <div class="flex flex-col gap-2 group pt-2">
+          <label class="text-sm font-medium text-gray-200 group-focus-within:text-primary transition-colors duration-300">
+            {{ 'register.bioLabel' | t }} <span class="/50 font-normal">{{ 'register.optional' | t }}</span>
+          </label>
+          <textarea
+            class="w-full bg-dark-accent/50 border border-border-dark rounded-xl p-3 text-white placeholder:/50 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all duration-300 min-h-[70px] resize-y"
+            [placeholder]="'register.bioPlaceholder' | t"
+            formControlName="bio"
+          ></textarea>
         </div>
+
+        <div class="pt-1 flex flex-col gap-2">
+          <button
+            [disabled]="isLoading()"
+            class="auth-submit-btn group relative w-full overflow-hidden bg-primary text-white text-lg font-bold py-4 rounded-xl transition-all duration-300 flex items-center justify-center disabled:opacity-70 disabled:cursor-not-allowed hover:shadow-[0_0_20px_rgba(34,197,94,0.4)] hover:scale-[1.02] active:scale-[0.98]"
+            type="submit"
+          >
+            <div class="absolute inset-0 bg-white/20 translate-y-full skew-y-12 transition-transform duration-500 group-hover:translate-y-[-150%]"></div>
+            <span class="relative z-10 flex items-center gap-2">
+              @if (isLoading()) {
+              <span class="material-symbols-outlined animate-spin">progress_activity</span>
+              {{ 'common.loading' | t }}
+              } @else {
+              {{ 'register.submit' | t }}
+              <span class="material-symbols-outlined text-[18px] transition-transform group-hover:translate-x-1">arrow_forward</span>
+              }
+            </span>
+          </button>
+          <div class="text-center">
+            <p>
+              {{ 'register.hasAccount' | t }}
+              <a class="text-primary font-bold hover:underline decoration-2 underline-offset-4 decoration-primary/50 hover:text-primary-hover transition-colors" routerLink="/login">
+                {{ 'register.signInLink' | t }}
+              </a>
+            </p>
+          </div>
+        </div>
+      </form>
     </div>
+  </div>
 </div>
-

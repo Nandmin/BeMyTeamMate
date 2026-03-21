@@ -1,4 +1,4 @@
-﻿<div class="font-lexend bg-background-light dark:bg-background-dark text-white relative overflow-hidden flex flex-col min-h-full">
+<div class="font-lexend bg-background-light dark:bg-background-dark text-white relative overflow-hidden flex flex-col min-h-full">
   <div class="fixed inset-0 z-0">
     <img
       alt="Night stadium background"
@@ -11,12 +11,12 @@
   <div class="relative z-10 flex min-h-screen items-center justify-center p-4">
     <div class="w-full max-w-[520px] rounded-xl border border-border-dark bg-card-dark/60 p-6 shadow-2xl backdrop-blur-md">
       <div class="mb-5 text-center">
-        <h1 class="text-[26px] font-bold tracking-tight">E-mail cím hitelesítés</h1>
+        <h1 class="text-[26px] font-bold tracking-tight">{{ titleLabel() }}</h1>
       </div>
 
       @if (isLoading()) {
       <div class="rounded-lg border border-border-dark bg-dark-accent/40 p-4 text-center text-sm">
-        Ellenőrizzük a hitelesítési linket...
+        {{ loadingLabel() }}
       </div>
       }
 
@@ -37,13 +37,13 @@
           routerLink="/login"
           class="inline-flex items-center justify-center rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-primary-hover"
         >
-          Bejelentkezés
+          {{ loginLabel() }}
         </a>
         <a
           routerLink="/resend-verification"
           class="inline-flex items-center justify-center rounded-lg border border-border-dark bg-dark-accent/40 px-4 py-2 text-sm font-semibold text-white transition-colors hover:border-primary/60"
         >
-          Új verifikációs e-mail
+          {{ resendLabel() }}
         </a>
       </div>
     </div>

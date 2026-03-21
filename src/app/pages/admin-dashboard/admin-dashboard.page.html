@@ -14,15 +14,15 @@
         <div class="sidebar-brand flex items-center gap-3">
           <span class="material-symbols-outlined text-[26px] text-primary">settings</span>
           <div class="sidebar-text">
-            <p class="text-xs font-semibold uppercase tracking-[0.2em] text-primary/80">Admin</p>
-            <p class="text-base font-black text-white">Vezérlőpult</p>
+            <p class="text-xs font-semibold uppercase tracking-[0.2em] text-primary/80">{{ 'admin.dashboard.brand.title' | t }}</p>
+            <p class="text-base font-black text-white">{{ 'admin.dashboard.brand.subtitle' | t }}</p>
           </div>
         </div>
         <div class="sidebar-toggle-wrap flex items-center gap-2">
           <button
             class="sidebar-toggle inline-flex items-center justify-center rounded-full border border-white/10 bg-white/5 p-2 text-gray-200 transition hover:border-primary/40 hover:text-white"
             type="button"
-            aria-label="Oldalsáv"
+            [attr.aria-label]="'admin.dashboard.sidebar.aria' | t"
             [attr.aria-pressed]="!isSidebarCollapsed"
             (click)="toggleSidebar()">
             <span class="material-symbols-outlined text-[18px]">dock_to_left</span>
@@ -55,7 +55,7 @@
           <div class="sidebar-scroll-content">
             <app-admin-sidebar-item
               icon="groups"
-              label="Csoportok"
+              [label]="'admin.dashboard.nav.groups' | t"
               [active]="activeSection === 'groups'"
               (selected)="setSection('groups')"></app-admin-sidebar-item>
             <button
@@ -63,7 +63,7 @@
               type="button">
               <span class="flex items-center gap-3">
                 <span class="material-symbols-outlined text-[20px] text-primary">person</span>
-                <span class="sidebar-label">Felhasználók</span>
+                <span class="sidebar-label">{{ 'admin.dashboard.nav.users' | t }}</span>
               </span>
               <span class="sidebar-chevron material-symbols-outlined text-[18px] text-gray-400">chevron_right</span>
             </button>
@@ -72,14 +72,14 @@
               type="button">
               <span class="flex items-center gap-3">
                 <span class="material-symbols-outlined text-[20px] text-primary">query_stats</span>
-                <span class="sidebar-label">Statisztikák</span>
+                <span class="sidebar-label">{{ 'admin.dashboard.nav.stats' | t }}</span>
               </span>
               <span class="sidebar-chevron material-symbols-outlined text-[18px] text-gray-400">chevron_right</span>
             </button>
             <app-admin-sidebar-item
               class="mt-2 block"
               icon="chat_bubble"
-              label="Üzenetek"
+              [label]="'admin.dashboard.nav.messages' | t"
               [active]="activeSection === 'messages'"
               (selected)="setSection('messages')"></app-admin-sidebar-item>
             <!-- <div class="sidebar-card mt-4 rounded-2xl border border-white/10 bg-white/5 p-4">
@@ -99,9 +99,9 @@
         <div class="sidebar-card rounded-2xl border border-white/10 bg-background-dark/70 p-4">
           <div class="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.2em] text-gray-400">
             <span class="material-symbols-outlined text-[14px] text-primary/80">schedule</span>
-            <span class="sidebar-label">Emlékeztető</span>
+            <span class="sidebar-label">{{ 'admin.dashboard.reminder.title' | t }}</span>
           </div>
-          <p class="sidebar-label mt-2 text-sm text-gray-300">Legutóbbi belépés: --</p>
+          <p class="sidebar-label mt-2 text-sm text-gray-300">{{ 'admin.dashboard.reminder.lastLogin' | t }}</p>
         </div>
       </div>
     </aside>
@@ -117,11 +117,11 @@
           <div>
             <div class="flex items-center gap-3 text-sm font-semibold uppercase tracking-[0.2em] text-primary/80">
               <span class="material-symbols-outlined text-[22px]">admin_panel_settings</span>
-              Site Admin
+              {{ 'admin.dashboard.hero.badge' | t }}
             </div>
-            <h1 class="mt-3 text-3xl font-black text-white sm:text-4xl">Admin irányítópult</h1>
+            <h1 class="mt-3 text-3xl font-black text-white sm:text-4xl">{{ 'admin.dashboard.hero.title' | t }}</h1>
             <p class="mt-2 max-w-2xl text-sm text-gray-300">
-              Zárt terület. Itt készülnek az új admin modulok és áttekintések.
+              {{ 'admin.dashboard.hero.description' | t }}
             </p>
           </div>
           <div class="flex flex-col items-end gap-2">
@@ -134,7 +134,7 @@
               class="admin-verify-btn inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-gray-200 transition hover:border-primary/40 hover:text-white"
               type="button">
               <span class="material-symbols-outlined text-[18px]">shield</span>
-              Ellenőrzés
+              {{ 'admin.dashboard.hero.verify' | t }}
             </button>
           </div>
         </div>
@@ -142,68 +142,68 @@
 
       <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <div class="admin-stat-card rounded-2xl border border-white/10 bg-background-dark/60 p-4">
-          <p class="text-xs font-semibold uppercase tracking-[0.2em] text-gray-400">Felhasználók</p>
+          <p class="text-xs font-semibold uppercase tracking-[0.2em] text-gray-400">{{ 'admin.dashboard.stats.users' | t }}</p>
           <p class="mt-4 text-2xl font-black text-white">--</p>
-          <p class="mt-2 text-xs text-gray-400">Aktív regisztrációk</p>
+          <p class="mt-2 text-xs text-gray-400">{{ 'admin.dashboard.stats.usersHint' | t }}</p>
         </div>
         <div class="admin-stat-card rounded-2xl border border-white/10 bg-background-dark/60 p-4">
-          <p class="text-xs font-semibold uppercase tracking-[0.2em] text-gray-400">Csoportok</p>
+          <p class="text-xs font-semibold uppercase tracking-[0.2em] text-gray-400">{{ 'admin.dashboard.stats.groups' | t }}</p>
           <p class="mt-4 text-2xl font-black text-white">--</p>
-          <p class="mt-2 text-xs text-gray-400">Kiemelt közösségek</p>
+          <p class="mt-2 text-xs text-gray-400">{{ 'admin.dashboard.stats.groupsHint' | t }}</p>
         </div>
         <div class="admin-stat-card rounded-2xl border border-white/10 bg-background-dark/60 p-4">
-          <p class="text-xs font-semibold uppercase tracking-[0.2em] text-gray-400">Statisztikák</p>
+          <p class="text-xs font-semibold uppercase tracking-[0.2em] text-gray-400">{{ 'admin.dashboard.stats.statistics' | t }}</p>
           <p class="mt-4 text-2xl font-black text-white">--</p>
-          <p class="mt-2 text-xs text-gray-400">Frissítés alatt</p>
+          <p class="mt-2 text-xs text-gray-400">{{ 'admin.dashboard.stats.statisticsHint' | t }}</p>
         </div>
         <div class="admin-stat-card rounded-2xl border border-white/10 bg-background-dark/60 p-4">
-          <p class="text-xs font-semibold uppercase tracking-[0.2em] text-gray-400">Üzenetek</p>
+          <p class="text-xs font-semibold uppercase tracking-[0.2em] text-gray-400">{{ 'admin.dashboard.stats.messages' | t }}</p>
           <p class="mt-4 text-2xl font-black text-white">--</p>
-          <p class="mt-2 text-xs text-gray-400">Beérkező csatornák</p>
+          <p class="mt-2 text-xs text-gray-400">{{ 'admin.dashboard.stats.messagesHint' | t }}</p>
         </div>
       </div>
 
       <div class="grid gap-6 lg:grid-cols-3">
         <div class="admin-actions-card rounded-2xl border border-white/10 bg-background-dark/60 p-5 lg:col-span-2">
           <div class="flex items-center justify-between">
-            <h2 class="text-lg font-bold text-white">Gyors műveletek</h2>
-            <span class="text-xs font-semibold uppercase tracking-[0.2em] text-gray-400">Placeholder</span>
+            <h2 class="text-lg font-bold text-white">{{ 'admin.dashboard.quickActions.title' | t }}</h2>
+            <span class="text-xs font-semibold uppercase tracking-[0.2em] text-gray-400">{{ 'admin.dashboard.quickActions.placeholder' | t }}</span>
           </div>
           <div class="mt-4 grid gap-3 sm:grid-cols-2">
             <button
               class="flex items-center justify-between rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm font-semibold text-gray-200 transition hover:border-primary/40 hover:text-white"
               type="button">
-              Moderációs listák
+              {{ 'admin.dashboard.quickActions.moderation' | t }}
               <span class="material-symbols-outlined text-[18px]">flag</span>
             </button>
             <button
               class="flex items-center justify-between rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm font-semibold text-gray-200 transition hover:border-primary/40 hover:text-white"
               type="button">
-              Rendszer Üzenetek
+              {{ 'admin.dashboard.quickActions.systemMessages' | t }}
               <span class="material-symbols-outlined text-[18px]">campaign</span>
             </button>
             <button
               class="flex items-center justify-between rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm font-semibold text-gray-200 transition hover:border-primary/40 hover:text-white"
               type="button">
-              Felhasználó tiltás
+              {{ 'admin.dashboard.quickActions.blockUser' | t }}
               <span class="material-symbols-outlined text-[18px]">block</span>
             </button>
             <button
               class="flex items-center justify-between rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm font-semibold text-gray-200 transition hover:border-primary/40 hover:text-white"
               type="button">
-              Audit napló export
+              {{ 'admin.dashboard.quickActions.auditExport' | t }}
               <span class="material-symbols-outlined text-[18px]">download</span>
             </button>
           </div>
         </div>
 
         <div class="admin-access-card rounded-2xl border border-white/10 bg-background-dark/60 p-5">
-          <h2 class="text-lg font-bold text-white">Hozzáférés</h2>
+          <h2 class="text-lg font-bold text-white">{{ 'admin.dashboard.access.title' | t }}</h2>
           <p class="mt-3 text-sm text-gray-300">
-            Ez a panel a site-admin flag alapján érhető el a profil dokumentumban.
+            {{ 'admin.dashboard.access.description' | t }}
           </p>
           <div class="mt-4 rounded-xl border border-white/10 bg-white/5 p-4 text-xs text-gray-400">
-            Kötelező mező: <span class="text-white">role: 'siteadmin'</span>
+            {{ 'admin.dashboard.access.requiredField' | t }} <span class="text-white">role: 'siteadmin'</span>
           </div>
         </div>
       </div>

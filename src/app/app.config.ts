@@ -4,6 +4,7 @@ import {
   provideZoneChangeDetection,
   isDevMode,
 } from '@angular/core';
+import { provideTransloco, translocoConfig } from '@jsverse/transloco';
 import { provideRouter, withInMemoryScrolling } from '@angular/router';
 import { initializeApp, provideFirebaseApp } from '@angular/fire/app';
 import { provideAppCheck } from '@angular/fire/app-check';
@@ -16,6 +17,8 @@ import { routes } from './app.routes';
 import { provideServiceWorker } from '@angular/service-worker';
 import { getApp } from 'firebase/app';
 import { initializeAppCheck, ReCaptchaEnterpriseProvider } from 'firebase/app-check';
+import { AppTranslocoLoader } from './i18n/transloco-loader';
+import { SUPPORTED_LANGUAGES } from './i18n/translations';
 
 const APP_CHECK_DEBUG_LOG_PATTERNS = [
   'app check debug token',
@@ -93,6 +96,16 @@ export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
     provideZoneChangeDetection({ eventCoalescing: true }),
+    provideTransloco({
+      config: translocoConfig({
+        availableLangs: [...SUPPORTED_LANGUAGES],
+        defaultLang: 'hu',
+        fallbackLang: 'hu',
+        reRenderOnLangChange: true,
+        prodMode: !isDevMode(),
+      }),
+      loader: AppTranslocoLoader,
+    }),
     provideRouter(
       routes,
       withInMemoryScrolling({

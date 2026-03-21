@@ -1,4 +1,5 @@
-import { Injectable, signal } from '@angular/core';
+﻿import { Injectable, inject, signal } from '@angular/core';
+import { LanguageService } from './language.service';
 
 export interface ModalConfig {
   title?: string;
@@ -16,6 +17,8 @@ export interface ModalConfig {
   providedIn: 'root',
 })
 export class ModalService {
+  private readonly languageService = inject(LanguageService);
+
   modalState = signal<{
     isOpen: boolean;
     config: ModalConfig | null;
@@ -28,29 +31,29 @@ export class ModalService {
 
   alert(
     message: string,
-    title: string = 'Figyelem',
+    title?: string,
     type: 'info' | 'success' | 'warning' | 'error' = 'info'
   ): Promise<boolean> {
     return this.open({
       message,
-      title,
+      title: title ?? this.languageService.t('common.attention'),
       type,
-      confirmText: 'Rendben',
+      confirmText: this.languageService.t('common.ok'),
     });
   }
 
   confirm(
     message: string,
-    title: string = 'Megerősítés',
-    confirmText: string = 'Igen',
-    cancelText: string = 'Mégse'
+    title?: string,
+    confirmText?: string,
+    cancelText?: string
   ): Promise<boolean> {
     return this.open({
       message,
-      title,
+      title: title ?? this.languageService.t('common.confirmation'),
       type: 'confirm',
-      confirmText,
-      cancelText,
+      confirmText: confirmText ?? this.languageService.t('common.confirm'),
+      cancelText: cancelText ?? this.languageService.t('common.cancel'),
     });
   }
 
@@ -80,3 +83,4 @@ export class ModalService {
     });
   }
 }
+

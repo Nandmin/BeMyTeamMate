@@ -15,6 +15,8 @@ import {
 } from '@angular/fire/firestore';
 import { ModalService } from '../../services/modal.service';
 import { AuthService } from '../../services/auth.service';
+import { TranslatePipe } from '../../pipes/translate.pipe';
+import { LanguageService } from '../../services/language.service';
 
 interface AdminMessageRow {
   id: string;
@@ -31,7 +33,7 @@ interface AdminMessageRow {
 @Component({
   selector: 'app-admin-messages-section',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, TranslatePipe],
   templateUrl: './admin-messages-section.component.html',
   styleUrl: './admin-messages-section.component.scss',
 })
@@ -41,6 +43,7 @@ export class AdminMessagesSectionComponent {
   private firestore = inject(Firestore);
   private modalService = inject(ModalService);
   private authService = inject(AuthService);
+  private languageService = inject(LanguageService);
   private adminMessagesCacheKey = 'admin:messages:list';
   private cacheTtlMs = 5 * 60 * 1000;
 
@@ -90,13 +93,17 @@ export class AdminMessagesSectionComponent {
       void this.markAsRead(message, undefined, true);
     }
 
-    const title = message.senderLabel ? 'Üzenet - ' + message.senderLabel : 'Üzenet';
+    const title = message.senderLabel
+      ? this.languageService.t('admin.messages.modal.titleWithSender', {
+          sender: message.senderLabel,
+        })
+      : this.languageService.t('admin.messages.modal.title');
     void this.modalService.openWithAction({
       message: message.message,
       title,
       type: 'info',
-      confirmText: 'Bezárás',
-      extraActionText: 'Archiválás',
+      confirmText: this.languageService.t('admin.messages.modal.close'),
+      extraActionText: this.languageService.t('admin.messages.actions.archive'),
       extraActionIcon: 'archive',
       onExtraAction: () => {
         void this.archiveMessage(message);
@@ -115,7 +122,11 @@ export class AdminMessagesSectionComponent {
       await updateDoc(messageRef, {
         readAt: serverTimestamp(),
         readById: user?.uid || '',
-        readByName: profile?.displayName || user?.displayName || user?.email || 'Ismeretlen',
+        readByName:
+          profile?.displayName ||
+          user?.displayName ||
+          user?.email ||
+          this.languageService.t('common.unknownUser'),
         readByEmail: user?.email || '',
       });
 
@@ -131,10 +142,10 @@ export class AdminMessagesSectionComponent {
   async archiveMessage(message: AdminMessageRow, event?: Event): Promise<void> {
     event?.stopPropagation();
     const confirmed = await this.modalService.confirm(
-      'Biztosan archiválod ezt az üzenetet?',
-      'Archiválás megerősítése',
-      'Archiválás',
-      'Mégse'
+      this.languageService.t('admin.messages.confirm.archiveMessage'),
+      this.languageService.t('admin.messages.confirm.archiveTitle'),
+      this.languageService.t('admin.messages.actions.archive'),
+      this.languageService.t('common.cancel')
     );
     if (!confirmed) return;
 
@@ -156,7 +167,11 @@ export class AdminMessagesSectionComponent {
         ...data,
         archivedAt: serverTimestamp(),
         archivedById: user?.uid || '',
-        archivedByName: profile?.displayName || user?.displayName || user?.email || 'Ismeretlen',
+        archivedByName:
+          profile?.displayName ||
+          user?.displayName ||
+          user?.email ||
+          this.languageService.t('common.unknownUser'),
         archivedByEmail: user?.email || '',
       });
       batch.delete(messageRef);
@@ -171,10 +186,10 @@ export class AdminMessagesSectionComponent {
   async deleteMessage(message: AdminMessageRow, event?: Event): Promise<void> {
     event?.stopPropagation();
     const confirmed = await this.modalService.confirm(
-      'Biztosan törlöd ezt az üzenetet?',
-      'Törlés megerősítése',
-      'Törlés',
-      'Mégse'
+      this.languageService.t('admin.messages.confirm.deleteMessage'),
+      this.languageService.t('admin.messages.confirm.deleteTitle'),
+      this.languageService.t('admin.messages.actions.delete'),
+      this.languageService.t('common.cancel')
     );
     if (!confirmed) return;
 
@@ -262,7 +277,8 @@ export class AdminMessagesSectionComponent {
         const contactEmail = typeof data['contactEmail'] === 'string' ? data['contactEmail'] : '';
         const userEmail = typeof data['userEmail'] === 'string' ? data['userEmail'] : '';
         const userName = typeof data['userName'] === 'string' ? data['userName'] : '';
-        const senderLabel = userName || contactEmail || userEmail || 'Ismeretlen';
+        const senderLabel =
+          userName || contactEmail || userEmail || this.languageService.t('common.unknownUser');
 
         return {
           id: docSnap.id,

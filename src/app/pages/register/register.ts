@@ -1,22 +1,25 @@
-﻿import { Component, inject, signal } from '@angular/core';
+import { Component, effect, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { AbstractControl, FormBuilder, ReactiveFormsModule, ValidationErrors, Validators } from '@angular/forms';
 import { AuthService } from '../../services/auth.service';
 import { SeoService } from '../../services/seo.service';
+import { LanguageService } from '../../services/language.service';
+import { TranslatePipe } from '../../pipes/translate.pipe';
 
 @Component({
   selector: 'app-register',
   standalone: true,
-  imports: [CommonModule, RouterLink, ReactiveFormsModule],
+  imports: [CommonModule, RouterLink, ReactiveFormsModule, TranslatePipe],
   templateUrl: './register.html',
   styleUrl: './register.scss',
 })
 export class RegisterPage {
-  private authService = inject(AuthService);
-  private fb = inject(FormBuilder);
-  private seo = inject(SeoService);
-  private router = inject(Router);
+  private readonly authService = inject(AuthService);
+  private readonly fb = inject(FormBuilder);
+  private readonly seo = inject(SeoService);
+  private readonly router = inject(Router);
+  private readonly languageService = inject(LanguageService);
 
   currentYear = new Date().getFullYear();
 
@@ -49,10 +52,13 @@ export class RegisterPage {
   isLoading = signal(false);
 
   constructor() {
-    this.seo.setPageMeta({
-      title: 'Ingyenes regisztráció – BeMyTeamMate',
-      description: 'Hozz létre fiókot 1 perc alatt, és kezdj el kiegyensúlyozott csapatokat generálni.',
-      path: '/register',
+    effect(() => {
+      this.languageService.currentLanguage();
+      this.seo.setPageMeta({
+        title: this.languageService.t('register.meta.title'),
+        description: this.languageService.t('register.meta.description'),
+        path: '/register',
+      });
     });
   }
 
@@ -77,7 +83,7 @@ export class RegisterPage {
     const { username, email, password, confirmPassword, bio } = this.registerForm.value;
 
     if (password !== confirmPassword) {
-      this.errorMessage = 'A jelszavak nem egyeznek.';
+      this.errorMessage = this.languageService.t('register.passwordMismatch');
       return;
     }
 
@@ -89,12 +95,12 @@ export class RegisterPage {
         bio,
         sports: Array.from(this.selectedSports),
       });
-      this.successMessage.set('Sikeres regisztráció! Az aktiváló emailt elküldtük.');
+      this.successMessage.set(this.languageService.t('register.success'));
       await this.router.navigate(['/resend-verification'], {
         queryParams: { email: email ?? '', registered: '1' },
       });
     } catch (error: any) {
-      this.errorMessage = this.getErrorMessage(error.code);
+      this.errorMessage = this.getErrorMessage(error?.code);
       console.error(error);
     } finally {
       this.isLoading.set(false);
@@ -104,23 +110,23 @@ export class RegisterPage {
   private getErrorMessage(code: string): string {
     switch (code) {
       case 'auth/email-already-in-use':
-        return 'Ez az e-mail cím már használatban van.';
+        return this.languageService.t('auth.error.emailAlreadyInUse');
       case 'auth/username-already-in-use':
-        return 'Ez a felhasználónév már használatban van.';
+        return this.languageService.t('auth.error.usernameTaken');
       case 'auth/invalid-username':
-        return 'Érvénytelen felhasználónév.';
+        return this.languageService.t('auth.error.invalidUsername');
       case 'auth/invalid-email':
-        return 'Érvénytelen e-mail cím formátum.';
+        return this.languageService.t('auth.error.invalidEmail');
       case 'auth/operation-not-allowed':
-        return 'Az e-mail/jelszó regisztráció nincs engedélyezve.';
+        return this.languageService.t('auth.error.unavailable');
       case 'auth/weak-password':
-        return 'A jelszó túl gyenge (legalább 6 karakter).';
+        return this.languageService.t('register.passwordMinLength');
       case 'auth/unauthorized-continue-uri':
       case 'auth/invalid-continue-uri':
       case 'auth/missing-continue-uri':
-        return 'A hitelesítő e-mail link beállítás hibás.' + '\n' + 'Jelezd az adminnak.';
+        return this.languageService.t('resend.error.domain');
       default:
-        return 'Sikertelen regisztráció.' + '\n' + 'Kérlek próbáld újra.';
+        return this.languageService.t('auth.fallback.register');
     }
   }
 }

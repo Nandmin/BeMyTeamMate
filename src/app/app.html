@@ -3,7 +3,6 @@
   <app-header></app-header>
   }
 
-  <!-- Main Content Area -->
   <main class="main-content" [class.no-nav]="!showNav()" [class.pt-0]="showHeader()">
     <router-outlet />
     @if (showFooter()) {
@@ -11,27 +10,26 @@
     }
   </main>
 
-  <!-- Bottom Navigation -->
   @if (showNav()) {
   <nav class="bottom-nav">
     <a routerLink="/events" routerLinkActive="active" class="nav-item">
       <span class="material-symbols-outlined">calendar_month</span>
-      <span>Események</span>
+      <span>{{ 'common.nav.events' | transloco }}</span>
     </a>
 
     <a routerLink="/groups" routerLinkActive="active" class="nav-item">
       <span class="material-symbols-outlined">groups</span>
-      <span>Tagságaim</span>
+      <span>{{ 'common.nav.groups' | transloco }}</span>
     </a>
 
     <a routerLink="/results" routerLinkActive="active" class="nav-item">
       <span class="material-symbols-outlined">leaderboard</span>
-      <span>Eredmények</span>
+      <span>{{ 'common.nav.results' | transloco }}</span>
     </a>
 
     <a routerLink="/profile" routerLinkActive="active" class="nav-item">
       <span class="material-symbols-outlined">person</span>
-      <span>Profil</span>
+      <span>{{ 'common.profile' | transloco }}</span>
     </a>
   </nav>
   }
@@ -40,7 +38,7 @@
   <section class="update-toast" [class.with-nav]="showNav()">
     <div class="update-toast__text">
       <span class="material-symbols-outlined">system_update_alt</span>
-      <span>Új verzió érhető el.</span>
+      <span>{{ 'app.update.available' | transloco }}</span>
     </div>
     <button
       type="button"
@@ -48,7 +46,7 @@
       [disabled]="isApplyingPwaUpdate()"
       (click)="applyPwaUpdate()"
     >
-      {{ isApplyingPwaUpdate() ? 'Frissítés...' : 'Frissítés' }}
+      {{ isApplyingPwaUpdate() ? ('common.refreshing' | transloco) : ('common.refresh' | transloco) }}
     </button>
   </section>
   }
@@ -56,3 +54,5 @@
   <app-cookie-consent />
   <app-modal />
 </div>
+
+

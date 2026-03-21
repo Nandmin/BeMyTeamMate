@@ -1,16 +1,20 @@
 import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, EventEmitter, Input, Output, inject } from '@angular/core';
+import { TranslocoPipe } from '@jsverse/transloco';
 import { GroupMember } from '../../../../services/group.service';
 import { SportEvent } from '../../../../services/event.service';
+import { LanguageService } from '../../../../services/language.service';
 
 @Component({
   selector: 'app-match-step-feedback',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, TranslocoPipe],
   templateUrl: './match-step-feedback.component.html',
   styleUrl: './match-step-feedback.component.scss',
 })
 export class MatchStepFeedbackComponent {
+  private readonly languageService = inject(LanguageService);
+
   readonly mvpEloReward = 5;
 
   @Input() event: SportEvent | undefined;
@@ -43,7 +47,9 @@ export class MatchStepFeedbackComponent {
   }
 
   get primaryCtaLabel(): string {
-    return this.canSubmitMvpVote ? 'Szavazat leadása' : 'Lezárás';
+    return this.canSubmitMvpVote
+      ? this.languageService.t('eventDetail.actions.submitVote')
+      : this.languageService.t('eventDetail.actions.finish');
   }
 
   get primaryDisabled(): boolean {

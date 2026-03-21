@@ -1,4 +1,4 @@
-import {
+﻿import {
   Component,
   inject,
   signal,
@@ -10,22 +10,25 @@ import {
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
+import { TranslocoPipe } from '@jsverse/transloco';
 import { switchMap, of } from 'rxjs';
 import { AuthService } from '../../services/auth.service';
 import { ThemeService } from '../../services/theme.service';
 import { NotificationService } from '../../services/notification.service';
 import { AppNotification } from '../../models/notification.model';
+import { LanguageService } from '../../services/language.service';
 
 @Component({
   selector: 'app-header',
   standalone: true,
-  imports: [CommonModule, RouterLink, RouterLinkActive],
+  imports: [CommonModule, RouterLink, RouterLinkActive, TranslocoPipe],
   templateUrl: './header.html',
   styleUrl: './header.scss',
 })
 export class HeaderComponent {
   public authService = inject(AuthService);
   public themeService = inject(ThemeService);
+  public languageService = inject(LanguageService);
   public notificationService = inject(NotificationService);
   private router = inject(Router);
   public isNotificationsOpen = signal(false);
@@ -131,7 +134,6 @@ export class HeaderComponent {
   onDocumentClick(event: MouseEvent) {
     const target = event.target as Node | null;
 
-    // Handle notifications panel
     if (this.isNotificationsOpen()) {
       const panelEl = this.notifPanel?.nativeElement;
       const buttonEl = this.notifButton?.nativeElement;
@@ -140,8 +142,6 @@ export class HeaderComponent {
       }
     }
 
-    // Handle mobile menu - only close if clicking outside the menu button/panel
-    // Note: Since menu items are links, they will trigger navigation and we should close the menu
     if (this.isMobileMenuOpen()) {
       const mobileMenu = document.getElementById('mobile-menu');
       const menuBtn = document.getElementById('mobile-menu-button');
@@ -162,12 +162,25 @@ export class HeaderComponent {
     const date = typeof value.toDate === 'function' ? value.toDate() : new Date(value);
     const diffMs = Date.now() - date.getTime();
     const minutes = Math.floor(diffMs / 60000);
-    if (minutes < 1) return 'Most';
-    if (minutes < 60) return `${minutes} perce`;
+    if (minutes < 1) return this.languageService.t('common.justNow');
+    if (minutes < 60) {
+      return this.languageService.t(
+        'common.minutesAgo',
+        { count: minutes },
+      );
+    }
     const hours = Math.floor(minutes / 60);
-    if (hours < 24) return `${hours} órája`;
+    if (hours < 24) {
+      return this.languageService.t(
+        'common.hoursAgo',
+        { count: hours },
+      );
+    }
     const days = Math.floor(hours / 24);
-    return `${days} napja`;
+    return this.languageService.t(
+      'common.daysAgo',
+      { count: days },
+    );
   }
 
   @HostListener('window:resize', ['$event'])
@@ -185,7 +198,11 @@ export class HeaderComponent {
   }
 
   getNotificationTitle(notification: AppNotification): string {
-    return this.getRsvpEventLabel(notification) || notification.title || 'Értesítés';
+    return (
+      this.getRsvpEventLabel(notification) ||
+      notification.title ||
+      this.languageService.t('common.defaultNotificationTitle')
+    );
   }
 
   private getNotificationFilterKey(notification: AppNotification): string | null {
@@ -200,6 +217,7 @@ export class HeaderComponent {
 
   private getRsvpEventLabel(notification: AppNotification): string | null {
     if (!this.isRsvpNotification(notification)) return null;
+    if (notification.eventLabel) return notification.eventLabel;
     const title = (notification.title || '').trim();
     if (this.isEventTitleWithDate(title)) return title;
     const body = (notification.body || '').trim();
@@ -214,8 +232,10 @@ export class HeaderComponent {
   private isRsvpNotification(notification: AppNotification) {
     return notification.type === 'event_rsvp_yes' || notification.type === 'event_rsvp_no';
   }
+
   getAvatarUrl(user: any): string {
     if (user?.photoURL) return user.photoURL;
     return `https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.uid || 'default'}`;
   }
 }
+

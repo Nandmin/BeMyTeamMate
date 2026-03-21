@@ -13,6 +13,7 @@ export interface AppNotification {
   type: NotificationType;
   groupId: string;
   eventId?: string | null;
+  eventLabel?: string | null;
   title: string;
   body: string;
   link?: string;

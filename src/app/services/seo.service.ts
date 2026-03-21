@@ -1,6 +1,7 @@
 import { Inject, Injectable } from '@angular/core';
 import { Meta, Title } from '@angular/platform-browser';
 import { DOCUMENT } from '@angular/common';
+import { LanguageService } from './language.service';
 
 type PageMeta = {
   title: string;
@@ -19,6 +20,7 @@ export class SeoService {
     private readonly title: Title,
     private readonly meta: Meta,
     @Inject(DOCUMENT) private readonly document: Document,
+    private readonly languageService: LanguageService,
   ) {}
 
   setPageMeta({ title, description, path, imagePath, noindex }: PageMeta) {
@@ -35,7 +37,7 @@ export class SeoService {
     this.meta.updateTag({ property: 'og:title', content: title });
     this.meta.updateTag({ property: 'og:description', content: description });
     this.meta.updateTag({ property: 'og:type', content: 'website' });
-    this.meta.updateTag({ property: 'og:locale', content: 'hu_HU' });
+    this.meta.updateTag({ property: 'og:locale', content: this.languageService.getOgLocale() });
     this.meta.updateTag({ property: 'og:site_name', content: 'BeMyTeamMate' });
     this.meta.updateTag({ property: 'og:image', content: imageUrl });
     this.meta.updateTag({ property: 'og:url', content: canonicalUrl });

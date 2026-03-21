@@ -21,6 +21,7 @@ import {
 import { AppCheck } from '@angular/fire/app-check';
 import { AuthService } from './auth.service';
 import { GroupMember } from './group.service';
+import { LanguageService } from './language.service';
 import { NotificationService } from './notification.service';
 import { Observable, Subject, defer, from, of, concat } from 'rxjs';
 import { map, tap, switchMap, catchError, startWith, filter } from 'rxjs/operators';
@@ -84,6 +85,7 @@ export class EventService {
   private firestore = inject(Firestore);
   private appCheck = inject(AppCheck, { optional: true });
   private authService = inject(AuthService);
+  private languageService = inject(LanguageService);
   private notificationService = inject(NotificationService);
   private cacheTtlMs = 5 * 60 * 1000;
   private eventCache = new Map<string, { data: SportEvent; ts: number }>();
@@ -114,7 +116,7 @@ export class EventService {
     >
   ) {
     const user = this.authService.currentUser();
-    if (!user) throw new Error('User must be logged in to create an event');
+    if (!user) throw new Error(this.languageService.t('common.error.authRequired'));
 
     const mvpVotingEndsAt = eventData.mvpVotingEnabled
       ? this.computeMvpVotingEndsAt(eventData.date)
@@ -136,17 +138,22 @@ export class EventService {
     this.emitEventsChange(groupId);
 
     const groupSnap = await this.fsGetDoc(this.fsDoc(`groups/${groupId}`));
-    const groupName = groupSnap.exists() ? (groupSnap.data() as any).name : 'Csoport';
+    const groupName = groupSnap.exists()
+      ? (groupSnap.data() as any).name
+      : this.languageService.t('common.group.defaultName');
     await this.notificationService.notifyGroupMembers(
       {
         type: 'event_created',
         groupId,
         eventId: docRef.id,
-        title: `${groupName} - Új esemény`,
-        body: `${eventData.title} létrehozva.`,
+        eventLabel: eventData.title || null,
+        title: this.languageService.t('event.notification.createdTitle', { groupName }),
+        body: this.languageService.t('event.notification.createdBody', {
+          eventTitle: eventData.title,
+        }),
         link: `/groups/${groupId}/events/${docRef.id}`,
         actorId: user.uid,
-        actorName: user.displayName || 'Ismeretlen',
+        actorName: user.displayName || this.languageService.t('common.unknownUser'),
         actorPhoto: user.photoURL || null,
       },
       [user.uid]
@@ -164,7 +171,7 @@ export class EventService {
     endDate: Timestamp
   ) {
     const user = this.authService.currentUser();
-    if (!user) throw new Error('User must be logged in');
+    if (!user) throw new Error(this.languageService.t('common.error.authRequired'));
 
     const recurrenceId = (eventData as any).recurrenceId || crypto.randomUUID();
     const startDate = eventData.date.toDate();
@@ -219,16 +226,22 @@ export class EventService {
     this.emitEventsChange(groupId);
 
     const groupSnap = await getDoc(doc(this.firestore, `groups/${groupId}`));
-    const groupName = groupSnap.exists() ? (groupSnap.data() as any).name : 'Csoport';
+    const groupName = groupSnap.exists()
+      ? (groupSnap.data() as any).name
+      : this.languageService.t('common.group.defaultName');
     await this.notificationService.notifyGroupMembers(
       {
         type: 'event_created',
         groupId,
-        title: `${groupName} - Új esemény sorozat`,
-        body: `${eventData.title} (${result.length} alkalom) létrehozva.`,
+        eventLabel: eventData.title || null,
+        title: this.languageService.t('event.notification.createdSeriesTitle', { groupName }),
+        body: this.languageService.t('event.notification.createdSeriesBody', {
+          eventTitle: eventData.title,
+          count: result.length,
+        }),
         link: `/groups/${groupId}`,
         actorId: user.uid,
-        actorName: user.displayName || 'Ismeretlen',
+        actorName: user.displayName || this.languageService.t('common.unknownUser'),
         actorPhoto: user.photoURL || null,
       },
       [user.uid]
@@ -250,7 +263,7 @@ export class EventService {
     if (cached) return cached;
     const docRef = doc(this.firestore, `groups/${groupId}/events/${eventId}`);
     const snap = await getDoc(docRef);
-    if (!snap.exists()) throw new Error('Event not found');
+    if (!snap.exists()) throw new Error(this.languageService.t('event.error.notFound'));
     const event = { id: snap.id, ...(snap.data() as SportEvent) } as SportEvent;
     this.setCachedEvent(groupId, eventId, event);
     return event;
@@ -268,7 +281,9 @@ export class EventService {
       getDoc(doc(this.firestore, `groups/${groupId}`)),
     ]);
     const event = eventSnap.exists() ? (eventSnap.data() as SportEvent) : null;
-    const groupName = groupSnap.exists() ? ((groupSnap.data() as any).name as string) : 'Csoport';
+    const groupName = groupSnap.exists()
+      ? ((groupSnap.data() as any).name as string)
+      : this.languageService.t('common.group.defaultName');
 
     const result = await deleteDoc(docRef);
     this.invalidateEventCaches(groupId, eventId);
@@ -280,11 +295,14 @@ export class EventService {
           type: 'event_cancelled',
           groupId,
           eventId,
-          title: `${groupName} - esemény lemondva`,
-          body: `${event.title || 'Egy esémeny'} lemondva.`,
+          eventLabel: event.title || null,
+          title: this.languageService.t('event.notification.cancelledTitle', { groupName }),
+          body: this.languageService.t('event.notification.cancelledBody', {
+            eventTitle: event.title || this.languageService.t('common.event.defaultName'),
+          }),
           link: `/groups/${groupId}`,
           actorId: user?.uid,
-          actorName: user?.displayName || 'Ismeretlen',
+          actorName: user?.displayName || this.languageService.t('common.unknownUser'),
           actorPhoto: user?.photoURL || null,
         },
         user?.uid ? [user.uid] : []
@@ -295,18 +313,18 @@ export class EventService {
 
   async toggleRSVP(groupId: string, eventId: string) {
     const user = this.authService.currentUser();
-    if (!user) throw new Error('User must be logged in');
+    if (!user) throw new Error(this.languageService.t('common.error.authRequired'));
 
     const eventRef = this.fsDoc(`groups/${groupId}/events/${eventId}`);
     const snap = await this.fsGetDoc(eventRef);
-    if (!snap.exists()) throw new Error('Event not found');
+    if (!snap.exists()) throw new Error(this.languageService.t('event.error.notFound'));
     const event = { id: snap.id, ...(snap.data() as SportEvent) } as SportEvent;
     const attendees = event.attendees || [];
     const isJoining = !attendees.includes(user.uid);
 
     if (isJoining) {
       if (event.currentAttendees >= event.maxAttendees) {
-        throw new Error('Sajnáljuk, az esemény betelt.');
+        throw new Error(this.languageService.t('event.error.capacityFull'));
       }
       attendees.push(user.uid);
     } else {
@@ -323,7 +341,9 @@ export class EventService {
     this.emitEventChange(groupId, eventId);
 
     const groupSnap = await this.fsGetDoc(this.fsDoc(`groups/${groupId}`));
-    const groupName = groupSnap.exists() ? ((groupSnap.data() as any).name as string) : 'Csoport';
+    const groupName = groupSnap.exists()
+      ? ((groupSnap.data() as any).name as string)
+      : this.languageService.t('common.group.defaultName');
     const eventDate = event.date ? event.date.toDate() : new Date();
     const pad = (value: number) => String(value).padStart(2, '0');
     const datePart = `${eventDate.getFullYear()}.${pad(eventDate.getMonth() + 1)}.${pad(
@@ -333,20 +353,28 @@ export class EventService {
     const capacity = event.maxAttendees || attendees.length;
     const attendeeCount = attendees.length;
     const eventDateTime = `${datePart} ${timePart}`;
-    const eventTitle = event.title || 'Esemeny';
+    const eventTitle = event.title || this.languageService.t('common.event.defaultName');
     const rsvpTitle = `${eventTitle} - ${eventDateTime}`;
     await this.notificationService.notifyGroupMembers(
       {
         type: isJoining ? 'event_rsvp_yes' : 'event_rsvp_no',
         groupId,
         eventId,
+        eventLabel: rsvpTitle,
         title: rsvpTitle,
-        body: `${user.displayName || 'Ismeretlen'} ${
-          isJoining ? 'részt vesz' : 'nem vesz részt'
-        } az eseményen ( ${attendeeCount} / ${capacity} )`,
+        body: this.languageService.t(
+          isJoining
+            ? 'event.notification.rsvpJoinedBody'
+            : 'event.notification.rsvpDeclinedBody',
+          {
+            userName: user.displayName || this.languageService.t('common.unknownUser'),
+            attendeeCount,
+            capacity,
+          }
+        ),
         link: `/groups/${groupId}/events/${eventId}`,
         actorId: user.uid,
-        actorName: user.displayName || 'Ismeretlen',
+        actorName: user.displayName || this.languageService.t('common.unknownUser'),
         actorPhoto: user.photoURL || null,
       },
       [user.uid]
@@ -392,11 +420,11 @@ export class EventService {
     _teamBData: GroupMember[]
   ) {
     const user = this.authService.currentUser();
-    if (!user) throw new Error('User must be logged in');
+    if (!user) throw new Error(this.languageService.t('common.error.authRequired'));
 
     const workerBaseUrl = this.getWorkerBaseUrl();
     if (!workerBaseUrl) {
-      throw new Error('Cloudflare Worker URL is not configured correctly.');
+      throw new Error(this.languageService.t('event.error.workerConfig'));
     }
 
     let authToken = '';
@@ -432,38 +460,44 @@ export class EventService {
 
   async submitMvpVote(groupId: string, eventId: string, votedForId: string) {
     const user = this.authService.currentUser();
-    if (!user) throw new Error('User must be logged in');
+    if (!user) throw new Error(this.languageService.t('common.error.authRequired'));
 
     const eventRef = doc(this.firestore, `groups/${groupId}/events/${eventId}`);
     const snap = await getDoc(eventRef);
-    if (!snap.exists()) throw new Error('Event not found');
+    if (!snap.exists()) throw new Error(this.languageService.t('event.error.notFound'));
     const event = { id: snap.id, ...(snap.data() as SportEvent) } as SportEvent;
 
-    if (!event.mvpVotingEnabled) throw new Error('Az MVP szavazás nem aktív ennél az eseménynél.');
-    if (event.status !== 'finished') throw new Error('Még nem lehet MVP-re szavazni.');
+    if (!event.mvpVotingEnabled) {
+      throw new Error(this.languageService.t('event.error.mvpVotingInactive'));
+    }
+    if (event.status !== 'finished') {
+      throw new Error(this.languageService.t('event.error.mvpVotingNotReady'));
+    }
 
     const voterId = user.uid;
     const attendees = event.attendees || [];
     if (!attendees.includes(voterId)) {
-      throw new Error('Csak a résztvevők szavazhatnak.');
+      throw new Error(this.languageService.t('event.error.onlyAttendeesCanVote'));
     }
     if (!attendees.includes(votedForId)) {
-      throw new Error('Csak résztvevő játékosra lehet szavazni.');
+      throw new Error(this.languageService.t('event.error.onlyAttendeePlayerCanVote'));
     }
     if (voterId === votedForId) {
-      throw new Error('Magadra nem szavazhatsz.');
+      throw new Error(this.languageService.t('event.error.selfVoteNotAllowed'));
     }
     if (event.mvpVotes && event.mvpVotes[voterId]) {
-      throw new Error('Már leadtad a szavazatodat.');
+      throw new Error(this.languageService.t('event.error.voteAlreadyCast'));
     }
 
     const eventDate = this.coerceDate(event.date);
-    if (Number.isNaN(eventDate.getTime())) throw new Error('Érvénytelen esemény dátum!');
+    if (Number.isNaN(eventDate.getTime())) {
+      throw new Error(this.languageService.t('event.error.invalidDate'));
+    }
     const end = event.mvpVotingEndsAt
       ? this.coerceDate(event.mvpVotingEndsAt)
       : (eventDate.setHours(23, 59, 59, 999), eventDate);
     if (new Date() > end) {
-      throw new Error('Lejárt a szavazási időszak.');
+      throw new Error(this.languageService.t('event.error.votingExpired'));
     }
 
     const updatedVotes = { ...(event.mvpVotes || {}), [voterId]: votedForId };
@@ -478,11 +512,11 @@ export class EventService {
 
   async finalizeMvpVotingIfNeeded(groupId: string, eventId: string) {
     const user = this.authService.currentUser();
-    if (!user) throw new Error('User must be logged in');
+    if (!user) throw new Error(this.languageService.t('common.error.authRequired'));
 
     const workerBaseUrl = this.getWorkerBaseUrl();
     if (!workerBaseUrl) {
-      throw new Error('Cloudflare Worker URL is not configured correctly.');
+      throw new Error(this.languageService.t('event.error.workerConfig'));
     }
 
     let authToken = '';
@@ -513,7 +547,11 @@ export class EventService {
 
     const payload = await response.json().catch(() => null);
     if (payload && payload.ok === false) {
-      throw new Error(typeof payload.error === 'string' ? payload.error : 'MVP finalize failed');
+      throw new Error(
+        typeof payload.error === 'string'
+          ? payload.error
+          : this.languageService.t('event.error.mvpFinalizeFailed')
+      );
     }
 
     this.invalidateEventCaches(groupId, eventId);

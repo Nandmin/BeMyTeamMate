@@ -1,21 +1,24 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, effect, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { AuthService } from '../../services/auth.service';
 import { SeoService } from '../../services/seo.service';
+import { LanguageService } from '../../services/language.service';
+import { TranslatePipe } from '../../pipes/translate.pipe';
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [CommonModule, RouterLink, ReactiveFormsModule],
+  imports: [CommonModule, RouterLink, ReactiveFormsModule, TranslatePipe],
   templateUrl: './login.html',
   styleUrl: './login.scss',
 })
 export class LoginPage implements OnInit {
-  private authService = inject(AuthService);
-  private fb = inject(FormBuilder);
-  private seo = inject(SeoService);
+  private readonly authService = inject(AuthService);
+  private readonly fb = inject(FormBuilder);
+  private readonly seo = inject(SeoService);
+  private readonly languageService = inject(LanguageService);
 
   currentYear = new Date().getFullYear();
 
@@ -31,17 +34,22 @@ export class LoginPage implements OnInit {
   showResendVerificationLink = signal(false);
   emailForResend = '';
 
+  constructor() {
+    effect(() => {
+      this.languageService.currentLanguage();
+      this.seo.setPageMeta({
+        title: this.languageService.t('login.meta.title'),
+        description: this.languageService.t('login.meta.description'),
+        path: '/login',
+      });
+    });
+  }
+
   togglePassword() {
     this.showPassword.update((v) => !v);
   }
 
   ngOnInit() {
-    this.seo.setPageMeta({
-      title: 'Bejelentkezés – BeMyTeamMate',
-      description: 'Lépj be, szervezd a következő meccset és kezeld a csapatodat egy helyen.',
-      path: '/login',
-    });
-    // Check if we arrived here via a magic link
     this.authService.verifyMagicLink().catch((err) => {
       console.error('Magic link verify failed', err);
     });
@@ -52,6 +60,7 @@ export class LoginPage implements OnInit {
       this.loginForm.markAllAsTouched();
       return;
     }
+
     this.errorMessage = '';
     this.showResendVerificationLink.set(false);
     this.isLoading.set(true);
@@ -61,7 +70,7 @@ export class LoginPage implements OnInit {
     try {
       await this.authService.loginWithEmail(email!, password!);
     } catch (error: any) {
-      this.errorMessage = this.getErrorMessage(error.code);
+      this.errorMessage = this.getErrorMessage(error?.code);
       this.showResendVerificationLink.set(error?.code === 'auth/email-not-verified');
       console.error(error);
     } finally {
@@ -76,8 +85,8 @@ export class LoginPage implements OnInit {
     try {
       await this.authService.loginWithGoogle();
     } catch (error: any) {
-      if (error.code !== 'auth/popup-closed-by-user') {
-        this.errorMessage = 'Google bejelentkezés sikertelen.';
+      if (error?.code !== 'auth/popup-closed-by-user') {
+        this.errorMessage = this.languageService.t('login.googleFailed');
       }
     } finally {
       this.isLoading.set(false);
@@ -87,7 +96,7 @@ export class LoginPage implements OnInit {
   async onForgotPassword() {
     const email = this.loginForm.get('email')?.value;
     if (!email || this.loginForm.get('email')?.invalid) {
-      this.errorMessage = 'Kérlek add meg az email címedet az elfelejtett jelszóhoz.';
+      this.errorMessage = this.languageService.t('login.emailRequiredForReset');
       this.successMessage.set('');
       return;
     }
@@ -99,9 +108,9 @@ export class LoginPage implements OnInit {
 
     try {
       await this.authService.sendPasswordReset(email);
-      this.successMessage.set('Jelszó-visszaállító email elküldve! Ellenőrizd a postaládád.');
+      this.successMessage.set(this.languageService.t('login.resetEmailSent'));
     } catch (error: any) {
-      this.errorMessage = 'Sikertelen jelszó-visszaállítás. Kérlek próbáld újra.';
+      this.errorMessage = this.languageService.t('login.resetFailed');
       console.error(error);
     } finally {
       this.isLoading.set(false);
@@ -113,17 +122,17 @@ export class LoginPage implements OnInit {
       case 'auth/user-not-found':
       case 'auth/wrong-password':
       case 'auth/invalid-credential':
-        return 'Helytelen e-mail cím vagy jelszó.';
+        return this.languageService.t('auth.fallback.login');
       case 'auth/invalid-email':
-        return 'Érvénytelen e-mail cím formátum.';
+        return this.languageService.t('auth.error.invalidEmail');
       case 'auth/user-disabled':
-        return 'Ez a felhasználói fiók le van tiltva.';
+        return this.languageService.t('auth.error.userDisabled');
       case 'auth/email-not-verified':
-        return 'Az e-mail címed még nincs megerősítve.' + '\n' + 'Előbb hitelesítsd az e-mail címed.';
+        return this.languageService.t('auth.error.emailNotVerified');
       case 'auth/too-many-requests':
-        return 'Rövid idő alatt túl sok sikertelen próbálkozás.' + '\n' + 'Próbáld meg újra később.';
+        return this.languageService.t('auth.error.tooManyRequests');
       default:
-        return 'Sikertelen bejelentkezés.' + '\n' + 'Kérlek próbáld újra.';
+        return this.languageService.t('auth.fallback.login');
     }
   }
 }

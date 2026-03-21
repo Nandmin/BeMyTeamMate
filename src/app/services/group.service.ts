@@ -19,10 +19,15 @@ import {
   limit,
 } from '@angular/fire/firestore';
 import { AuthService } from './auth.service';
+import { LanguageService } from './language.service';
 import { NotificationService } from './notification.service';
 import { Observable, of, from, defer, concat } from 'rxjs';
 import { tap, switchMap, map, catchError } from 'rxjs/operators';
 import { AppUser } from '../models/user.model';
+import {
+  getStoredGroupMemberRole,
+  normalizeGroupMemberRole,
+} from '../utils/group-member-role';
 
 export interface Group {
   id?: string;
@@ -84,6 +89,7 @@ export interface GroupInvite {
 export class GroupService {
   private firestore = inject(Firestore);
   private authService = inject(AuthService);
+  private languageService = inject(LanguageService);
   private notificationService = inject(NotificationService);
   private cacheTtlMs = 5 * 60 * 1000;
   private groupCache = new Map<string, { data: Group; ts: number }>();
@@ -101,9 +107,11 @@ export class GroupService {
 
   private normalizeGroupName(name: string): string {
     const normalizedName = (name ?? '').trim();
-    if (!normalizedName) throw new Error('A csoport neve kötelező.');
+    if (!normalizedName) throw new Error(this.languageService.t('group.error.nameRequired'));
     if (normalizedName.length > this.groupNameMaxLength) {
-      throw new Error(`A csoport neve legfeljebb ${this.groupNameMaxLength} karakter lehet.`);
+      throw new Error(
+        this.languageService.t('group.error.nameTooLong', { max: this.groupNameMaxLength })
+      );
     }
     return normalizedName;
   }
@@ -111,7 +119,11 @@ export class GroupService {
   private normalizeGroupDescription(description: string): string {
     const normalizedDescription = (description ?? '').trim();
     if (normalizedDescription.length > this.groupDescriptionMaxLength) {
-      throw new Error(`A leírás legfeljebb ${this.groupDescriptionMaxLength} karakter lehet.`);
+      throw new Error(
+        this.languageService.t('group.error.descriptionTooLong', {
+          max: this.groupDescriptionMaxLength,
+        })
+      );
     }
     return normalizedDescription;
   }
@@ -147,7 +159,7 @@ export class GroupService {
 
   async createGroup(name: string, type: 'open' | 'closed', description: string = '') {
     const user = this.authService.currentUser();
-    if (!user) throw new Error('User must be logged in to create a group');
+    if (!user) throw new Error(this.languageService.t('common.error.authRequired'));
     const normalizedName = this.normalizeGroupName(name);
     const normalizedDescription = this.normalizeGroupDescription(description);
 
@@ -157,7 +169,7 @@ export class GroupService {
       type,
       description: normalizedDescription,
       ownerId: user.uid,
-      ownerName: user.displayName || 'Ismeretlen',
+      ownerName: user.displayName || this.languageService.t('common.unknownUser'),
       ownerPhoto: user.photoURL || null,
       createdAt: this.fsServerTimestamp(),
       memberCount: 1, // The owner is the first member
@@ -168,9 +180,9 @@ export class GroupService {
     await this.fsSetDoc(groupRef, groupData);
     await this.fsSetDoc(ownerMemberRef, {
       userId: user.uid,
-      name: user.displayName || 'Ismeretlen',
+      name: user.displayName || this.languageService.t('common.unknownUser'),
       photo: user.photoURL || null,
-      role: 'Csapatkapitány',
+      role: getStoredGroupMemberRole('captain'),
       isAdmin: true,
       joinedAt: serverTimestamp(),
       skillLevel: 100,
@@ -259,7 +271,9 @@ export class GroupService {
       return from(getDocs(q)).pipe(
         map((snap) => snap.docs.map((d) => ({ id: d.id, ...(d.data() as GroupMember) }))),
         switchMap((members) => {
-          const hasOwner = members.some((m) => (m.role || '').toLowerCase().includes('csapatkapit'));
+          const hasOwner = members.some(
+            (m) => normalizeGroupMemberRole(m.role, m.isAdmin) === 'captain'
+          );
           if (hasOwner) return of(members);
 
           return this.getGroup(groupId).pipe(
@@ -270,7 +284,7 @@ export class GroupService {
                 userId: group.ownerId,
                 name: group.ownerName,
                 photo: group.ownerPhoto,
-                role: 'Csapatkapitány',
+                role: getStoredGroupMemberRole('captain'),
                 isAdmin: true,
                 joinedAt: group.createdAt,
                 skillLevel: 100,
@@ -333,20 +347,20 @@ export class GroupService {
 
   async joinGroup(groupId: string) {
     const user = this.authService.currentUser();
-    if (!user) throw new Error('User logged in required');
+    if (!user) throw new Error(this.languageService.t('common.error.authRequired'));
 
     await this.addMemberToGroup(groupId, {
       userId: user.uid,
-      name: user.displayName || 'Ismeretlen',
+      name: user.displayName || this.languageService.t('common.unknownUser'),
       photo: user.photoURL || null,
-      role: 'user',
+      role: getStoredGroupMemberRole('member'),
       isAdmin: false,
       joinedAt: serverTimestamp(),
       skillLevel: 50,
     });
     await this.writeGroupAuditLog(groupId, 'member_join', {
       targetUserId: user.uid,
-      targetUserName: user.displayName || 'Ismeretlen',
+      targetUserName: user.displayName || this.languageService.t('common.unknownUser'),
     });
 
     const group = await this.getGroupOnce(groupId);
@@ -355,11 +369,15 @@ export class GroupService {
         {
           type: 'group_join',
           groupId,
-          title: `${group.name} - Taglétszám változás`,
-          body: `${user.displayName || 'Ismeretlen'} csatlakozott a csoporthoz.`,
+          title: this.languageService.t('group.notification.memberCountChangedTitle', {
+            groupName: group.name,
+          }),
+          body: this.languageService.t('group.notification.memberJoinedBody', {
+            userName: user.displayName || this.languageService.t('common.unknownUser'),
+          }),
           link: `/groups/${groupId}`,
           actorId: user.uid,
-          actorName: user.displayName || 'Ismeretlen',
+          actorName: user.displayName || this.languageService.t('common.unknownUser'),
           actorPhoto: user.photoURL || null,
         },
         [user.uid],
@@ -376,26 +394,28 @@ export class GroupService {
 
   async requestJoinGroup(groupId: string) {
     const user = this.authService.currentUser();
-    if (!user) throw new Error('User must be logged in');
+    if (!user) throw new Error(this.languageService.t('common.error.authRequired'));
 
     // Check if already member
     const memberRef = this.fsDoc(`groups/${groupId}/members/${user.uid}`);
     const memberSnap = await this.fsGetDoc(memberRef);
-    if (memberSnap.exists()) throw new Error('Már tag vagy ebben a csoportban.');
+    if (memberSnap.exists()) throw new Error(this.languageService.t('group.error.alreadyJoined'));
 
     // Check if request already exists
     const requestRef = this.fsDoc(`groups/${groupId}/joinRequests/${user.uid}`);
     const requestSnap = await this.fsGetDoc(requestRef);
-    if (requestSnap.exists()) throw new Error('Már elküldted a csatlakozási kérelmet.');
+    if (requestSnap.exists()) {
+      throw new Error(this.languageService.t('group.error.joinRequestExists'));
+    }
 
     const group = await this.getGroupOnce(groupId);
-    if (!group) throw new Error('Csoport nem található');
+    if (!group) throw new Error(this.languageService.t('group.error.notFound'));
 
     const requestData: JoinRequest = {
       id: user.uid,
       groupId,
       userId: user.uid,
-      userName: user.displayName || 'Ismeretlen',
+      userName: user.displayName || this.languageService.t('common.unknownUser'),
       userPhoto: user.photoURL || null,
       status: 'pending',
       createdAt: this.fsServerTimestamp(),
@@ -404,19 +424,22 @@ export class GroupService {
     await this.fsSetDoc(requestRef, requestData);
     await this.writeGroupAuditLog(groupId, 'join_request', {
       targetUserId: user.uid,
-      targetUserName: user.displayName || 'Ismeretlen',
+      targetUserName: user.displayName || this.languageService.t('common.unknownUser'),
     });
 
     // Notify only the owner from client side. Non-members cannot list members after hardened rules.
     await this.notificationService.notifyUsers([group.ownerId], {
       type: 'group_join', // using group_join type for now or add new type
       groupId,
-      title: 'Csatlakozási kérelem',
-      body: `${user.displayName || 'Valaki'} csatlakozni szeretne a(z) ${group.name} csoporthoz.`,
+      title: this.languageService.t('group.notification.joinRequestTitle'),
+      body: this.languageService.t('group.notification.joinRequestBody', {
+        userName: user.displayName || this.languageService.t('common.unknownUser'),
+        groupName: group.name,
+      }),
       link: `/groups/${groupId}/settings`,
       eventId: null, // Explicitly set to null to avoid undefined error
       actorId: user.uid,
-      actorName: user.displayName || 'Ismeretlen',
+      actorName: user.displayName || this.languageService.t('common.unknownUser'),
       actorPhoto: user.photoURL || null,
     });
   }
@@ -440,7 +463,7 @@ export class GroupService {
       const snap = await getDocs(q);
       if (snap.empty) return null;
       if (snap.size > 1) {
-        throw new Error('Több felhasználó is található ezzel az azonosítóval.');
+        throw new Error(this.languageService.t('group.error.multipleUsersFound'));
       }
       const docSnap = snap.docs[0];
       return { ...(docSnap.data() as AppUser), uid: docSnap.id } as AppUser;
@@ -478,21 +501,21 @@ export class GroupService {
 
   async createGroupInvite(groupId: string, targetUser: AppUser) {
     const user = this.authService.currentUser();
-    if (!user) throw new Error('User must be logged in');
-    if (!groupId) throw new Error('Csoport azonosító hiányzik.');
-    if (!targetUser?.uid) throw new Error('Érvénytelen felhasználó.');
+    if (!user) throw new Error(this.languageService.t('common.error.authRequired'));
+    if (!groupId) throw new Error(this.languageService.t('group.error.idMissing'));
+    if (!targetUser?.uid) throw new Error(this.languageService.t('group.error.invalidUser'));
 
     if (targetUser.uid === user.uid) {
-      throw new Error('Saját magadat nem hívhatod meg.');
+      throw new Error(this.languageService.t('group.error.cannotInviteSelf'));
     }
 
     const group = await this.getGroupOnce(groupId);
-    if (!group) throw new Error('Csoport nem található.');
+    if (!group) throw new Error(this.languageService.t('group.error.notFound'));
 
     const memberRef = this.fsDoc(`groups/${groupId}/members/${targetUser.uid}`);
     const memberSnap = await this.fsGetDoc(memberRef);
     if (memberSnap.exists()) {
-      throw new Error('A felhasználó már tagja a csoportnak.');
+      throw new Error(this.languageService.t('group.error.alreadyMember'));
     }
 
     const inviteRef = this.fsDoc(`groups/${groupId}/invites/${targetUser.uid}`);
@@ -500,17 +523,19 @@ export class GroupService {
     if (existingSnap.exists()) {
       const existing = existingSnap.data() as GroupInvite;
       if (existing.status === 'pending') {
-        throw new Error('Már van függő meghívó ehhez a felhasználóhoz.');
+        throw new Error(this.languageService.t('group.error.pendingInviteExists'));
       }
     }
 
-    const inviterName = user.displayName || 'Ismeretlen';
+    const inviterName = user.displayName || this.languageService.t('common.unknownUser');
     const invite: GroupInvite = {
       id: targetUser.uid,
       groupId,
       targetUserId: targetUser.uid,
       targetUserName:
-        targetUser.displayName || (targetUser as any).username || 'Ismeretlen',
+        targetUser.displayName ||
+        (targetUser as any).username ||
+        this.languageService.t('common.unknownUser'),
       targetUserEmail: targetUser.email,
       targetUserPhoto: targetUser.photoURL || null,
       inviterId: user.uid,
@@ -527,14 +552,19 @@ export class GroupService {
     await this.writeGroupAuditLog(groupId, 'invite_create', {
       targetUserId: targetUser.uid,
       targetUserName:
-        targetUser.displayName || (targetUser as any).username || 'Ismeretlen',
+        targetUser.displayName ||
+        (targetUser as any).username ||
+        this.languageService.t('common.unknownUser'),
     });
 
     await this.notificationService.notifyUsers([targetUser.uid], {
       type: 'group_invite',
       groupId,
-      title: 'Meghívás csoportba',
-      body: `${inviterName} meghívott a(z) ${group.name} csoportba.`,
+      title: this.languageService.t('group.notification.inviteTitle'),
+      body: this.languageService.t('group.notification.inviteBody', {
+        userName: inviterName,
+        groupName: group.name,
+      }),
       link: `/groups/${groupId}?invite=1`,
       eventId: null,
       actorId: user.uid,
@@ -545,26 +575,29 @@ export class GroupService {
 
   async acceptGroupInvite(groupId: string, inviteId: string, legalAccepted: boolean) {
     const user = this.authService.currentUser();
-    if (!user) throw new Error('User must be logged in');
-    if (!legalAccepted) throw new Error('A jogi nyilatkozat elfogadása kötelező.');
+    if (!user) throw new Error(this.languageService.t('common.error.authRequired'));
+    if (!legalAccepted) {
+      throw new Error(this.languageService.t('group.error.legalAcceptanceRequired'));
+    }
 
     const inviteRef = this.fsDoc(`groups/${groupId}/invites/${inviteId}`);
     const inviteSnap = await this.fsGetDoc(inviteRef);
-    if (!inviteSnap.exists()) throw new Error('A meghívó nem található.');
+    if (!inviteSnap.exists()) throw new Error(this.languageService.t('group.error.inviteNotFound'));
     const invite = inviteSnap.data() as GroupInvite;
 
     if (invite.targetUserId !== user.uid) {
-      throw new Error('Nincs jogosultságod ehhez a meghívóhoz.');
+      throw new Error(this.languageService.t('group.error.inviteUnauthorized'));
     }
     if (invite.status !== 'pending') {
-      throw new Error('A meghívó már nem aktív.');
+      throw new Error(this.languageService.t('group.error.inviteInactive'));
     }
 
     await this.addMemberToGroup(groupId, {
       userId: user.uid,
-      name: user.displayName || invite.targetUserName || 'Ismeretlen',
+      name:
+        user.displayName || invite.targetUserName || this.languageService.t('common.unknownUser'),
       photo: user.photoURL || invite.targetUserPhoto || null,
-      role: 'user',
+      role: getStoredGroupMemberRole('member'),
       isAdmin: false,
       joinedAt: this.fsServerTimestamp(),
       skillLevel: 50,
@@ -580,7 +613,8 @@ export class GroupService {
 
     await this.writeGroupAuditLog(groupId, 'invite_accept', {
       targetUserId: user.uid,
-      targetUserName: user.displayName || invite.targetUserName || 'Ismeretlen',
+      targetUserName:
+        user.displayName || invite.targetUserName || this.languageService.t('common.unknownUser'),
     });
 
     const group = await this.getGroupOnce(groupId);
@@ -588,25 +622,30 @@ export class GroupService {
       await this.notificationService.notifyUsers([invite.inviterId], {
         type: 'group_invite_response',
         groupId,
-        title: 'Meghívó elfogadva',
-        body: `${user.displayName || 'Ismeretlen'} elfogadta a meghívásodat a(z) ${
-          group.name
-        } csoportba.`,
+        title: this.languageService.t('group.notification.inviteAcceptedTitle'),
+        body: this.languageService.t('group.notification.inviteAcceptedBody', {
+          userName: user.displayName || this.languageService.t('common.unknownUser'),
+          groupName: group.name,
+        }),
         link: `/groups/${groupId}`,
         eventId: null,
         actorId: user.uid,
-        actorName: user.displayName || 'Ismeretlen',
+        actorName: user.displayName || this.languageService.t('common.unknownUser'),
         actorPhoto: user.photoURL || null,
       });
       await this.notificationService.notifyGroupMembers(
         {
           type: 'group_join',
           groupId,
-          title: `${group.name} - Taglétszám változás`,
-          body: `${user.displayName || 'Ismeretlen'} csatlakozott a csoporthoz.`,
+          title: this.languageService.t('group.notification.memberCountChangedTitle', {
+            groupName: group.name,
+          }),
+          body: this.languageService.t('group.notification.memberJoinedBody', {
+            userName: user.displayName || this.languageService.t('common.unknownUser'),
+          }),
           link: `/groups/${groupId}`,
           actorId: user.uid,
-          actorName: user.displayName || 'Ismeretlen',
+          actorName: user.displayName || this.languageService.t('common.unknownUser'),
           actorPhoto: user.photoURL || null,
         },
         [user.uid],
@@ -616,18 +655,18 @@ export class GroupService {
 
   async declineGroupInvite(groupId: string, inviteId: string) {
     const user = this.authService.currentUser();
-    if (!user) throw new Error('User must be logged in');
+    if (!user) throw new Error(this.languageService.t('common.error.authRequired'));
 
     const inviteRef = this.fsDoc(`groups/${groupId}/invites/${inviteId}`);
     const inviteSnap = await this.fsGetDoc(inviteRef);
-    if (!inviteSnap.exists()) throw new Error('A meghívó nem található.');
+    if (!inviteSnap.exists()) throw new Error(this.languageService.t('group.error.inviteNotFound'));
     const invite = inviteSnap.data() as GroupInvite;
 
     if (invite.targetUserId !== user.uid) {
-      throw new Error('Nincs jogosultságod ehhez a meghívóhoz.');
+      throw new Error(this.languageService.t('group.error.inviteUnauthorized'));
     }
     if (invite.status !== 'pending') {
-      throw new Error('A meghívó már nem aktív.');
+      throw new Error(this.languageService.t('group.error.inviteInactive'));
     }
 
     await this.fsUpdateDoc(inviteRef, {
@@ -637,7 +676,8 @@ export class GroupService {
 
     await this.writeGroupAuditLog(groupId, 'invite_decline', {
       targetUserId: user.uid,
-      targetUserName: user.displayName || invite.targetUserName || 'Ismeretlen',
+      targetUserName:
+        user.displayName || invite.targetUserName || this.languageService.t('common.unknownUser'),
     });
 
     const group = await this.getGroupOnce(groupId);
@@ -645,14 +685,15 @@ export class GroupService {
       await this.notificationService.notifyUsers([invite.inviterId], {
         type: 'group_invite_response',
         groupId,
-        title: 'Meghívó elutasítva',
-        body: `${user.displayName || 'Ismeretlen'} elutasította a meghívásodat a(z) ${
-          group.name
-        } csoportba.`,
+        title: this.languageService.t('group.notification.inviteDeclinedTitle'),
+        body: this.languageService.t('group.notification.inviteDeclinedBody', {
+          userName: user.displayName || this.languageService.t('common.unknownUser'),
+          groupName: group.name,
+        }),
         link: `/groups/${groupId}`,
         eventId: null,
         actorId: user.uid,
-        actorName: user.displayName || 'Ismeretlen',
+        actorName: user.displayName || this.languageService.t('common.unknownUser'),
         actorPhoto: user.photoURL || null,
       });
     }
@@ -660,17 +701,17 @@ export class GroupService {
 
   async revokeGroupInvite(groupId: string, inviteId: string) {
     const user = this.authService.currentUser();
-    if (!user) throw new Error('User must be logged in');
+    if (!user) throw new Error(this.languageService.t('common.error.authRequired'));
 
     const inviteRef = this.fsDoc(`groups/${groupId}/invites/${inviteId}`);
     const inviteSnap = await this.fsGetDoc(inviteRef);
-    if (!inviteSnap.exists()) throw new Error('A meghívó nem található.');
+    if (!inviteSnap.exists()) throw new Error(this.languageService.t('group.error.inviteNotFound'));
 
     await this.fsUpdateDoc(inviteRef, {
       status: 'revoked',
       respondedAt: this.fsServerTimestamp(),
       revokedById: user.uid,
-      revokedByName: user.displayName || 'Ismeretlen',
+      revokedByName: user.displayName || this.languageService.t('common.unknownUser'),
     });
 
     await this.writeGroupAuditLog(groupId, 'invite_revoke', {
@@ -684,13 +725,13 @@ export class GroupService {
     if (!requestSnap.exists()) return;
     const request = requestSnap.data() as JoinRequest;
     const targetUserId = request.userId || requestId;
-    const targetUserName = request.userName || 'Ismeretlen';
+    const targetUserName = request.userName || this.languageService.t('common.unknownUser');
 
     await this.addMemberToGroup(groupId, {
       userId: targetUserId,
       name: targetUserName,
       photo: request.userPhoto || null,
-      role: 'user',
+      role: getStoredGroupMemberRole('member'),
       isAdmin: false,
       joinedAt: this.fsServerTimestamp(),
       skillLevel: 50,
@@ -707,8 +748,8 @@ export class GroupService {
     await this.notificationService.notifyUsers([targetUserId], {
       type: 'group_join',
       groupId,
-      title: 'Csatlakozási kérelem elfogadva',
-      body: `Csatlakoztál a csoporthoz!`,
+      title: this.languageService.t('group.notification.joinApprovedTitle'),
+      body: this.languageService.t('group.notification.joinApprovedBody'),
       link: `/groups/${groupId}`,
       eventId: null,
       actorId: this.authService.currentUser()?.uid,
@@ -720,12 +761,14 @@ export class GroupService {
     await this.notificationService.notifyUsers([requestId], {
       type: 'group_leave', // Using group_leave as a proxy for "not joined/rejected" or potentially new type
       groupId,
-      title: 'Csatlakozási kérelem elutasítva',
-      body: `Sajnos a(z) ${group?.name || 'csoport'} csatlakozási kérelmedet elutasították.`,
+      title: this.languageService.t('group.notification.joinRejectedTitle'),
+      body: this.languageService.t('group.notification.joinRejectedBody', {
+        groupName: group?.name || this.languageService.t('common.group.defaultName'),
+      }),
       link: `/groups`,
       eventId: null,
       actorId: this.authService.currentUser()?.uid,
-      actorName: 'Rendszer',
+      actorName: this.languageService.t('common.systemActor'),
       actorPhoto: null,
     });
 
@@ -822,7 +865,7 @@ export class GroupService {
   // --- Member Management ---
   async deleteGroup(groupId: string) {
     const user = this.authService.currentUser();
-    if (!user) throw new Error('User must be logged in');
+    if (!user) throw new Error(this.languageService.t('common.error.authRequired'));
 
     // Clean up subcollections first (client-side best effort)
     try {
@@ -865,11 +908,11 @@ export class GroupService {
 
   async leaveGroup(groupId: string) {
     const user = this.authService.currentUser();
-    if (!user) throw new Error('User must be logged in');
+    if (!user) throw new Error(this.languageService.t('common.error.authRequired'));
 
     const group = await this.getGroupOnce(groupId);
     if (group?.ownerId === user.uid) {
-      throw new Error('A csoport tulajdonosa nem léphet ki.');
+      throw new Error(this.languageService.t('group.error.ownerCannotLeave'));
     }
 
     const memberRef = this.fsDoc(`groups/${groupId}/members/${user.uid}`);
@@ -881,7 +924,7 @@ export class GroupService {
 
   async removeMember(groupId: string, memberId: string) {
     const user = this.authService.currentUser();
-    if (!user) throw new Error('User must be logged in');
+    if (!user) throw new Error(this.languageService.t('common.error.authRequired'));
 
     // Delete the member document
     const memberRef = doc(this.firestore, `groups/${groupId}/members/${memberId}`);
@@ -895,11 +938,15 @@ export class GroupService {
         {
           type: 'group_leave',
           groupId,
-          title: `${group.name} - Taglétszám változás`,
-          body: `${memberData.name || 'Ismeretlen'} kilépett a csoportból.`,
+          title: this.languageService.t('group.notification.memberCountChangedTitle', {
+            groupName: group.name,
+          }),
+          body: this.languageService.t('group.notification.memberLeftBody', {
+            userName: memberData.name || this.languageService.t('common.unknownUser'),
+          }),
           link: `/groups/${groupId}`,
           actorId: memberData.userId,
-          actorName: memberData.name || 'Ismeretlen',
+          actorName: memberData.name || this.languageService.t('common.unknownUser'),
           actorPhoto: memberData.photo || null,
         },
         [memberData.userId],
@@ -910,7 +957,7 @@ export class GroupService {
     if (memberData?.userId) {
       await this.writeGroupAuditLog(groupId, 'member_remove', {
         targetUserId: memberData.userId,
-        targetUserName: memberData.name || 'Ismeretlen',
+        targetUserName: memberData.name || this.languageService.t('common.unknownUser'),
       });
     }
 
@@ -940,7 +987,13 @@ export class GroupService {
     data: { isAdmin: boolean; role: string },
   ) {
     const memberRef = doc(this.firestore, `groups/${groupId}/members/${memberId}`);
-    return updateDoc(memberRef, data);
+    const normalizedRole = getStoredGroupMemberRole(
+      normalizeGroupMemberRole(data.role, data.isAdmin)
+    );
+    return updateDoc(memberRef, {
+      ...data,
+      role: normalizedRole,
+    });
   }
 
   private async getGroupOnce(groupId: string): Promise<Group | undefined> {

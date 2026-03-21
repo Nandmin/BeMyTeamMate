@@ -1,11 +1,9 @@
 <section class="match-flow-card rounded-3xl border border-card-border card-gradient bg-dark-bg/80 backdrop-blur-xl mt-4 p-4 shadow-xl">
   <div class="space-y-4">
     <div class="space-y-2">
-      <p class="text-[11px] font-black uppercase tracking-[0.2em] text-center text-white" style="font-family: 'Newsreader';">Gyors áttekintés</p>
-      <!-- <h1 class="text-lg font-black text-white leading-tight truncate">{{ event?.title }}</h1>
-      @if (groupName) {
-      <p class="text-xs text-gray-400">{{ groupName }}</p> -->
-      <!-- } -->
+      <p class="text-[11px] font-black uppercase tracking-[0.2em] text-center text-white" style="font-family: 'Newsreader';">
+        {{ 'eventDetail.labels.quickOverview' | transloco }}
+      </p>
     </div>
 
     <div class="rounded-2xl border border-white/10 bg-white/5 p-2.5 text-xs">
@@ -17,7 +15,7 @@
         <div class="flex items-center gap-1.5 text-right">
           <span class="material-symbols-outlined text-[15px] text-primary">schedule</span>
           <p class="font-bold text-white">{{ event?.time || '-' }}</p>
-          <span class="text-[10px] text-gray-400">({{ event?.duration || 0 }}p)</span>
+          <span class="text-[10px] text-gray-400">{{ 'eventDetail.labels.durationMinutes' | transloco:{ count: event?.duration || 0 } }}</span>
         </div>
 
         <div class="min-w-0 flex items-center gap-1.5">
@@ -26,7 +24,7 @@
         </div>
         <div class="flex items-center gap-1.5 text-right">
           <span class="material-symbols-outlined text-[15px] text-primary">group</span>
-          <p class="font-bold text-white">{{ event?.currentAttendees || 0 }} / {{ event?.maxAttendees || 0 }}</p>
+          <p class="font-bold text-white">{{ 'eventDetail.labels.attendeeCapacity' | transloco:{ current: event?.currentAttendees || 0, max: event?.maxAttendees || 0 } }}</p>
         </div>
       </div>
     </div>
@@ -38,7 +36,7 @@
         class="flex w-full items-center justify-between rounded-2xl border border-white/10 bg-white/5 px-3 py-2 text-left">
         <div class="flex items-center gap-2">
           <span class="material-symbols-outlined text-[16px] text-primary">groups</span>
-          <p class="text-[11px] font-black uppercase tracking-[0.16em] text-white">Résztvevők</p>
+          <p class="text-[11px] font-black uppercase tracking-[0.16em] text-white">{{ 'eventDetail.labels.participants' | transloco }}</p>
         </div>
         <div class="flex items-center gap-2">
           <span class="rounded-full border border-primary/30 bg-primary/10 px-2 py-0.5 text-[10px] font-black text-primary">
@@ -56,8 +54,8 @@
       <div class="mt-2 space-y-2">
         <div class="rounded-2xl border border-primary/20 bg-primary/5 p-2">
           <div class="mb-1.5 flex items-center justify-between">
-            <p class="text-[10px] font-black uppercase tracking-[0.12em] text-primary">Jelentkezők</p>
-            <span class="text-[10px] font-bold text-primary">{{ attendingMembers.length }} fő</span>
+            <p class="text-[10px] font-black uppercase tracking-[0.12em] text-primary">{{ 'eventDetail.labels.applicants' | transloco }}</p>
+            <span class="text-[10px] font-bold text-primary">{{ 'eventDetail.labels.peopleCount' | transloco:{ count: attendingMembers.length } }}</span>
           </div>
           <div class="space-y-1">
             @for (member of attendingMembers; track member.userId) {
@@ -67,7 +65,7 @@
               <span class="material-symbols-outlined text-[14px] text-primary">check</span>
             </a>
             } @empty {
-            <p class="text-[11px] text-gray-400">Nincs még jelentkező.</p>
+            <p class="text-[11px] text-gray-400">{{ 'eventDetail.labels.noApplicants' | transloco }}</p>
             }
           </div>
         </div>
@@ -76,9 +74,9 @@
           <div class="mb-1.5 flex items-center justify-between">
             <div class="flex items-center gap-1.5">
               <span class="material-symbols-outlined text-[13px] text-gray-300">hourglass_top</span>
-              <p class="text-[10px] font-black uppercase tracking-[0.12em] text-gray-300">Nincs válasz</p>
+              <p class="text-[10px] font-black uppercase tracking-[0.12em] text-gray-300">{{ 'eventDetail.labels.noResponse' | transloco }}</p>
             </div>
-            <span class="text-[10px] font-bold text-gray-300">{{ notRespondingMembers.length }} fő</span>
+            <span class="text-[10px] font-bold text-gray-300">{{ 'eventDetail.labels.peopleCount' | transloco:{ count: notRespondingMembers.length } }}</span>
           </div>
           <div class="space-y-1">
             @for (member of notRespondingMembers; track member.userId) {
@@ -87,7 +85,7 @@
               <span class="truncate text-xs font-bold text-white/90">{{ member.name }}</span>
             </a>
             } @empty {
-            <p class="text-[11px] text-primary">Mindenki visszajelzett.</p>
+            <p class="text-[11px] text-primary">{{ 'eventDetail.labels.everyoneResponded' | transloco }}</p>
             }
           </div>
         </div>
@@ -99,12 +97,5 @@
       class="h-12 w-full rounded-2xl bg-primary text-background-dark font-black active:scale-[0.99]">
       {{ primaryCtaLabel }}
     </button>
-
-    <!-- <div class="flex items-center justify-between">
-      <a [routerLink]="['/groups', groupId]"
-        class="text-xs font-bold text-gray-300 underline decoration-white/20 underline-offset-4 hover:text-white">
-        Részletek
-      </a>
-    </div> -->
   </div>
 </section>

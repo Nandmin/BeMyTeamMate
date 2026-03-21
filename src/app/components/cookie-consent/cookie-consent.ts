@@ -1,11 +1,11 @@
-import { Component, computed, inject } from '@angular/core';
+﻿import { Component, computed, inject } from '@angular/core';
 import { AnalyticsService } from '../../services/analytics.service';
-import { RouterLink } from '@angular/router';
+import { TranslatePipe } from '../../pipes/translate.pipe';
 
 @Component({
   selector: 'app-cookie-consent',
   standalone: true,
-  imports: [RouterLink],
+  imports: [TranslatePipe],
   templateUrl: './cookie-consent.html',
   styleUrl: './cookie-consent.scss',
 })

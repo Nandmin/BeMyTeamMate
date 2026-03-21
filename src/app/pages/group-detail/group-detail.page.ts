@@ -14,6 +14,7 @@ import { RoleLabelPipe } from '../../pipes/role-label.pipe';
 import { SeoService } from '../../services/seo.service';
 import { CoverImageEntry, CoverImagesService } from '../../services/cover-images.service';
 import { AppUser } from '../../models/user.model';
+import { isElevatedGroupMemberRole } from '../../utils/group-member-role';
 
 type GroupDetailMobileTab = 'overview' | 'events' | 'members' | 'settings';
 
@@ -209,7 +210,9 @@ export class GroupDetailPage {
     if (group.ownerId === user.uid) return true;
     // Check if user has admin role in members
     if (!members) return false;
-    return members.some((m) => m.userId === user.uid && m.isAdmin);
+    return members.some(
+      (m) => m.userId === user.uid && isElevatedGroupMemberRole(m.role, m.isAdmin)
+    );
   });
 
   isOwner = computed(() => {
@@ -220,6 +223,10 @@ export class GroupDetailPage {
   });
 
   canLeaveGroup = computed(() => this.isMember() && !this.isOwner());
+
+  isManagerMember(member: GroupMember): boolean {
+    return isElevatedGroupMemberRole(member.role, member.isAdmin);
+  }
 
   canViewEvents = computed(() => this.isMember() || this.isAdmin());
   hasMobileSecondaryActions = computed(() => !this.isMember() || this.isAdmin());

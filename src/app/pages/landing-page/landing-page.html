@@ -18,33 +18,27 @@
                 <span class="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
               </span>
               <span class="text-xs font-medium uppercase tracking-wider"
-                >Új generációs csapatépítő</span
+                >{{ 'landing.hero.badge' | transloco }}</span
               >
             </div>
             <h1
               class="text-4xl sm:text-5xl lg:text-6xl font-extrabold leading-[1.1] tracking-tight text-white"
             >
-              A legjobb meccsek <br />
+              {{ 'landing.hero.title1' | transloco }} <br />
               <span class="text-transparent bg-clip-text bg-gradient-to-r from-primary to-[#818cf8]"
-                >fair csapatokkal</span
+                >{{ 'landing.hero.title2' | transloco }}</span
               >
-              kezdődnek
+              {{ 'landing.hero.title3' | transloco }}
             </h1>
             <p class="text-lg leading-relaxed max-w-lg">
-              Felejtsd el a vitákat a csapatválasztáskor. Generálj kiegyensúlyozott csapatokat
-              másodpercek alatt, szervezz eseményeket és kövesd a statisztikákat egy helyen.
+              {{ 'landing.hero.description' | transloco }}
             </p>
             <div class="flex flex-col sm:flex-row gap-4 mt-4">
-              <!-- <button routerLink="/register"
-                                class="flex items-center justify-center rounded-xl h-12 px-8 bg-primary hover:bg-primary-hover text-white text-base font-bold transition-all duration-200 shadow-lg shadow-primary/25 hover:scale-105">
-                                Ingyenes Regisztráció
-                            </button> -->
               <button
                 (click)="scrollToHowItWorks()"
                 class="landing-hero-secondary-btn flex items-center justify-center rounded-xl h-12 px-8 bg-primary border border-border-dark text-white text-base font-bold transition-all duration-300"
               >
-                <!-- <span class="material-symbols-outlined mr-2 text-[20px]">play_circle</span> -->
-                Hogyan működik?
+                {{ 'landing.hero.ctaHowItWorks' | transloco }}
               </button>
             </div>
             <!-- Trust indicators -->
@@ -60,7 +54,7 @@
                   class="size-8 rounded-full border-2 border-background-dark bg-gradient-to-br from-lime-400 to-lime-500"
                 ></div>
               </div>
-              <p>Több mint 2000+ játékos választása</p>
+              <p>{{ 'landing.hero.trustBadge' | transloco }}</p>
             </div>
           </div>
           <!-- Visual Content -->
@@ -104,14 +98,14 @@
                 class="absolute bottom-6 left-6 right-6 bg-white/90 dark:bg-[#05070b]/90 backdrop-blur-md border border-light-border dark:border-white/10 p-4 rounded-xl shadow-lg"
               >
                 <div class="flex items-center justify-between mb-3">
-                  <h3 class="text-slate-900 dark:text-white font-bold">Generált Csapatok</h3>
+                  <h3 class="text-slate-900 dark:text-white font-bold">{{ 'landing.hero.cardTitle' | transloco }}</h3>
                   <span class="text-xs font-mono bg-primary/20 text-primary px-2 py-1 rounded"
                     >Balanced</span
                   >
                 </div>
                 <div class="flex gap-4">
                   <div class="flex-1 bg-slate-100 dark:bg-white/5 rounded p-2">
-                    <div class="text-xs text-slate-600 dark:text-gray-400 mb-1">A Csapat</div>
+                    <div class="text-xs text-slate-600 dark:text-gray-400 mb-1">{{ 'landing.hero.teamA' | transloco }}</div>
                     <div class="flex -space-x-1">
                       <span
                         class="size-6 rounded-full bg-blue-500 border border-background-dark flex items-center justify-center text-[8px] font-bold text-white"
@@ -129,7 +123,7 @@
                   </div>
                   <div class="flex items-center text-slate-900 dark:text-white font-bold">VS</div>
                   <div class="flex-1 bg-slate-100 dark:bg-white/5 rounded p-2">
-                    <div class="text-xs text-slate-600 dark:text-gray-400 mb-1">B Csapat</div>
+                    <div class="text-xs text-slate-600 dark:text-gray-400 mb-1">{{ 'landing.hero.teamB' | transloco }}</div>
                     <div class="flex -space-x-1">
                       <span
                         class="size-6 rounded-full bg-indigo-500 border border-background-dark flex items-center justify-center text-[8px] font-bold text-white"
@@ -160,11 +154,10 @@
       <div class="container mx-auto px-4 sm:px-6 lg:px-8">
         <div class="text-center max-w-4xl mx-auto mb-16">
           <h2 class="text-3xl md:text-4xl font-bold text-slate-900 dark:text-white mb-4">
-            Minden eszköz a zsebedben
+            {{ 'landing.features.title' | transloco }}
           </h2>
           <p class="text-lg">
-            Nem csak egy csapatgenerátor. Egy teljes eszköztár a baráti társaságok sportéletének
-            szervezéséhez.
+            {{ 'landing.features.subtitle' | transloco }}
           </p>
         </div>
         <div class="grid md:grid-cols-3 gap-8">
@@ -181,12 +174,11 @@
                   <span class="material-symbols-outlined text-[32px]">balance</span>
                 </div>
                 <h3 class="text-xl font-bold text-slate-900 dark:text-white">
-                  Okos csapatelosztás
+                  {{ 'landing.features.smart.title' | transloco }}
                 </h3>
               </div>
               <p class="leading-relaxed">
-                Algoritmusunk figyelembe veszi a játékosok korábbi teljesítményét és képességeit,
-                így mindig szoros és izgalmas meccseket generál.
+                {{ 'landing.features.smart.description' | transloco }}
               </p>
             </div>
           </div>
@@ -202,11 +194,10 @@
                 <div class="landing-feature-icon p-3 rounded-xl bg-primary/10 text-primary">
                   <span class="material-symbols-outlined text-[32px]">calendar_month</span>
                 </div>
-                <h3 class="text-xl font-bold text-slate-900 dark:text-white">Eseménykezelés</h3>
+                <h3 class="text-xl font-bold text-slate-900 dark:text-white">{{ 'landing.features.events.title' | transloco }}</h3>
               </div>
               <p class="leading-relaxed">
-                Hozd létre a következő focit, küldj automatikus emlékeztetőket, és kezeld az "Ott
-                leszek/Nem leszek ott" válaszokat egyetlen felületen.
+                {{ 'landing.features.events.description' | transloco }}
               </p>
             </div>
           </div>
@@ -222,11 +213,10 @@
                 <div class="landing-feature-icon p-3 rounded-xl bg-primary/10 text-primary">
                   <span class="material-symbols-outlined text-[32px]">trophy</span>
                 </div>
-                <h3 class="text-xl font-bold text-slate-900 dark:text-white">Közösségi élmény</h3>
+                <h3 class="text-xl font-bold text-slate-900 dark:text-white">{{ 'landing.features.community.title' | transloco }}</h3>
               </div>
               <p class="leading-relaxed">
-                Rögzítsétek a gólokat, szavazzatok a meccs legjobbjára (MVP), és vezessetek
-                ranglistát a baráti társaságon belül.
+                {{ 'landing.features.community.description' | transloco }}
               </p>
             </div>
           </div>
@@ -243,7 +233,7 @@
         <div class="flex flex-col lg:flex-row gap-12 items-center">
           <div class="w-full lg:w-1/2">
             <h2 class="text-3xl md:text-4xl font-bold text-slate-900 dark:text-white mb-6">
-              Egyszerűbb, mint gondolnád
+              {{ 'landing.howItWorks.title' | transloco }}
             </h2>
             <div class="flex flex-col gap-8">
               <!-- Step 1 -->
@@ -255,11 +245,10 @@
                 </div>
                 <div>
                   <h4 class="text-xl font-bold text-slate-900 dark:text-white mb-2">
-                    Hozz létre egy csoportot
+                    {{ 'landing.howItWorks.step1.title' | transloco }}
                   </h4>
                   <p class="">
-                    Regisztrálj és hozz létre egy zárt csoportot a barátaidnak vagy a
-                    sportklubodnak.
+                    {{ 'landing.howItWorks.step1.description' | transloco }}
                   </p>
                 </div>
               </div>
@@ -272,9 +261,9 @@
                 </div>
                 <div>
                   <h4 class="text-xl font-bold text-slate-900 dark:text-white mb-2">
-                    Vedd fel a játékosokat
+                    {{ 'landing.howItWorks.step2.title' | transloco }}
                   </h4>
-                  <p class="">A visszajelzések alapján láthatod kik lesznek jelen a mérkőzésen.</p>
+                  <p class="">{{ 'landing.howItWorks.step2.description' | transloco }}</p>
                 </div>
               </div>
               <!-- Step 3 -->
@@ -286,10 +275,10 @@
                 </div>
                 <div>
                   <h4 class="text-xl font-bold text-slate-900 dark:text-white mb-2">
-                    Indítsd a generálást
+                    {{ 'landing.howItWorks.step3.title' | transloco }}
                   </h4>
                   <p class="">
-                    Az alkalmazás az elért teljesítmények alapján létrehozza csapatokat.
+                    {{ 'landing.howItWorks.step3.description' | transloco }}
                   </p>
                 </div>
               </div>
@@ -302,9 +291,9 @@
                 </div>
                 <div>
                   <h4 class="text-xl font-bold text-slate-900 dark:text-white mb-2">
-                    Rögzítsd az eredményt
+                    {{ 'landing.howItWorks.step4.title' | transloco }}
                   </h4>
-                  <p class="">Az algoritmus értékeli a teljesítményeket.</p>
+                  <p class="">{{ 'landing.howItWorks.step4.description' | transloco }}</p>
                 </div>
               </div>
             </div>
@@ -316,7 +305,6 @@
               <div
                 class="aspect-video bg-gradient-to-br from-primary/25 to-[#6366f1]/25 transition-transform duration-700 group-hover:scale-105 flex items-center justify-center"
               >
-                <!-- <span class="material-symbols-outlined text-[80px] text-white/30">groups</span> -->
                 <img
                   src="assets/images/team-7278739_640.jpg"
                   alt="Örömteli csapat a pályán, közösségi élmény a sport körül"
@@ -339,24 +327,23 @@
           class="landing-cta-neon max-w-4xl mx-auto bg-card-dark/80 backdrop-blur-xl border border-border-dark rounded-3xl p-10 md:p-16 shadow-[0_0_60px_rgba(99,102,241,0.12)]"
         >
           <h2 class="text-3xl md:text-5xl font-extrabold text-white mb-6">
-            Készen állsz a kezdőrúgásra?
+            {{ 'landing.cta.title' | transloco }}
           </h2>
           <p class="text-lg mb-10 max-w-2xl mx-auto">
-            Csatlakozz több ezer amatőr sportolóhoz, és emeld profi szintre a szervezést. Nincs több
-            vitatkozás, csak tiszta játék.
+            {{ 'landing.cta.description' | transloco }}
           </p>
           <div class="flex flex-col sm:flex-row justify-center gap-4">
             <button
               [routerLink]="authService.currentUser() ? '/groups' : '/register'"
-              [textContent]="authService.currentUser() ? 'Start' : 'Fiók létrehozása'"
               class="flex w-full items-center justify-center rounded-xl bg-primary px-8 py-4 text-lg font-bold text-white shadow-lg shadow-primary/25 transition-all hover:scale-105 hover:bg-primary-hover hover:shadow-primary/40 sm:w-auto"
             >
-              Fiók létrehozása ingyen
+              @if (authService.currentUser()) {
+                {{ 'landing.cta.buttonStart' | transloco }}
+              } @else {
+                {{ 'landing.cta.buttonRegisterFree' | transloco }}
+              }
             </button>
           </div>
-          <!-- <p class="mt-6 text-sm ">Nincs bankkártya szükséges. 14 napig prémium funkciók
-                        ingyen.
-                    </p> -->
         </div>
       </div>
     </section>

@@ -7,18 +7,31 @@ import { AuthService } from '../../services/auth.service';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { switchMap, catchError } from 'rxjs/operators';
 import { of } from 'rxjs';
+import { TranslocoPipe } from '@jsverse/transloco';
 import { CoverImageSelectorComponent } from '../../components/cover-image-selector/cover-image-selector.component';
 import { RoleLabelPipe } from '../../pipes/role-label.pipe';
+import { LanguageService } from '../../services/language.service';
 import { SeoService } from '../../services/seo.service';
 import { CoverImageEntry, CoverImagesService } from '../../services/cover-images.service';
 import { ModalService } from '../../services/modal.service';
+import {
+  isElevatedGroupMemberRole,
+  normalizeGroupMemberRole,
+} from '../../utils/group-member-role';
 
 export type MemberRole = 'owner' | 'admin' | 'member';
 
 @Component({
   selector: 'app-group-settings',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, CoverImageSelectorComponent, RoleLabelPipe],
+  imports: [
+    CommonModule,
+    RouterModule,
+    FormsModule,
+    CoverImageSelectorComponent,
+    TranslocoPipe,
+    RoleLabelPipe,
+  ],
   templateUrl: './group-settings.page.html',
   styleUrl: './group-settings.page.scss',
 })
@@ -27,6 +40,7 @@ export class GroupSettingsPage {
   private router = inject(Router);
   private groupService = inject(GroupService);
   protected authService = inject(AuthService);
+  protected readonly languageService = inject(LanguageService);
   private seo = inject(SeoService);
   private coverImagesService = inject(CoverImagesService);
   private modalService = inject(ModalService);
@@ -38,7 +52,11 @@ export class GroupSettingsPage {
         this.groupService.getGroup(params['id']).pipe(
           catchError((err) => {
             console.error('Group load error:', err);
-            this.errorMessage.set('Hiba a csoport betöltésekor: ' + (err.message || err));
+            this.errorMessage.set(
+              this.languageService.t('groupSettings.error.loadPrefix', {
+                message: String(err.message || err),
+              })
+            );
             return of(undefined);
           }),
         ),
@@ -118,7 +136,9 @@ export class GroupSettingsPage {
     const user = this.authService.currentUser();
     const members = this.members();
     if (!user || !members) return false;
-    return members.some((m) => m.userId === user.uid && m.isAdmin);
+    return members.some(
+      (m) => m.userId === user.uid && isElevatedGroupMemberRole(m.role, m.isAdmin)
+    );
   });
 
   isSiteAdmin = computed(() => this.authService.fullCurrentUser()?.role === 'siteadmin');
@@ -164,11 +184,14 @@ export class GroupSettingsPage {
   readonly groupDescriptionMaxLength = 250;
 
   constructor() {
-    this.seo.setPageMeta({
-      title: 'Csoport beállítások – BeMyTeamMate',
-      description: 'Kezeld a csoport adatait, tagokat és jogosultságokat.',
-      path: '/groups',
-      noindex: true,
+    effect(() => {
+      this.languageService.currentLanguage();
+      this.seo.setPageMeta({
+        title: this.languageService.t('groupSettings.meta.title'),
+        description: this.languageService.t('groupSettings.meta.description'),
+        path: '/groups',
+        noindex: true,
+      });
     });
     void this.loadCoverImages();
 
@@ -211,7 +234,7 @@ export class GroupSettingsPage {
   }
   openDeleteModal(member: GroupMember) {
     if (member.userId === this.group()?.ownerId) {
-      this.errorMessage.set('A csoport tulajdonosát nem lehet törölni.');
+      this.errorMessage.set(this.languageService.t('groupSettings.error.ownerCannotDelete'));
       return;
     }
     this.memberToDelete.set(member);
@@ -229,11 +252,13 @@ export class GroupSettingsPage {
     this.errorMessage.set('');
     try {
       await this.groupService.removeMember(this.groupId, member.id!);
-      this.successMessage.set(`${member.name} sikeresen eltávolítva a csoportból.`);
+      this.successMessage.set(
+        this.languageService.t('groupSettings.success.memberRemoved', { memberName: member.name })
+      );
       this.closeDeleteModal();
     } catch (error: any) {
       console.error('Error removing member:', error);
-      this.errorMessage.set('Hiba történt a tag eltávolításakor.');
+      this.errorMessage.set(this.languageService.t('groupSettings.error.memberRemove'));
     } finally {
       this.isSubmitting.set(false);
     }
@@ -241,11 +266,13 @@ export class GroupSettingsPage {
 
   openRoleModal(member: GroupMember) {
     if (member.userId === this.group()?.ownerId) {
-      this.errorMessage.set('A csoport tulajdonosának szerepét nem lehet módosítani.');
+      this.errorMessage.set(this.languageService.t('groupSettings.error.ownerRoleImmutable'));
       return;
     }
     this.memberToEditRole.set(member);
-    this.selectedRole.set(member.isAdmin ? 'admin' : 'member');
+    this.selectedRole.set(
+      normalizeGroupMemberRole(member.role, member.isAdmin) === 'admin' ? 'admin' : 'member'
+    );
   }
 
   closeRoleModal() {
@@ -260,13 +287,15 @@ export class GroupSettingsPage {
     this.errorMessage.set('');
     try {
       const isAdmin = this.selectedRole() === 'admin';
-      const role = this.selectedRole() === 'admin' ? 'Admin' : 'user';
+      const role = this.selectedRole() === 'admin' ? 'admin' : 'member';
       await this.groupService.updateMemberRole(this.groupId, member.id!, { isAdmin, role });
-      this.successMessage.set(`${member.name} szerepe sikeresen módosítva.`);
+      this.successMessage.set(
+        this.languageService.t('groupSettings.success.roleUpdated', { memberName: member.name })
+      );
       this.closeRoleModal();
     } catch (error: any) {
       console.error('Error updating role:', error);
-      this.errorMessage.set('Hiba történt a szerep módosításakor.');
+      this.errorMessage.set(this.languageService.t('groupSettings.error.roleUpdate'));
     } finally {
       this.isSubmitting.set(false);
     }
@@ -279,15 +308,21 @@ export class GroupSettingsPage {
     const description = form.description.trim();
 
     if (!name) {
-      this.errorMessage.set('A csoport neve kötelező.');
+      this.errorMessage.set(this.languageService.t('group.error.nameRequired'));
       return;
     }
     if (name.length > this.groupNameMaxLength) {
-      this.errorMessage.set('A csoport neve legfeljebb ' + this.groupNameMaxLength + ' karakter lehet.');
+      this.errorMessage.set(
+        this.languageService.t('group.error.nameTooLong', { max: this.groupNameMaxLength })
+      );
       return;
     }
     if (description.length > this.groupDescriptionMaxLength) {
-      this.errorMessage.set('A leírás legfeljebb ' + this.groupDescriptionMaxLength + ' karakter lehet.');
+      this.errorMessage.set(
+        this.languageService.t('group.error.descriptionTooLong', {
+          max: this.groupDescriptionMaxLength,
+        })
+      );
       return;
     }
 
@@ -300,10 +335,10 @@ export class GroupSettingsPage {
         type: form.type,
         image: form.image ?? undefined,
       });
-      this.successMessage.set('A csoport beállításai sikeresen mentve.');
+      this.successMessage.set(this.languageService.t('groupSettings.success.saved'));
     } catch (error: any) {
       console.error('Error updating group:', error);
-      this.errorMessage.set('Hiba történt a mentéskor.');
+      this.errorMessage.set(this.languageService.t('groupSettings.error.save'));
     } finally {
       this.isSubmitting.set(false);
     }
@@ -344,30 +379,38 @@ export class GroupSettingsPage {
   }
 
   getRoleBadge(member: GroupMember): string {
-    if (member.userId === this.group()?.ownerId) return 'Tulajdonos';
-    if (member.isAdmin) return 'Admin';
-    return 'Csapattag';
+    if (member.userId === this.group()?.ownerId) {
+      return this.languageService.t('groupSettings.members.roleBadge.owner');
+    }
+    if (this.isManagerMember(member)) {
+      return this.languageService.t('groupSettings.members.roleBadge.admin');
+    }
+    return this.languageService.t('groupSettings.members.roleBadge.member');
   }
 
   getRoleBadgeClass(member: GroupMember): string {
     if (member.userId === this.group()?.ownerId)
       return 'role-badge role-badge--owner';
-    if (member.isAdmin) return 'role-badge role-badge--admin';
+    if (this.isManagerMember(member)) return 'role-badge role-badge--admin';
     return 'role-badge role-badge--member';
+  }
+
+  isManagerMember(member: GroupMember): boolean {
+    return normalizeGroupMemberRole(member.role, member.isAdmin) === 'admin';
   }
 
   getInviteStatusLabel(invite: GroupInvite): string {
     switch (invite.status) {
       case 'pending':
-        return 'Függőben';
+        return this.languageService.t('groupSettings.invites.status.pending');
       case 'accepted':
-        return 'Elfogadva';
+        return this.languageService.t('groupSettings.invites.status.accepted');
       case 'declined':
-        return 'Elutasítva';
+        return this.languageService.t('groupSettings.invites.status.declined');
       case 'revoked':
-        return 'Visszavonva';
+        return this.languageService.t('groupSettings.invites.status.revoked');
       default:
-        return 'Ismeretlen';
+        return this.languageService.t('groupSettings.invites.status.unknown');
     }
   }
 
@@ -391,10 +434,14 @@ export class GroupSettingsPage {
     this.errorMessage.set('');
     try {
       await this.groupService.revokeGroupInvite(this.groupId, invite.id);
-      this.successMessage.set(`${invite.targetUserName || 'Felhasználó'} meghívója visszavonva.`);
+      this.successMessage.set(
+        this.languageService.t('groupSettings.success.inviteRevoked', {
+          userName: invite.targetUserName || this.languageService.t('common.unknownUser'),
+        })
+      );
     } catch (error: any) {
       console.error('Revoke invite error:', error);
-      this.errorMessage.set('Hiba történt a meghívó visszavonásakor.');
+      this.errorMessage.set(this.languageService.t('groupSettings.error.inviteRevoke'));
     } finally {
       this.isSubmitting.set(false);
     }
@@ -407,16 +454,16 @@ export class GroupSettingsPage {
 
     if (group.ownerId === user.uid) {
       await this.modalService.alert(
-        `A csoport tulajdonosa nem léphet ki.\nElőbb add át a tulajdonjogot, vagy töröld a csoportot.`,
-        'Nem lehetséges',
+        this.languageService.t('groupSettings.leave.ownerAlert'),
+        this.languageService.t('groupSettings.leave.ownerAlertTitle'),
         'warning',
       );
       return;
     }
 
     const confirmed = await this.modalService.confirm(
-      'Biztosan kilépsz a csoportból? Ezután nem láthatod az eseményeket.',
-      'Kilépés',
+      this.languageService.t('groupSettings.leave.confirmMessage'),
+      this.languageService.t('groupSettings.leave.confirmTitle'),
     );
     if (!confirmed) return;
 
@@ -424,11 +471,15 @@ export class GroupSettingsPage {
     this.errorMessage.set('');
     try {
       await this.groupService.leaveGroup(this.groupId);
-      await this.modalService.alert('Sikeresen kiléptél a csoportból.', 'Kész', 'success');
+      await this.modalService.alert(
+        this.languageService.t('groupSettings.leave.success'),
+        this.languageService.t('admin.groups.alert.deleteSuccessTitle'),
+        'success'
+      );
       await this.router.navigate(['/groups']);
     } catch (error: any) {
       console.error('Error leaving group:', error);
-      this.errorMessage.set(error?.message || 'Hiba történt a kilépés során.');
+      this.errorMessage.set(error?.message || this.languageService.t('groupSettings.leave.error'));
     } finally {
       this.isSubmitting.set(false);
     }
@@ -439,10 +490,14 @@ export class GroupSettingsPage {
     this.isSubmitting.set(true);
     try {
       await this.groupService.approveJoinRequest(request.id, this.groupId);
-      this.successMessage.set(`${request.userName} csatlakozása jóváhagyva.`);
+      this.successMessage.set(
+        this.languageService.t('groupSettings.success.requestApproved', {
+          userName: request.userName,
+        })
+      );
     } catch (error: any) {
       console.error('Approve error:', error);
-      this.errorMessage.set('Hiba történt a jóváhagyás során.');
+      this.errorMessage.set(this.languageService.t('groupSettings.error.requestApprove'));
     } finally {
       this.isSubmitting.set(false);
     }
@@ -464,11 +519,15 @@ export class GroupSettingsPage {
     this.isSubmitting.set(true);
     try {
       await this.groupService.rejectJoinRequest(request.id, this.groupId);
-      this.successMessage.set(`${request.userName} jelentkezése elutasítva.`);
+      this.successMessage.set(
+        this.languageService.t('groupSettings.success.requestRejected', {
+          userName: request.userName,
+        })
+      );
       this.closeRejectModal();
     } catch (error: any) {
       console.error('Reject error:', error);
-      this.errorMessage.set('Hiba történt az elutasítás során.');
+      this.errorMessage.set(this.languageService.t('groupSettings.error.requestReject'));
     } finally {
       this.isSubmitting.set(false);
     }
@@ -492,7 +551,7 @@ export class GroupSettingsPage {
       this.router.navigate(['/groups']);
     } catch (error: any) {
       console.error('Delete group error:', error);
-      this.errorMessage.set('Hiba történt a csoport törlésekor.');
+      this.errorMessage.set(this.languageService.t('groupSettings.error.deleteGroup'));
       this.isSubmitting.set(false);
       this.closeDeleteGroupModal();
     }

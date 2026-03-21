@@ -1,13 +1,14 @@
 import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { RouterModule } from '@angular/router';
+import { TranslocoPipe } from '@jsverse/transloco';
 import { GroupMember } from '../../../../services/group.service';
 import { SportEvent } from '../../../../services/event.service';
 
 @Component({
   selector: 'app-match-step-record',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, TranslocoPipe],
   templateUrl: './match-step-record.component.html',
   styleUrl: './match-step-record.component.scss',
 })

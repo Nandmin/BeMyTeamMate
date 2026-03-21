@@ -1,8 +1,9 @@
-﻿import { CommonModule } from '@angular/common';
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { Component, computed, effect, OnInit, inject, signal } from '@angular/core';
 import { Auth, applyActionCode } from '@angular/fire/auth';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { SeoService } from '../../services/seo.service';
+import { LanguageService } from '../../services/language.service';
 
 @Component({
   selector: 'app-verify-email',
@@ -15,26 +16,36 @@ export class VerifyEmailPage implements OnInit {
   private readonly auth = inject(Auth);
   private readonly route = inject(ActivatedRoute);
   private readonly seo = inject(SeoService);
+  private readonly languageService = inject(LanguageService);
 
   isLoading = signal(true);
   successMessage = signal('');
   errorMessage = signal('');
+  protected readonly titleLabel = computed(() => this.languageService.t('verify.title'));
+  protected readonly loadingLabel = computed(() => this.languageService.t('verify.loading'));
+  protected readonly loginLabel = computed(() => this.languageService.t('common.nav.login'));
+  protected readonly resendLabel = computed(() => this.languageService.t('verify.resendLink'));
+
+  constructor() {
+    effect(() => {
+      this.languageService.currentLanguage();
+      this.seo.setPageMeta({
+        title: this.languageService.t('verify.meta.title'),
+        description: this.languageService.t('verify.meta.description'),
+        path: '/verify-email',
+        noindex: true,
+      });
+    });
+  }
 
   ngOnInit() {
-    this.seo.setPageMeta({
-      title: 'Email cím hitelesítés - BeMyTeamMate',
-      description: 'Itt tudod véglegesíteni az e-mail címed hitelesítését.',
-      path: '/verify-email',
-      noindex: true,
-    });
-
     void this.verifyFromCurrentUrl();
   }
 
   private async verifyFromCurrentUrl() {
     const verified = this.pickParam('verified');
     if (verified === '1') {
-      this.successMessage.set('Sikeres e-mail cím hitelesítés.' + '\n' + ' Most már be tudsz jelentkezni.');
+      this.successMessage.set(this.languageService.t('verify.success'));
       this.isLoading.set(false);
       return;
     }
@@ -43,14 +54,14 @@ export class VerifyEmailPage implements OnInit {
     const oobCode = this.pickParam('oobCode');
 
     if (mode !== 'verifyEmail' || !oobCode) {
-      this.errorMessage.set('Érvénytelen vagy hiányos hitelesítési link.' + '\n' + '  Kérj újabb hitelesítő e-mailt.');
+      this.errorMessage.set(this.languageService.t('verify.error.invalidLink'));
       this.isLoading.set(false);
       return;
     }
 
     try {
       await applyActionCode(this.auth, oobCode);
-      this.successMessage.set('Sikeres e-mail cím hitelesítés.' + '\n' + ' Most már be tudsz jelentkezni.');
+      this.successMessage.set(this.languageService.t('verify.success'));
     } catch (error: any) {
       this.errorMessage.set(this.getErrorMessage(error?.code));
       console.error('Email verification failed:', error);
@@ -95,13 +106,13 @@ export class VerifyEmailPage implements OnInit {
   private getErrorMessage(code: string): string {
     switch (code) {
       case 'auth/invalid-action-code':
-        return 'Érvénytelen hitelesítési kód.' + '\n' + ' Kérj újabb hitelesítő e-mailt.';
+        return this.languageService.t('verify.error.invalidCode');
       case 'auth/expired-action-code':
-        return 'A hitelesítési link lejárt.' + '\n' + ' Kérj újabb hitelesítő e-mailt.';
+        return this.languageService.t('verify.error.expiredCode');
       case 'auth/user-disabled':
-        return 'Ez a fiók le van tiltva.';
+        return this.languageService.t('verify.error.disabled');
       default:
-        return 'Nem sikerült az e-mail cím hitelesítése.' + '\n' + ' Próbáld újra vagy kérj új linket.';
+        return this.languageService.t('verify.error.default');
     }
   }
 }

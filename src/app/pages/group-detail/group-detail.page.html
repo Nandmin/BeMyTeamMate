@@ -129,7 +129,7 @@
                         @if (hasMobileSecondaryActions()) {
                         <button (click)="toggleMobileActionSheet()"
                             class="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-white/10 bg-white/5 text-gray-300 transition-colors hover:bg-white/10 hover:text-white"
-                            aria-label="Tovabbi műveletek">
+                            aria-label="További műveletek">
                             <span class="material-symbols-outlined text-lg">more_horiz</span>
                         </button>
                         }
@@ -168,7 +168,7 @@
                     </a>
                     }
                     @if (!isAdmin()) {
-                    <p class="text-sm text-gray-400">Csak adminisztrator tud csoport beállításokat módosítani.</p>
+                    <p class="text-sm text-gray-400">Csak adminisztrátor tud csoport beállításokat módosítani.</p>
                     }
                 </div>
             </div>
@@ -182,7 +182,7 @@
                     <button (click)="onMobileJoinAction()"
                         class="w-full flex items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-sm font-semibold text-white hover:bg-white/10">
                         <span class="material-symbols-outlined text-base">person_add</span>
-                        {{ group()?.type === 'closed' ? 'Jelentkezes' : 'Csatlakozas' }}
+                        {{ group()?.type === 'closed' ? 'Jelentkezés' : 'Csatlakozás' }}
                     </button>
                     }
                     @if (isAdmin()) {
@@ -216,11 +216,11 @@
                 <div class="mt-4 flex gap-2">
                     <button (click)="closeMobileLeaveConfirm()"
                         class="flex-1 rounded-xl border border-white/10 px-4 py-2.5 text-sm font-semibold text-white hover:bg-white/5">
-                        Megse
+                        Mégse
                     </button>
                     <button (click)="onConfirmMobileLeave()" [disabled]="!canConfirmMobileLeave() || isSubmitting()"
                         class="flex-1 rounded-xl bg-red-600 px-4 py-2.5 text-sm font-bold text-white hover:bg-red-500 disabled:opacity-40">
-                        Kilepes
+                        Kilépés
                     </button>
                 </div>
             </div>
@@ -260,7 +260,7 @@
                                 </div>
                             </div>
                             <p class="text-gray-400 max-w-2xl leading-relaxed mt-3">
-                                {{ group()?.description || 'Nincs leiras megadva.' }}
+                                {{ group()?.description || 'Nincs leírás megadva.' }}
                             </p>
 
                         </div>
@@ -570,12 +570,12 @@
                         @for (member of members(); track member.id) {
                         <div [routerLink]="['/profile', member.userId]"
                             class="group-member-card flex items-center gap-3 p-3 rounded-2xl bg-white/5 border transition-all group cursor-pointer"
-                            [ngClass]="member.isAdmin ? 'border-primary/30 hover:bg-primary/5' : 'border-white/5 hover:border-white/20'">
+                            [ngClass]="isManagerMember(member) ? 'border-primary/30 hover:bg-primary/5' : 'border-white/5 hover:border-white/20'">
                             <div class="relative">
                                 <img [src]="member.photo || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + member.userId"
                                     [alt]="member.name"
                                     class="w-12 h-12 rounded-full object-cover border-2 border-transparent group-hover:border-primary transition-all">
-                                @if (member.isAdmin) {
+                                @if (isManagerMember(member)) {
                                 <div class="absolute -bottom-1 -right-1 bg-background-dark rounded-full p-0.5">
                                     <span
                                         class="material-symbols-outlined text-primary text-[14px]">verified_user</span>
@@ -587,8 +587,8 @@
                                     {{ member.name }}
                                 </p>
                                 <p class="text-xs font-medium"
-                                    [ngClass]="member.isAdmin ? 'text-primary' : 'text-gray-400'">{{
-                                    member.role | roleLabel }}</p>
+                                    [ngClass]="isManagerMember(member) ? 'text-primary' : 'text-gray-400'">{{
+                                    member.role | roleLabel: member.isAdmin }}</p>
                                 <div class="w-full bg-white/5 rounded-full h-1 mt-2">
                                     <div class="bg-primary h-full rounded-full"
                                         [style.width.%]="member.skillLevel || 50">
@@ -800,6 +800,8 @@
     }
 
 </main>
+
+
 
 
 

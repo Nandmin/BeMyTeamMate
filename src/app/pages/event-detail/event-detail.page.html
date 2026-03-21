@@ -1,4 +1,4 @@
-﻿@if (isMobileFlow()) {
+@if (isMobileFlow()) {
 <main class="mobile-flow-root min-h-full flex-grow bg-sport-background text-white pb-6 pt-4">
     <div class="mx-auto max-w-2xl px-4 space-y-4">
         <section class="mobile-flow-shell relative rounded-2xl border border-card-border bg-dark-bg/85 backdrop-blur-xl p-3 shadow-xl">
@@ -48,7 +48,7 @@
                 <button type="button" (click)="goToStep(step)"
                     [class.mobile-step-active]="currentStep() === step"
                     class="mobile-flow-step h-7 rounded-lg border border-white/10 bg-white/5 px-1 text-[10px] font-black tracking-[0.1em] text-white leading-none">
-                    {{ flowStepLabels[step] }}
+                    {{ flowStepLabelKeys[step] | transloco }}
                 </button>
                 }
             </div>
@@ -61,14 +61,14 @@
                     [class.text-red-400]="isUserAttending()"
                     [class.text-white]="!isUserAttending()"
                     >
-                    {{ isUserAttending() ? 'Lemondás' : 'Jelentkezés' }}
+                    {{ isUserAttending() ? ('eventDetail.actions.cancel' | transloco) : ('eventDetail.actions.join' | transloco) }}
                 </button>
                 }
 
                 @if (mobileShowEventSettingsAction()) {
                 <a [routerLink]="['/groups', groupId, 'edit-event', eventId]" (click)="closeMobileOverflow()"
                     class="mobile-flow-menu-item block w-full rounded-xl px-3 py-2 text-left text-sm font-bold text-white hover:bg-white/10">
-                    Esemény beállítás
+                    {{ 'eventDetail.actions.settings' | transloco }}
                 </a>
                 }
             </div>
@@ -132,9 +132,9 @@
         <div class="relative mx-auto max-w-6xl px-4">
             <div
                 class="flex items-center gap-2 text-[10px] md:text-xs text-gray-400 mb-8 uppercase font-bold tracking-widest overflow-x-auto whitespace-nowrap custom-scrollbar pb-1">
-                <a class="hover:text-primary transition-colors" routerLink="/">Kezdőlap</a>
+                <a class="hover:text-primary transition-colors" routerLink="/">{{ 'common.nav.home' | transloco }}</a>
                 <span class="material-symbols-outlined text-[14px]">chevron_right</span>
-                <a class="hover:text-primary transition-colors" routerLink="/groups">Csoportok</a>
+                <a class="hover:text-primary transition-colors" routerLink="/groups">{{ 'groupSettings.breadcrumb.groups' | transloco }}</a>
                 <span class="material-symbols-outlined text-[14px]">chevron_right</span>
                 <a class="hover:text-primary transition-colors" [routerLink]="['/groups', groupId]">{{ group()?.name
                     }}</a>
@@ -158,7 +158,6 @@
                             <h1 class="text-white text-3xl md:text-5xl font-black tracking-tight leading-tight mb-2">
                                 {{ event()?.title }}
                             </h1>
-                            <!-- <p class="text-gray-400 font-medium">Csapatok Ă¶sszeĂˇllĂ­tĂˇsa Ă©s jelentkezĹ‘k kezelĂ©se</p> -->
                         </div>
 
                         <!-- Action Buttons -->
@@ -171,7 +170,7 @@
                                 <span class="material-symbols-outlined text-[20px]">{{ isUserAttending() ? 'block' :
                                     'check_circle'
                                     }}</span>
-                                {{ isUserAttending() ? 'Lemondás' : 'Jelentkezés' }}
+                                {{ isUserAttending() ? ('eventDetail.actions.cancel' | transloco) : ('eventDetail.actions.join' | transloco) }}
                             </button>
 
                             <button [routerLink]="['/groups', groupId, 'edit-event', eventId]"
@@ -191,7 +190,7 @@
                         <div class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/5 border border-white/5">
                             <span class="material-symbols-outlined text-primary text-[18px]">schedule</span>
                             <span class="font-bold text-white text-sm">{{ event()?.time }}</span>
-                            <span class="text-xs text-gray-400 font-medium">({{ event()?.duration }} perc)</span>
+                            <span class="text-xs text-gray-400 font-medium">{{ 'eventDetail.labels.durationMinutes' | transloco:{ count: event()?.duration || 0 } }}</span>
                         </div>
 
                         <div class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/5 border border-white/5">
@@ -201,14 +200,13 @@
 
                         <div class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/5 border border-white/5">
                             <span class="material-symbols-outlined text-primary text-[18px]">group</span>
-                            <span class="font-bold text-white text-sm">{{ event()?.currentAttendees }} / {{
-                                event()?.maxAttendees }} fő</span>
+                            <span class="font-bold text-white text-sm">{{ 'eventDetail.labels.attendeeCapacity' | transloco:{ current: event()?.currentAttendees || 0, max: event()?.maxAttendees || 0 } }}</span>
                         </div>
 
                         @if (event()?.recurrenceId) {
                         <div class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/5 border border-white/5">
                             <span class="material-symbols-outlined text-primary text-[18px]">update</span>
-                            <span class="font-bold text-white text-sm">Ismétlődő</span>
+                            <span class="font-bold text-white text-sm">{{ 'eventDetail.labels.recurring' | transloco }}</span>
                         </div>
                         }
                     </div>
@@ -228,7 +226,7 @@
                     <div class="flex flex-col items-start gap-1">
                         <span
                             class="text-[20px] font-black text-primary uppercase tracking-widest whitespace-nowrap" style="font-family: 'Newsreader';">"A"
-                            CSAPAT</span>
+                            {{ 'eventDetail.labels.teamSuffix' | transloco | uppercase }}</span>
                         <span class="text-lg text-center font-bold text-white">{{ teamABalance() | number: '1.2-2' }}%</span>
                     </div>
                     <div
@@ -241,12 +239,12 @@
                     <div class="flex flex-col items-end gap-1">
                         <span
                             class="text-[20px] font-black text-white uppercase tracking-widest whitespace-nowrap" style="font-family: 'Newsreader';">"B"
-                            CSAPAT</span>
+                            {{ 'eventDetail.labels.teamSuffix' | transloco | uppercase }}</span>
                         <span class="text-lg font-bold text-primary">{{ (100 - teamABalance()) | number: '1.2-2' }}%</span>
                     </div>
                 </div>
                 <div class="w-full flex justify-center">
-                    <p class="text-[20px] text-white uppercase font-black tracking-[0.3em] text-center" style="font-family: 'Newsreader';">Erőegyensúly mutató</p>
+                    <p class="text-[20px] text-white uppercase font-black tracking-[0.3em] text-center" style="font-family: 'Newsreader';">{{ 'eventDetail.labels.balanceIndicator' | transloco }}</p>
                 </div>
             </div>
 
@@ -262,14 +260,14 @@
                         <div class="flex items-center gap-3">
                             <span
                                 class="material-symbols-outlined text-primary text-2xl font-bold">local_fire_department</span>
-                            <span class="text-xl text-white italic tracking-tighter">"A" csapat</span>
+                            <span class="text-xl text-white italic tracking-tighter">{{ 'eventDetail.labels.teamA' | transloco }}</span>
                         </div>
                         <div class="flex flex-col items-end">
                             <span class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
                                 @if (event()?.status === 'active' || event()?.status === 'finished') {
-                                Átlag (kezdéskor)
+                                {{ 'eventDetail.labels.averageAtStart' | transloco }}
                                 } @else {
-                                Átlag
+                                {{ 'eventDetail.labels.average' | transloco }}
                                 }
                             </span>
                             <span class="text-white font-black">{{ teamAAverge() }}</span>
@@ -294,7 +292,7 @@
                                 <div class="flex items-center gap-1">
                                     <span class="text-primary material-symbols-outlined text-[14px]">star</span>
                                     <p class="text-gray-400 text-[10px] font-black uppercase tracking-widest">
-                                        {{ player.role | roleLabel }} ({{ (player.skillLevel || 50) / 10 | number:'1.1-1' }}) • Elo:
+                                        {{ player.role | roleLabel: player.isAdmin }} ({{ (player.skillLevel || 50) / 10 | number:'1.1-1' }}) � Elo:
                                         {{ (event()?.status === 'active' || event()?.status === 'finished') && (event()?.playerRatingSnapshot?.[player.userId] ?? null) !== null ? event()?.playerRatingSnapshot?.[player.userId] : (player.elo || 1200) }}
                                     </p>
                                 </div>
@@ -382,8 +380,7 @@
                         } @empty {
                         <div
                             class="flex items-center justify-center py-10 border-2 border-dashed border-card-border rounded-2xl p-4 opacity-30">
-                            <p class="text-xs text-gray-400 font-black uppercase tracking-widest">Húzz ide
-                                játékost</p>
+                            <p class="text-xs text-gray-400 font-black uppercase tracking-widest">{{ 'eventDetail.labels.dropPlayerHere' | transloco }}</p>
                         </div>
                         }
                     </div>
@@ -437,14 +434,14 @@
                     <div class="team-card-header team-card-header-b flex justify-between items-center pt-2">
                         <div class="flex items-center gap-3">
                             <span class="material-symbols-outlined text-[#0d6efd] text-2xl font-bold">nights_stay</span>
-                            <span class="text-xl text-white italic tracking-tighter">"B" csapat</span>
+                            <span class="text-xl text-white italic tracking-tighter">{{ 'eventDetail.labels.teamB' | transloco }}</span>
                         </div>
                         <div class="flex flex-col items-end">
                             <span class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
                                 @if (event()?.status === 'active' || event()?.status === 'finished') {
-                                Átlag (kezdéskor)
+                                {{ 'eventDetail.labels.averageAtStart' | transloco }}
                                 } @else {
-                                Átlag
+                                {{ 'eventDetail.labels.average' | transloco }}
                                 }
                             </span>
                             <span class="text-white font-black">{{ teamBAverge() }}</span>
@@ -469,7 +466,7 @@
                                 <div class="flex items-center gap-1">
                                     <span class="text-[#0d6efd] material-symbols-outlined text-[14px]">star</span>
                                     <p class="text-gray-400 text-[10px] font-black uppercase tracking-widest">
-                                        {{ player.role | roleLabel }} ({{ (player.skillLevel || 50) / 10 | number:'1.1-1' }}) • Elo:
+                                        {{ player.role | roleLabel: player.isAdmin }} ({{ (player.skillLevel || 50) / 10 | number:'1.1-1' }}) � Elo:
                                         {{ (event()?.status === 'active' || event()?.status === 'finished') && (event()?.playerRatingSnapshot?.[player.userId] ?? null) !== null ? event()?.playerRatingSnapshot?.[player.userId] : (player.elo || 1200) }}
                                     </p>
                                 </div>
@@ -558,8 +555,7 @@
                         @empty {
                         <div
                             class="flex items-center justify-center py-10 border-2 border-dashed border-card-border rounded-2xl p-4 opacity-30">
-                            <p class="text-xs text-gray-400 font-black uppercase tracking-widest">Húzz ide
-                                játékost</p>
+                            <p class="text-xs text-gray-400 font-black uppercase tracking-widest">{{ 'eventDetail.labels.dropPlayerHere' | transloco }}</p>
                         </div>
                         }
                     </div>
@@ -570,7 +566,7 @@
         @if ((event()?.status === 'active' || event()?.status === 'finished') && isEditingResults() && !resultsEditingLocked()) {
         <section class="md:hidden space-y-4">
             <div class="flex items-center justify-center">
-                <h3 class="text-white font-black text-lg tracking-tight text-center">Eredmények rögzítése</h3>
+                <h3 class="text-white font-black text-lg tracking-tight text-center">{{ 'eventDetail.actions.recordResults' | transloco }}</h3>
             </div>
 
             <div class="grid grid-cols-1 gap-4">
@@ -578,9 +574,9 @@
                     <div class="relative flex items-center justify-center">
                         <div class="flex items-center gap-2 text-primary font-black uppercase tracking-widest text-md">
                             <span class="material-symbols-outlined text-[18px]">local_fire_department</span>
-                            "A" csapat
+                            {{ 'eventDetail.labels.teamA' | transloco }}
                         </div>
-                        <span class="absolute right-0 text-xs text-white font-black">Gól: {{ calculateTeamGoals('A') }}</span>
+                        <span class="absolute right-0 text-xs text-white font-black">{{ 'eventDetail.labels.goalCount' | transloco:{ count: calculateTeamGoals('A') } }}</span>
                     </div>
                     <div class="grid grid-cols-2 gap-2">
                         @for (player of teamA(); track player.userId) {
@@ -593,7 +589,7 @@
                         </button>
                         } @empty {
                         <div class="col-span-2 text-xs text-gray-400 text-center py-2">
-                            Nincs játékos a csapatban.
+                            {{ 'eventDetail.labels.notInTeam' | transloco }}
                         </div>
                         }
                     </div>
@@ -603,9 +599,9 @@
                     <div class="relative flex items-center justify-center">
                         <div class="flex items-center gap-2 text-[#0d6efd] font-black uppercase tracking-widest text-md">
                             <span class="material-symbols-outlined text-[18px]">nights_stay</span>
-                            "B" csapat
+                            {{ 'eventDetail.labels.teamB' | transloco }}
                         </div>
-                        <span class="absolute right-0 text-xs text-white font-black">Gól: {{ calculateTeamGoals('B') }}</span>
+                        <span class="absolute right-0 text-xs text-white font-black">{{ 'eventDetail.labels.goalCount' | transloco:{ count: calculateTeamGoals('B') } }}</span>
                     </div>
                     <div class="grid grid-cols-2 gap-2">
                         @for (player of teamB(); track player.userId) {
@@ -618,7 +614,7 @@
                         </button>
                         } @empty {
                         <div class="col-span-2 text-xs text-gray-400 text-center py-2">
-                            Nincs játékos a csapatban.
+                            {{ 'eventDetail.labels.notInTeam' | transloco }}
                         </div>
                         }
                     </div>
@@ -627,16 +623,16 @@
 
             <div class="rounded-2xl border border-card-border card-gradient bg-card-dark/60 backdrop-blur-xl p-4 space-y-3 mobile-results-glow">
                 <div class="flex items-center justify-between">
-                    <p class="text-white font-bold">Kiválasztott játékos</p>
+                    <p class="text-white font-bold">{{ 'eventDetail.labels.selectedPlayer' | transloco }}</p>
                     <span class="text-md font-black text-primary">
-                        {{ selectedResultPlayer()?.name || '—' }}
+                        {{ selectedResultPlayer()?.name || '�' }}
                     </span>
                 </div>
                 <div class="grid grid-cols-1 gap-3">
                     <div class="flex flex-col items-center gap-3 rounded-xl bg-background-dark/20 p-4">
                         <div class="flex items-center justify-center gap-2">
                             <span class="material-symbols-outlined text-primary">sports_soccer</span>
-                            <p class="text-white font-bold">Gól</p>
+                            <p class="text-white font-bold">{{ 'eventDetail.labels.goal' | transloco }}</p>
                         </div>
                         <div class="flex items-center justify-center gap-4">
                             <button type="button" (click)="updateSelectedStat('goals', -1)"
@@ -654,7 +650,7 @@
                     <div class="flex flex-col items-center gap-3 rounded-xl bg-background-dark/20 p-4">
                         <div class="flex items-center justify-center gap-2">
                             <span class="material-symbols-outlined text-[#0d6efd]">handshake</span>
-                            <p class="text-white font-bold">Gólpassz</p>
+                            <p class="text-white font-bold">{{ 'eventDetail.labels.assist' | transloco }}</p>
                         </div>
                         <div class="flex items-center justify-center gap-4">
                             <button type="button" (click)="updateSelectedStat('assists', -1)"
@@ -670,7 +666,7 @@
                     </div>
                 </div>
                 @if (!selectedResultPlayerId()) {
-                <p class="text-xs text-text-secondary">Válassz játékost a fenti listából a rögzítéshez.</p>
+                <p class="text-xs text-text-secondary">{{ 'eventDetail.labels.selectPlayerHint' | transloco }}</p>
                 }
             </div>
         </section>
@@ -686,10 +682,8 @@
                     <span class="material-symbols-outlined text-3xl font-bold">casino</span>
                 </div>
                 <div>
-                    <h2 class="text-white font-black text-xl tracking-tight">Kezelés</h2>
-                    <p class="text-gray-400 text-md font-medium">Csapatok és
-                        sorsolás
-                        vezérlése</p>
+                    <h2 class="text-white font-black text-xl tracking-tight">{{ 'eventDetail.labels.managementTitle' | transloco }}</h2>
+                    <p class="text-gray-400 text-md font-medium">{{ 'eventDetail.labels.managementSubtitle' | transloco }}</p>
                 </div>
             </div>
 
@@ -700,7 +694,7 @@
                     class="flex-none h-14 px-5 sm:px-6 md:px-7 rounded-2xl bg-white/5 border border-card-border text-white font-black hover:bg-card-border hover:text-primary transition-all flex items-center justify-center gap-3 group active:scale-95 disabled:opacity-50 text-center whitespace-normal leading-tight text-sm sm:text-base max-[850px]:w-full max-[640px]:w-[85%] max-[640px]:mx-auto">
                     <span
                         class="material-symbols-outlined group-hover:rotate-180 transition-transform duration-700 font-black">refresh</span>
-                    Sorsolás
+                    {{ 'eventDetail.actions.draw' | transloco }}
                 </button>
                 }
 
@@ -713,7 +707,7 @@
                     } @else {
                     <span class="material-symbols-outlined font-black text-2xl">sports_soccer</span>
                     }
-                    Kezdés
+                    {{ 'eventDetail.actions.start' | transloco }}
                 </button>
                 } @else {
                 @if (!resultsEditingLocked()) {
@@ -721,14 +715,14 @@
                 <button (click)="toggleResultsEdit()"
                     class="flex-none h-14 px-5 sm:px-6 md:px-8 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/20 text-white font-black transition-all flex items-center justify-center gap-3 text-sm sm:text-base text-center whitespace-normal leading-tight max-[850px]:w-full max-[640px]:w-[85%] max-[640px]:mx-auto">
                     <span class="material-symbols-outlined font-black text-2xl">edit_note</span>
-                    {{ event()?.status === 'finished' ? 'Eredmény módosítása' : 'Eredmények rögzítése' }}
+                    {{ event()?.status === 'finished' ? ('eventDetail.actions.editResults' | transloco) : ('eventDetail.actions.recordResults' | transloco) }}
                 </button>
                 } @else {
                 <div class="flex items-center justify-between gap-2">
                     <button (click)="toggleResultsEdit()"
                         class="h-14 px-6 rounded-2xl bg-red-500 border-red-500/20 text-white font-black hover:bg-red-500/20 transition-all flex items-center gap-2">
                         <span class="material-symbols-outlined">cancel</span>
-                        Mégse
+                        {{ 'common.cancel' | transloco }}
                     </button>
 
                     <button (click)="saveResults()" [disabled]="isSubmitting()"
@@ -738,7 +732,7 @@
                         } @else {
                         <span class="material-symbols-outlined">save</span>
                         }
-                        Mentés
+                        {{ 'createEvent.actions.save' | transloco }}
                     </button>
                 </div>
                 }
@@ -758,14 +752,14 @@
                         <span class="material-symbols-outlined text-3xl font-bold">trophy</span>
                     </div>
                     <div>
-                        <h2 class="text-white font-black text-xl tracking-tight">MVP szavazás</h2>
+                        <h2 class="text-white font-black text-xl tracking-tight">{{ 'createEvent.section.mvpVoting' | transloco }}</h2>
                         <p class="text-gray-400 text-md font-medium">
-                            Szavazhatsz a mérkőzés legjobbjára
+                            {{ 'eventDetail.labels.mvpSubtitle' | transloco }}
                         </p>
                     </div>
                 </div>
                 <div class="text-xs text-gray-400 font-bold uppercase tracking-widest">
-                    Szavazás vége:
+                    {{ 'eventDetail.labels.voteEnds' | transloco }}
                     <span class="text-white">
                         {{ mvpVotingEndAt() ? (mvpVotingEndAt() | date:'yyyy.MM.dd. HH:mm') : '--' }}
                     </span>
@@ -780,7 +774,7 @@
                             class="size-8 rounded-xl bg-primary/20 text-primary flex items-center justify-center">
                             <span class="material-symbols-outlined text-[18px]">military_tech</span>
                         </div>
-                        <p class="text-md font-bold uppercase tracking-widest" style="color: gold;">Győztes</p>
+                        <p class="text-md font-bold uppercase tracking-widest" style="color: gold;">{{ 'eventDetail.labels.winner' | transloco }}</p>
                     </div>
                     <div class="flex items-center justify-center gap-3">
                         <p class="text-white text-2xl sm:text-4xl font-black tracking-tight">
@@ -794,17 +788,17 @@
             <div class="space-y-6">
                 <div class="space-y-3">
                     <p class="text-sm text-gray-400">
-                        Csak a résztvevők szavazhatnak és csak egyetlen játékosra.
+                        {{ 'eventDetail.labels.voteParticipantsOnly' | transloco }}
                     </p>
                     @if (mvpUserVote()) {
                     <div class="text-md text-primary text-center font-black uppercase tracking-widest">
-                        Leadott szavazat: {{ mvpUserVotedMember()?.name || '---' }}
+                        {{ 'eventDetail.labels.voteSubmitted' | transloco:{ name: mvpUserVotedMember()?.name || '---' } }}
                     </div>
                     }
                     @if (!mvpVotingOpen()) {
                     <div class="flex justify-end" style="padding-left: 25%;">
                         <div class="text-base text-red-600 font-black uppercase tracking-widest text-right">
-                            A szavazási időszak lezárult.
+                            {{ 'eventDetail.labels.votingClosed' | transloco }}
                         </div>
                     </div>
                     }
@@ -834,7 +828,7 @@
                                     {{ member.name }}
                                 </p>
                                 <p class="text-[10px] text-gray-400 font-black uppercase tracking-widest">
-                                    {{ member.role | roleLabel }}
+                                    {{ member.role | roleLabel: member.isAdmin }}
                                 </p>
                             </div>
                             <span
@@ -858,7 +852,7 @@
                             } @else {
                             <span class="material-symbols-outlined">how_to_vote</span>
                             }
-                            Szavazat leadása
+                            {{ 'eventDetail.actions.submitVote' | transloco }}
                         </button>
                     </div>
                     }
@@ -870,7 +864,7 @@
 
         <!-- RSVP Status / User List Section (as requested) -->
         <div class="space-y-8 pt-10 border-t border-card-border/50">
-            <h2 class="text-2xl font-black text-white  tracking-tighter italic">Visszajelzések
+            <h2 class="text-2xl font-black text-white  tracking-tighter italic">{{ 'eventDetail.labels.responses' | transloco }}
             </h2>
 
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-10">
@@ -879,11 +873,11 @@
                     <div class="flex items-center justify-between">
                         <h3 class="text-lg font-black text-white flex items-center gap-3 tracking-tight">
                             <span class="w-2.5 h-2.5 rounded-full bg-primary shadow-[0_0_10px_#2bee7c]"></span>
-                            Résztvevők
+                            {{ 'eventDetail.labels.attendees' | transloco }}
                         </h3>
                         <span
                             class="text-[10px] font-black text-white keep-white uppercase tracking-[0.2em] bg-primary px-4 py-1.5 rounded-full border border-primary/20">
-                            {{ attendingMembers().length }} Jelentkező
+                            {{ 'eventDetail.labels.applicantCount' | transloco:{ count: attendingMembers().length } }}
                         </span>
                     </div>
 
@@ -902,7 +896,7 @@
                                     {{ member.name }}</p>
                                 <p class="text-[10px] text-gray-400 font-black text-sm">
                                     {{
-                                    member.role | roleLabel }}</p>
+                                    member.role | roleLabel: member.isAdmin }}</p>
                             </div>
                             <div
                                 class="size-10 rounded-2xl bg-primary text-white keep-white flex items-center justify-center shadow-lg shadow-primary/10 border border-primary/20">
@@ -913,8 +907,7 @@
                         <div
                             class="text-center py-16 bg-card-dark/20 border-2 border-dashed border-card-border rounded-[2rem]">
                             <span class="material-symbols-outlined text-4xl text-card-border mb-3">group_off</span>
-                            <p class="text-gray-400 text-sm font-bold uppercase tracking-widest">Nincs még
-                                jelentkező</p>
+                            <p class="text-gray-400 text-sm font-bold uppercase tracking-widest">{{ 'eventDetail.labels.noApplicants' | transloco }}</p>
                         </div>
                         }
                     </div>
@@ -925,11 +918,11 @@
                     <div class="flex items-center justify-between">
                         <h3 class="text-lg font-black text-white/50 flex items-center gap-3 tracking-tight">
                             <span class="w-2.5 h-2.5 rounded-full bg-gray-600"></span>
-                            Nincs válasz / Nem jön
+                            {{ 'eventDetail.labels.noResponseOrDeclined' | transloco }}
                         </h3>
                         <span
                             class="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em] bg-white/5 px-4 py-1.5 rounded-full border border-white/10">
-                            {{ notRespondingMembers().length }} fő
+                            {{ 'eventDetail.labels.peopleCount' | transloco:{ count: notRespondingMembers().length } }}
                         </span>
                     </div>
 
@@ -947,15 +940,14 @@
                                     class="font-bold text-white/80 text-lg tracking-tight group-hover:text-primary transition-colors">
                                     {{ member.name }}</p>
                                 <p class="text-[10px] text-gray-600 font-black uppercase tracking-[0.15em]">{{
-                                    member.role | roleLabel }}</p>
+                                    member.role | roleLabel: member.isAdmin }}</p>
                             </div>
                         </div>
                         } @empty {
                         <div
                             class="flex flex-col items-center justify-center py-12 bg-primary/5 rounded-[2rem] border border-primary/10">
                             <span class="material-symbols-outlined text-primary text-4xl mb-2">done_all</span>
-                            <p class="text-primary text-xs font-black uppercase tracking-widest italic">Mindenki
-                                visszajelzett! 🔥</p>
+                            <p class="text-primary text-xs font-black uppercase tracking-widest italic">{{ 'eventDetail.labels.everyoneResponded' | transloco }}</p>
                         </div>
                         }
                     </div>
@@ -969,5 +961,7 @@
 </main>
 
 }
+
+
 
 

@@ -1,18 +1,22 @@
 import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, EventEmitter, Input, Output, inject } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { CdkDragDrop, DragDropModule } from '@angular/cdk/drag-drop';
+import { TranslocoPipe } from '@jsverse/transloco';
 import { GroupMember } from '../../../../services/group.service';
 import { SportEvent } from '../../../../services/event.service';
+import { LanguageService } from '../../../../services/language.service';
 
 @Component({
   selector: 'app-match-step-teams',
   standalone: true,
-  imports: [CommonModule, RouterModule, DragDropModule],
+  imports: [CommonModule, RouterModule, DragDropModule, TranslocoPipe],
   templateUrl: './match-step-teams.component.html',
   styleUrl: './match-step-teams.component.scss',
 })
 export class MatchStepTeamsComponent {
+  private readonly languageService = inject(LanguageService);
+
   @Input() event: SportEvent | undefined;
   @Input() teamA: GroupMember[] = [];
   @Input() teamB: GroupMember[] = [];
@@ -29,6 +33,7 @@ export class MatchStepTeamsComponent {
   @Output() startGame = new EventEmitter<void>();
   @Output() backStep = new EventEmitter<void>();
   @Output() nextStep = new EventEmitter<void>();
+
   averageInfoTeam: 'A' | 'B' | null = null;
 
   get isPlanned(): boolean {
@@ -48,15 +53,19 @@ export class MatchStepTeamsComponent {
   }
 
   get primaryLabel(): string {
-    if (this.canReshuffle && !this.hasTeams) return 'Sorsolás';
-    if (this.canReshuffle && this.hasTeams) return 'Kezdés';
-    return 'Tovább';
+    if (this.canReshuffle && !this.hasTeams) return this.languageService.t('eventDetail.actions.draw');
+    if (this.canReshuffle && this.hasTeams) return this.languageService.t('eventDetail.actions.start');
+    return this.languageService.t('eventDetail.actions.next');
   }
 
   get primaryDisabled(): boolean {
     if (this.canReshuffle && !this.hasTeams) return !this.canDrawTeams;
     if (this.canReshuffle && this.hasTeams) return this.isSubmitting;
     return !this.hasTeams;
+  }
+
+  get isPrimaryDrawAction(): boolean {
+    return this.canReshuffle && !this.hasTeams;
   }
 
   onPrimaryAction() {
@@ -71,11 +80,6 @@ export class MatchStepTeamsComponent {
     this.nextStep.emit();
   }
 
-  onSecondaryReshuffle() {
-    if (!this.canDrawTeams) return;
-    this.generateTeams.emit();
-  }
-
   toggleAverageInfo(team: 'A' | 'B', event: Event) {
     event.stopPropagation();
     this.averageInfoTeam = this.averageInfoTeam === team ? null : team;
@@ -87,10 +91,6 @@ export class MatchStepTeamsComponent {
 
   preventAverageInfoClose(event: Event) {
     event.stopPropagation();
-  }
-
-  get isPrimaryDrawAction(): boolean {
-    return this.canReshuffle && !this.hasTeams;
   }
 
   getDisplayedElo(player: GroupMember): number {

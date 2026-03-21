@@ -1,4 +1,4 @@
-import { Component, signal, inject } from '@angular/core';
+﻿import { Component, signal, inject } from '@angular/core';
 import { Router, NavigationEnd, RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
 import { distinctUntilChanged, filter, map } from 'rxjs/operators';
 import { FooterComponent } from './components/footer/footer';
@@ -11,6 +11,7 @@ import { NotificationService } from './services/notification.service';
 import { AuthService } from './services/auth.service';
 import { AnalyticsService } from './services/analytics.service';
 import { SwUpdate, VersionEvent } from '@angular/service-worker';
+import { TranslocoPipe } from '@jsverse/transloco';
 
 @Component({
   selector: 'app-root',
@@ -23,13 +24,13 @@ import { SwUpdate, VersionEvent } from '@angular/service-worker';
     HeaderComponent,
     ModalComponent,
     CookieConsentComponent,
+    TranslocoPipe,
   ],
   templateUrl: './app.html',
   styleUrl: './app.scss',
 })
 export class App {
   private router = inject(Router);
-  // Inject ThemeService to initialize theme immediately on app load
   private themeService = inject(ThemeService);
   private notificationService = inject(NotificationService);
   private authService = inject(AuthService);
@@ -82,10 +83,7 @@ export class App {
     this.notificationService.listenForForegroundMessages();
 
     this.authService.user$
-      .pipe(
-        map((user) => user?.uid ?? null),
-        distinctUntilChanged()
-      )
+      .pipe(map((user) => user?.uid ?? null), distinctUntilChanged())
       .subscribe((uid) => {
         if (!uid) return;
         void this.notificationService.syncTokenForCurrentUser().catch((error) => {
@@ -97,16 +95,12 @@ export class App {
     this.router.events
       .pipe(filter((event) => event instanceof NavigationEnd))
       .subscribe((event: NavigationEnd) => {
-        // Show nav on all pages except login and register
         this.showNav.set(
           event.urlAfterRedirects !== '/login' && event.urlAfterRedirects !== '/register'
         );
         this.updateFooterVisibility(event.urlAfterRedirects);
+        this.showHeader.set(true);
 
-        // Header visibility logic
-        this.showHeader.set(true); // Always show header as requested, or adjust if needed
-
-        // Scroll to top on navigation
         const mainContent = document.querySelector('.main-content');
         if (mainContent) {
           mainContent.scrollTop = 0;
@@ -164,7 +158,6 @@ export class App {
     try {
       await this.swUpdate.activateUpdate();
       window.sessionStorage.setItem(this.swReloadMarkerKey, nextHash);
-
       await this.clearNgswCaches();
 
       const reloadUrl = new URL(window.location.href);

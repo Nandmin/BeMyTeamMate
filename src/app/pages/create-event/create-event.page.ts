@@ -1,10 +1,13 @@
-import { Component, inject, signal, OnInit } from '@angular/core';
+import { Component, effect, inject, signal, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { EventService } from '../../services/event.service';
 import { AuthService } from '../../services/auth.service';
+import { TranslationKey } from '../../i18n/translations';
+import { TranslatePipe } from '../../pipes/translate.pipe';
+import { LanguageService } from '../../services/language.service';
 import { ModalService } from '../../services/modal.service';
 import { Timestamp } from '@angular/fire/firestore';
 import { SeoService } from '../../services/seo.service';
@@ -12,7 +15,7 @@ import { SeoService } from '../../services/seo.service';
 @Component({
   selector: 'app-create-event',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, TranslatePipe],
   templateUrl: './create-event.page.html',
   styleUrl: './create-event.page.scss',
 })
@@ -22,6 +25,7 @@ export class CreateEventPage implements OnInit {
   private sanitizer = inject(DomSanitizer);
   private eventService = inject(EventService);
   private authService = inject(AuthService);
+  protected readonly languageService = inject(LanguageService);
   private modalService = inject(ModalService);
   private seo = inject(SeoService);
 
@@ -30,27 +34,37 @@ export class CreateEventPage implements OnInit {
   isEditMode = !!this.eventId;
   today = '';
 
-  sports = [
-    { id: 'soccer', name: 'Foci', icon: 'sports_soccer' },
-    { id: 'basketball', name: 'Kosárlabda', icon: 'sports_basketball' },
-    { id: 'handball', name: 'Kézilabda', icon: 'sports_handball' },
-    { id: 'tennis', name: 'Tenisz', icon: 'sports_tennis' },
-    { id: 'volleyball', name: 'Röplabda', icon: 'sports_volleyball' },
-    { id: 'hockey', name: 'Jégkorong', icon: 'sports_hockey' },
-    { id: 'squash', name: 'Squash', icon: 'sports_tennis' },
-    { id: 'bowling', name: 'Bowling', icon: 'sports_baseball' },
-    { id: 'other', name: 'Egyéb', icon: 'more_horiz' },
+  sports: Array<{ id: string; labelKey: TranslationKey; icon: string }> = [
+    { id: 'soccer', labelKey: 'createEvent.sport.soccer', icon: 'sports_soccer' },
+    { id: 'basketball', labelKey: 'createEvent.sport.basketball', icon: 'sports_basketball' },
+    { id: 'handball', labelKey: 'createEvent.sport.handball', icon: 'sports_handball' },
+    { id: 'tennis', labelKey: 'createEvent.sport.tennis', icon: 'sports_tennis' },
+    { id: 'volleyball', labelKey: 'createEvent.sport.volleyball', icon: 'sports_volleyball' },
+    { id: 'hockey', labelKey: 'createEvent.sport.hockey', icon: 'sports_hockey' },
+    { id: 'squash', labelKey: 'createEvent.sport.squash', icon: 'sports_tennis' },
+    { id: 'bowling', labelKey: 'createEvent.sport.bowling', icon: 'sports_baseball' },
+    { id: 'other', labelKey: 'createEvent.sport.other', icon: 'more_horiz' },
   ];
 
-  async ngOnInit() {
-    this.seo.setPageMeta({
-      title: this.isEditMode ? 'Esemény szerkesztése – BeMyTeamMate' : 'Új esemény – BeMyTeamMate',
-      description: this.isEditMode
-        ? 'Szerkeszd az esemény részleteit, időpontot, helyszínt és résztvevőket.'
-        : 'Hozz létre új eseményt, állítsd be az időpontot és a részleteket.',
-      path: '/groups',
-      noindex: true,
+  constructor() {
+    effect(() => {
+      this.languageService.currentLanguage();
+      this.seo.setPageMeta({
+        title: this.languageService.t(
+          this.isEditMode ? 'createEvent.meta.editTitle' : 'createEvent.meta.createTitle'
+        ),
+        description: this.languageService.t(
+          this.isEditMode
+            ? 'createEvent.meta.editDescription'
+            : 'createEvent.meta.createDescription'
+        ),
+        path: '/groups',
+        noindex: true,
+      });
     });
+  }
+
+  async ngOnInit() {
     this.today = new Date().toISOString().split('T')[0];
     this.eventData.date = this.today;
 
@@ -77,8 +91,8 @@ export class CreateEventPage implements OnInit {
       const user = this.authService.currentUser();
       if (event.creatorId !== user?.uid) {
         await this.modalService.alert(
-          'Nincs jogosultságod az esemény szerkesztéséhez.',
-          'Hiba',
+          this.languageService.t('createEvent.error.noEditPermission'),
+          this.languageService.t('admin.groups.alert.deleteErrorTitle'),
           'error'
         );
         this.router.navigate(['/groups', this.groupId]);
@@ -87,7 +101,11 @@ export class CreateEventPage implements OnInit {
 
       const eventDate = this.toDate(event.date);
       if (!eventDate) {
-        await this.modalService.alert('Hibás esemény dátum.', 'Hiba', 'error');
+        await this.modalService.alert(
+          this.languageService.t('createEvent.error.invalidDate'),
+          this.languageService.t('admin.groups.alert.deleteErrorTitle'),
+          'error'
+        );
         this.router.navigate(['/groups', this.groupId]);
         return;
       }
@@ -107,7 +125,11 @@ export class CreateEventPage implements OnInit {
       };
     } catch (error) {
       console.error('Error loading event:', error);
-      await this.modalService.alert('Hiba történt az esemény betöltésekor.', 'Hiba', 'error');
+      await this.modalService.alert(
+        this.languageService.t('createEvent.error.loadFailed'),
+        this.languageService.t('admin.groups.alert.deleteErrorTitle'),
+        'error'
+      );
       this.router.navigate(['/groups', this.groupId]);
     }
   }
@@ -173,7 +195,11 @@ export class CreateEventPage implements OnInit {
       this.router.navigate(['/groups', this.groupId]);
     } catch (error) {
       console.error('Error saving event:', error);
-      await this.modalService.alert('Hiba történt az esemény mentésekor.', 'Hiba', 'error');
+      await this.modalService.alert(
+        this.languageService.t('createEvent.error.saveFailed'),
+        this.languageService.t('admin.groups.alert.deleteErrorTitle'),
+        'error'
+      );
     } finally {
       this.isSubmitting.set(false);
     }
@@ -186,7 +212,9 @@ export class CreateEventPage implements OnInit {
   async onDeleteEvent() {
     if (!this.groupId || !this.eventId) return;
 
-    const shouldDelete = await this.modalService.confirm('Biztosan törölni szeretnéd ezt az eseményt?');
+    const shouldDelete = await this.modalService.confirm(
+      this.languageService.t('createEvent.actions.deleteConfirm')
+    );
     if (shouldDelete) {
       this.isSubmitting.set(true);
       try {
@@ -194,7 +222,11 @@ export class CreateEventPage implements OnInit {
         this.router.navigate(['/groups', this.groupId]);
       } catch (error) {
         console.error('Error deleting event:', error);
-        await this.modalService.alert('Hiba történt az esemény törlésekor.', 'Hiba', 'error');
+        await this.modalService.alert(
+          this.languageService.t('createEvent.error.deleteFailed'),
+          this.languageService.t('admin.groups.alert.deleteErrorTitle'),
+          'error'
+        );
       } finally {
         this.isSubmitting.set(false);
       }

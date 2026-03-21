@@ -5,10 +5,13 @@ import { GroupService, Group, GroupMember } from '../../services/group.service';
 import { EventService, SportEvent } from '../../services/event.service';
 import { AuthService } from '../../services/auth.service';
 import { ModalService } from '../../services/modal.service';
+import { TranslocoPipe } from '@jsverse/transloco';
 import { RoleLabelPipe } from '../../pipes/role-label.pipe';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { switchMap } from 'rxjs';
 import { SeoService } from '../../services/seo.service';
+import { LanguageService } from '../../services/language.service';
+import { TranslationKey } from '../../i18n/translations';
 import {
   DragDropModule,
   CdkDragDrop,
@@ -20,6 +23,7 @@ import { MatchStepOverviewComponent } from './components/match-step-overview/mat
 import { MatchStepTeamsComponent } from './components/match-step-teams/match-step-teams.component';
 import { MatchStepRecordComponent } from './components/match-step-record/match-step-record.component';
 import { MatchStepFeedbackComponent } from './components/match-step-feedback/match-step-feedback.component';
+import { isElevatedGroupMemberRole } from '../../utils/group-member-role';
 
 @Component({
   selector: 'app-event-detail',
@@ -29,6 +33,7 @@ import { MatchStepFeedbackComponent } from './components/match-step-feedback/mat
     RouterModule,
     DragDropModule,
     RoleLabelPipe,
+    TranslocoPipe,
     MatchStepOverviewComponent,
     MatchStepTeamsComponent,
     MatchStepRecordComponent,
@@ -43,6 +48,7 @@ export class EventDetailPage {
   private groupService = inject(GroupService);
   private eventService = inject(EventService);
   protected authService = inject(AuthService);
+  protected readonly languageService = inject(LanguageService);
   private modalService = inject(ModalService);
   private seo = inject(SeoService);
   private document = inject(DOCUMENT);
@@ -59,11 +65,11 @@ export class EventDetailPage {
     MatchFlowStep.Record,
     MatchFlowStep.FeedbackMvp,
   ];
-    protected readonly flowStepLabels: Record<MatchFlowStep, string> = {
-    [MatchFlowStep.Overview]: 'Áttekintés',
-    [MatchFlowStep.Teams]: 'Csapatok',
-    [MatchFlowStep.Record]: 'Eredmény',
-    [MatchFlowStep.FeedbackMvp]: 'MVP',
+  protected readonly flowStepLabelKeys: Record<MatchFlowStep, TranslationKey> = {
+    [MatchFlowStep.Overview]: 'eventDetail.flow.overview',
+    [MatchFlowStep.Teams]: 'eventDetail.flow.teams',
+    [MatchFlowStep.Record]: 'eventDetail.flow.record',
+    [MatchFlowStep.FeedbackMvp]: 'eventDetail.flow.mvp',
   };
   isMobileFlow = signal(this.mobileViewportQuery?.matches ?? false);
   isMobileOverflowOpen = signal(false);
@@ -71,26 +77,28 @@ export class EventDetailPage {
   currentStepIndex = computed(() => this.flowStepOrder.indexOf(this.currentStep()) + 1);
   totalFlowSteps = this.flowStepOrder.length;
   mobileProgressPercent = computed(() => (this.currentStepIndex() / this.totalFlowSteps) * 100);
-  mobileShellTitle = computed(() => this.event()?.title || 'Meccs');
+  mobileShellTitle = computed(() => this.event()?.title || this.languageService.t('eventDetail.mobile.defaultTitle'));
   mobileOverviewPrimaryCtaLabel = computed(() => {
     const event = this.event();
     if ((!event?.status || event.status === 'planned') && !this.hasTeamsReady()) {
-      return 'Sorsolás';
+      return this.languageService.t('eventDetail.actions.draw');
     }
-    return 'Csapatok';
+    return this.languageService.t('eventDetail.flow.teams');
   });
   mobileStatusChipLabel = computed(() => {
     const event = this.event();
-    if (this.currentStep() === MatchFlowStep.Record && this.isEditingResults()) return 'Rögzítés';
+    if (this.currentStep() === MatchFlowStep.Record && this.isEditingResults()) {
+      return this.languageService.t('eventDetail.mobile.record');
+    }
 
     switch (event?.status) {
       case 'active':
-        return 'Folyamatban';
+        return this.languageService.t('eventDetail.mobile.active');
       case 'finished':
-        return 'Lezárva';
+        return this.languageService.t('eventDetail.mobile.finished');
       case 'planned':
       default:
-        return 'Sorsolás';
+        return this.languageService.t('eventDetail.mobile.planned');
     }
   });
   mobileStatusChipTone = computed<'planned' | 'active' | 'record' | 'finished'>(() => {
@@ -155,11 +163,14 @@ export class EventDetailPage {
         this.destroyRef.onDestroy(() => viewportQuery.removeListener(onViewportChange));
       }
     }
-    this.seo.setPageMeta({
-      title: 'Esemény részletei - BeMyTeamMate',
-      description: 'Csapatok, részvétel, eredmények és MVP szavazás egy nézetben.',
-      path: '/groups',
-      noindex: true,
+    effect(() => {
+      this.languageService.currentLanguage();
+      this.seo.setPageMeta({
+        title: this.languageService.t('eventDetail.meta.title'),
+        description: this.languageService.t('eventDetail.meta.description'),
+        path: '/groups',
+        noindex: true,
+      });
     });
     effect(() => {
       const event = this.event();
@@ -261,8 +272,8 @@ export class EventDetailPage {
     const members = this.members();
     if (!user || !members) return false;
     const member = members.find((m) => m.userId === user.uid);
-    return (
-      member?.isAdmin || member?.role === 'Csapatkapitány' || this.group()?.ownerId === user.uid
+    return !!member && (
+      isElevatedGroupMemberRole(member.role, member.isAdmin) || this.group()?.ownerId === user.uid
     );
   });
 
@@ -357,8 +368,8 @@ export class EventDetailPage {
     if (step === this.currentStep()) return;
     if (!this.isStepAccessible(step)) {
       await this.modalService.alert(
-        'Ehhez a lépéshez előbb csapatokra van szükség. Készítsd el a sorsolást a Csapatok lépésben.',
-        'Lépés nem elérhető',
+        this.languageService.t('eventDetail.alert.stepUnavailableMessage'),
+        this.languageService.t('eventDetail.alert.stepUnavailableTitle'),
         'warning'
       );
       return;
@@ -439,8 +450,8 @@ export class EventDetailPage {
 
     if (!this.isMember()) {
       await this.modalService.alert(
-        'Csak csoporttagok jelentkezhetnek az eseményekre.',
-        'Figyelem!'
+        this.languageService.t('eventDetail.alert.membersOnlyMessage'),
+        this.languageService.t('eventDetail.alert.membersOnlyTitle')
       );
       return;
     }
@@ -448,8 +459,8 @@ export class EventDetailPage {
     // Prevent RSVP if event is in the past
     if (this.isEventPast()) {
       await this.modalService.alert(
-        'Már nem jelentkezhetsz erre az eseményre, vagy nem mondhatod le a részvételt, mivel az időpontja elmúlt.',
-        'Esemény lejárt'
+        this.languageService.t('eventDetail.alert.eventExpiredMessage'),
+        this.languageService.t('eventDetail.alert.eventExpiredTitle')
       );
       return;
     }
@@ -457,8 +468,8 @@ export class EventDetailPage {
     // Check if event is already active/finished
     if (this.isUserAttending() && (event.status === 'active' || event.status === 'finished')) {
       await this.modalService.alert(
-        'Már nem mondhatod le a részvételt, mivel a csapatok már véglegesítve lettek.',
-        'Nem lehetséges'
+        this.languageService.t('eventDetail.alert.teamsFinalizedMessage'),
+        this.languageService.t('eventDetail.alert.teamsFinalizedTitle')
       );
       return;
     }
@@ -468,7 +479,11 @@ export class EventDetailPage {
       await this.eventService.toggleRSVP(this.groupId, event.id);
     } catch (error: any) {
       console.error('Error toggling RSVP:', error);
-      await this.modalService.alert(error.message || 'Hiba történt.', 'Hiba', 'error');
+      await this.modalService.alert(
+        error.message || this.languageService.t('eventDetail.alert.genericErrorMessage'),
+        this.languageService.t('eventDetail.alert.genericErrorTitle'),
+        'error'
+      );
     } finally {
       this.isSubmitting.set(false);
     }
@@ -482,10 +497,18 @@ export class EventDetailPage {
     this.isSubmitting.set(true);
     try {
       await this.eventService.submitMvpVote(this.groupId, event.id, selected);
-      await this.modalService.alert('Szavazatodat rögzítettük!', 'Siker', 'success');
+      await this.modalService.alert(
+        this.languageService.t('eventDetail.alert.mvpVoteSavedMessage'),
+        this.languageService.t('eventDetail.alert.mvpVoteSavedTitle'),
+        'success'
+      );
     } catch (error: any) {
       console.error('Error submitting MVP vote:', error);
-      await this.modalService.alert(error.message || 'Hiba történt!', 'Hiba', 'error');
+      await this.modalService.alert(
+        error.message || this.languageService.t('eventDetail.alert.genericErrorMessage'),
+        this.languageService.t('eventDetail.alert.genericErrorTitle'),
+        'error'
+      );
     } finally {
       this.isSubmitting.set(false);
     }
@@ -600,20 +623,19 @@ export class EventDetailPage {
     if (!event || !this.groupId || !this.isMember()) return;
     if (this.teamA().length === 0 && this.teamB().length === 0) {
       if (this.attendingMembers().length < 2) {
-        await this.modalService.alert('Nincs elég jelentkező a játék indításához.');
+        await this.modalService.alert(this.languageService.t('eventDetail.start.notEnoughAttendees'));
         return;
       }
       await this.modalService.alert(
-        'Előbb kattints a Sorsolás gombra a csapatok összeállításához.',
-        'Hiányzó csapatok'
+        this.languageService.t('eventDetail.start.missingTeamsMessage'),
+        this.languageService.t('eventDetail.start.missingTeamsTitle')
       );
       return;
     }
 
-    // Megerősí­tés kérése
     const confirmed = await this.modalService.confirm(
-      'Biztosan elindítod a játékot? Ezután az összeállítások rögzítésre kerülnek és nem módosíthatók.',
-      'Játék indítása'
+      this.languageService.t('eventDetail.start.confirmMessage'),
+      this.languageService.t('eventDetail.start.confirmTitle')
     );
 
     if (!confirmed) {
@@ -645,8 +667,8 @@ export class EventDetailPage {
     } catch (error: any) {
       console.error('Error starting game:', error);
       await this.modalService.alert(
-        error.message || 'Hiba történt a játék indításakor!',
-        'Hiba',
+        error.message || this.languageService.t('eventDetail.start.errorMessage'),
+        this.languageService.t('eventDetail.start.errorTitle'),
         'error'
       );
     } finally {
@@ -684,22 +706,12 @@ export class EventDetailPage {
     if (!timestamp) return { month: '', day: '' };
     const date = this.coerceDate(timestamp);
     if (Number.isNaN(date.getTime())) return { month: '', day: '' };
-    const months = [
-      'JAN',
-      'FEB',
-      'MĂR',
-      'ÁPR',
-      'MĂJ',
-      'JÚN',
-      'JÚL',
-      'AUG',
-      'SZEP',
-      'OKT',
-      'NOV',
-      'DEC',
-    ];
+    const locale = this.languageService.currentLanguage() === 'hu' ? 'hu-HU' : 'en-US';
     return {
-      month: months[date.getMonth()],
+      month: date
+        .toLocaleDateString(locale, { month: 'short' })
+        .replace('.', '')
+        .toUpperCase(),
       day: date.getDate().toString(),
     };
   }
@@ -708,7 +720,7 @@ export class EventDetailPage {
     if (!timestamp) return '';
     const date = this.coerceDate(timestamp);
     if (Number.isNaN(date.getTime())) return '';
-    return date.toLocaleDateString('hu-HU', {
+    return date.toLocaleDateString(this.languageService.currentLanguage() === 'hu' ? 'hu-HU' : 'en-US', {
       year: 'numeric',
       month: 'long',
       day: 'numeric',
@@ -765,7 +777,7 @@ export class EventDetailPage {
 
     // Validate: 1. User Assists <= User Goals (Strict Interpretation of "Se user")
     // Wait, the user might mean "User Assists <= Total Team Goals"?
-    // "gĂłlpasszok szĂˇma nem lehet tĂ¶bb, mint a gĂłlok szĂˇma. Se user, se Ă¶sszes user"
+    // "gólpasszok száma nem lehet több, mint a gólok száma. Se user, se összes user"
     // -> User Assists <= User Goals seems too strict for football.
     // Let's implement team check first.
     // AND let's implement the User check as requested: currentAssistsMap[userId] <= currentGoalsMap[userId] ?
@@ -819,8 +831,8 @@ export class EventDetailPage {
     if (!this.groupId || !this.eventId) return false;
 
     const confirmed = await this.modalService.confirm(
-      'Biztosan mented a mérkőzés végredményét? Az esemény státusza "Befejezett"-re változik.',
-      'Eredmények mentése'
+      this.languageService.t('eventDetail.results.confirmMessage'),
+      this.languageService.t('eventDetail.results.confirmTitle')
     );
 
     if (!confirmed) return false;
@@ -850,11 +862,19 @@ export class EventDetailPage {
         this.teamB()
       );
       this.isEditingResults.set(false);
-      await this.modalService.alert('Az eredmények sikeresen mentve!', 'Siker', 'success');
+      await this.modalService.alert(
+        this.languageService.t('eventDetail.results.savedMessage'),
+        this.languageService.t('eventDetail.results.savedTitle'),
+        'success'
+      );
       return true;
     } catch (err: any) {
       console.error('Error saving results:', err);
-      await this.modalService.alert(err.message, 'Hiba', 'error');
+      await this.modalService.alert(
+        err.message || this.languageService.t('eventDetail.alert.genericErrorMessage'),
+        this.languageService.t('eventDetail.alert.genericErrorTitle'),
+        'error'
+      );
       return false;
     } finally {
       this.isSubmitting.set(false);

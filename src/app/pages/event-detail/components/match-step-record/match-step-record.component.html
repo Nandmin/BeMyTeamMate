@@ -1,9 +1,5 @@
 ﻿<section class="space-y-4" [class.pb-24]="canEdit && isEditingResults">
   <div class="match-flow-card mt-4 rounded-2xl border border-card-border card-gradient bg-dark-bg/80 backdrop-blur-xl p-2.5 shadow-xl">
-    <!-- <div class="flex items-center justify-between">
-      <p class="text-xs font-black uppercase tracking-[0.2em] text-gray-400">ĂllĂˇs</p>
-      <p class="text-xs font-bold text-white/80">{{ event?.status || 'planned' }}</p>
-    </div> -->
     <div class="flex items-center justify-center gap-4">
       <div class="text-center">
         <p class="text-2xl leading-none font-black text-primary">{{ goalsA }}</p>
@@ -17,16 +13,16 @@
 
   @if (!hasTeams) {
   <div class="match-flow-card rounded-2xl border border-card-border card-gradient bg-dark-bg/80 backdrop-blur-xl p-4 text-sm text-gray-300">
-    Először csapatokat kell rögzíteni.
+    {{ 'eventDetail.record.teamsRequired' | transloco }}
   </div>
   <button type="button" (click)="backStep.emit()"
     class="h-12 w-full rounded-2xl bg-primary font-black text-background-dark">
-    Vissza: Csapatok
+    {{ 'eventDetail.actions.backToTeams' | transloco }}
   </button>
   } @else {
   <div class="record-neon-border rounded-3xl p-[2px]">
   <div class="match-flow-card rounded-3xl border border-card-border card-gradient bg-dark-bg/80 backdrop-blur-xl p-3 shadow-xl">
-    <p class="mb-2 text-center text-xs font-black uppercase tracking-[0.2em] text-white">Eredmény rögzítése</p>
+    <p class="mb-2 text-center text-xs font-black uppercase tracking-[0.2em] text-white">{{ 'eventDetail.record.title' | transloco }}</p>
 
     <div class="mb-2 grid grid-cols-2 gap-2">
       <button
@@ -38,7 +34,7 @@
             : 'bg-primary/15 text-primary border-primary/40'
         "
         class="h-9 rounded-xl border text-sm font-black transition-all">
-        A csapat
+        {{ 'eventDetail.labels.teamA' | transloco }}
       </button>
       <button
         type="button"
@@ -49,7 +45,7 @@
             : 'bg-[#0d6efd]/15 text-[#4ea1ff] border-[#0d6efd]/45'
         "
         class="h-9 rounded-xl border text-sm font-black transition-all">
-        B csapat
+        {{ 'eventDetail.labels.teamB' | transloco }}
       </button>
     </div>
 
@@ -83,7 +79,7 @@
       </button>
       } @empty {
       <div class="col-span-2 rounded-xl border border-dashed border-white/15 bg-white/5 px-3 py-2 text-[11px] text-gray-400">
-        Nincs játékos a kiválasztott csapatban.
+        {{ 'eventDetail.labels.notInSelectedTeam' | transloco }}
       </div>
       }
     </div>
@@ -93,7 +89,7 @@
   <div class="record-neon-border rounded-3xl p-[2px]">
   <div class="match-flow-card rounded-3xl border border-card-border card-gradient bg-dark-bg/80 backdrop-blur-xl p-3.5 shadow-xl">
     <div class="flex items-center justify-between gap-2">
-      <p class="text-md font-black text-white">Kiválasztott játékos:</p>
+      <p class="text-md font-black text-white">{{ 'eventDetail.labels.selectedPlayer' | transloco }}:</p>
       <p class="min-w-0 text-md font-black text-primary-light text-right truncate">
         {{ selectedPlayerName || '' }}
       </p>
@@ -103,7 +99,7 @@
       <div class="rounded-2xl border border-white/10 bg-white/5 p-2.5">
         <div class="flex items-center justify-center gap-1.5">
           <span class="material-symbols-outlined text-[20px] leading-none text-primary">sports_soccer</span>
-          <p class="text-md text-primary font-black text-center">Gól</p>
+          <p class="text-md text-primary font-black text-center">{{ 'eventDetail.labels.goal' | transloco }}</p>
         </div>
         <div class="mt-1.5 flex items-center justify-between">
           <button type="button" [disabled]="!canAdjustStats || !selectedPlayerId" (click)="goalsDelta.emit(-1)"
@@ -120,7 +116,7 @@
       <div class="rounded-2xl border border-white/10 bg-white/5 p-2.5">
         <div class="flex items-center justify-center gap-1.5">
           <span class="material-symbols-outlined text-[20px] leading-none text-[#0d6efd]">handshake</span>
-          <p class="text-md font-black text-center text-[#0d6efd]">Gólpassz</p>
+          <p class="text-md font-black text-center text-[#0d6efd]">{{ 'eventDetail.labels.assist' | transloco }}</p>
         </div>
         <div class="mt-1.5 flex items-center justify-between">
           <button type="button" [disabled]="!canAdjustStats || !selectedPlayerId" (click)="assistsDelta.emit(-1)"
@@ -141,12 +137,12 @@
   @if (canEdit && !isEditingResults) {
   <button type="button" (click)="saveResults.emit()" [disabled]="isSubmitting"
     class="h-11 w-full rounded-xl bg-primary text-sm font-black text-background-dark disabled:opacity-50">
-    Eredmény mentése
+    {{ 'eventDetail.actions.saveResult' | transloco }}
   </button>
   } @else if (!canEdit) {
   <button type="button" (click)="nextStep.emit()"
     class="h-11 w-full rounded-xl bg-primary text-sm font-black text-background-dark">
-    Tovább
+    {{ 'eventDetail.actions.next' | transloco }}
   </button>
   }
   }
@@ -156,11 +152,11 @@
     <div class="mx-auto max-w-2xl px-4 py-3 grid grid-cols-2 gap-2">
       <button type="button" (click)="toggleEdit.emit()"
         class="h-11 rounded-xl border border-red-400/50 bg-red-500/20 text-sm font-bold text-white">
-        Mégse
+        {{ 'common.cancel' | transloco }}
       </button>
       <button type="button" [disabled]="isSubmitting" (click)="saveResults.emit()"
         class="h-11 rounded-xl bg-primary text-sm font-black text-background-dark disabled:opacity-50">
-        Mentés
+        {{ 'createEvent.actions.save' | transloco }}
       </button>
     </div>
   </div>

@@ -35,6 +35,7 @@ import { defer, Observable, of, from } from 'rxjs';
 import { map, switchMap, tap } from 'rxjs/operators';
 import { AppUser } from '../models/user.model';
 import { environment } from '../../environments/environment';
+import { LanguageService } from './language.service';
 
 @Injectable({
   providedIn: 'root',
@@ -43,6 +44,7 @@ export class AuthService {
   private auth = inject(Auth);
   private firestore = inject(Firestore);
   private router = inject(Router);
+  private languageService = inject(LanguageService);
   private cacheTtlMs = 5 * 60 * 1000;
   private profileCache = new Map<string, { data: AppUser; ts: number }>();
   private readonly maxProfileCacheEntries = 100;
@@ -75,8 +77,8 @@ export class AuthService {
   // --- Change Password (reauthenticate + update) ---
   async changePassword(currentPassword: string, newPassword: string) {
     const u = this.auth.currentUser as any;
-    if (!u) throw new Error('Nincs bejelentkezett felhasználó.');
-    if (!u.email) throw new Error('A felhasználónak nincs regisztrált e-mail címe.');
+    if (!u) throw new Error(this.languageService.t('auth.error.noSignedInUser'));
+    if (!u.email) throw new Error(this.languageService.t('auth.error.noRegisteredEmail'));
 
     try {
       const credential = EmailAuthProvider.credential(u.email, currentPassword);
@@ -85,7 +87,7 @@ export class AuthService {
       return true;
     } catch (error: any) {
       console.error('Password change error:', error);
-      throw this.toSafeError(error, 'Nem sikerült a jelszó módosítása.');
+      throw this.toSafeError(error, this.languageService.t('auth.fallback.changePassword'));
     }
   }
 
@@ -99,7 +101,7 @@ export class AuthService {
       return credential.user;
     } catch (error: any) {
       console.error('Google login error:', error);
-      throw this.toSafeError(error, 'Sikertelen Google bejelentkezés.');
+      throw this.toSafeError(error, this.languageService.t('auth.fallback.googleLogin'));
     }
   }
 
@@ -131,7 +133,7 @@ export class AuthService {
       return credential.user;
     } catch (error: any) {
       console.error('Registration error:', error);
-      const safeError = this.toSafeError(error, 'Sikertelen regisztráció.');
+      const safeError = this.toSafeError(error, this.languageService.t('auth.fallback.register'));
       if (createdUser && this.shouldRollbackCreatedUser(safeError)) {
         await this.deleteCreatedUser(createdUser);
         createdUser = null;
@@ -168,7 +170,7 @@ export class AuthService {
       return credential.user;
     } catch (error: any) {
       console.error('Email login error:', error);
-      throw this.toSafeError(error, 'Sikertelen bejelentkezĂ©s.');
+      throw this.toSafeError(error, this.languageService.t('auth.fallback.login'));
     }
   }
 
@@ -188,7 +190,7 @@ export class AuthService {
       return 'already-verified';
     } catch (error: any) {
       console.error('Resend verification error:', error);
-      throw this.toSafeError(error, 'Sikertelen megerositő email küldés.');
+      throw this.toSafeError(error, this.languageService.t('auth.fallback.resendVerification'));
     } finally {
       if (signedInUser) {
         try {
@@ -212,7 +214,7 @@ export class AuthService {
       return true;
     } catch (error: any) {
       console.error('Magic link error:', error);
-      throw this.toSafeError(error, 'Sikertelen belépési link küldés.');
+      throw this.toSafeError(error, this.languageService.t('auth.fallback.magicLink'));
     }
   }
 
@@ -220,7 +222,7 @@ export class AuthService {
     if (isSignInWithEmailLink(this.auth, window.location.href)) {
       let email = this.safeGetItem('emailForSignIn');
       if (!email) {
-        email = window.prompt('Please provide your email for confirmation');
+        email = window.prompt(this.languageService.t('auth.prompt.magicLinkEmail'));
       }
       if (email) {
         try {
@@ -231,7 +233,7 @@ export class AuthService {
           return result.user;
         } catch (error: any) {
           console.error('Link verification error:', error);
-          throw this.toSafeError(error, 'Sikertelen belépés a varázslinkkel.');
+          throw this.toSafeError(error, this.languageService.t('auth.fallback.magicLinkLogin'));
         }
       }
     }
@@ -245,7 +247,7 @@ export class AuthService {
       return true;
     } catch (error: any) {
       console.error('Password reset error:', error);
-      throw this.toSafeError(error, 'Sikertelen jelszó-helyreállítás.');
+      throw this.toSafeError(error, this.languageService.t('auth.fallback.resetPassword'));
     }
   }
 
@@ -376,7 +378,7 @@ export class AuthService {
         firebaseUser.displayName ||
         existingData['displayName'] ||
         additionalData.username ||
-        'Névtelen',
+        null,
       photoURL: firebaseUser.photoURL || existingData['photoURL'] || null,
     };
 
@@ -409,7 +411,7 @@ export class AuthService {
         firebaseUser.displayName ||
         existingData['displayName'] ||
         additionalData.username ||
-        'Névtelen',
+        null,
       photoURL: firebaseUser.photoURL || existingData['photoURL'] || null,
       role: existingData['role'] ?? 'user',
       lastLogin: serverTimestamp(),
@@ -603,19 +605,19 @@ export class AuthService {
   }
 
   private createEmailNotVerifiedError() {
-    const error = new Error('Az email cim meg nincs megerősítve.');
+    const error = new Error(this.languageService.t('auth.error.emailNotVerified'));
     (error as any).code = 'auth/email-not-verified';
     return error;
   }
 
   private createUsernameAlreadyInUseError() {
-    const error = new Error('Ez a felhasználónév már használatban van.');
+    const error = new Error(this.languageService.t('auth.error.usernameTaken'));
     (error as any).code = 'auth/username-already-in-use';
     return error;
   }
 
   private createInvalidUsernameError() {
-    const error = new Error('Érvénytelen felhasználónév.');
+    const error = new Error(this.languageService.t('auth.error.invalidUsername'));
     (error as any).code = 'auth/invalid-username';
     return error;
   }
@@ -635,7 +637,7 @@ export class AuthService {
   private toSafeError(error: any, fallbackMessage?: string) {
     const safeMessage = this.getSafeErrorMessage(
       error,
-      fallbackMessage || 'Váratlan hiba történt. Kérlek próbáld újra később.'
+      fallbackMessage || this.languageService.t('auth.fallback.unexpected')
     );
     const safeError = new Error(safeMessage);
     if (error?.code) {
@@ -647,25 +649,25 @@ export class AuthService {
   private getSafeErrorMessage(error: any, fallbackMessage: string) {
     const errorCode = error?.code || 'unknown';
     const errorMessages: Record<string, string> = {
-      'auth/email-not-verified': 'Az email cím még nincs megerősítve.',
-      'auth/wrong-password': 'Hibás jelenlegi jelszó.',
-      'auth/weak-password': 'Az új jelszó túl gyenge.',
-      'auth/user-not-found': 'A felhasználó nem található.',
-      'auth/invalid-email': 'Érvénytelen e-mail cím.',
-      'auth/invalid-username': 'Érvénytelen felhasználónév.',
-      'auth/email-already-in-use': 'Ez az e-mail cím már használatban van.',
-      'auth/username-already-in-use': 'Ez a felhasználónév már használatban van.',
-      'auth/popup-closed-by-user': 'A bejelentkezési ablak bezárult.',
-      'auth/cancelled-popup-request': 'A bejelentkezési ablak már meg van nyitva.',
-      'auth/too-many-requests': 'Túl sok próbálkozás. Próbáld újra később.',
-      'auth/network-request-failed': 'Hálózati hiba. Ellenőrizd a kapcsolatot.',
-      'auth/requires-recent-login': 'A művelethez újra be kell jelentkezned.',
-      'auth/unauthorized-continue-uri': 'A verifikációs link domain nincs engedélyezve.',
-      'auth/invalid-continue-uri': 'Érvénytelen verifikációs visszairányítási URL.',
-      'auth/missing-continue-uri': 'Hiányzik a verifikációs visszairányítási URL.',
-      'permission-denied': 'Nincs jogosultságod ehhez a művelethez.',
-      'unauthenticated': 'Bejelentkezés szükséges.',
-      unavailable: 'A szolgáltatás jelenleg nem érhető el.',
+      'auth/email-not-verified': this.languageService.t('auth.error.emailNotVerified'),
+      'auth/wrong-password': this.languageService.t('auth.error.currentPasswordInvalid'),
+      'auth/weak-password': this.languageService.t('auth.error.weakPassword'),
+      'auth/user-not-found': this.languageService.t('auth.error.userNotFound'),
+      'auth/invalid-email': this.languageService.t('auth.error.invalidEmail'),
+      'auth/invalid-username': this.languageService.t('auth.error.invalidUsername'),
+      'auth/email-already-in-use': this.languageService.t('auth.error.emailAlreadyInUse'),
+      'auth/username-already-in-use': this.languageService.t('auth.error.usernameTaken'),
+      'auth/popup-closed-by-user': this.languageService.t('auth.error.popupClosed'),
+      'auth/cancelled-popup-request': this.languageService.t('auth.error.popupAlreadyOpen'),
+      'auth/too-many-requests': this.languageService.t('auth.error.tooManyRequests'),
+      'auth/network-request-failed': this.languageService.t('auth.error.network'),
+      'auth/requires-recent-login': this.languageService.t('auth.error.recentLoginRequired'),
+      'auth/unauthorized-continue-uri': this.languageService.t('auth.error.unauthorizedContinueUri'),
+      'auth/invalid-continue-uri': this.languageService.t('auth.error.invalidContinueUri'),
+      'auth/missing-continue-uri': this.languageService.t('auth.error.missingContinueUri'),
+      'permission-denied': this.languageService.t('auth.error.permissionDenied'),
+      'unauthenticated': this.languageService.t('auth.error.unauthenticated'),
+      unavailable: this.languageService.t('auth.error.unavailable'),
     };
 
     return errorMessages[errorCode] || fallbackMessage;

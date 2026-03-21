@@ -1,40 +1,98 @@
 import {
+  AfterViewInit,
   Component,
-  inject,
+  ElementRef,
   Signal,
   ViewChild,
-  ElementRef,
-  AfterViewInit,
-  OnDestroy,
-  effect,
   afterNextRender,
+  effect,
+  inject,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { TranslocoPipe } from '@jsverse/transloco';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { catchError, of, switchMap } from 'rxjs';
 import { GroupService, Group } from '../../services/group.service';
 import { AuthService } from '../../services/auth.service';
 import { ModalService } from '../../services/modal.service';
 import { SeoService } from '../../services/seo.service';
 import { CoverImagesService } from '../../services/cover-images.service';
-import { toSignal } from '@angular/core/rxjs-interop';
-import { catchError, of, switchMap } from 'rxjs';
+import { LanguageService } from '../../services/language.service';
 
 @Component({
   selector: 'app-groups',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterLink],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink, TranslocoPipe],
   templateUrl: './groups.html',
   styleUrl: './groups.scss',
 })
-export class GroupsPage implements AfterViewInit, OnDestroy {
+export class GroupsPage implements AfterViewInit {
   @ViewChild('carouselContainer') carouselContainer!: ElementRef<HTMLDivElement>;
   private didInitialCarouselReset = false;
   private previousScrollRestoration: History['scrollRestoration'] | null = null;
 
+  private groupService = inject(GroupService);
+  private fb = inject(FormBuilder);
+  private router = inject(Router);
+  protected authService = inject(AuthService);
+  protected readonly languageService = inject(LanguageService);
+  private modalService = inject(ModalService);
+  private seo = inject(SeoService);
+  private coverImagesService = inject(CoverImagesService);
+
+  groups: Signal<Group[] | undefined> = toSignal(
+    this.authService.user$.pipe(
+      switchMap((user) => {
+        if (!user) return of([]);
+        return this.groupService.getUserGroups(user.uid);
+      }),
+      catchError((err) => {
+        console.error('Error loading user groups:', err);
+        return of([]);
+      }),
+    ),
+  );
+
+  showCreateModal = false;
+  groupForm: FormGroup;
+  isSubmitting = false;
+  readonly groupNameMaxLength = 50;
+  readonly groupDescriptionMaxLength = 250;
+
+  showJoinModal = false;
+  joinForm = this.fb.group({
+    groupName: ['', [Validators.required]],
+    joinConsent: [false, [Validators.requiredTrue]],
+  });
+
+  constructor() {
+    effect(() => {
+      this.languageService.currentLanguage();
+      this.seo.setPageMeta({
+        title: this.languageService.t('groups.meta.title'),
+        description: this.languageService.t('groups.meta.description'),
+        path: '/groups',
+        noindex: true,
+      });
+    });
+
+    void this.coverImagesService.getCoverImages();
+
+    this.groupForm = this.fb.group({
+      name: [
+        '',
+        [Validators.required, Validators.minLength(3), Validators.maxLength(this.groupNameMaxLength)],
+      ],
+      type: ['closed', Validators.required],
+      description: ['', [Validators.maxLength(this.groupDescriptionMaxLength)]],
+    });
+  }
+
   scrollCarousel(direction: 'left' | 'right') {
     const container = this.carouselContainer.nativeElement;
-    const scrollAmount = 300; // Adjust as needed, approx one card width + gap
+    const scrollAmount = 300;
     const currentScroll = container.scrollLeft;
     const targetScroll =
       direction === 'left' ? currentScroll - scrollAmount : currentScroll + scrollAmount;
@@ -73,52 +131,6 @@ export class GroupsPage implements AfterViewInit, OnDestroy {
     }
   }
 
-  private groupService = inject(GroupService);
-  private fb = inject(FormBuilder);
-  private router = inject(Router);
-  protected authService = inject(AuthService);
-  private modalService = inject(ModalService);
-  private seo = inject(SeoService);
-  private coverImagesService = inject(CoverImagesService);
-
-  groups: Signal<Group[] | undefined> = toSignal(
-    this.authService.user$.pipe(
-      // Fetch ONLY the groups the user is a member of, not all groups
-      switchMap((user) => {
-        if (!user) return of([]);
-        return this.groupService.getUserGroups(user.uid);
-      }),
-      catchError((err) => {
-        console.error('Error loading user groups:', err);
-        return of([]);
-      })
-    )
-  );
-
-  showCreateModal = false;
-  groupForm: FormGroup;
-  isSubmitting = false;
-  readonly groupNameMaxLength = 50;
-  readonly groupDescriptionMaxLength = 250;
-
-  constructor() {
-    this.seo.setPageMeta({
-      title: 'Csoportok kezelése – BeMyTeamMate',
-      description: 'Hozz létre csoportokat, kezeld a tagságot, és szervezd a közös meccseket.',
-      path: '/groups',
-      noindex: true,
-    });
-    void this.coverImagesService.getCoverImages();
-    this.groupForm = this.fb.group({
-      name: [
-        '',
-        [Validators.required, Validators.minLength(3), Validators.maxLength(this.groupNameMaxLength)],
-      ],
-      type: ['closed', Validators.required],
-      description: ['', [Validators.maxLength(this.groupDescriptionMaxLength)]],
-    });
-  }
-
   resolveCoverImage(imageId?: number | string | null): string {
     return (
       this.coverImagesService.resolveImageSrc(imageId) ||
@@ -153,21 +165,14 @@ export class GroupsPage implements AfterViewInit, OnDestroy {
     } catch (error) {
       console.error('Error creating group:', error);
       await this.modalService.alert(
-        'Hiba történt a csoport létrehozása közben. Ellenőrizd a jogosultságokat!',
-        'Hiba',
-        'error'
+        this.languageService.t('groups.alert.createErrorMessage'),
+        this.languageService.t('groups.alert.createErrorTitle'),
+        'error',
       );
     } finally {
       this.isSubmitting = false;
     }
   }
-
-  // --- Join Group ---
-  showJoinModal = false;
-  joinForm = this.fb.group({
-    groupName: ['', [Validators.required]],
-    joinConsent: [false, [Validators.requiredTrue]],
-  });
 
   toggleJoinModal() {
     this.showJoinModal = !this.showJoinModal;
@@ -188,19 +193,27 @@ export class GroupsPage implements AfterViewInit, OnDestroy {
     try {
       const group = await this.groupService.findGroupByName(groupName!);
       if (!group) {
-        await this.modalService.alert('Nem található csoport ezzel a névvel.', 'Hiba', 'error');
+        await this.modalService.alert(
+          this.languageService.t('groups.alert.notFoundMessage'),
+          this.languageService.t('groups.alert.notFoundTitle'),
+          'error',
+        );
         return;
       }
 
       await this.groupService.requestJoinGroup(group.id!);
-      await this.modalService.alert('Csatlakozási kérelem elküldve!', 'Siker', 'success');
+      await this.modalService.alert(
+        this.languageService.t('groups.alert.joinRequestedMessage'),
+        this.languageService.t('groups.alert.joinRequestedTitle'),
+        'success',
+      );
       this.toggleJoinModal();
     } catch (error: any) {
       console.error('Join error:', error);
       await this.modalService.alert(
-        error.message || 'Hiba történt a csatlakozás során.',
-        'Hiba',
-        'error'
+        error.message || this.languageService.t('groups.alert.joinErrorFallback'),
+        this.languageService.t('groups.alert.joinErrorTitle'),
+        'error',
       );
     } finally {
       this.isSubmitting = false;

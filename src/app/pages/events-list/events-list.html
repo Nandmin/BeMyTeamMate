@@ -1,382 +1,305 @@
-<!-- Main Content -->
 <main class="flex-grow w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-8 sm:py-8">
-  <!-- Page Headline -->
   <div class="hidden sm:flex flex-col md:flex-row md:items-center justify-between pb-8">
-    <h1 class="text-white tracking-tight text-[32px] font-bold leading-tight dashboard-title">Vezérlőpult</h1>
-    <!-- <p class="text-gray-400 mt-2 md:mt-0">Üdvözöllek újra a pályán, Péter!</p> -->
+    <h1 class="text-white tracking-tight text-[32px] font-bold leading-tight dashboard-title">
+      {{ 'eventsList.header.title' | transloco }}
+    </h1>
   </div>
+
   <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
-    <!-- Left Column (Main Content) -->
     <div class="lg:col-span-8 flex flex-col gap-8">
-      <!-- Hero Section: Next Match -->
-      <div
-        class="bg-gradient-to-b from-dark-accent to-background-dark rounded-2xl shadow-lg border border-white/5 overflow-hidden relative group next-match-card">
-        <div class="absolute inset-0 bg-gradient-to-r from-background-dark/90 to-transparent z-10 pointer-events-none">
-        </div>
+      <div class="bg-gradient-to-b from-dark-accent to-background-dark rounded-2xl shadow-lg border border-white/5 overflow-hidden relative group next-match-card">
+        <div class="absolute inset-0 bg-gradient-to-r from-background-dark/90 to-transparent z-10 pointer-events-none"></div>
         <div
           class="absolute right-0 top-0 h-full w-2/3 bg-cover bg-center z-0 opacity-60 group-hover:scale-105 transition-transform duration-700"
-          data-alt="Dynamic action shot of a five-a-side football match at night on artificial turf" style="
-            background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuB9VSOAhYfEE9kQ4908Oqt13aZK-vV_V8S96ua1g8cBjIFguUkM3YrtAZ7WZbR0XsJrbH53HI3URPVuMJdEUOH3_LtuUkIPiBI2pn4OaYH9AVVlq_BFdjdLS_SqIh-Ik0Dwg1ZW3zm2IVTsaou-Sr_zvC2Lq633MUk1E1XoK4M5UtbJdZz50H3Ut7I3xnZ5yxXpD2b93cm4iR3fA5o9r40yeXlKy8JfUHOkKcKhYdhTr8Q4RjO6-dH3kZXVyf3bO2erHXwBk0A7PYQ');
-          "></div>
+          data-alt="Dynamic action shot of a five-a-side football match at night on artificial turf"
+          style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuB9VSOAhYfEE9kQ4908Oqt13aZK-vV_V8S96ua1g8cBjIFguUkM3YrtAZ7WZbR0XsJrbH53HI3URPVuMJdEUOH3_LtuUkIPiBI2pn4OaYH9AVVlq_BFdjdLS_SqIh-Ik0Dwg1ZW3zm2IVTsaou-Sr_zvC2Lq633MUk1E1XoK4M5UtbJdZz50H3Ut7I3xnZ5yxXpD2b93cm4iR3fA5o9r40yeXlKy8JfUHOkKcKhYdhTr8Q4RjO6-dH3kZXVyf3bO2erHXwBk0A7PYQ');"></div>
         <div class="relative z-20 p-6 sm:p-8 flex flex-col h-full justify-between min-h-[320px]">
           <div>
-            <span
-              class="inline-flex items-center gap-1.5 py-1.5 px-3 rounded-full text-xs font-bold bg-primary text-white mb-4">
+            <span class="inline-flex items-center gap-1.5 py-1.5 px-3 rounded-full text-xs font-bold bg-primary text-white mb-4">
               <span class="material-symbols-outlined text-sm text-white">alarm_on</span>
-              KÖVETKEZŐ MECCS
+              {{ 'eventsList.hero.badge' | transloco }}
             </span>
             <h2 class="text-white text-3xl sm:text-4xl font-bold leading-tight max-w-lg mb-2">
-              {{ nextEvent()?.title || 'Nincs közelgő esemény' }}
+              {{ nextEvent()?.title || ('eventsList.hero.emptyTitle' | transloco) }}
             </h2>
             <div class="flex items-center gap-1 text-[#92c9a9] text-base sm:text mb-6">
               <span class="material-symbols-outlined">location_on</span>
               <span>{{ nextEvent()?.location || '---' }}</span>
             </div>
           </div>
-          <!-- Timer & Action -->
+
           <div class="flex flex-col sm:flex-row items-start sm:items-end justify-between gap-6">
-            <!-- Timer -->
             <div class="flex gap-3">
               <div class="flex flex-col items-center gap-1">
-                <div
-                  class="flex h-12 w-12 items-center justify-center rounded-lg bg-background-dark/80 backdrop-blur-sm border border-white/10 text-primary text-xl font-bold">
+                <div class="flex h-12 w-12 items-center justify-center rounded-lg bg-background-dark/80 backdrop-blur-sm border border-white/10 text-primary text-xl font-bold">
                   {{ countdown().hours }}
                 </div>
-                <span class="countdown-label text-xs text-gray-400 uppercase">Óra</span>
+                <span class="countdown-label text-xs text-gray-400 uppercase">
+                  {{ 'eventsList.countdown.hours' | transloco }}
+                </span>
               </div>
               <div class="flex flex-col items-center gap-1">
-                <div
-                  class="flex h-12 w-12 items-center justify-center rounded-lg bg-background-dark/80 backdrop-blur-sm border border-white/10 text-primary text-xl font-bold">
+                <div class="flex h-12 w-12 items-center justify-center rounded-lg bg-background-dark/80 backdrop-blur-sm border border-white/10 text-primary text-xl font-bold">
                   {{ countdown().minutes }}
                 </div>
-                <span class="countdown-label text-xs text-gray-400 uppercase">Perc</span>
+                <span class="countdown-label text-xs text-gray-400 uppercase">
+                  {{ 'eventsList.countdown.minutes' | transloco }}
+                </span>
               </div>
               <div class="flex flex-col items-center gap-1">
-                <div
-                  class="flex h-12 w-12 items-center justify-center rounded-lg bg-background-dark/80 backdrop-blur-sm border border-white/10 text-primary text-xl font-bold">
+                <div class="flex h-12 w-12 items-center justify-center rounded-lg bg-background-dark/80 backdrop-blur-sm border border-white/10 text-primary text-xl font-bold">
                   {{ countdown().seconds }}
                 </div>
-                <span class="countdown-label text-xs text-gray-400 uppercase">Mp</span>
+                <span class="countdown-label text-xs text-gray-400 uppercase">
+                  {{ 'eventsList.countdown.seconds' | transloco }}
+                </span>
               </div>
             </div>
-            <!-- Action Box -->
+
             @if (nextEvent() && shouldShowRsvpPrompt()) {
-            <div class="bg-background-dark/80 backdrop-blur-sm p-4 rounded-xl border border-white/10 w-full sm:w-auto">
-              <p class="text-sm text-gray-300 mb-3 font-medium">
-                Jelenléted: <span class="text-yellow-400">Még nem jeleztél</span>
-              </p>
-              <div class="flex gap-2">
-                <button (click)="onRsvpYes()"
-                  class="flex-1 sm:flex-none h-9 px-4 rounded-lg bg-primary hover:bg-primary-hover text-background-dark text-sm font-bold flex items-center justify-center transition-colors">
-                  <span class="material-symbols-outlined text-sm mr-1">check</span>
-                  Ott leszek
-                </button>
-                <button (click)="onRsvpNo()"
-                  class="flex-1 sm:flex-none h-9 px-4 rounded-lg bg-white/10 hover:bg-white/20 text-white text-sm font-medium flex items-center justify-center transition-colors">
-                  Nem
-                </button>
+              <div class="bg-background-dark/80 backdrop-blur-sm p-4 rounded-xl border border-white/10 w-full sm:w-auto">
+                <p class="text-sm text-gray-300 mb-3 font-medium">
+                  {{ 'eventsList.rsvp.statusLabel' | transloco }}
+                  <span class="text-yellow-400">{{ 'eventsList.rsvp.notAnswered' | transloco }}</span>
+                </p>
+                <div class="flex gap-2">
+                  <button
+                    (click)="onRsvpYes()"
+                    class="flex-1 sm:flex-none h-9 px-4 rounded-lg bg-primary hover:bg-primary-hover text-background-dark text-sm font-bold flex items-center justify-center transition-colors">
+                    <span class="material-symbols-outlined text-sm mr-1">check</span>
+                    {{ 'eventsList.rsvp.yes' | transloco }}
+                  </button>
+                  <button
+                    (click)="onRsvpNo()"
+                    class="flex-1 sm:flex-none h-9 px-4 rounded-lg bg-white/10 hover:bg-white/20 text-white text-sm font-medium flex items-center justify-center transition-colors">
+                    {{ 'eventsList.rsvp.no' | transloco }}
+                  </button>
+                </div>
               </div>
-            </div>
             }
           </div>
         </div>
       </div>
-      <!-- Content + Sidebar (Mobile) -->
-      <div
-        class="grid grid-cols-[minmax(320px,_1fr)_280px] gap-4 overflow-x-auto pb-2 lg:block lg:overflow-visible lg:pb-0 max-[709px]:grid-cols-1 max-[709px]:overflow-visible">
+
+      <div class="grid grid-cols-[minmax(320px,_1fr)_280px] gap-4 overflow-x-auto pb-2 lg:block lg:overflow-visible lg:pb-0 max-[709px]:grid-cols-1 max-[709px]:overflow-visible">
         <div class="min-w-[320px] lg:min-w-0 max-[709px]:min-w-0 flex flex-col gap-8">
-          <!-- Filters -->
           <div class="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-hide">
-            <button (click)="setSportFilter(null)"
-              class="px-3 sm:px-5 py-2 rounded-full text-xs sm:text-sm whitespace-nowrap transition-transform hover:scale-105" [ngClass]="
+            <button
+              (click)="setSportFilter(null)"
+              class="px-3 sm:px-5 py-2 rounded-full text-xs sm:text-sm whitespace-nowrap transition-transform hover:scale-105"
+              [ngClass]="
                 selectedSport() === null
                   ? 'bg-white text-background-dark font-bold filter-active'
                   : 'border border-border-dark text-gray-300 font-medium hover:bg-white/5 hover:border-white/20 filter-inactive'
               ">
-              Összes esemény
+              {{ 'eventsList.filters.allEvents' | transloco }}
             </button>
             @for (sport of availableSports(); track sport) {
-            <button (click)="setSportFilter(sport)"
-              class="h-10 w-10 rounded-full border border-border-dark text-gray-300 hover:bg-white/5 hover:border-white/20 transition-all flex items-center justify-center"
-              [ngClass]="
-                selectedSport() === sport
-                  ? 'bg-white text-background-dark border-white filter-active'
-                  : 'filter-inactive'
-              " [attr.aria-label]="getSportLabel(sport)" [title]="getSportLabel(sport)">
-              <span class="material-symbols-outlined text-lg">{{ getSportIcon(sport) }}</span>
-            </button>
+              <button
+                (click)="setSportFilter(sport)"
+                class="h-10 w-10 rounded-full border border-border-dark text-gray-300 hover:bg-white/5 hover:border-white/20 transition-all flex items-center justify-center"
+                [ngClass]="
+                  selectedSport() === sport
+                    ? 'bg-white text-background-dark border-white filter-active'
+                    : 'filter-inactive'
+                "
+                [attr.aria-label]="getSportLabel(sport)"
+                [title]="getSportLabel(sport)">
+                <span class="material-symbols-outlined text-lg">{{ getSportIcon(sport) }}</span>
+              </button>
             }
           </div>
-          <!-- Upcoming Events Grid -->
+
           <div>
             <h3 class="text-white text-xl font-bold mb-4 flex items-center gap-2 upcoming-title">
               <span class="material-symbols-outlined text-primary">calendar_month</span>
-              Közelgő események
+              {{ 'eventsList.sections.upcoming' | transloco }}
             </h3>
             <div class="grid grid-cols-1 min-[710px]:grid-cols-2 gap-4">
               @if (upcomingUserEvents().length === 0) {
-              <div
-                class="events-empty-state bg-gradient-to-b from-dark-accent to-background-dark rounded-2xl p-4 border border-border-dark text-gray-400 text-sm">
-                Nincs közelgő esemény.
-              </div>
+                <div class="events-empty-state bg-gradient-to-b from-dark-accent to-background-dark rounded-2xl p-4 border border-border-dark text-gray-400 text-sm">
+                  {{ 'eventsList.empty.upcoming' | transloco }}
+                </div>
               }
               @for (event of upcomingUserEvents(); track event.id ?? event.title) {
-              <a class="bg-gradient-to-b from-dark-accent to-background-dark rounded-xl p-4 border border-border-dark hover:border-primary/50 transition-all group hover:shadow-[0_0_20px_rgba(43,238,124,0.1)] block"
-                [routerLink]="['/groups', event.groupId, 'events', event.id]" [class.pointer-events-none]="!event.id"
-                [class.opacity-70]="!event.id">
-                <div class="flex items-start justify-between mb-4">
-                  <div class="flex items-center gap-3">
-                    <div class="event-sport-icon w-12 h-12 rounded-lg bg-[#234833] flex items-center justify-center text-primary">
-                      <span class="material-symbols-outlined">{{ getSportIcon(event.sport) }}</span>
+                <a
+                  class="bg-gradient-to-b from-dark-accent to-background-dark rounded-xl p-4 border border-border-dark hover:border-primary/50 transition-all group hover:shadow-[0_0_20px_rgba(43,238,124,0.1)] block"
+                  [routerLink]="['/groups', event.groupId, 'events', event.id]"
+                  [class.pointer-events-none]="!event.id"
+                  [class.opacity-70]="!event.id">
+                  <div class="flex items-start justify-between mb-4">
+                    <div class="flex items-center gap-3">
+                      <div class="event-sport-icon w-12 h-12 rounded-lg bg-[#234833] flex items-center justify-center text-primary">
+                        <span class="material-symbols-outlined">{{ getSportIcon(event.sport) }}</span>
+                      </div>
+                      <div>
+                        <h4 class="text-white font-bold leading-tight">{{ event.title }}</h4>
+                        <p class="text-gray-400 text-xs">{{ event.location }}</p>
+                      </div>
                     </div>
-                    <div>
-                      <h4 class="text-white font-bold leading-tight">{{ event.title }}</h4>
-                      <p class="text-gray-400 text-xs">{{ event.location }}</p>
+                    <div class="text-right">
+                      <p class="text-white font-bold text-sm">{{ formatDate(getEventDateTime(event)) }}</p>
+                      <p class="text-primary text-xs font-medium">{{ formatTime(getEventDateTime(event)) }}</p>
                     </div>
                   </div>
-                  <div class="text-right">
-                    <p class="text-white font-bold text-sm">
-                      {{ formatDate(getEventDateTime(event)) }}
-                    </p>
-                    <p class="text-primary text-xs font-medium">
-                      {{ formatTime(getEventDateTime(event)) }}
-                    </p>
+
+                  <div class="space-y-1.5">
+                    <div class="flex justify-between text-xs text-gray-400 font-medium">
+                      <span>{{ 'eventsList.attendance.label' | transloco }}</span>
+                      <span class="text-white">{{ getAttendanceText(event) }}</span>
+                    </div>
+                    <div class="w-full bg-[#112218] h-2 rounded-full overflow-hidden attendance-track">
+                      <div class="bg-primary h-full rounded-full" [style.width.%]="getAttendancePercent(event)"></div>
+                    </div>
                   </div>
-                </div>
-                <!-- Attendance Bar -->
-                <div class="space-y-1.5">
-                  <div class="flex justify-between text-xs text-gray-400 font-medium">
-                    <span>Létszám</span>
-                    <span class="text-white">{{ getAttendanceText(event) }}</span>
-                  </div>
-                  <div class="w-full bg-[#112218] h-2 rounded-full overflow-hidden attendance-track">
-                    <div class="bg-primary h-full rounded-full" [style.width.%]="getAttendancePercent(event)"></div>
-                  </div>
-                </div>
-              </a>
+                </a>
               }
             </div>
           </div>
         </div>
-        <!-- Right Sidebar (Mobile) -->
+
         <div class="w-[280px] shrink-0 lg:hidden flex flex-col gap-6 max-[709px]:w-full max-[709px]:shrink">
-          <!-- Calendar Widget -->
-          <div
-            class="bg-gradient-to-b from-dark-accent to-background-dark rounded-2xl p-4 border border-border-dark w-full min-[710px]:max-w-[340px]">
+          <div class="bg-gradient-to-b from-dark-accent to-background-dark rounded-2xl p-4 border border-border-dark w-full min-[710px]:max-w-[340px]">
             <div class="flex items-center justify-between mb-4">
               <h3 class="text-white font-bold text-base">{{ calendarMonthLabel() }}</h3>
               <div class="flex gap-2">
-                <button (click)="goToPreviousMonth()" aria-label="Előző hónap"
+                <button
+                  (click)="goToPreviousMonth()"
+                  [attr.aria-label]="'eventsList.calendar.prevMonth' | transloco"
                   class="p-1 rounded-full hover:bg-white/10 text-gray-400 hover:text-white transition-colors">
                   <span class="material-symbols-outlined text-base">chevron_left</span>
                 </button>
-                <button (click)="goToNextMonth()" aria-label="Következő hónap"
+                <button
+                  (click)="goToNextMonth()"
+                  [attr.aria-label]="'eventsList.calendar.nextMonth' | transloco"
                   class="p-1 rounded-full hover:bg-white/10 text-gray-400 hover:text-white transition-colors">
                   <span class="material-symbols-outlined text-base">chevron_right</span>
                 </button>
               </div>
             </div>
             <div class="grid grid-cols-7 gap-y-2 gap-x-0.5 text-center text-xs mb-1">
-              <div class="text-gray-500 text-xs font-medium">H</div>
-              <div class="text-gray-500 text-xs font-medium">K</div>
-              <div class="text-gray-500 text-xs font-medium">Sz</div>
-              <div class="text-gray-500 text-xs font-medium">Cs</div>
-              <div class="text-gray-500 text-xs font-medium">P</div>
-              <div class="text-gray-500 text-xs font-medium">Sz</div>
-              <div class="text-gray-500 text-xs font-medium">V</div>
+              @for (weekdayKey of weekdayKeys; track weekdayKey) {
+                <div class="text-gray-500 text-xs font-medium">{{ weekdayKey | transloco }}</div>
+              }
               @for (day of calendarDays(); track day.key) {
-              <button
-                class="relative h-7 w-7 mx-auto flex items-center justify-center rounded-full text-xs transition-colors"
-                [disabled]="!day.inMonth" (click)="day.inMonth && selectDay(day.date)" [ngClass]="{
-                  'text-gray-600 cursor-default': !day.inMonth,
-                  'text-white hover:bg-white/5 cursor-pointer': day.inMonth && !day.isToday,
-                  'bg-primary text-background-dark font-bold shadow-[0_0_10px_rgba(43,238,124,0.4)]':
-                    day.isToday,
-                  'bg-white/10 text-white font-bold': day.isSelected && !day.isToday
-                }">
-                {{ day.label }}
-                @if (day.hasEvent) {
-                <span class="absolute bottom-0.5 left-1/2 -translate-x-1/2 w-1 h-1 bg-primary rounded-full"></span>
-                }
-              </button>
+                <button
+                  class="relative h-7 w-7 mx-auto flex items-center justify-center rounded-full text-xs transition-colors"
+                  [disabled]="!day.inMonth"
+                  (click)="day.inMonth && selectDay(day.date)"
+                  [ngClass]="{
+                    'text-gray-600 cursor-default': !day.inMonth,
+                    'text-white hover:bg-white/5 cursor-pointer': day.inMonth && !day.isToday,
+                    'bg-primary text-background-dark font-bold shadow-[0_0_10px_rgba(43,238,124,0.4)]': day.isToday,
+                    'bg-white/10 text-white font-bold': day.isSelected && !day.isToday
+                  }">
+                  {{ day.label }}
+                  @if (day.hasEvent) {
+                    <span class="absolute bottom-0.5 left-1/2 -translate-x-1/2 w-1 h-1 bg-primary rounded-full"></span>
+                  }
+                </button>
               }
             </div>
           </div>
-          <!-- My Teams / Groups -->
-          <div
-            class="bg-gradient-to-b from-dark-accent to-background-dark rounded-2xl p-6 border border-border-dark w-full min-[710px]:max-w-[340px] flex-1 flex flex-col">
+
+          <div class="bg-gradient-to-b from-dark-accent to-background-dark rounded-2xl p-6 border border-border-dark w-full min-[710px]:max-w-[340px] flex-1 flex flex-col">
             <div class="flex items-center justify-between mb-4">
               <div>
-                <h3 class="text-white font-bold text-lg">Eseményeim</h3>
+                <h3 class="text-white font-bold text-lg">{{ 'eventsList.sections.myEvents' | transloco }}</h3>
                 <p class="text-xs text-gray-400">{{ selectedDayLabel() }}</p>
               </div>
             </div>
             <div class="space-y-3">
               @if (selectedDayEvents().length === 0) {
-              <div class="events-empty-state text-sm text-gray-400 bg-[#193324]/40 border border-white/5 rounded-2xl p-4">
-                Erre a napra nincs eseményed.
-              </div>
+                <div class="events-empty-state text-sm text-gray-400 bg-[#193324]/40 border border-white/5 rounded-2xl p-4">
+                  {{ 'eventsList.empty.day' | transloco }}
+                </div>
               }
               @for (event of selectedDayEvents(); track event.id) {
-              <div
-                class="my-events-inline-item flex items-center justify-between py-1.5">
-                <div>
-                  <p class="text-white font-medium text-sm">{{ event.title }}</p>
-                  <p class="text-xs text-primary">
-                    {{ event.location }} - {{ formatTime(getEventDateTime(event)) }}
-                  </p>
+                <div class="my-events-inline-item flex items-center justify-between py-1.5">
+                  <div>
+                    <p class="text-white font-medium text-sm">{{ event.title }}</p>
+                    <p class="text-xs text-primary">
+                      {{ event.location }} - {{ formatTime(getEventDateTime(event)) }}
+                    </p>
+                  </div>
+                  <span class="w-2 h-2 rounded-full bg-primary"></span>
                 </div>
-                <span class="w-2 h-2 rounded-full bg-primary"></span>
-              </div>
               }
             </div>
           </div>
         </div>
       </div>
-      <!-- Past Events Section -->
-      <!-- <div>
-        <h3 class="text-white text-xl font-bold mb-4 flex items-center gap-2">
-          <span class="material-symbols-outlined text-gray-400">history</span>
-          Múltbeli eredmények
-        </h3>
-        <div class="space-y-3">
-          <div
-            class="flex items-center justify-between bg-[#193324]/50 p-4 rounded-xl border border-white/5 hover:bg-[#193324] transition-colors"
-          >
-            <div class="flex items-center gap-4">
-              <div class="text-gray-500">
-                <span class="material-symbols-outlined">sports_soccer</span>
-              </div>
-              <div>
-                <p class="text-gray-200 font-medium text-sm">Kispályás Foci</p>
-                <p class="text-xs text-gray-500">Aug 17. • Kedd</p>
-              </div>
-            </div>
-            <div class="flex items-center gap-4">
-              <div class="flex items-center gap-2 text-sm font-bold text-white">
-                <span class="opacity-50">Pirosak</span>
-                <span class="bg-[#112218] px-2 py-1 rounded text-primary">5 - 3</span>
-                <span class="opacity-50">Kékek</span>
-              </div>
-              <button class="text-xs text-primary hover:underline">Részletek</button>
-            </div>
-          </div>
-          <div
-            class="flex items-center justify-between bg-[#193324]/50 p-4 rounded-xl border border-white/5 hover:bg-[#193324] transition-colors"
-          >
-            <div class="flex items-center gap-4">
-              <div class="text-gray-500">
-                <span class="material-symbols-outlined">sports_basketball</span>
-              </div>
-              <div>
-                <p class="text-gray-200 font-medium text-sm">Utcai Kosár</p>
-                <p class="text-xs text-gray-500">Aug 14. • Péntek</p>
-              </div>
-            </div>
-            <div class="flex items-center gap-4">
-              <div class="flex items-center gap-2 text-sm font-bold text-white">
-                <span class="opacity-50">Csapat A</span>
-                <span class="bg-[#112218] px-2 py-1 rounded text-primary">21 - 18</span>
-                <span class="opacity-50">Csapat B</span>
-              </div>
-              <button class="text-xs text-primary hover:underline">Részletek</button>
-            </div>
-          </div>
-        </div>
-      </div> -->
     </div>
-    <!-- Right Column (Sidebar) -->
+
     <div class="hidden lg:flex lg:col-span-4 flex-col gap-6">
-      <!-- Calendar Widget -->
-      <div
-        class="bg-gradient-to-b from-dark-accent to-background-dark rounded-2xl p-4 border border-border-dark w-full min-[710px]:max-w-[340px]">
+      <div class="bg-gradient-to-b from-dark-accent to-background-dark rounded-2xl p-4 border border-border-dark w-full min-[710px]:max-w-[340px]">
         <div class="flex items-center justify-between mb-4">
           <h3 class="text-white font-bold text-base">{{ calendarMonthLabel() }}</h3>
           <div class="flex gap-2">
-            <button (click)="goToPreviousMonth()" aria-label="Előző hónap"
+            <button
+              (click)="goToPreviousMonth()"
+              [attr.aria-label]="'eventsList.calendar.prevMonth' | transloco"
               class="p-1 rounded-full hover:bg-white/10 text-gray-400 hover:text-white transition-colors">
               <span class="material-symbols-outlined text-base">chevron_left</span>
             </button>
-            <button (click)="goToNextMonth()" aria-label="Következő hónap"
+            <button
+              (click)="goToNextMonth()"
+              [attr.aria-label]="'eventsList.calendar.nextMonth' | transloco"
               class="p-1 rounded-full hover:bg-white/10 text-gray-400 hover:text-white transition-colors">
               <span class="material-symbols-outlined text-base">chevron_right</span>
             </button>
           </div>
         </div>
         <div class="grid grid-cols-7 gap-y-2 gap-x-0.5 text-center text-xs mb-1">
-          <div class="text-gray-500 text-xs font-medium">H</div>
-          <div class="text-gray-500 text-xs font-medium">K</div>
-          <div class="text-gray-500 text-xs font-medium">Sz</div>
-          <div class="text-gray-500 text-xs font-medium">Cs</div>
-          <div class="text-gray-500 text-xs font-medium">P</div>
-          <div class="text-gray-500 text-xs font-medium">Sz</div>
-          <div class="text-gray-500 text-xs font-medium">V</div>
+          @for (weekdayKey of weekdayKeys; track weekdayKey) {
+            <div class="text-gray-500 text-xs font-medium">{{ weekdayKey | transloco }}</div>
+          }
           @for (day of calendarDays(); track day.key) {
-          <button
-            class="relative h-7 w-7 mx-auto flex items-center justify-center rounded-full text-xs transition-colors"
-            [disabled]="!day.inMonth" (click)="day.inMonth && selectDay(day.date)" [ngClass]="{
-              'text-gray-600 cursor-default': !day.inMonth,
-              'text-white hover:bg-white/5 cursor-pointer': day.inMonth && !day.isToday,
-              'bg-primary text-background-dark font-bold shadow-[0_0_10px_rgba(43,238,124,0.4)]':
-                day.isToday,
-              'bg-white/10 text-white font-bold': day.isSelected && !day.isToday
-            }">
-            {{ day.label }}
-            @if (day.hasEvent) {
-            <span class="absolute bottom-0.5 left-1/2 -translate-x-1/2 w-1 h-1 bg-primary rounded-full"></span>
-            }
-          </button>
+            <button
+              class="relative h-7 w-7 mx-auto flex items-center justify-center rounded-full text-xs transition-colors"
+              [disabled]="!day.inMonth"
+              (click)="day.inMonth && selectDay(day.date)"
+              [ngClass]="{
+                'text-gray-600 cursor-default': !day.inMonth,
+                'text-white hover:bg-white/5 cursor-pointer': day.inMonth && !day.isToday,
+                'bg-primary text-background-dark font-bold shadow-[0_0_10px_rgba(43,238,124,0.4)]': day.isToday,
+                'bg-white/10 text-white font-bold': day.isSelected && !day.isToday
+              }">
+              {{ day.label }}
+              @if (day.hasEvent) {
+                <span class="absolute bottom-0.5 left-1/2 -translate-x-1/2 w-1 h-1 bg-primary rounded-full"></span>
+              }
+            </button>
           }
         </div>
       </div>
-      <!-- My Teams / Groups -->
-      <div
-        class="bg-gradient-to-b from-dark-accent to-background-dark rounded-2xl p-6 border border-border-dark w-full min-[710px]:max-w-[340px] flex-1 flex flex-col">
+
+      <div class="bg-gradient-to-b from-dark-accent to-background-dark rounded-2xl p-6 border border-border-dark w-full min-[710px]:max-w-[340px] flex-1 flex flex-col">
         <div class="flex items-center justify-between mb-4">
           <div>
-            <h3 class="text-white font-bold text-lg">Eseményeim</h3>
+            <h3 class="text-white font-bold text-lg">{{ 'eventsList.sections.myEvents' | transloco }}</h3>
             <p class="text-xs text-gray-400">{{ selectedDayLabel() }}</p>
           </div>
         </div>
         <div class="space-y-3">
           @if (selectedDayEvents().length === 0) {
-          <div class="events-empty-state text-sm text-gray-400 bg-[#193324]/40 border border-white/5 rounded-2xl p-4">
-            Erre a napra nincs eseményed.
-          </div>
+            <div class="events-empty-state text-sm text-gray-400 bg-[#193324]/40 border border-white/5 rounded-2xl p-4">
+              {{ 'eventsList.empty.day' | transloco }}
+            </div>
           }
           @for (event of selectedDayEvents(); track event.id) {
-          <div
-            class="my-events-inline-item flex items-center justify-between py-1.5">
-            <div>
-              <p class="text-white font-medium text-sm">{{ event.title }}</p>
-              <p class="text-xs text-primary">
-                {{ event.location }} - {{ formatTime(getEventDateTime(event)) }}
-              </p>
+            <div class="my-events-inline-item flex items-center justify-between py-1.5">
+              <div>
+                <p class="text-white font-medium text-sm">{{ event.title }}</p>
+                <p class="text-xs text-primary">
+                  {{ event.location }} - {{ formatTime(getEventDateTime(event)) }}
+                </p>
+              </div>
+              <span class="w-2 h-2 rounded-full bg-primary"></span>
             </div>
-            <span class="w-2 h-2 rounded-full bg-primary"></span>
-          </div>
           }
         </div>
       </div>
-      <!-- Map Snippet -->
-      <!-- <div class="bg-gradient-to-b from-dark-accent to-background-dark rounded-2xl p-4 border border-border-dark">
-        <p class="text-white font-bold text-sm mb-3">Helyszín: Margitsziget</p>
-        <div
-          class="w-full aspect-video bg-cover bg-center rounded-lg relative overflow-hidden group"
-          data-alt="Stylized dark mode map view of Budapest Margaret Island"
-          data-location="Budapest, Margitsziget"
-          style="
-            background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDCibFRpkwlxVoszAJtnhJTXiImJ5MEdITgTdxM2ELla0Jdd6Kew1D3V2UP4W3NrBdUmptIfjY0W2TzzIrlhZFjiUirSEool7YLES_KgpvQDFhH56XnpBRGoRPNJZZ6pJV18puwMeK_Kti0hQ4PMR-6tT1iG4MpLfnf4vmC7-v0BlfmIqYjyeM_I59vCjCwYO-gGumMwCOkPUIjbV7fRjjXTTyMOZVpI1aH_CXQSJGubvgvaGSTzHpSJz4HTEy0juZlMdGulZdG-kU');
-          "
-        >
-          <div class="absolute inset-0 bg-black/30 group-hover:bg-black/10 transition-colors"></div>
-          <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
-            <span class="material-symbols-outlined text-primary text-4xl drop-shadow-lg"
-              >location_on</span
-            >
-          </div>
-        </div>
-      </div> -->
     </div>
   </div>
 </main>

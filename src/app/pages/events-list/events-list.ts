@@ -1,16 +1,18 @@
-import { Component, OnDestroy, computed, inject, signal } from '@angular/core';
+import { Component, OnDestroy, computed, effect, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
+import { TranslocoPipe } from '@jsverse/transloco';
 import { AuthService } from '../../services/auth.service';
 import { GroupService } from '../../services/group.service';
 import { EventService, SportEvent } from '../../services/event.service';
 import { SeoService } from '../../services/seo.service';
+import { LanguageService } from '../../services/language.service';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { combineLatest, map, of, switchMap } from 'rxjs';
 
 @Component({
   selector: 'app-events-list',
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, TranslocoPipe],
   templateUrl: './events-list.html',
   styleUrl: './events-list.scss',
 })
@@ -18,6 +20,7 @@ export class EventsList implements OnDestroy {
   private authService = inject(AuthService);
   private groupService = inject(GroupService);
   private eventService = inject(EventService);
+  protected readonly languageService = inject(LanguageService);
   private seo = inject(SeoService);
 
   visibleMonth = signal(this.getMonthAnchor(new Date()));
@@ -176,13 +179,13 @@ export class EventsList implements OnDestroy {
 
   calendarMonthLabel = computed(() => {
     const anchor = this.visibleMonth();
-    const label = anchor.toLocaleDateString('hu-HU', { year: 'numeric', month: 'long' });
+    const label = anchor.toLocaleDateString(this.currentLocale(), { year: 'numeric', month: 'long' });
     return label.charAt(0).toUpperCase() + label.slice(1);
   });
 
   selectedDayLabel = computed(() => {
     const selected = this.selectedDate();
-    return selected.toLocaleDateString('hu-HU', {
+    return selected.toLocaleDateString(this.currentLocale(), {
       year: 'numeric',
       month: 'long',
       day: 'numeric',
@@ -206,11 +209,14 @@ export class EventsList implements OnDestroy {
   private timerId: ReturnType<typeof setInterval> | null = null;
 
   constructor() {
-    this.seo.setPageMeta({
-      title: 'Események és meccsek – BeMyTeamMate',
-      description: 'Kövesd a közelgő eseményeket, nézd meg a következő meccset és kezeld a részvételt.',
-      path: '/events',
-      noindex: true,
+    effect(() => {
+      this.languageService.currentLanguage();
+      this.seo.setPageMeta({
+        title: this.languageService.t('eventsList.meta.title'),
+        description: this.languageService.t('eventsList.meta.description'),
+        path: '/events',
+        noindex: true,
+      });
     });
     this.timerId = setInterval(() => this.now.set(new Date()), 1000);
   }
@@ -220,19 +226,19 @@ export class EventsList implements OnDestroy {
   }
 
   formatDate(date: Date): string {
-    const month = date.toLocaleDateString('hu-HU', { month: 'short' });
+    const month = date.toLocaleDateString(this.currentLocale(), { month: 'short' });
     const day = date.getDate();
     return `${month} ${day}`;
   }
 
   formatTime(date: Date): string {
-    return date.toLocaleTimeString('hu-HU', { hour: '2-digit', minute: '2-digit' });
+    return date.toLocaleTimeString(this.currentLocale(), { hour: '2-digit', minute: '2-digit' });
   }
 
   getAttendanceText(event: SportEvent): string {
     const current = event.currentAttendees ?? event.attendees?.length ?? 0;
     const max = event.maxAttendees ?? 0;
-    return `${current}/${max} fő`;
+    return this.languageService.t('eventsList.attendance.value', { current, max });
   }
 
   getAttendancePercent(event: SportEvent): number {
@@ -264,23 +270,41 @@ export class EventsList implements OnDestroy {
   }
 
   getSportLabel(sport?: string): string {
-    if (!sport) return 'Sport';
-    const normalized = sport.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-    if (normalized.includes('foci') || normalized.includes('soccer') || normalized.includes('football')) {
-      return 'Foci';
-    }
-    if (normalized.includes('kosar') || normalized.includes('basket')) return 'Kosárlabda';
-    if (normalized.includes('kezilabda') || normalized.includes('handball')) return 'Kézilabda';
-    if (normalized.includes('roplabda') || normalized.includes('volley')) return 'Röplabda';
-    if (normalized.includes('tenisz') || normalized.includes('tennis') || normalized.includes('padel')) {
-      return 'Tenisz';
-    }
-    if (normalized.includes('jegkorong') || normalized.includes('hockey')) return 'Jégkorong';
-    if (normalized.includes('squash')) return 'Squash';
-    if (normalized.includes('bowling')) return 'Bowling';
-    if (normalized.includes('other') || normalized.includes('egyeb')) return 'Egyéb';
-    if (normalized.includes('futas') || normalized.includes('run')) return 'Futás';
+    const translationKey = this.getSportTranslationKey(sport);
+    if (translationKey) return this.languageService.t(translationKey);
+    if (!sport) return this.languageService.t('results.filters.sportDefault');
     return sport;
+  }
+
+  private getSportTranslationKey(sport?: string) {
+    if (!sport) return null;
+
+    const normalized = sport.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    if (normalized.includes('foci') || normalized.includes('soccer') || normalized.includes('football')) return 'createEvent.sport.soccer' as const;
+    if (normalized.includes('kosar') || normalized.includes('basket')) return 'createEvent.sport.basketball' as const;
+    if (normalized.includes('kezilabda') || normalized.includes('handball')) return 'createEvent.sport.handball' as const;
+    if (normalized.includes('roplabda') || normalized.includes('volley')) return 'createEvent.sport.volleyball' as const;
+    if (normalized.includes('tenisz') || normalized.includes('tennis') || normalized.includes('padel')) return 'createEvent.sport.tennis' as const;
+    if (normalized.includes('jegkorong') || normalized.includes('hockey')) return 'createEvent.sport.hockey' as const;
+    if (normalized.includes('squash')) return 'createEvent.sport.squash' as const;
+    if (normalized.includes('bowling')) return 'createEvent.sport.bowling' as const;
+    if (normalized.includes('other') || normalized.includes('egyeb')) return 'createEvent.sport.other' as const;
+    if (normalized.includes('futas') || normalized.includes('run')) return 'createEvent.sport.running' as const;
+    return null;
+  }
+
+  weekdayKeys = [
+    'eventsList.calendar.weekday.mon',
+    'eventsList.calendar.weekday.tue',
+    'eventsList.calendar.weekday.wed',
+    'eventsList.calendar.weekday.thu',
+    'eventsList.calendar.weekday.fri',
+    'eventsList.calendar.weekday.sat',
+    'eventsList.calendar.weekday.sun',
+  ] as const;
+
+  private currentLocale(): string {
+    return this.languageService.currentLanguage() === 'en' ? 'en-US' : 'hu-HU';
   }
 
   goToPreviousMonth() {

@@ -1,24 +1,24 @@
 <div class="w-full px-4 sm:px-6 lg:px-10 py-6">
   <div class="max-w-[1200px] mx-auto flex flex-col gap-8">
-
     <div class="sm:hidden results-mobile-sticky">
       <div class="results-mobile-filter-bar">
         <div class="relative min-w-0 flex-1">
-          <div
-            class="flex items-center justify-between gap-2 h-10 rounded-xl bg-gradient-to-b from-dark-accent to-background-dark border border-border-dark px-3 text-white text-xs font-semibold">
+          <div class="flex items-center justify-between gap-2 h-10 rounded-xl bg-gradient-to-b from-dark-accent to-background-dark border border-border-dark px-3 text-white text-xs font-semibold">
             <span class="inline-flex items-center gap-1.5 min-w-0">
               <span class="material-symbols-outlined text-[#1F3A2B] dark:text-[#92c9a9] text-base shrink-0">calendar_month</span>
               <span class="truncate">{{ selectedPeriodLabel() }}</span>
             </span>
             <span class="material-symbols-outlined text-[#1F3A2B] dark:text-[#92c9a9] text-sm shrink-0">expand_more</span>
           </div>
-          <select class="absolute inset-0 w-full h-full opacity-0 cursor-pointer results-select"
-            (change)="setPeriod($any($event.target).value)" style="color-scheme: dark" aria-label="Idosáv szűrő">
+          <select
+            class="absolute inset-0 w-full h-full opacity-0 cursor-pointer results-select"
+            (change)="setPeriod($any($event.target).value)"
+            style="color-scheme: dark"
+            [attr.aria-label]="'results.filters.periodAria' | transloco">
             @for (period of periodOptions; track period.id) {
-            <option class="bg-background-dark text-white results-option" [value]="period.id"
-              [selected]="selectedPeriod() === period.id">
-              {{ period.label }}
-            </option>
+              <option class="bg-background-dark text-white results-option" [value]="period.id" [selected]="selectedPeriod() === period.id">
+                {{ period.labelKey | transloco }}
+              </option>
             }
           </select>
         </div>
@@ -29,105 +29,91 @@
           (click)="openMobileFilters()"
           [attr.aria-expanded]="mobileFiltersOpen()"
           aria-controls="mobile-filter-sheet"
-          aria-label="További szűrők">
+          [attr.aria-label]="'results.filters.moreAria' | transloco">
           <span class="material-symbols-outlined text-base text-[#1F3A2B] dark:text-[#92c9a9]">tune</span>
-          <span>Szűrők</span>
+          <span>{{ 'results.filters.title' | transloco }}</span>
           @if (mobileAdvancedFilterCount() > 0) {
-          <span
-            class="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-primary/20 px-1 text-[10px] font-extrabold text-primary">
-            {{ mobileAdvancedFilterCount() }}
-          </span>
+            <span class="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-primary/20 px-1 text-[10px] font-extrabold text-primary">
+              {{ mobileAdvancedFilterCount() }}
+            </span>
           }
         </button>
       </div>
     </div>
 
-    <!-- Header & Filters Section -->
     <div class="hidden sm:flex flex-col gap-6">
       <div class="flex flex-col gap-2">
-        <h1
-          class="text-white text-2xl min-[361px]:text-3xl sm:text-4xl md:text-5xl font-black tracking-tight overflow-hidden text-ellipsis">
-          Eredmények és elemzés
+        <h1 class="text-white text-2xl min-[361px]:text-3xl sm:text-4xl md:text-5xl font-black tracking-tight overflow-hidden text-ellipsis">
+          {{ 'results.header.title' | transloco }}
         </h1>
       </div>
 
-      <!-- Subtitle & Filters Row -->
       <div class="flex flex-wrap items-center xl:flex-nowrap justify-between gap-4 w-full">
-        <p
-          class="text-[#1F3A2B] dark:text-[#92c9a9] text-sm sm:text-base md:text-lg shrink-0 max-w-full xl:max-w-[45%]">
-          Részletes statisztikák, teljesítmény áttekintés és meccstörténet
+        <p class="text-[#1F3A2B] dark:text-[#92c9a9] text-sm sm:text-base md:text-lg shrink-0 max-w-full xl:max-w-[45%]">
+          {{ 'results.header.subtitle' | transloco }}
         </p>
 
-        <!-- Filters Container -->
         <div class="relative w-full xl:w-auto">
           <div class="flex flex-wrap items-center justify-start xl:justify-end gap-2 sm:gap-3">
-            <!-- Period Filter -->
             <div class="relative shrink-0 min-w-[120px] sm:min-w-[160px] xl:min-w-0">
-              <div
-                class="flex items-center justify-center gap-1.5 sm:gap-2 h-9 sm:h-10 rounded-xl bg-gradient-to-b from-dark-accent to-background-dark border border-border-dark px-3 sm:px-4 text-white text-[11px] sm:text-xs md:text-sm font-medium hover:border-primary/50 transition-colors">
-                <span
-                  class="material-symbols-outlined text-[#1F3A2B] dark:text-[#92c9a9] text-base sm:text-lg shrink-0">calendar_month</span>
+              <div class="flex items-center justify-center gap-1.5 sm:gap-2 h-9 sm:h-10 rounded-xl bg-gradient-to-b from-dark-accent to-background-dark border border-border-dark px-3 sm:px-4 text-white text-[11px] sm:text-xs md:text-sm font-medium hover:border-primary/50 transition-colors">
+                <span class="material-symbols-outlined text-[#1F3A2B] dark:text-[#92c9a9] text-base sm:text-lg shrink-0">calendar_month</span>
                 <span class="whitespace-nowrap">{{ selectedPeriodLabel() }}</span>
-                <span
-                  class="material-symbols-outlined text-[#1F3A2B] dark:text-[#92c9a9] text-xs sm:text-sm shrink-0">expand_more</span>
+                <span class="material-symbols-outlined text-[#1F3A2B] dark:text-[#92c9a9] text-xs sm:text-sm shrink-0">expand_more</span>
               </div>
-              <select class="absolute inset-0 w-full h-full opacity-0 cursor-pointer results-select"
-                (change)="setPeriod($any($event.target).value)" style="color-scheme: dark">
+              <select
+                class="absolute inset-0 w-full h-full opacity-0 cursor-pointer results-select"
+                (change)="setPeriod($any($event.target).value)"
+                style="color-scheme: dark"
+                [attr.aria-label]="'results.filters.periodAria' | transloco">
                 @for (period of periodOptions; track period.id) {
-                <option class="bg-background-dark text-white results-option" [value]="period.id"
-                  [selected]="selectedPeriod() === period.id">
-                  {{ period.label }}
-                </option>
+                  <option class="bg-background-dark text-white results-option" [value]="period.id" [selected]="selectedPeriod() === period.id">
+                    {{ period.labelKey | transloco }}
+                  </option>
                 }
               </select>
             </div>
 
-            <!-- Sport Filter -->
             <div class="relative shrink-0 min-w-[120px] sm:min-w-[160px] xl:min-w-0">
-              <div
-                class="flex items-center justify-center gap-1.5 sm:gap-2 h-9 sm:h-10 rounded-xl bg-gradient-to-b from-dark-accent to-background-dark border border-border-dark px-3 sm:px-4 text-white text-[11px] sm:text-xs md:text-sm font-medium hover:border-primary/50 transition-colors">
-                <span
-                  class="material-symbols-outlined text-[#1F3A2B] dark:text-[#92c9a9] text-base sm:text-lg shrink-0">sports</span>
+              <div class="flex items-center justify-center gap-1.5 sm:gap-2 h-9 sm:h-10 rounded-xl bg-gradient-to-b from-dark-accent to-background-dark border border-border-dark px-3 sm:px-4 text-white text-[11px] sm:text-xs md:text-sm font-medium hover:border-primary/50 transition-colors">
+                <span class="material-symbols-outlined text-[#1F3A2B] dark:text-[#92c9a9] text-base sm:text-lg shrink-0">sports</span>
                 <span class="whitespace-nowrap">{{ selectedSportLabel() }}</span>
-                <span
-                  class="material-symbols-outlined text-[#1F3A2B] dark:text-[#92c9a9] text-xs sm:text-sm shrink-0">expand_more</span>
+                <span class="material-symbols-outlined text-[#1F3A2B] dark:text-[#92c9a9] text-xs sm:text-sm shrink-0">expand_more</span>
               </div>
-              <select class="absolute inset-0 w-full h-full opacity-0 cursor-pointer results-select"
-                (change)="setSport($any($event.target).value)" style="color-scheme: dark">
-                <option class="bg-background-dark text-white results-option" value="all"
-                  [selected]="selectedSport() === 'all'">
-                  Minden sportág
+              <select
+                class="absolute inset-0 w-full h-full opacity-0 cursor-pointer results-select"
+                (change)="setSport($any($event.target).value)"
+                style="color-scheme: dark"
+                [attr.aria-label]="'results.filters.sportAria' | transloco">
+                <option class="bg-background-dark text-white results-option" value="all" [selected]="selectedSport() === 'all'">
+                  {{ 'results.filters.allSports' | transloco }}
                 </option>
                 @for (sport of sportOptions; track sport.id) {
-                <option class="bg-background-dark text-white results-option" [value]="sport.id"
-                  [selected]="selectedSport() === sport.id">
-                  {{ sport.name }}
-                </option>
+                  <option class="bg-background-dark text-white results-option" [value]="sport.id" [selected]="selectedSport() === sport.id">
+                    {{ sport.labelKey | transloco }}
+                  </option>
                 }
               </select>
             </div>
 
-            <!-- Team Filter -->
             <div class="relative shrink-0 min-w-[120px] sm:min-w-[160px] xl:min-w-0">
-              <div
-                class="flex items-center justify-center gap-1.5 sm:gap-2 h-9 sm:h-10 rounded-xl bg-gradient-to-b from-dark-accent to-background-dark border border-border-dark px-3 sm:px-4 text-white text-[11px] sm:text-xs md:text-sm font-medium hover:border-primary/50 transition-colors">
-                <span
-                  class="material-symbols-outlined text-[#1F3A2B] dark:text-[#92c9a9] text-base sm:text-lg shrink-0">group</span>
+              <div class="flex items-center justify-center gap-1.5 sm:gap-2 h-9 sm:h-10 rounded-xl bg-gradient-to-b from-dark-accent to-background-dark border border-border-dark px-3 sm:px-4 text-white text-[11px] sm:text-xs md:text-sm font-medium hover:border-primary/50 transition-colors">
+                <span class="material-symbols-outlined text-[#1F3A2B] dark:text-[#92c9a9] text-base sm:text-lg shrink-0">group</span>
                 <span class="whitespace-nowrap">{{ selectedTeamLabel() }}</span>
-                <span
-                  class="material-symbols-outlined text-[#1F3A2B] dark:text-[#92c9a9] text-xs sm:text-sm shrink-0">expand_more</span>
+                <span class="material-symbols-outlined text-[#1F3A2B] dark:text-[#92c9a9] text-xs sm:text-sm shrink-0">expand_more</span>
               </div>
-              <select class="absolute inset-0 w-full h-full opacity-0 cursor-pointer results-select"
-                (change)="setTeam($any($event.target).value)" style="color-scheme: dark">
-                <option class="bg-background-dark text-white results-option" value="all"
-                  [selected]="selectedTeam() === 'all'">
-                  Minden csapatom
+              <select
+                class="absolute inset-0 w-full h-full opacity-0 cursor-pointer results-select"
+                (change)="setTeam($any($event.target).value)"
+                style="color-scheme: dark"
+                [attr.aria-label]="'results.filters.teamAria' | transloco">
+                <option class="bg-background-dark text-white results-option" value="all" [selected]="selectedTeam() === 'all'">
+                  {{ 'results.filters.allTeams' | transloco }}
                 </option>
                 @for (group of userGroups(); track group.id) {
-                <option class="bg-background-dark text-white results-option" [value]="group.id"
-                  [selected]="selectedTeam() === group.id">
-                  {{ group.name }}
-                </option>
+                  <option class="bg-background-dark text-white results-option" [value]="group.id" [selected]="selectedTeam() === group.id">
+                    {{ group.name }}
+                  </option>
                 }
               </select>
             </div>
@@ -137,208 +123,184 @@
     </div>
 
     @if (mobileFiltersOpen()) {
-    <div
-      class="fixed inset-0 z-[70] bg-black/60 sm:hidden"
-      (click)="closeMobileFilters()"
-      aria-hidden="true">
-    </div>
-    <section
-      id="mobile-filter-sheet"
-      class="fixed inset-x-0 bottom-0 z-[80] sm:hidden rounded-t-3xl border border-border-dark bg-gradient-to-b from-dark-accent to-background-dark px-4 pb-[calc(env(safe-area-inset-bottom)+16px)] pt-4 shadow-[0_-24px_50px_rgba(5,15,10,0.55)]"
-      role="dialog"
-      aria-modal="true"
-      aria-label="Mobil szűrők">
-      <div class="mx-auto mb-4 h-1.5 w-12 rounded-full bg-[#92c9a9]/35"></div>
-      <div class="mb-4 flex items-center justify-between gap-3">
-        <h2 class="text-base font-bold text-white">Szűrők</h2>
-        <button
-          type="button"
-          class="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-border-dark text-[#92c9a9] hover:border-primary/50"
-          (click)="closeMobileFilters()"
-          aria-label="Szűrők bezárása">
-          <span class="material-symbols-outlined text-lg">close</span>
-        </button>
-      </div>
-
-      <div class="flex flex-col gap-3">
-        <div class="relative">
-          <div
-            class="flex h-11 items-center justify-between gap-2 rounded-xl border border-border-dark bg-gradient-to-b from-dark-accent to-background-dark px-3 text-sm font-semibold text-white">
-            <span class="inline-flex items-center gap-1.5 min-w-0">
-              <span class="material-symbols-outlined text-base text-[#1F3A2B] dark:text-[#92c9a9]">sports</span>
-              <span class="truncate">{{ selectedSportLabel() }}</span>
-            </span>
-            <span class="material-symbols-outlined text-base text-[#1F3A2B] dark:text-[#92c9a9]">expand_more</span>
-          </div>
-          <select class="absolute inset-0 h-full w-full cursor-pointer opacity-0 results-select"
-            (change)="setSport($any($event.target).value)" style="color-scheme: dark" aria-label="Sportag szuro">
-            <option class="bg-background-dark text-white results-option" value="all"
-              [selected]="selectedSport() === 'all'">
-              Minden sportág
-            </option>
-            @for (sport of sportOptions; track sport.id) {
-            <option class="bg-background-dark text-white results-option" [value]="sport.id"
-              [selected]="selectedSport() === sport.id">
-              {{ sport.name }}
-            </option>
-            }
-          </select>
+      <div class="fixed inset-0 z-[70] bg-black/60 sm:hidden" (click)="closeMobileFilters()" aria-hidden="true"></div>
+      <section
+        id="mobile-filter-sheet"
+        class="fixed inset-x-0 bottom-0 z-[80] sm:hidden rounded-t-3xl border border-border-dark bg-gradient-to-b from-dark-accent to-background-dark px-4 pb-[calc(env(safe-area-inset-bottom)+16px)] pt-4 shadow-[0_-24px_50px_rgba(5,15,10,0.55)]"
+        role="dialog"
+        aria-modal="true"
+        [attr.aria-label]="'results.filters.title' | transloco">
+        <div class="mx-auto mb-4 h-1.5 w-12 rounded-full bg-[#92c9a9]/35"></div>
+        <div class="mb-4 flex items-center justify-between gap-3">
+          <h2 class="text-base font-bold text-white">{{ 'results.filters.title' | transloco }}</h2>
+          <button
+            type="button"
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-border-dark text-[#92c9a9] hover:border-primary/50"
+            (click)="closeMobileFilters()"
+            [attr.aria-label]="'results.filters.closeAria' | transloco">
+            <span class="material-symbols-outlined text-lg">close</span>
+          </button>
         </div>
 
-        <div class="relative">
-          <div
-            class="flex h-11 items-center justify-between gap-2 rounded-xl border border-border-dark bg-gradient-to-b from-dark-accent to-background-dark px-3 text-sm font-semibold text-white">
-            <span class="inline-flex items-center gap-1.5 min-w-0">
-              <span class="material-symbols-outlined text-base text-[#1F3A2B] dark:text-[#92c9a9]">group</span>
-              <span class="truncate">{{ selectedTeamLabel() }}</span>
-            </span>
-            <span class="material-symbols-outlined text-base text-[#1F3A2B] dark:text-[#92c9a9]">expand_more</span>
+        <div class="flex flex-col gap-3">
+          <div class="relative">
+            <div class="flex h-11 items-center justify-between gap-2 rounded-xl border border-border-dark bg-gradient-to-b from-dark-accent to-background-dark px-3 text-sm font-semibold text-white">
+              <span class="inline-flex items-center gap-1.5 min-w-0">
+                <span class="material-symbols-outlined text-base text-[#1F3A2B] dark:text-[#92c9a9]">sports</span>
+                <span class="truncate">{{ selectedSportLabel() }}</span>
+              </span>
+              <span class="material-symbols-outlined text-base text-[#1F3A2B] dark:text-[#92c9a9]">expand_more</span>
+            </div>
+            <select
+              class="absolute inset-0 h-full w-full cursor-pointer opacity-0 results-select"
+              (change)="setSport($any($event.target).value)"
+              style="color-scheme: dark"
+              [attr.aria-label]="'results.filters.sportAria' | transloco">
+              <option class="bg-background-dark text-white results-option" value="all" [selected]="selectedSport() === 'all'">
+                {{ 'results.filters.allSports' | transloco }}
+              </option>
+              @for (sport of sportOptions; track sport.id) {
+                <option class="bg-background-dark text-white results-option" [value]="sport.id" [selected]="selectedSport() === sport.id">
+                  {{ sport.labelKey | transloco }}
+                </option>
+              }
+            </select>
           </div>
-          <select class="absolute inset-0 h-full w-full cursor-pointer opacity-0 results-select"
-            (change)="setTeam($any($event.target).value)" style="color-scheme: dark" aria-label="Csapat szuro">
-            <option class="bg-background-dark text-white results-option" value="all"
-              [selected]="selectedTeam() === 'all'">
-              Minden csapatom
-            </option>
-            @for (group of userGroups(); track group.id) {
-            <option class="bg-background-dark text-white results-option" [value]="group.id"
-              [selected]="selectedTeam() === group.id">
-              {{ group.name }}
-            </option>
-            }
-          </select>
-        </div>
-      </div>
 
-      <div class="mt-5 grid grid-cols-2 gap-2">
-        <button
-          type="button"
-          class="inline-flex h-10 items-center justify-center rounded-xl border border-border-dark px-3 text-xs font-bold text-white hover:border-primary/50"
-          (click)="resetMobileAdvancedFilters()">
-          Alaphelyzet
-        </button>
-        <button
-          type="button"
-          class="inline-flex h-10 items-center justify-center rounded-xl bg-primary px-3 text-xs font-extrabold text-[#0b1a13]"
-          (click)="closeMobileFilters()">
-          Kész
-        </button>
-      </div>
-    </section>
+          <div class="relative">
+            <div class="flex h-11 items-center justify-between gap-2 rounded-xl border border-border-dark bg-gradient-to-b from-dark-accent to-background-dark px-3 text-sm font-semibold text-white">
+              <span class="inline-flex items-center gap-1.5 min-w-0">
+                <span class="material-symbols-outlined text-base text-[#1F3A2B] dark:text-[#92c9a9]">group</span>
+                <span class="truncate">{{ selectedTeamLabel() }}</span>
+              </span>
+              <span class="material-symbols-outlined text-base text-[#1F3A2B] dark:text-[#92c9a9]">expand_more</span>
+            </div>
+            <select
+              class="absolute inset-0 h-full w-full cursor-pointer opacity-0 results-select"
+              (change)="setTeam($any($event.target).value)"
+              style="color-scheme: dark"
+              [attr.aria-label]="'results.filters.teamAria' | transloco">
+              <option class="bg-background-dark text-white results-option" value="all" [selected]="selectedTeam() === 'all'">
+                {{ 'results.filters.allTeams' | transloco }}
+              </option>
+              @for (group of userGroups(); track group.id) {
+                <option class="bg-background-dark text-white results-option" [value]="group.id" [selected]="selectedTeam() === group.id">
+                  {{ group.name }}
+                </option>
+              }
+            </select>
+          </div>
+        </div>
+
+        <div class="mt-5 grid grid-cols-2 gap-2">
+          <button
+            type="button"
+            class="inline-flex h-10 items-center justify-center rounded-xl border border-border-dark px-3 text-xs font-bold text-white hover:border-primary/50"
+            (click)="resetMobileAdvancedFilters()">
+            {{ 'results.filters.reset' | transloco }}
+          </button>
+          <button
+            type="button"
+            class="inline-flex h-10 items-center justify-center rounded-xl bg-primary px-3 text-xs font-extrabold text-[#0b1a13]"
+            (click)="closeMobileFilters()">
+            {{ 'results.filters.done' | transloco }}
+          </button>
+        </div>
+      </section>
     }
 
-    <!-- KPI Cards -->
     <div class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-6">
-      <!-- Card 1 -->
-      <div
-        class="kpi-card relative overflow-hidden rounded-2xl bg-gradient-to-b from-dark-accent to-background-dark p-3 sm:p-6 border border-border-dark group hover:border-primary/50 transition-colors flex flex-col items-center text-center">
+      <div class="kpi-card relative overflow-hidden rounded-2xl bg-gradient-to-b from-dark-accent to-background-dark p-3 sm:p-6 border border-border-dark group hover:border-primary/50 transition-colors flex flex-col items-center text-center">
         <div class="kpi-card__header flex justify-center mb-2.5 sm:mb-4 w-full">
           <div class="kpi-card__meta flex items-center justify-center gap-2 sm:gap-3">
             <div class="kpi-card__icon p-1.5 sm:p-2 rounded-lg text-primary">
               <span class="material-symbols-outlined">stadium</span>
             </div>
-            <p class="kpi-title text-[#1F3A2B] dark:text-[#92c9a9] text-xs sm:text-sm font-medium uppercase tracking-wider" data-mobile-label="Meccsek">
-              Lejátszott mérkőzések
+            <p class="kpi-title text-[#1F3A2B] dark:text-[#92c9a9] text-xs sm:text-sm font-medium uppercase tracking-wider" [attr.data-mobile-label]="'results.kpi.matches' | transloco">
+              {{ 'results.kpi.matches' | transloco }}
             </p>
           </div>
-          <!-- <span class="flex items-center gap-1 text-primary text-xs font-bold bg-[#2bee7c]/10 px-2 py-1 rounded-full">
-            <span class="material-symbols-outlined text-sm">trending_up</span> +2
-          </span> -->
         </div>
         <p class="kpi-value text-white text-3xl sm:text-4xl font-bold">{{ filteredMatches().length }}</p>
       </div>
-      <!-- Card 2 -->
-      <div
-        class="kpi-card relative overflow-hidden rounded-2xl bg-gradient-to-b from-dark-accent to-background-dark p-3 sm:p-6 border border-border-dark group hover:border-primary/50 transition-colors flex flex-col items-center text-center">
+
+      <div class="kpi-card relative overflow-hidden rounded-2xl bg-gradient-to-b from-dark-accent to-background-dark p-3 sm:p-6 border border-border-dark group hover:border-primary/50 transition-colors flex flex-col items-center text-center">
         <div class="kpi-card__header flex justify-center mb-2.5 sm:mb-4 w-full">
           <div class="kpi-card__meta flex items-center justify-center gap-2 sm:gap-3">
             <div class="kpi-card__icon p-1.5 sm:p-2 rounded-lg text-primary">
               <span class="material-symbols-outlined">emoji_events</span>
             </div>
-            <p class="kpi-title text-[#1F3A2B] dark:text-[#92c9a9] text-xs sm:text-sm font-medium uppercase tracking-wider" data-mobile-label="Win">
-              Győzelmi arány
+            <p class="kpi-title text-[#1F3A2B] dark:text-[#92c9a9] text-xs sm:text-sm font-medium uppercase tracking-wider" [attr.data-mobile-label]="'results.kpi.winRate' | transloco">
+              {{ 'results.kpi.winRate' | transloco }}
             </p>
           </div>
-          <!-- <span class="flex items-center gap-1 text-primary text-xs font-bold bg-[#2bee7c]/10 px-2 py-1 rounded-full">
-            <span class="material-symbols-outlined text-sm">trending_up</span> +5%
-          </span> -->
         </div>
         <p class="kpi-value text-white text-3xl sm:text-4xl font-bold">{{ winRatePercent() }}%</p>
       </div>
-      <!-- Card 3 -->
-      <div
-        class="kpi-card relative z-20 overflow-visible rounded-2xl bg-gradient-to-b from-dark-accent to-background-dark p-3 sm:p-6 border border-border-dark group hover:border-primary/50 transition-colors flex flex-col items-center text-center">
+
+      <div class="kpi-card relative z-20 overflow-visible rounded-2xl bg-gradient-to-b from-dark-accent to-background-dark p-3 sm:p-6 border border-border-dark group hover:border-primary/50 transition-colors flex flex-col items-center text-center">
         <div class="kpi-card__header flex justify-center mb-2.5 sm:mb-4 w-full">
           <div class="kpi-card__meta flex items-center justify-center gap-2 sm:gap-3">
             <div class="kpi-card__icon p-1.5 sm:p-2 rounded-lg text-primary">
               <span class="material-symbols-outlined">scoreboard</span>
             </div>
-            <p class="kpi-title text-[#1F3A2B] dark:text-[#92c9a9] text-xs sm:text-sm font-medium uppercase tracking-wider" data-mobile-label="Pont">
-              Összes pont
+            <p class="kpi-title text-[#1F3A2B] dark:text-[#92c9a9] text-xs sm:text-sm font-medium uppercase tracking-wider" [attr.data-mobile-label]="'results.kpi.totalPoints' | transloco">
+              {{ 'results.kpi.totalPoints' | transloco }}
             </p>
-            <div class="info-tooltip" tabindex="0" aria-label="Összes pont magyarázat">
+            <div class="info-tooltip" tabindex="0" [attr.aria-label]="'results.tooltip.totalPointsAria' | transloco">
               <span class="info-tooltip__icon" aria-hidden="true">i</span>
               <div class="info-tooltip__bubble" role="tooltip">
-                Az „Összes pont” a kiválasztott időszakban és szűrők mellett elért ELO-változások összege. A pozitív
-                érték növekedést, a negatív csökkenést jelent.
+                {{ 'results.tooltip.totalPointsBody' | transloco }}
               </div>
             </div>
           </div>
-          <!-- <span class="flex items-center gap-1 text-primary text-xs font-bold bg-[#2bee7c]/10 px-2 py-1 rounded-full">
-            <span class="material-symbols-outlined text-sm">trending_up</span> +12
-          </span> -->
         </div>
         <p class="kpi-value text-white text-3xl sm:text-4xl font-bold">{{ earnedEloTotal() }}</p>
       </div>
-      <!-- Card 4 -->
-      <div
-        class="kpi-card relative overflow-hidden rounded-2xl bg-gradient-to-b from-dark-accent to-background-dark p-3 sm:p-6 border border-border-dark group hover:border-primary/50 transition-colors flex flex-col items-center text-center">
+
+      <div class="kpi-card relative overflow-hidden rounded-2xl bg-gradient-to-b from-dark-accent to-background-dark p-3 sm:p-6 border border-border-dark group hover:border-primary/50 transition-colors flex flex-col items-center text-center">
         <div class="kpi-card__header flex justify-center mb-2.5 sm:mb-4 w-full">
           <div class="kpi-card__meta flex items-center justify-center gap-2 sm:gap-3">
             <div class="kpi-card__icon p-1.5 sm:p-2 rounded-lg text-primary">
               <span class="material-symbols-outlined">military_tech</span>
             </div>
-            <p class="kpi-title text-[#1F3A2B] dark:text-[#92c9a9] text-xs sm:text-sm font-medium uppercase tracking-wider" data-mobile-label="MVP">
-              MVP győztes
+            <p class="kpi-title text-[#1F3A2B] dark:text-[#92c9a9] text-xs sm:text-sm font-medium uppercase tracking-wider" [attr.data-mobile-label]="'results.kpi.mvpWins' | transloco">
+              {{ 'results.kpi.mvpWins' | transloco }}
             </p>
           </div>
         </div>
         <p class="kpi-value text-white text-3xl sm:text-4xl font-bold">{{ mvpWinsCount() }}</p>
       </div>
     </div>
-    <!-- Charts Section -->
+
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 results-charts">
-      <!-- Score Evolution Chart -->
-      <div
-        class="results-chart-card rounded-2xl bg-gradient-to-b from-dark-accent to-background-dark border border-border-dark p-3 sm:p-6 flex flex-col">
+      <div class="results-chart-card rounded-2xl bg-gradient-to-b from-dark-accent to-background-dark border border-border-dark p-3 sm:p-6 flex flex-col">
         <div class="results-chart-head flex justify-between items-start mb-3 sm:mb-6 gap-2 sm:gap-0">
           <div>
             <div class="flex items-center gap-2">
-              <h3 class="text-white text-base sm:text-lg font-bold">Pontszám alakulása</h3>
-              <div class="info-tooltip" tabindex="0" aria-label="Pontszám alakulása magyarázat">
+              <h3 class="text-white text-base sm:text-lg font-bold">{{ 'results.chart.elo.title' | transloco }}</h3>
+              <div class="info-tooltip" tabindex="0" [attr.aria-label]="'results.chart.elo.aria' | transloco">
                 <span class="info-tooltip__icon" aria-hidden="true">i</span>
                 <div class="info-tooltip__bubble" role="tooltip">
-                  A görbe az egyes hónapok nettó ELO-változását mutatja. A zöld érték nyereség, a piros veszteség a
-                  kiválasztott szűrők szerint.
+                  {{ 'results.chart.elo.body' | transloco }}
                 </div>
               </div>
             </div>
-            <p class="text-[#1F3A2B] dark:text-[#92c9a9] text-[10px] sm:text-sm">Utolsó 6 hónap teljesítménye</p>
+            <p class="text-[#1F3A2B] dark:text-[#92c9a9] text-[10px] sm:text-sm">{{ 'results.chart.elo.subtitle' | transloco }}</p>
           </div>
           <div class="text-right">
-            <div
-              class="results-legend mt-1 flex flex-wrap sm:flex-nowrap items-center justify-end gap-1.5 sm:gap-3 text-[10px] sm:text-xs font-semibold text-[#1F3A2B] dark:text-[#92c9a9]">
+            <div class="results-legend mt-1 flex flex-wrap sm:flex-nowrap items-center justify-end gap-1.5 sm:gap-3 text-[10px] sm:text-xs font-semibold text-[#1F3A2B] dark:text-[#92c9a9]">
               <span class="results-legend__item inline-flex items-center gap-1">
-                <span class="h-2 w-2 rounded-full bg-primary"></span> Nyereség
+                <span class="h-2 w-2 rounded-full bg-primary"></span> {{ 'results.chart.legend.gain' | transloco }}
               </span>
               <span class="results-legend__item inline-flex items-center gap-1">
-                <span class="h-2 w-2 rounded-full bg-red-500"></span> Veszteség
+                <span class="h-2 w-2 rounded-full bg-red-500"></span> {{ 'results.chart.legend.loss' | transloco }}
               </span>
             </div>
           </div>
         </div>
-        <div
-          class="relative flex-none w-full h-36 sm:h-56 min-h-[136px] sm:min-h-[224px] mt-3 sm:mt-4 flex flex-col results-chart">
+
+        <div class="relative flex-none w-full h-36 sm:h-56 min-h-[136px] sm:min-h-[224px] mt-3 sm:mt-4 flex flex-col results-chart">
           <svg class="w-full flex-1 overflow-hidden" preserveAspectRatio="none" viewBox="0 0 100 50">
             <defs>
               <linearGradient id="eloAreaGradient" x1="0" y1="0" x2="0" y2="1">
@@ -347,302 +309,267 @@
                 <stop offset="100%" stop-color="#0b2f1d" stop-opacity="0.06"></stop>
               </linearGradient>
             </defs>
-            <path
-              [attr.d]="displayEloChart().areaPath"
-              class="elo-area"
-              fill="url(#eloAreaGradient)">
-            </path>
-            <path [attr.d]="displayEloChart().path" class="elo-line" pathLength="1" fill="none"
-              stroke="#2bee7c" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path>
+            <path [attr.d]="displayEloChart().areaPath" class="elo-area" fill="url(#eloAreaGradient)"></path>
+            <path [attr.d]="displayEloChart().path" class="elo-line" pathLength="1" fill="none" stroke="#2bee7c" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path>
             @for (point of displayEloChart().points; track point.key) {
-            <circle [attr.cx]="point.x" [attr.cy]="point.y" r="1.5" class="elo-point">
-            </circle>
-            <text [attr.x]="point.x" [attr.y]="point.y - 4" text-anchor="middle" font-size="3.5"
-              [attr.fill]="point.value >= 0 ? '#22c55e' : '#f87171'" class="elo-label" [class.elo-label--zero]="point.value === 0">
-              {{ point.value }}
-            </text>
+              <circle [attr.cx]="point.x" [attr.cy]="point.y" r="1.5" class="elo-point"></circle>
+              <text
+                [attr.x]="point.x"
+                [attr.y]="point.y - 4"
+                text-anchor="middle"
+                font-size="3.5"
+                [attr.fill]="point.value >= 0 ? '#22c55e' : '#f87171'"
+                class="elo-label"
+                [class.elo-label--zero]="point.value === 0">
+                {{ point.value }}
+              </text>
             }
           </svg>
-          <div
-            class="flex justify-between text-[#1F3A2B] dark:text-[#2bee7c] text-[10px] sm:text-xs font-bold mt-2 pt-2 border-t border-border-dark px-1 sm:px-2">
+          <div class="flex justify-between text-[#1F3A2B] dark:text-[#2bee7c] text-[10px] sm:text-xs font-bold mt-2 pt-2 border-t border-border-dark px-1 sm:px-2">
             @for (point of displayEloChart().points; track point.key) {
-            <span><span class="sm:hidden">{{ compactMonthLabel(point.label) }}</span><span class="hidden sm:inline">{{ point.label }}</span></span>
+              <span><span class="sm:hidden">{{ compactMonthLabel(point.label) }}</span><span class="hidden sm:inline">{{ point.label }}</span></span>
             }
           </div>
         </div>
       </div>
 
-      <!-- Win/Loss Ratio -->
-      <div
-        class="results-chart-card rounded-2xl bg-gradient-to-b from-dark-accent to-background-dark border border-border-dark p-3 sm:p-6 flex flex-col">
+      <div class="results-chart-card rounded-2xl bg-gradient-to-b from-dark-accent to-background-dark border border-border-dark p-3 sm:p-6 flex flex-col">
         <div class="results-chart-head flex justify-between items-start mb-3 sm:mb-6 gap-2 sm:gap-0">
           <div>
-            <h3 class="text-white text-base sm:text-lg font-bold">Győzelem / Vereség</h3>
-            <p class="text-[#1F3A2B] dark:text-[#92c9a9] text-[10px] sm:text-sm">Utolsó 6 hónap győzelem és vereség
-              darabszám</p>
+            <h3 class="text-white text-base sm:text-lg font-bold">{{ 'results.chart.winLoss.title' | transloco }}</h3>
+            <p class="text-[#1F3A2B] dark:text-[#92c9a9] text-[10px] sm:text-sm">{{ 'results.chart.winLoss.subtitle' | transloco }}</p>
           </div>
           <div class="text-right">
-            <div
-              class="results-legend mt-1 flex flex-wrap sm:flex-nowrap items-center justify-end gap-1.5 sm:gap-3 text-[10px] sm:text-xs font-semibold text-[#1F3A2B] dark:text-[#92c9a9]">
+            <div class="results-legend mt-1 flex flex-wrap sm:flex-nowrap items-center justify-end gap-1.5 sm:gap-3 text-[10px] sm:text-xs font-semibold text-[#1F3A2B] dark:text-[#92c9a9]">
               <span class="results-legend__item inline-flex items-center gap-1">
-                <span class="h-2 w-2 rounded-full bg-primary"></span> Győzelem
+                <span class="h-2 w-2 rounded-full bg-primary"></span> {{ 'results.chart.legend.gain' | transloco }}
               </span>
               <span class="results-legend__item inline-flex items-center gap-1">
-                <span class="h-2 w-2 rounded-full bg-red-500"></span> Vereség
+                <span class="h-2 w-2 rounded-full bg-red-500"></span> {{ 'results.chart.legend.loss' | transloco }}
               </span>
             </div>
           </div>
         </div>
-        <div
-          class="flex-none flex items-end justify-center h-36 sm:h-56 min-h-[136px] sm:min-h-[224px] mt-3 sm:mt-4 w-full gap-1 sm:gap-4 md:gap-6 px-0.5 sm:px-2 results-chart">
+
+        <div class="flex-none flex items-end justify-center h-36 sm:h-56 min-h-[136px] sm:min-h-[224px] mt-3 sm:mt-4 w-full gap-1 sm:gap-4 md:gap-6 px-0.5 sm:px-2 results-chart">
           @for (month of displayWinLossChart(); track month.key) {
-          <div class="flex flex-col items-center gap-1.5 sm:gap-2 h-full flex-1 max-w-[80px]">
-            <div class="flex items-end gap-1 sm:gap-2 h-full">
-              <div class="w-3 sm:w-4 md:w-5 rounded-t-sm relative h-full bar-track"
-                [ngClass]="month.wins === 0 ? 'bg-transparent' : 'bg-gradient-to-b from-dark-accent to-background-dark'"
-                [style.--bar-height]="month.winHeight + '%'">
-                <div class="absolute bottom-0 w-full bg-primary rounded-t-sm bar-fill"
-                  [style.height.%]="month.wins === 0 ? 0 : month.winHeight"></div>
-                <span
-                  class="absolute left-1/2 -translate-x-1/2 text-[9px] sm:text-[10px] font-semibold text-primary bar-label" [class.bar-label--zero]="month.wins === 0"
-                  style="bottom: calc(var(--bar-height) + 2px)">
-                  {{ month.wins }}
-                </span>
+            <div class="flex flex-col items-center gap-1.5 sm:gap-2 h-full flex-1 max-w-[80px]">
+              <div class="flex items-end gap-1 sm:gap-2 h-full">
+                <div class="w-3 sm:w-4 md:w-5 rounded-t-sm relative h-full bar-track" [ngClass]="month.wins === 0 ? 'bg-transparent' : 'bg-gradient-to-b from-dark-accent to-background-dark'" [style.--bar-height]="month.winHeight + '%'">
+                  <div class="absolute bottom-0 w-full bg-primary rounded-t-sm bar-fill" [style.height.%]="month.wins === 0 ? 0 : month.winHeight"></div>
+                  <span class="absolute left-1/2 -translate-x-1/2 text-[9px] sm:text-[10px] font-semibold text-primary bar-label" [class.bar-label--zero]="month.wins === 0" style="bottom: calc(var(--bar-height) + 2px)">
+                    {{ month.wins }}
+                  </span>
+                </div>
+                <div class="w-3 sm:w-4 md:w-5 rounded-t-sm relative h-full bar-track" [ngClass]="month.losses === 0 ? 'bg-transparent' : 'bg-gradient-to-b from-dark-accent to-background-dark'" [style.--bar-height]="month.lossHeight + '%'">
+                  <div class="absolute bottom-0 w-full bg-red-500 rounded-t-sm bar-fill bar-fill--loss" [style.height.%]="month.losses === 0 ? 0 : month.lossHeight"></div>
+                  <span class="absolute left-1/2 -translate-x-1/2 text-[9px] sm:text-[10px] font-semibold text-red-400 bar-label" [class.bar-label--zero]="month.losses === 0" style="bottom: calc(var(--bar-height) + 2px)">
+                    {{ month.losses }}
+                  </span>
+                </div>
               </div>
-              <div class="w-3 sm:w-4 md:w-5 rounded-t-sm relative h-full bar-track"
-                [ngClass]="month.losses === 0 ? 'bg-transparent' : 'bg-gradient-to-b from-dark-accent to-background-dark'"
-                [style.--bar-height]="month.lossHeight + '%'">
-                <div class="absolute bottom-0 w-full bg-red-500 rounded-t-sm bar-fill bar-fill--loss"
-                  [style.height.%]="month.losses === 0 ? 0 : month.lossHeight"></div>
-                <span
-                  class="absolute left-1/2 -translate-x-1/2 text-[9px] sm:text-[10px] font-semibold text-red-400 bar-label" [class.bar-label--zero]="month.losses === 0"
-                  style="bottom: calc(var(--bar-height) + 2px)">
-                  {{ month.losses }}
-                </span>
-              </div>
+              <span class="text-center text-[#1F3A2B] dark:text-[#2bee7c] text-[9px] sm:text-[10px] md:text-xs font-bold truncate w-full"><span class="sm:hidden">{{ compactMonthLabel(month.label) }}</span><span class="hidden sm:inline">{{ month.label }}</span></span>
             </div>
-            <span
-              class="text-center text-[#1F3A2B] dark:text-[#2bee7c] text-[9px] sm:text-[10px] md:text-xs font-bold truncate w-full"><span class="sm:hidden">{{ compactMonthLabel(month.label) }}</span><span class="hidden sm:inline">{{ month.label }}</span></span>
-          </div>
           }
         </div>
       </div>
     </div>
-    <!-- Detailed Stats Grid -->
-    <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
 
-      <!-- Recent Matches Table -->
-      <div
-        class="results-panel-card xl:col-span-3 w-full rounded-2xl bg-gradient-to-b from-dark-accent to-background-dark border border-border-dark p-6 flex flex-col">
+    <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+      <div class="results-panel-card xl:col-span-3 w-full rounded-2xl bg-gradient-to-b from-dark-accent to-background-dark border border-border-dark p-6 flex flex-col">
         <div class="flex items-center justify-between mb-6">
-          <h3 class="text-white text-lg font-bold">Legutóbbi eredmények</h3>
+          <h3 class="text-white text-lg font-bold">{{ 'results.table.title' | transloco }}</h3>
           <div class="flex gap-2">
-            <div class="info-tooltip" aria-label="Táblázat nyitása vagy zárása">
+            <div class="info-tooltip" [attr.aria-label]="'results.table.toggleAria' | transloco">
               <button
                 class="p-2 rounded-lg bg-gradient-to-b from-dark-accent to-background-dark text-white hover:bg-[#2c5a40] transition-colors"
                 type="button"
                 (click)="toggleRecentTable($event)"
                 [attr.aria-expanded]="recentTableOpen()"
-                [attr.aria-label]="recentTableOpen() ? 'Táblázat bezárása' : 'Táblázat megnyitása'">
+                [attr.aria-label]="recentTableOpen() ? ('results.table.close' | transloco) : ('results.table.open' | transloco)">
                 <span class="material-symbols-outlined text-lg">
                   {{ recentTableOpen() ? 'expand_less' : 'expand_more' }}
                 </span>
               </button>
               <div class="info-tooltip__bubble" role="tooltip">
-                {{ recentTableOpen() ? 'Táblázat bezárása' : 'Táblázat megnyitása' }}
+                {{ recentTableOpen() ? ('results.table.close' | transloco) : ('results.table.open' | transloco) }}
               </div>
             </div>
-            <div class="info-tooltip" tabindex="0" aria-label="Adatok letöltése">
+            <div class="info-tooltip" tabindex="0" [attr.aria-label]="'results.table.downloadAria' | transloco">
               <button
                 class="p-2 rounded-lg bg-gradient-to-b from-dark-accent to-background-dark text-white hover:bg-[#2c5a40] transition-colors"
                 type="button"
                 (click)="exportRecentResults()"
-                aria-label="Adatok letöltése">
+                [attr.aria-label]="'results.table.downloadAria' | transloco">
                 <span class="material-symbols-outlined text-lg">download</span>
               </button>
               <div class="info-tooltip__bubble" role="tooltip">
-                Adatok letöltése
+                {{ 'results.table.downloadAria' | transloco }}
               </div>
             </div>
           </div>
         </div>
+
         <div class="recent-table" [class.recent-table--open]="recentTableOpen()">
           <div class="recent-table__inner flex-1">
             <div class="sm:hidden results-mobile-list">
               @if (filteredMatches().length === 0) {
-              <div class="results-mobile-empty">
-                Nincs lejátszott meccs.
-              </div>
+                <div class="results-mobile-empty">
+                  {{ 'results.table.empty' | transloco }}
+                </div>
               } @else {
-              @for (match of mobileRecentMatches(); track match.groupId + '-' + match.eventId) {
-              <button
-                type="button"
-                class="results-mobile-row"
-                (click)="openMatch(match)"
-                [attr.aria-label]="'Meccs részletek: ' + match.dateLabel">
-                <div class="results-mobile-row__top">
-                  <span class="results-mobile-date">{{ match.dateLabel }}</span>
-                  <span class="results-mobile-elo" [ngClass]="
-                    match.eloDelta > 0
-                      ? 'text-primary'
-                      : match.eloDelta < 0
-                      ? 'text-red-400'
-                      : 'text-[#1F3A2B] dark:text-white'
-                  ">
-                    {{ match.eloDelta > 0 ? '+' : '' }}{{ match.eloDelta }} ELO
-                  </span>
-                </div>
+                @for (match of mobileRecentMatches(); track match.groupId + '-' + match.eventId) {
+                  <button
+                    type="button"
+                    class="results-mobile-row"
+                    (click)="openMatch(match)"
+                    [attr.aria-label]="'results.table.mobileMatchDetails' | transloco:{ date: formatMatchDate(match) }">
+                    <div class="results-mobile-row__top">
+                      <span class="results-mobile-date">{{ formatMatchDate(match) }}</span>
+                      <span
+                        class="results-mobile-elo"
+                        [ngClass]="
+                          match.eloDelta > 0
+                            ? 'text-primary'
+                            : match.eloDelta < 0
+                              ? 'text-red-400'
+                              : 'text-[#1F3A2B] dark:text-white'
+                        ">
+                        {{ match.eloDelta > 0 ? '+' : '' }}{{ match.eloDelta }} ELO
+                      </span>
+                    </div>
 
-                <div class="results-mobile-row__main">
-                  <span class="results-mobile-sport inline-flex items-center gap-1.5">
-                    <span class="material-symbols-outlined text-base">{{ getSportIcon(match.sport) }}</span>
-                    <span class="font-semibold">{{ match.sportLabel }}</span>
-                  </span>
+                    <div class="results-mobile-row__main">
+                      <span class="results-mobile-sport inline-flex items-center gap-1.5">
+                        <span class="material-symbols-outlined text-base">{{ getSportIcon(match.sport) }}</span>
+                        <span class="font-semibold">{{ displaySportLabel(match) }}</span>
+                      </span>
+                      <span class="result-badge inline-flex items-center justify-center px-2.5 py-0.5 rounded font-bold text-xs" [ngClass]="resultBadgeClass(match)">
+                        {{ match.resultLabel }}
+                      </span>
+                    </div>
 
-                  <span
-                    class="result-badge inline-flex items-center justify-center px-2.5 py-0.5 rounded font-bold text-xs"
-                    [ngClass]="resultBadgeClass(match)">
-                    {{ match.resultLabel }}
-                  </span>
-                </div>
+                    <div class="results-mobile-row__meta">
+                      <span class="results-mobile-ga">G: {{ match.goals }}</span>
+                      <span class="results-mobile-ga">A: {{ match.assists }}</span>
+                      <span class="results-mobile-details inline-flex items-center gap-0.5">
+                        {{ 'results.table.mobile.details' | transloco }}
+                        <span class="material-symbols-outlined text-base leading-none">chevron_right</span>
+                      </span>
+                    </div>
+                  </button>
+                }
 
-                <div class="results-mobile-row__meta">
-                  <span class="results-mobile-ga">G: {{ match.goals }}</span>
-                  <span class="results-mobile-ga">A: {{ match.assists }}</span>
-                  <span class="results-mobile-details inline-flex items-center gap-0.5">
-                    Reszletek
-                    <span class="material-symbols-outlined text-base leading-none">chevron_right</span>
-                  </span>
-                </div>
-              </button>
-              }
-
-              @if (mobileCanLoadMoreRecentMatches()) {
-              <button
-                type="button"
-                class="results-mobile-load-more"
-                (click)="loadMoreRecentMatchesMobile()" style="margin-top: 20px; margin-bottom: -10px;">
-                További eredmények
-              </button>
-              }
+                @if (mobileCanLoadMoreRecentMatches()) {
+                  <button
+                    type="button"
+                    class="results-mobile-load-more"
+                    (click)="loadMoreRecentMatchesMobile()"
+                    style="margin-top: 20px; margin-bottom: -10px;">
+                    {{ 'results.table.mobile.loadMore' | transloco }}
+                  </button>
+                }
               }
             </div>
 
             <div class="hidden sm:block overflow-x-auto">
-            <table class="hidden sm:table w-full text-left border-collapse">
-              <thead>
-                <tr class="text-[#1F3A2B] dark:text-[#2bee7c] text-xs uppercase border-b border-border-dark">
-                  <th class="pb-3 pl-2 font-medium">Dátum</th>
-                  <th class="pb-3 font-medium">Sportág</th>
-                  <th class="pb-3 font-medium text-center">Eredmény</th>
-                  <th class="pb-3 font-medium text-center">Szerzett gólok</th>
-                  <th class="pb-3 font-medium text-center">Assists</th>
-                  <th class="pb-3 font-medium text-right">ELO változás</th>
-                  <th class="pb-3 font-medium text-right pr-2">Részletek</th>
-                </tr>
-              </thead>
-              <tbody class="text-sm">
-                @if (filteredMatches().length === 0) {
-                <tr>
-                  <td class="py-6 text-center text-[#1F3A2B] dark:text-[#2bee7c]" colspan="7">
-                    Nincs lejátszott meccs.
-                  </td>
-                </tr>
-                } @else {
-                @for (match of pagedMatches(); track match.eventId) {
-                <tr
-                  class="group hover:bg-gradient-to-b from-dark-accent to-background-dark/50 transition-colors border-b border-border-dark/50">
-                  <td class="py-4 pl-2 text-[#1F3A2B] dark:text-white font-medium">{{ match.dateLabel }}</td>
-                  <td class="py-4">
-                    <div class="flex items-center gap-2 text-[#1F3A2B] dark:text-[#92c9a9]">
-                      <span class="material-symbols-outlined text-lg">{{
-                        getSportIcon(match.sport)
-                        }}</span>
-                      <span>{{ match.sportLabel }}</span>
-                    </div>
-                  </td>
-                  <td class="py-4 text-center">
-                    <span
-                      class="result-badge inline-flex items-center justify-center px-2.5 py-0.5 rounded font-bold"
-                      [ngClass]="resultBadgeClass(match)">
-                      {{ match.resultLabel }}
-                    </span>
-                  </td>
-                  <td class="py-4 text-center text-[#1F3A2B] dark:text-white font-semibold">{{ match.goals }}</td>
-                  <td class="py-4 text-center text-[#1F3A2B] dark:text-white font-semibold">{{ match.assists }}</td>
-
-                  <td class="py-4 text-right font-semibold" [ngClass]="
-      match.eloDelta > 0
-        ? 'text-primary'
-        : match.eloDelta < 0
-        ? 'text-red-400'
-        : 'text-[#1F3A2B] dark:text-white'
-    ">
-    {{ match.eloDelta > 0 ? '+' : '' }}{{ match.eloDelta }}
-  </td>
-                  <td class="py-4 text-right pr-2">
-                    <button class="text-[#1F3A2B] dark:text-[#92c9a9] group-hover:text-white transition-colors"
-                      (click)="openMatch(match)">
-                      <span class="material-symbols-outlined">chevron_right</span>
-                    </button>
-                  </td>
-                </tr>
-                }
-                }
-              </tbody>
-            </table>
-
-            @if (filteredMatches().length > 0) {
-            <div
-              class="hidden sm:flex mt-4 pt-4 border-border-dark flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-              <div class="flex flex-wrap items-center gap-2 text-xs sm:text-sm text-white">
-                <span class="font-semibold">Megjelenítés oldalanként:</span>
-                <div class="relative inline-flex items-center">
-                  <select
-                    class="px-2.5 py-1.5 rounded-lg bg-gradient-to-b from-dark-accent to-background-dark border border-border-dark text-white text-xs sm:text-sm font-semibold cursor-pointer hover:border-primary/50 transition-colors"
-                    [value]="pageSize()"
-                    (change)="setPageSize($any($event.target).value)">
-                    @for (size of pageSizeOptions; track size) {
-                    <option class="bg-background-dark text-white" [value]="size">
-                      {{ size }}
-                    </option>
+              <table class="hidden sm:table w-full text-left border-collapse">
+                <thead>
+                  <tr class="text-[#1F3A2B] dark:text-[#2bee7c] text-xs uppercase border-b border-border-dark">
+                    <th class="pb-3 pl-2 font-medium">{{ 'results.table.header.date' | transloco }}</th>
+                    <th class="pb-3 font-medium">{{ 'results.table.header.sport' | transloco }}</th>
+                    <th class="pb-3 font-medium text-center">{{ 'results.table.header.result' | transloco }}</th>
+                    <th class="pb-3 font-medium text-center">{{ 'results.table.header.goals' | transloco }}</th>
+                    <th class="pb-3 font-medium text-center">{{ 'results.table.header.assists' | transloco }}</th>
+                    <th class="pb-3 font-medium text-right">{{ 'results.table.header.elo' | transloco }}</th>
+                    <th class="pb-3 font-medium text-right pr-2">{{ 'results.table.header.details' | transloco }}</th>
+                  </tr>
+                </thead>
+                <tbody class="text-sm">
+                  @if (filteredMatches().length === 0) {
+                    <tr>
+                      <td class="py-6 text-center text-[#1F3A2B] dark:text-[#2bee7c]" colspan="7">
+                        {{ 'results.table.empty' | transloco }}
+                      </td>
+                    </tr>
+                  } @else {
+                    @for (match of pagedMatches(); track match.eventId) {
+                      <tr class="group hover:bg-gradient-to-b from-dark-accent to-background-dark/50 transition-colors border-b border-border-dark/50">
+                        <td class="py-4 pl-2 text-[#1F3A2B] dark:text-white font-medium">{{ formatMatchDate(match) }}</td>
+                        <td class="py-4">
+                          <div class="flex items-center gap-2 text-[#1F3A2B] dark:text-[#92c9a9]">
+                            <span class="material-symbols-outlined text-lg">{{ getSportIcon(match.sport) }}</span>
+                            <span>{{ displaySportLabel(match) }}</span>
+                          </div>
+                        </td>
+                        <td class="py-4 text-center">
+                          <span class="result-badge inline-flex items-center justify-center px-2.5 py-0.5 rounded font-bold" [ngClass]="resultBadgeClass(match)">
+                            {{ match.resultLabel }}
+                          </span>
+                        </td>
+                        <td class="py-4 text-center text-[#1F3A2B] dark:text-white font-semibold">{{ match.goals }}</td>
+                        <td class="py-4 text-center text-[#1F3A2B] dark:text-white font-semibold">{{ match.assists }}</td>
+                        <td class="py-4 text-right font-semibold" [ngClass]="match.eloDelta > 0 ? 'text-primary' : match.eloDelta < 0 ? 'text-red-400' : 'text-[#1F3A2B] dark:text-white'">
+                          {{ match.eloDelta > 0 ? '+' : '' }}{{ match.eloDelta }}
+                        </td>
+                        <td class="py-4 text-right pr-2">
+                          <button class="text-[#1F3A2B] dark:text-[#92c9a9] group-hover:text-white transition-colors" (click)="openMatch(match)">
+                            <span class="material-symbols-outlined">chevron_right</span>
+                          </button>
+                        </td>
+                      </tr>
                     }
-                  </select>
+                  }
+                </tbody>
+              </table>
+
+              @if (filteredMatches().length > 0) {
+                <div class="hidden sm:flex mt-4 pt-4 border-border-dark flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                  <div class="flex flex-wrap items-center gap-2 text-xs sm:text-sm text-white">
+                    <span class="font-semibold">{{ 'results.table.pageSize' | transloco }}</span>
+                    <div class="relative inline-flex items-center">
+                      <select
+                        class="px-2.5 py-1.5 rounded-lg bg-gradient-to-b from-dark-accent to-background-dark border border-border-dark text-white text-xs sm:text-sm font-semibold cursor-pointer hover:border-primary/50 transition-colors"
+                        [value]="pageSize()"
+                        (change)="setPageSize($any($event.target).value)">
+                        @for (size of pageSizeOptions; track size) {
+                          <option class="bg-background-dark text-white" [value]="size">
+                            {{ size }}
+                          </option>
+                        }
+                      </select>
+                    </div>
+                    <span class="recent-range">
+                      {{ pageStart() }} - {{ pageEnd() }} / {{ filteredMatches().length }}
+                    </span>
+                  </div>
+
+                  <div class="flex items-center gap-2">
+                    <button
+                      type="button"
+                      class="px-3 py-1.5 rounded-lg border border-border-dark text-xs sm:text-sm font-bold text-white bg-gradient-to-b from-dark-accent to-background-dark hover:border-primary/50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors inline-flex items-center justify-center gap-1"
+                      (click)="prevPage()"
+                      [disabled]="currentPage() <= 1"
+                      [attr.aria-label]="'results.table.prevPage' | transloco">
+                      <span class="material-symbols-outlined text-base leading-none">chevron_left</span>
+                    </button>
+
+                    <div class="px-3 py-1.5 rounded-lg border border-border-dark text-xs sm:text-sm font-bold text-white bg-gradient-to-b from-dark-accent to-background-dark min-w-[110px] text-center inline-flex items-center justify-center leading-none">
+                      <span class="leading-none">{{ currentPage() }} / {{ totalPages() }}</span>
+                    </div>
+
+                    <button
+                      type="button"
+                      class="px-3 py-1.5 rounded-lg border border-border-dark text-xs sm:text-sm font-bold text-white bg-gradient-to-b from-dark-accent to-background-dark hover:border-primary/50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors inline-flex items-center justify-center gap-1"
+                      (click)="nextPage()"
+                      [disabled]="currentPage() >= totalPages()"
+                      [attr.aria-label]="'results.table.nextPage' | transloco">
+                      <span class="material-symbols-outlined text-base leading-none">chevron_right</span>
+                    </button>
+                  </div>
                 </div>
-                <span class="recent-range">
-                  {{ pageStart() }} – {{ pageEnd() }} / {{ filteredMatches().length }}
-                </span>
-              </div>
-
-              <div class="flex items-center gap-2">
-                <button
-                  type="button"
-                  class="px-3 py-1.5 rounded-lg border border-border-dark text-xs sm:text-sm font-bold text-white bg-gradient-to-b from-dark-accent to-background-dark hover:border-primary/50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors inline-flex items-center justify-center gap-1"
-                  (click)="prevPage()"
-                  [disabled]="currentPage() <= 1"
-                  aria-label="Előző oldal">
-                  <span class="material-symbols-outlined text-base leading-none">chevron_left</span>
-                  <!-- <span class="leading-none">Előző</span> -->
-                </button>
-
-                <div
-                  class="px-3 py-1.5 rounded-lg border border-border-dark text-xs sm:text-sm font-bold text-white bg-gradient-to-b from-dark-accent to-background-dark min-w-[110px] text-center inline-flex items-center justify-center leading-none">
-                  <span class="leading-none">{{ currentPage() }} / {{ totalPages() }}</span>
-                </div>
-
-                <button
-                  type="button"
-                  class="px-3 py-1.5 rounded-lg border border-border-dark text-xs sm:text-sm font-bold text-white bg-gradient-to-b from-dark-accent to-background-dark hover:border-primary/50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors inline-flex items-center justify-center gap-1"
-                  (click)="nextPage()"
-                  [disabled]="currentPage() >= totalPages()"
-                  aria-label="Következő oldal">
-                  <!-- <span class="leading-none">Következő</span> -->
-                  <span class="material-symbols-outlined text-base leading-none">chevron_right</span>
-                </button>
-              </div>
+              }
             </div>
-            }
-          </div>
           </div>
         </div>
       </div>

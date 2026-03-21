@@ -1,8 +1,9 @@
-import { Component, inject, signal, computed, effect, Renderer2, DestroyRef } from '@angular/core';
+﻿import { Component, inject, signal, computed, effect, Renderer2, DestroyRef } from '@angular/core';
 import { Timestamp } from '@angular/fire/firestore';
 import { CommonModule, DOCUMENT } from '@angular/common';
 import { ActivatedRoute, RouterModule, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { TranslocoPipe } from '@jsverse/transloco';
 import { GroupService, Group, GroupMember, GroupInvite } from '../../services/group.service';
 import { AuthService } from '../../services/auth.service';
 import { toSignal, toObservable } from '@angular/core/rxjs-interop';
@@ -11,6 +12,7 @@ import { EventService, SportEvent } from '../../services/event.service';
 import { ModalService } from '../../services/modal.service';
 import { CoverImageSelectorComponent } from '../../components/cover-image-selector/cover-image-selector.component';
 import { RoleLabelPipe } from '../../pipes/role-label.pipe';
+import { LanguageService } from '../../services/language.service';
 import { SeoService } from '../../services/seo.service';
 import { CoverImageEntry, CoverImagesService } from '../../services/cover-images.service';
 import { AppUser } from '../../models/user.model';
@@ -21,7 +23,14 @@ type GroupDetailMobileTab = 'overview' | 'events' | 'members' | 'settings';
 @Component({
   selector: 'app-group-detail',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, CoverImageSelectorComponent, RoleLabelPipe],
+  imports: [
+    CommonModule,
+    RouterModule,
+    FormsModule,
+    TranslocoPipe,
+    CoverImageSelectorComponent,
+    RoleLabelPipe,
+  ],
   templateUrl: './group-detail.page.html',
   styleUrl: './group-detail.page.scss',
 })
@@ -31,6 +40,7 @@ export class GroupDetailPage {
   private groupService = inject(GroupService);
   private eventService = inject(EventService);
   protected authService = inject(AuthService);
+  protected readonly languageService = inject(LanguageService);
   private modalService = inject(ModalService);
   private renderer = inject(Renderer2);
   private document = inject(DOCUMENT);
@@ -46,21 +56,23 @@ export class GroupDetailPage {
     'members',
     'settings',
   ];
-  private readonly mobileLeaveConfirmToken = 'KILEPEK';
-
   selectedView = signal<'upcoming' | 'previous'>('upcoming');
   mobileTab = signal<GroupDetailMobileTab>('overview');
   isMobileViewport = signal(this.mobileViewportQuery?.matches ?? false);
   showMobileActionSheet = signal(false);
   showMobileLeaveConfirm = signal(false);
   mobileLeaveConfirmText = signal('');
+  mobileLeaveConfirmToken = computed(() => this.languageService.t('groupDetail.danger.confirmToken'));
 
   constructor() {
-    this.seo.setPageMeta({
-      title: 'Csoport részletei – BeMyTeamMate',
-      description: 'Csoport események, tagok és statisztikák egy helyen.',
-      path: '/groups',
-      noindex: true,
+    effect(() => {
+      this.languageService.currentLanguage();
+      this.seo.setPageMeta({
+        title: this.languageService.t('groupDetail.meta.title'),
+        description: this.languageService.t('groupDetail.meta.description'),
+        path: '/groups',
+        noindex: true,
+      });
     });
     const viewportQuery = this.mobileViewportQuery;
     if (viewportQuery) {
@@ -101,8 +113,8 @@ export class GroupDetailPage {
         return;
       }
       void this.openInviteWithFallback(
-        'A meghívó már nem aktív vagy nem található.',
-        'Meghívó',
+        this.languageService.t('groupDetail.alert.inviteMissingMessage'),
+        this.languageService.t('groupDetail.alert.inviteMissingTitle'),
       );
     });
     effect(() => {
@@ -116,8 +128,8 @@ export class GroupDetailPage {
       if (this.inviteAcceptedGrace()) return;
       if (this.showInviteDecisionModal()) return;
       void this.openInviteWithFallback(
-        'Ez a csoport zárt. Meghívó nélkül nem tekinthető meg.',
-        'Hozzáférés megtagadva',
+        this.languageService.t('groupDetail.alert.closedGroupMessage'),
+        this.languageService.t('groupDetail.alert.closedGroupTitle'),
       );
     });
     effect(() => {
@@ -167,8 +179,8 @@ export class GroupDetailPage {
           catchError((err) => {
             console.error('Group load error:', err);
             void this.modalService.alert(
-              'Nincs jogosultságod a csoport megtekintéséhez.',
-              'Hozzáférés megtagadva',
+              this.languageService.t('groupDetail.alert.viewDeniedMessage'),
+              this.languageService.t('groupDetail.alert.viewDeniedTitle'),
               'warning',
             );
             void this.router.navigate(['/groups']);
@@ -231,7 +243,9 @@ export class GroupDetailPage {
   canViewEvents = computed(() => this.isMember() || this.isAdmin());
   hasMobileSecondaryActions = computed(() => !this.isMember() || this.isAdmin());
   canConfirmMobileLeave = computed(
-    () => this.mobileLeaveConfirmText().trim().toUpperCase() === this.mobileLeaveConfirmToken,
+    () =>
+      this.mobileLeaveConfirmText().trim().toLocaleUpperCase() ===
+      this.mobileLeaveConfirmToken().trim().toLocaleUpperCase(),
   );
 
   canViewGroupContent = computed(() => {
@@ -274,7 +288,7 @@ export class GroupDetailPage {
           tap(() => this.eventsLoading.set(false)),
           catchError((err) => {
             console.error('Events load error:', err);
-            this.eventsError.set('Hiba tortent az esemenyek betoltesekor.');
+            this.eventsError.set(this.languageService.t('groupDetail.alert.eventsLoadError'));
             this.eventsLoading.set(false);
             return of([] as SportEvent[]);
           }),
@@ -393,8 +407,8 @@ export class GroupDetailPage {
     if (!this.isMobileViewport()) return;
     if (!this.isAdmin()) {
       void this.modalService.alert(
-        'Csak adminisztrátor nyithatja meg a csoport beállításokat.',
-        'Nincs jogosultság',
+        this.languageService.t('groupDetail.alert.settingsDeniedMessage'),
+        this.languageService.t('groupDetail.alert.settingsDeniedTitle'),
         'warning',
       );
       return;
@@ -534,7 +548,11 @@ export class GroupDetailPage {
       this.showImageSelector.set(false);
     } catch (error) {
       console.error('Error updating group image:', error);
-      await this.modalService.alert('Hiba történt a borítókép mentésekor.', 'Hiba', 'error');
+      await this.modalService.alert(
+        this.languageService.t('groupDetail.alert.coverSaveError'),
+        this.languageService.t('groupDetail.alert.genericErrorTitle'),
+        'error',
+      );
     } finally {
       this.isSubmitting.set(false);
     }
@@ -562,7 +580,7 @@ export class GroupDetailPage {
     const value = this.inviteLookup().trim();
     if (!value) {
       this.inviteLookupStatus.set('error');
-      this.inviteLookupMessage.set('Add meg a felhasználónevet vagy e-mail címet.');
+      this.inviteLookupMessage.set(this.languageService.t('groupDetail.inviteLookup.empty'));
       this.inviteCandidate.set(null);
       return;
     }
@@ -575,20 +593,20 @@ export class GroupDetailPage {
       const user = await this.groupService.findUserByIdentifier(value);
       if (!user) {
         this.inviteLookupStatus.set('not_found');
-        this.inviteLookupMessage.set('Nem található ilyen felhasználó.');
+        this.inviteLookupMessage.set(this.languageService.t('groupDetail.inviteLookup.notFound'));
         return;
       }
 
       if (user.uid === this.authService.currentUser()?.uid) {
         this.inviteLookupStatus.set('error');
-        this.inviteLookupMessage.set('Saját magadat nem hívhatod meg.');
+        this.inviteLookupMessage.set(this.languageService.t('groupDetail.inviteLookup.self'));
         return;
       }
 
       const members = this.members();
       if (members?.some((m) => m.userId === user.uid)) {
         this.inviteLookupStatus.set('error');
-        this.inviteLookupMessage.set('A felhasználó már tagja a csoportnak.');
+        this.inviteLookupMessage.set(this.languageService.t('groupDetail.inviteLookup.alreadyMember'));
         return;
       }
 
@@ -596,7 +614,9 @@ export class GroupDetailPage {
       this.inviteLookupStatus.set('found');
     } catch (error: any) {
       this.inviteLookupStatus.set('error');
-      this.inviteLookupMessage.set(error?.message || 'Hiba történt a keresés közben.');
+      this.inviteLookupMessage.set(
+        error?.message || this.languageService.t('groupDetail.inviteLookup.error'),
+      );
     }
   }
 
@@ -607,12 +627,16 @@ export class GroupDetailPage {
     this.isInviting.set(true);
     try {
       await this.groupService.createGroupInvite(this.groupId, candidate);
-      await this.modalService.alert('Meghívó elküldve.', 'Kész', 'success');
+      await this.modalService.alert(
+        this.languageService.t('groupDetail.invite.alert.sentMessage'),
+        this.languageService.t('groupDetail.invite.alert.sentTitle'),
+        'success',
+      );
       this.closeInviteModal();
     } catch (error: any) {
       await this.modalService.alert(
-        error?.message || 'Hiba történt a meghívó küldésekor.',
-        'Hiba',
+        error?.message || this.languageService.t('groupDetail.invite.alert.sendError'),
+        this.languageService.t('groupDetail.alert.genericErrorTitle'),
         'error',
       );
     } finally {
@@ -664,7 +688,7 @@ export class GroupDetailPage {
     const invite = this.pendingInvite();
     if (!invite) return;
     if (!this.inviteLegalAccepted()) {
-      this.inviteDecisionError.set('A jogi nyilatkozat elfogadása kötelező.');
+      this.inviteDecisionError.set(this.languageService.t('groupDetail.inviteDecision.error.legalRequired'));
       return;
     }
 
@@ -672,13 +696,17 @@ export class GroupDetailPage {
     this.inviteDecisionError.set('');
     try {
       await this.groupService.acceptGroupInvite(this.groupId, invite.id, true);
-      await this.modalService.alert('Sikeresen csatlakoztál a csoporthoz.', 'Kész', 'success');
+      await this.modalService.alert(
+        this.languageService.t('groupDetail.inviteDecision.alert.acceptedMessage'),
+        this.languageService.t('groupDetail.inviteDecision.alert.acceptedTitle'),
+        'success',
+      );
       this.inviteAcceptedGrace.set(true);
       this.membersReload.update((value) => value + 1);
       this.closeInviteDecisionModal();
     } catch (error: any) {
       this.inviteDecisionError.set(
-        error?.message || 'Hiba történt a meghívó elfogadásakor.',
+        error?.message || this.languageService.t('groupDetail.inviteDecision.error.acceptFailed'),
       );
     } finally {
       this.isInviteDecisionSubmitting.set(false);
@@ -693,12 +721,16 @@ export class GroupDetailPage {
     this.inviteDecisionError.set('');
     try {
       await this.groupService.declineGroupInvite(this.groupId, invite.id);
-      await this.modalService.alert('A meghívót elutasítottad.', 'Kész', 'success');
+      await this.modalService.alert(
+        this.languageService.t('groupDetail.inviteDecision.alert.declinedMessage'),
+        this.languageService.t('groupDetail.inviteDecision.alert.declinedTitle'),
+        'success',
+      );
       this.closeInviteDecisionModal();
       await this.router.navigate(['/groups']);
     } catch (error: any) {
       this.inviteDecisionError.set(
-        error?.message || 'Hiba történt a meghívó elutasításakor.',
+        error?.message || this.languageService.t('groupDetail.inviteDecision.error.declineFailed'),
       );
     } finally {
       this.isInviteDecisionSubmitting.set(false);
@@ -752,7 +784,11 @@ export class GroupDetailPage {
       this.selectedEventForRecurrence.set(null);
     } catch (error) {
       console.error('Error making recurring:', error);
-      await this.modalService.alert('Hiba történt.', 'Hiba', 'error');
+      await this.modalService.alert(
+        this.languageService.t('groupDetail.recurrence.error'),
+        this.languageService.t('groupDetail.alert.genericErrorTitle'),
+        'error',
+      );
     } finally {
       this.isSubmitting.set(false);
     }
@@ -768,8 +804,8 @@ export class GroupDetailPage {
       if (group?.type === 'closed') {
         await this.groupService.requestJoinGroup(groupId);
         await this.modalService.alert(
-          'A csatlakozási kérelmed elküldtük. Az adminok értesítést kapnak.',
-          'Kész',
+          this.languageService.t('groupDetail.join.alert.requestSentMessage'),
+          this.languageService.t('groupDetail.join.alert.requestSentTitle'),
           'success',
         );
       } else {
@@ -778,8 +814,8 @@ export class GroupDetailPage {
     } catch (error) {
       console.error('Error joining group:', error);
       await this.modalService.alert(
-        (error as any)?.message || 'Hiba történt a csatlakozáskor.',
-        'Hiba',
+        (error as any)?.message || this.languageService.t('groupDetail.join.alert.error'),
+        this.languageService.t('groupDetail.alert.genericErrorTitle'),
         'error',
       );
     } finally {
@@ -796,16 +832,16 @@ export class GroupDetailPage {
     if (!user || !group || !this.isMember()) return;
     if (group?.ownerId && user?.uid && group.ownerId === user.uid) {
       await this.modalService.alert(
-        `A csoport tulajdonosa nem léphet ki.\nElőbb add át a tulajdonjogot, vagy töröld a csoportot.`,
-        'Nem lehetséges',
+        this.languageService.t('groupDetail.leave.alert.ownerMessage'),
+        this.languageService.t('groupDetail.leave.alert.ownerTitle'),
         'warning'
       );
       return;
     }
     if (!skipConfirmation) {
       const confirmed = await this.modalService.confirm(
-        'Biztosan kilépsz a csoportból? Ezután nem láthatod az eseményeket.',
-        'Kilépés',
+        this.languageService.t('groupDetail.leave.confirmMessage'),
+        this.languageService.t('groupDetail.leave.confirmTitle'),
       );
       if (!confirmed) return;
     }
@@ -813,38 +849,33 @@ export class GroupDetailPage {
     this.isSubmitting.set(true);
     try {
       await this.groupService.leaveGroup(groupId);
-      await this.modalService.alert('Sikeresen kiléptél a csoportból.', 'Kész', 'success');
+      await this.modalService.alert(
+        this.languageService.t('groupDetail.leave.alert.successMessage'),
+        this.languageService.t('groupDetail.leave.alert.successTitle'),
+        'success',
+      );
       await this.router.navigate(['/groups']);
     } catch (error: any) {
       console.error('Error leaving group:', error);
       await this.modalService.alert(
-        error?.message || 'Hiba történt a kilépés során.',
-        'Hiba',
+        error?.message || this.languageService.t('groupDetail.leave.alert.error'),
+        this.languageService.t('groupDetail.alert.genericErrorTitle'),
         'error'
       );
     } finally {
       this.isSubmitting.set(false);
     }
   }
-formatEventDate(timestamp: any) {
+  formatEventDate(timestamp: any) {
     const date = this.coerceDate(timestamp);
     if (isNaN(date.getTime())) return { month: '---', day: '--' };
-    const months = [
-      'JAN',
-      'FEB',
-      'MÁR',
-      'ÁPR',
-      'MÁJ',
-      'JÚN',
-      'JÚL',
-      'AUG',
-      'SZEP',
-      'OKT',
-      'NOV',
-      'DEC',
-    ];
+    const locale = this.languageService.currentLanguage() === 'en' ? 'en-US' : 'hu-HU';
+    const month = new Intl.DateTimeFormat(locale, { month: 'short' })
+      .format(date)
+      .replace('.', '')
+      .toLocaleUpperCase(locale);
     return {
-      month: months[date.getMonth()],
+      month,
       day: date.getDate().toString(),
     };
   }
@@ -874,8 +905,8 @@ formatEventDate(timestamp: any) {
     // Check if user is a member first
     if (!this.isMember()) {
       await this.modalService.alert(
-        'Csak csoporttagok jelentkezhetnek az eseményekre.',
-        'Figyelem',
+        this.languageService.t('eventDetail.alert.membersOnlyMessage'),
+        this.languageService.t('eventDetail.alert.membersOnlyTitle'),
         'warning'
       );
       return;
@@ -887,8 +918,8 @@ formatEventDate(timestamp: any) {
     } catch (error: any) {
       console.error('Error toggling RSVP:', error);
       await this.modalService.alert(
-        error.message || 'Hiba történt a jelentkezés során.',
-        'Hiba',
+        error.message || this.languageService.t('groupDetail.join.alert.error'),
+        this.languageService.t('groupDetail.alert.genericErrorTitle'),
         'error'
       );
     } finally {

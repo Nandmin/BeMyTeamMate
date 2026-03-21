@@ -3,10 +3,10 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
+import { TranslocoPipe } from '@jsverse/transloco';
 import { EventService } from '../../services/event.service';
 import { AuthService } from '../../services/auth.service';
 import { TranslationKey } from '../../i18n/translations';
-import { TranslatePipe } from '../../pipes/translate.pipe';
 import { LanguageService } from '../../services/language.service';
 import { ModalService } from '../../services/modal.service';
 import { Timestamp } from '@angular/fire/firestore';
@@ -15,7 +15,7 @@ import { SeoService } from '../../services/seo.service';
 @Component({
   selector: 'app-create-event',
   standalone: true,
-  imports: [CommonModule, FormsModule, TranslatePipe],
+  imports: [CommonModule, FormsModule, TranslocoPipe],
   templateUrl: './create-event.page.html',
   styleUrl: './create-event.page.scss',
 })
@@ -140,7 +140,7 @@ export class CreateEventPage implements OnInit {
     date: '',
     time: '',
     duration: 60,
-    location: 'Budapest, Margit-sziget',
+    location: '',
     maxAttendees: 10,
     mvpVotingEnabled: false,
     isRecurring: false,

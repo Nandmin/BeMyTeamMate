@@ -2,16 +2,19 @@ import { Component, DestroyRef, HostListener, computed, effect, inject, signal, 
 import { CommonModule, DOCUMENT } from '@angular/common';
 import { Router } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
+import { TranslocoPipe } from '@jsverse/transloco';
 import { combineLatest, map, of, switchMap } from 'rxjs';
 import { AuthService } from '../../services/auth.service';
 import { EventService, SportEvent } from '../../services/event.service';
 import { GroupMember, GroupService } from '../../services/group.service';
+import { TranslationKey } from '../../i18n/translations';
+import { LanguageService } from '../../services/language.service';
 import { SeoService } from '../../services/seo.service';
 
 @Component({
   selector: 'app-results',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, TranslocoPipe],
   templateUrl: './results.html',
   styleUrl: './results.scss',
 })
@@ -19,6 +22,7 @@ export class Results {
   private authService = inject(AuthService);
   private eventService = inject(EventService);
   private groupService = inject(GroupService);
+  protected readonly languageService = inject(LanguageService);
   private router = inject(Router);
   private seo = inject(SeoService);
   private destroyRef = inject(DestroyRef);
@@ -39,11 +43,14 @@ export class Results {
   displayWinLossChart = signal<WinLossDisplay[]>([]);
 
   constructor() {
-    this.seo.setPageMeta({
-      title: 'Eredmények – BeMyTeamMate',
-      description: 'Legutóbbi meccsek, statisztikák és ELO változások áttekintése.',
-      path: '/results',
-      noindex: true,
+    effect(() => {
+      this.languageService.currentLanguage();
+      this.seo.setPageMeta({
+        title: this.languageService.t('results.meta.title'),
+        description: this.languageService.t('results.meta.description'),
+        path: '/results',
+        noindex: true,
+      });
     });
 
     this.destroyRef.onDestroy(() => {
@@ -53,25 +60,25 @@ export class Results {
     });
   }
 
-  periodOptions = [
-    { id: 'all', label: 'Teljes időszak', days: null },
-    { id: '1w', label: 'Elmúlt 1 hét', days: 7 },
-    { id: '1m', label: 'Elmúlt 1 hónap', days: 30 },
-    { id: '3m', label: 'Elmúlt 3 hónap', days: 90 },
-    { id: '6m', label: 'Elmúlt 6 hónap', days: 180 },
-    { id: '1y', label: 'Elmúlt 1 év', days: 365 },
+  periodOptions: Array<{ id: string; labelKey: TranslationKey; days: number | null }> = [
+    { id: 'all', labelKey: 'results.filters.period.all', days: null },
+    { id: '1w', labelKey: 'results.filters.period.1w', days: 7 },
+    { id: '1m', labelKey: 'results.filters.period.1m', days: 30 },
+    { id: '3m', labelKey: 'results.filters.period.3m', days: 90 },
+    { id: '6m', labelKey: 'results.filters.period.6m', days: 180 },
+    { id: '1y', labelKey: 'results.filters.period.1y', days: 365 },
   ];
 
-  sportOptions = [
-    { id: 'soccer', name: 'Foci', icon: 'sports_soccer' },
-    { id: 'basketball', name: 'Kosárlabda', icon: 'sports_basketball' },
-    { id: 'handball', name: 'Kézilabda', icon: 'sports_handball' },
-    { id: 'tennis', name: 'Tenisz', icon: 'sports_tennis' },
-    { id: 'volleyball', name: 'Röplabda', icon: 'sports_volleyball' },
-    { id: 'hockey', name: 'Jégkorong', icon: 'sports_hockey' },
-    { id: 'squash', name: 'Squash', icon: 'sports_tennis' },
-    { id: 'bowling', name: 'Bowling', icon: 'sports_baseball' },
-    { id: 'other', name: 'Egyéb', icon: 'more_horiz' },
+  sportOptions: Array<{ id: string; labelKey: TranslationKey; icon: string }> = [
+    { id: 'soccer', labelKey: 'createEvent.sport.soccer', icon: 'sports_soccer' },
+    { id: 'basketball', labelKey: 'createEvent.sport.basketball', icon: 'sports_basketball' },
+    { id: 'handball', labelKey: 'createEvent.sport.handball', icon: 'sports_handball' },
+    { id: 'tennis', labelKey: 'createEvent.sport.tennis', icon: 'sports_tennis' },
+    { id: 'volleyball', labelKey: 'createEvent.sport.volleyball', icon: 'sports_volleyball' },
+    { id: 'hockey', labelKey: 'createEvent.sport.hockey', icon: 'sports_hockey' },
+    { id: 'squash', labelKey: 'createEvent.sport.squash', icon: 'sports_tennis' },
+    { id: 'bowling', labelKey: 'createEvent.sport.bowling', icon: 'sports_baseball' },
+    { id: 'other', labelKey: 'createEvent.sport.other', icon: 'more_horiz' },
   ];
 
   private readonly filterStorageKey = 'results_filter_state_v1';
@@ -311,26 +318,28 @@ export class Results {
 
   selectedPeriodLabel(): string {
     const id = this.selectedPeriod();
-    return this.periodOptions.find((p) => p.id === id)?.label || 'Időszak';
+    const option = this.periodOptions.find((period) => period.id === id);
+    return option ? this.languageService.t(option.labelKey) : this.languageService.t('results.filters.periodDefault');
   }
 
   selectedSportLabel(): string {
     const id = this.selectedSport();
-    if (id === 'all') return 'Minden sportág';
-    return this.sportOptions.find((s) => s.id === id)?.name || 'Sportág';
+    if (id === 'all') return this.languageService.t('results.filters.allSports');
+    const option = this.sportOptions.find((sport) => sport.id === id);
+    return option ? this.languageService.t(option.labelKey) : this.languageService.t('results.filters.sportDefault');
   }
 
   selectedTeamLabel(): string {
     const id = this.selectedTeam();
-    if (id === 'all') return 'Minden csapatom';
-    return this.userGroups().find((g) => g.id === id)?.name || 'A csapat';
+    if (id === 'all') return this.languageService.t('results.filters.allTeams');
+    return this.userGroups().find((group) => group.id === id)?.name || this.languageService.t('results.filters.teamDefault');
   }
 
   compactMonthLabel(label: string): string {
     const normalized = (label || '').replace(/\./g, '').trim();
     if (!normalized) return '';
 
-    const lettersOnly = normalized.replace(/[^A-Za-zÀ-ÿ\u0100-\u017f]/g, '');
+    const lettersOnly = normalized.replace(/[^\p{L}]/gu, '');
     const base = lettersOnly || normalized;
     const short = base.slice(0, 3);
     return short ? short[0].toUpperCase() + short.slice(1) : '';
@@ -340,38 +349,49 @@ export class Results {
     this.router.navigate(['/groups', match.groupId, 'events', match.eventId]);
   }
 
+  formatMatchDate(match: Pick<RecentMatchRow, 'sortTime'>): string {
+    return new Date(match.sortTime).toLocaleDateString(this.currentLocale(), {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+    });
+  }
+
+  displaySportLabel(match: Pick<RecentMatchRow, 'sport'>): string {
+    return this.getSportLabel(match.sport);
+  }
+
   async exportRecentResults(): Promise<void> {
     const matches = this.filteredMatches();
     if (matches.length === 0) return;
 
-    // Angular dev server (Vite) can choke on dynamic CJS imports; the minified build works reliably.
     const ExcelJS = (await import('exceljs/dist/exceljs.min.js')) as any;
 
     const rows = matches.map((match) => ({
-      datum: match.dateLabel,
-      csapat: this.getGroupName(match.groupId),
-      sportag: match.sportLabel,
-      eredmeny: match.resultLabel,
-      szerzettGolok: match.goals,
+      date: this.formatMatchDate(match),
+      team: this.getGroupName(match.groupId),
+      sport: this.displaySportLabel(match),
+      result: match.resultLabel,
+      goals: match.goals,
       assists: match.assists,
-      eloValtozas: match.eloDelta,
-      kimenetel: match.isWin === null ? 'Ismeretlen' : match.isWin ? 'Győzelem' : 'Vereség',
+      eloDelta: match.eloDelta,
+      outcome: this.getOutcomeLabel(match.resultOutcome),
     }));
 
     const workbook = new ExcelJS.Workbook();
-    const sheet = workbook.addWorksheet('Legutóbbi_eredmények', {
+    const sheet = workbook.addWorksheet(this.languageService.t('results.export.sheet'), {
       views: [{ state: 'frozen', ySplit: 1 }],
     });
 
     const columns = [
-      { header: 'Dátum', key: 'datum', width: 12 },
-      { header: 'Csapat', key: 'csapat', width: 22 },
-      { header: 'Sportág', key: 'sportag', width: 16 },
-      { header: 'Eredmény', key: 'eredmeny', width: 12 },
-      { header: 'Szerzett gólok', key: 'szerzettGolok', width: 16 },
-      { header: 'Assists', key: 'assists', width: 10 },
-      { header: 'ELO változás', key: 'eloValtozas', width: 14 },
-      { header: 'Kimenetel', key: 'kimenetel', width: 14 },
+      { header: this.languageService.t('results.export.column.date'), key: 'date', width: 12 },
+      { header: this.languageService.t('results.export.column.team'), key: 'team', width: 22 },
+      { header: this.languageService.t('results.export.column.sport'), key: 'sport', width: 16 },
+      { header: this.languageService.t('results.export.column.result'), key: 'result', width: 12 },
+      { header: this.languageService.t('results.export.column.goals'), key: 'goals', width: 16 },
+      { header: this.languageService.t('results.export.column.assists'), key: 'assists', width: 10 },
+      { header: this.languageService.t('results.export.column.elo'), key: 'eloDelta', width: 14 },
+      { header: this.languageService.t('results.export.column.outcome'), key: 'outcome', width: 14 },
     ] as const;
 
     sheet.columns = columns.map((col) => ({
@@ -408,8 +428,8 @@ export class Results {
     });
 
     const timestamp = new Date().toISOString().slice(0, 10).replace(/-/g, '');
-    const safeName = (this.user()?.displayName || 'user').replace(/[^a-zA-Z0-9_-]/g, '_');
-    const filename = `Legutóbbi_eredmények_${safeName}_${timestamp}.xlsx`;
+    const safeName = (this.user()?.displayName || this.languageService.t('common.unknownUser')).replace(/[^a-zA-Z0-9_-]/g, '_');
+    const filename = this.languageService.t('results.export.filePrefix') + '_' + safeName + '_' + timestamp + '.xlsx';
     const url = URL.createObjectURL(blob);
     const anchor = document.createElement('a');
     anchor.href = url;
@@ -464,7 +484,7 @@ export class Results {
       const date = new Date(anchorDate.getFullYear(), anchorDate.getMonth() - i, 1);
       const month = date.getMonth();
       const year = date.getFullYear();
-      const rawLabel = date.toLocaleDateString('hu-HU', { month: 'short' });
+      const rawLabel = date.toLocaleDateString(this.currentLocale(), { month: 'short' });
       const label = rawLabel ? rawLabel[0].toUpperCase() + rawLabel.slice(1) : rawLabel;
       months.push({
         key: `${year}-${String(month + 1).padStart(2, '0')}`,
@@ -505,7 +525,7 @@ export class Results {
       const date = new Date(anchorDate.getFullYear(), anchorDate.getMonth() - i, 1);
       const month = date.getMonth();
       const year = date.getFullYear();
-      const rawLabel = date.toLocaleDateString('hu-HU', { month: 'short' });
+      const rawLabel = date.toLocaleDateString(this.currentLocale(), { month: 'short' });
       const label = rawLabel ? rawLabel[0].toUpperCase() + rawLabel.slice(1) : rawLabel;
       months.push({
         key: `${year}-${String(month + 1).padStart(2, '0')}`,
@@ -766,10 +786,10 @@ export class Results {
   }
 
   private getSportLabel(sport?: string): string {
-    if (!sport) return 'Ismeretlen';
+    if (!sport) return this.languageService.t('results.defaults.unknownSport');
     const id = sport.toLowerCase();
-    const match = this.sportOptions.find((opt) => opt.id === id);
-    return match?.name || sport;
+    const option = this.sportOptions.find((item) => item.id === id);
+    return option ? this.languageService.t(option.labelKey) : sport;
   }
 
   private getGroupName(groupId: string): string {
@@ -816,7 +836,11 @@ export class Results {
       : [];
 
     const opponent =
-      opponentNames.length > 0 ? opponentNames.join(', ') : inTeamA ? 'B csapat' : 'A csapat';
+      opponentNames.length > 0
+        ? opponentNames.join(', ')
+        : inTeamA
+          ? this.languageService.t('results.defaults.teamB')
+          : this.languageService.t('results.defaults.teamA');
 
     const goalsA = event.goalsA ?? null;
     const goalsB = event.goalsB ?? null;
@@ -843,7 +867,7 @@ export class Results {
     const isWin = resultOutcome === 'unknown' ? null : resultOutcome === 'win';
 
     const date = this.coerceDate(event.date);
-    const dateLabel = date.toLocaleDateString('hu-HU', {
+    const dateLabel = date.toLocaleDateString(this.currentLocale(), {
       year: 'numeric',
       month: '2-digit',
       day: '2-digit',
@@ -860,7 +884,7 @@ export class Results {
       eventId: event.id || '',
       groupId,
       dateLabel,
-      sport: event.sport || 'Ismeretlen',
+      sport: event.sport || '',
       sportLabel: this.getSportLabel(event.sport),
       opponent,
       resultLabel,
@@ -917,6 +941,23 @@ export class Results {
       window.localStorage.setItem(this.filterStorageKey, JSON.stringify(state));
     } catch {
       // Ignore quota / privacy storage errors and keep runtime behavior intact.
+    }
+  }
+
+  private currentLocale(): string {
+    return this.languageService.currentLanguage() === 'en' ? 'en-US' : 'hu-HU';
+  }
+
+  private getOutcomeLabel(outcome: MatchOutcome): string {
+    switch (outcome) {
+      case 'win':
+        return this.languageService.t('results.export.outcome.win');
+      case 'loss':
+        return this.languageService.t('results.export.outcome.loss');
+      case 'draw':
+        return this.languageService.t('results.export.outcome.draw');
+      default:
+        return this.languageService.t('results.export.outcome.unknown');
     }
   }
 

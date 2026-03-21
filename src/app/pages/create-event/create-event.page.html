@@ -1,13 +1,13 @@
-<main
+﻿<main
     class="flex-grow min-h-screen bg-background-light dark:bg-background-dark text-slate-900 dark:text-white font-display antialiased">
     <div class="relative mx-auto max-w-4xl px-4 py-8 md:px-8 md:py-12">
         <!-- Page Header -->
         <div class="mb-10 animate-slide-up">
             <h1 class="text-4xl md:text-5xl font-black tracking-tight text-slate-900 dark:text-white mb-3">
-                {{ isEditMode ? ('createEvent.header.editTitle' | t) : ('createEvent.header.createTitle' | t) }}
+                {{ isEditMode ? ('createEvent.header.editTitle' | transloco) : ('createEvent.header.createTitle' | transloco) }}
             </h1>
             <p class="text-lg text-slate-600 dark:text-gray-400 font-light">
-                {{ isEditMode ? ('createEvent.header.editSubtitle' | t) : ('createEvent.header.createSubtitle' | t) }}
+                {{ isEditMode ? ('createEvent.header.editSubtitle' | transloco) : ('createEvent.header.createSubtitle' | transloco) }}
             </p>
         </div>
 
@@ -17,7 +17,7 @@
                 style="animation-delay: 0.1s">
                 <div class="flex items-center gap-2 mb-6">
                     <span class="material-symbols-outlined text-primary">sports_handball</span>
-                    <h3 class="text-xl font-bold text-slate-900 dark:text-white">{{ 'createEvent.section.sport' | t }}</h3>
+                    <h3 class="text-xl font-bold text-slate-900 dark:text-white">{{ 'createEvent.section.sport' | transloco }}</h3>
                 </div>
                 <div class="relative group/carousel">
                     <!-- Left Arrow -->
@@ -36,7 +36,7 @@
                             <div
                                 class="flex flex-col items-center justify-center gap-3 rounded-2xl bg-slate-50 dark:bg-white/5 p-4 min-w-[120px] sport-card-transition hover:bg-slate-100 dark:hover:bg-white/10 peer-checked:bg-primary peer-checked:text-background-dark text-slate-600 dark:text-gray-300 peer-checked:shadow-[0_0_25px_rgba(43,238,124,0.4)] peer-checked:scale-105 border border-light-border dark:border-white/5 peer-checked:border-transparent">
                                 <span class="material-symbols-outlined text-4xl leading-none">{{ sport.icon }}</span>
-                                <span class="text-sm font-bold tracking-wide">{{ sport.labelKey | t }}</span>
+                                <span class="text-sm font-bold tracking-wide">{{ sport.labelKey | transloco }}</span>
                             </div>
                         </label>
                         }
@@ -57,7 +57,7 @@
                     class="bg-white dark:bg-white/5 rounded-2xl p-6 md:p-8 border border-light-border dark:border-white/10 shadow-xl flex flex-col gap-6">
                     <div class="flex items-center gap-2 mb-2">
                         <span class="material-symbols-outlined text-primary">event_available</span>
-                        <h3 class="text-xl font-bold text-slate-900 dark:text-white">{{ 'createEvent.section.when' | t }}</h3>
+                        <h3 class="text-xl font-bold text-slate-900 dark:text-white">{{ 'createEvent.section.when' | transloco }}</h3>
                     </div>
                     <!-- Event Name -->
                     <div class="relative">
@@ -66,7 +66,7 @@
                             placeholder=" " required />
                         <label for="eventName"
                             class="absolute text-sm text-slate-500 dark:text-gray-400 duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-[0] bg-white dark:bg-background-dark px-2 peer-focus:px-2 peer-focus:text-primary peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-4 start-1">
-                            {{ 'createEvent.field.title' | t }}
+                            {{ 'createEvent.field.title' | transloco }}
                         </label>
                     </div>
                     <!-- Date and Time Row -->
@@ -93,13 +93,13 @@
                     <!-- Duration -->
                     <div>
                         <label for="duration"
-                            class="block mb-2 text-sm font-medium text-slate-600 dark:text-gray-400">{{ 'createEvent.field.duration' | t:{ minutes: eventData.duration } }}</label>
+                            class="block mb-2 text-sm font-medium text-slate-600 dark:text-gray-400">{{ 'createEvent.field.duration' | transloco:{ minutes: eventData.duration } }}</label>
                         <input type="range" id="duration" name="duration" min="30" max="180" step="15"
                             [(ngModel)]="eventData.duration"
                             class="w-full h-2 bg-slate-200 dark:bg-white/10 rounded-lg appearance-none cursor-pointer accent-primary" />
                         <div class="flex justify-between text-xs text-slate-500 dark:text-gray-500 mt-1">
-                            <span>{{ 'createEvent.field.minutesShort' | t:{ minutes: 30 } }}</span>
-                            <span>{{ 'createEvent.field.minutesShort' | t:{ minutes: 180 } }}</span>
+                            <span>{{ 'createEvent.field.minutesShort' | transloco:{ minutes: 30 } }}</span>
+                            <span>{{ 'createEvent.field.minutesShort' | transloco:{ minutes: 180 } }}</span>
                         </div>
                     </div>
                 </div>
@@ -109,7 +109,7 @@
                     class="bg-white dark:bg-white/5 rounded-2xl p-6 md:p-8 border border-light-border dark:border-white/10 shadow-xl flex flex-col gap-6">
                     <div class="flex items-center gap-2 mb-2">
                         <span class="material-symbols-outlined text-primary">location_on</span>
-                        <h3 class="text-xl font-bold text-slate-900 dark:text-white">{{ 'createEvent.section.where' | t }}</h3>
+                        <h3 class="text-xl font-bold text-slate-900 dark:text-white">{{ 'createEvent.section.where' | transloco }}</h3>
                     </div>
                     <!-- Search Location -->
                     <div class="relative">
@@ -118,7 +118,7 @@
                         </div>
                         <input type="search" id="location-search" name="location" [(ngModel)]="eventData.location"
                             class="block w-full p-4 ps-10 text-sm text-slate-900 dark:text-white border border-light-border dark:border-white/10 rounded-lg bg-slate-50 dark:bg-white/5 focus:ring-primary focus:border-primary placeholder-slate-400 dark:placeholder-gray-400"
-                            [placeholder]="'createEvent.field.locationPlaceholder' | t" required />
+                            [placeholder]="'createEvent.field.locationPlaceholder' | transloco" required />
                     </div>
                     <!-- Google Maps Preview -->
                     <div
@@ -133,19 +133,19 @@
                             <!-- Zoom In -->
                             <button type="button" (click)="zoomIn()"
                                 class="p-1.5 bg-white dark:bg-background-dark/90 rounded-md text-slate-900 dark:text-white border border-light-border dark:border-white/10 hover:bg-primary hover:border-primary transition-all shadow-lg"
-                                [title]="'createEvent.map.zoomIn' | t">
+                                [title]="'createEvent.map.zoomIn' | transloco">
                                 <span class="material-symbols-outlined text-sm">add</span>
                             </button>
                             <!-- Zoom Out -->
                             <button type="button" (click)="zoomOut()"
                                 class="p-1.5 bg-white dark:bg-background-dark/90 rounded-md text-slate-900 dark:text-white border border-light-border dark:border-white/10 hover:bg-primary hover:border-primary transition-all shadow-lg"
-                                [title]="'createEvent.map.zoomOut' | t">
+                                [title]="'createEvent.map.zoomOut' | transloco">
                                 <span class="material-symbols-outlined text-sm">remove</span>
                             </button>
                             <!-- Fullscreen -->
                             <button type="button" (click)="isMapExpanded = true"
                                 class="p-1.5 bg-white dark:bg-background-dark/90 rounded-md text-slate-900 dark:text-white border border-light-border dark:border-white/10 hover:bg-primary hover:border-primary transition-all shadow-lg mt-1"
-                                [title]="'createEvent.map.fullscreen' | t">
+                                [title]="'createEvent.map.fullscreen' | transloco">
                                 <span class="material-symbols-outlined text-sm">open_in_full</span>
                             </button>
                         </div>
@@ -153,7 +153,7 @@
                         <div
                             class="w-full h-full bg-slate-50 dark:bg-white/5 flex flex-col items-center justify-center text-slate-500 dark:text-gray-500">
                             <span class="material-symbols-outlined text-4xl mb-2">map</span>
-                            <p class="text-sm">{{ 'createEvent.map.enterLocation' | t }}</p>
+                            <p class="text-sm">{{ 'createEvent.map.enterLocation' | transloco }}</p>
                         </div>
                         }
                         <!-- Location Label - Bottom Left -->
@@ -172,7 +172,7 @@
                 <div class="flex items-center justify-between mb-6">
                     <div class="flex items-center gap-2">
                         <span class="material-symbols-outlined text-primary">update</span>
-                        <h3 class="text-xl font-bold text-slate-900 dark:text-white">{{ 'createEvent.section.recurrence' | t }}</h3>
+                        <h3 class="text-xl font-bold text-slate-900 dark:text-white">{{ 'createEvent.section.recurrence' | transloco }}</h3>
                     </div>
                     <label class="relative inline-flex items-center cursor-pointer">
                         <input type="checkbox" name="isRecurring" [(ngModel)]="eventData.isRecurring"
@@ -187,19 +187,19 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6 animate-fade-in">
                     <div>
                         <label
-                            class="block mb-2 text-sm font-medium text-slate-600 dark:text-gray-400">{{ 'createEvent.field.frequency' | t }}</label>
+                            class="block mb-2 text-sm font-medium text-slate-600 dark:text-gray-400">{{ 'createEvent.field.frequency' | transloco }}</label>
                         <select name="frequency" [(ngModel)]="eventData.frequency"
                             class="bg-slate-50 dark:bg-background-dark border border-light-border dark:border-white/10 text-slate-900 dark:text-white text-sm rounded-lg focus:ring-primary focus:border-primary block w-full p-2.5 outline-none cursor-pointer">
                             <option value="daily"
-                                class="bg-white dark:bg-background-dark text-slate-900 dark:text-white">{{ 'createEvent.frequency.daily' | t }}</option>
+                                class="bg-white dark:bg-background-dark text-slate-900 dark:text-white">{{ 'createEvent.frequency.daily' | transloco }}</option>
                             <option value="weekly"
-                                class="bg-white dark:bg-background-dark text-slate-900 dark:text-white">{{ 'createEvent.frequency.weekly' | t }}</option>
+                                class="bg-white dark:bg-background-dark text-slate-900 dark:text-white">{{ 'createEvent.frequency.weekly' | transloco }}</option>
                             <option value="monthly"
-                                class="bg-white dark:bg-background-dark text-slate-900 dark:text-white">{{ 'createEvent.frequency.monthly' | t }}</option>
+                                class="bg-white dark:bg-background-dark text-slate-900 dark:text-white">{{ 'createEvent.frequency.monthly' | transloco }}</option>
                         </select>
                     </div>
                     <div class="relative">
-                        <label class="block mb-2 text-sm font-medium text-slate-600 dark:text-gray-400">{{ 'createEvent.field.recurringUntil' | t }}</label>
+                        <label class="block mb-2 text-sm font-medium text-slate-600 dark:text-gray-400">{{ 'createEvent.field.recurringUntil' | transloco }}</label>
                         <div class="relative group">
                             <div class="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none z-20">
                                 <span
@@ -213,7 +213,7 @@
                     </div>
                 </div>
                 } @else {
-                <p class="text-sm text-slate-600 dark:text-gray-400">{{ 'createEvent.recurrence.single' | t }}</p>
+                <p class="text-sm text-slate-600 dark:text-gray-400">{{ 'createEvent.recurrence.single' | transloco }}</p>
                 }
             </div>
             }
@@ -224,7 +224,7 @@
                 <div class="flex items-center justify-between mb-4">
                     <div class="flex items-center gap-2">
                         <span class="material-symbols-outlined text-primary">trophy</span>
-                        <h3 class="text-xl font-bold text-slate-900 dark:text-white">{{ 'createEvent.section.mvpVoting' | t }}</h3>
+                        <h3 class="text-xl font-bold text-slate-900 dark:text-white">{{ 'createEvent.section.mvpVoting' | transloco }}</h3>
                     </div>
                     <label class="relative inline-flex items-center cursor-pointer">
                         <input type="checkbox" name="mvpVotingEnabled" [(ngModel)]="eventData.mvpVotingEnabled"
@@ -236,11 +236,11 @@
                 </div>
                 @if (eventData.mvpVotingEnabled) {
                 <p class="text-sm text-slate-600 dark:text-gray-400">
-                    {{ 'createEvent.mvpVoting.enabled' | t }}
+                    {{ 'createEvent.mvpVoting.enabled' | transloco }}
                 </p>
                 } @else {
                 <p class="text-sm text-slate-600 dark:text-gray-400">
-                    {{ 'createEvent.mvpVoting.disabled' | t }}
+                    {{ 'createEvent.mvpVoting.disabled' | transloco }}
                 </p>
                 }
             </div>
@@ -251,22 +251,22 @@
                 <div class="flex justify-between items-center mb-6">
                     <div class="flex items-center gap-2">
                         <span class="material-symbols-outlined text-primary">groups</span>
-                        <h3 class="text-xl font-bold text-slate-900 dark:text-white">{{ 'createEvent.section.capacity' | t }}</h3>
+                        <h3 class="text-xl font-bold text-slate-900 dark:text-white">{{ 'createEvent.section.capacity' | transloco }}</h3>
                     </div>
                     <div class="text-sm text-slate-600 dark:text-gray-400">
-                        {{ 'createEvent.capacity.max' | t:{ count: eventData.maxAttendees } }}
+                        {{ 'createEvent.capacity.max' | transloco:{ count: eventData.maxAttendees } }}
                     </div>
                 </div>
                 <div class="space-y-4">
                     <input type="range" name="maxAttendees" min="2" max="30" [(ngModel)]="eventData.maxAttendees"
                         class="w-full h-2 bg-slate-200 dark:bg-white/10 rounded-lg appearance-none cursor-pointer accent-primary" />
                     <div class="flex justify-between text-xs text-slate-500 dark:text-gray-500">
-                        <span>{{ 'createEvent.capacity.minLabel' | t }}</span>
-                        <span>{{ 'createEvent.capacity.maxLabel' | t }}</span>
+                        <span>{{ 'createEvent.capacity.minLabel' | transloco }}</span>
+                        <span>{{ 'createEvent.capacity.maxLabel' | transloco }}</span>
                     </div>
                     <div
                         class="p-4 bg-slate-50 dark:bg-white/5 rounded-xl border border-light-border dark:border-white/5 text-sm text-slate-600 dark:text-gray-400">
-                        <p>{{ 'createEvent.capacity.inviteInfo' | t }}</p>
+                        <p>{{ 'createEvent.capacity.inviteInfo' | transloco }}</p>
                     </div>
                 </div>
             </div>
@@ -280,7 +280,7 @@
                     <button type="button" (click)="onDeleteEvent()" [disabled]="isSubmitting()"
                         class="w-full sm:w-auto max-w-[280px] mx-auto px-6 py-3 bg-red-600 hover:bg-red-700 text-white font-bold text-sm sm:text-base rounded-xl shadow-[0_0_20px_rgba(220,38,38,0.3)] hover:shadow-[0_0_30px_rgba(220,38,38,0.5)] transform hover:-translate-y-1 transition-all duration-300 flex items-center justify-center gap-2 group disabled:opacity-50 disabled:transform-none">
                         <span class="material-symbols-outlined">delete</span>
-                        <span>{{ 'createEvent.actions.delete' | t }}</span>
+                        <span>{{ 'createEvent.actions.delete' | transloco }}</span>
                     </button>
                     }
                 </div>
@@ -289,7 +289,7 @@
                 <button type="button" (click)="onCancel()"
                     class="w-full sm:w-auto max-w-[280px] mx-auto px-6 py-3 bg-slate-200 dark:bg-white/10 hover:bg-slate-300 dark:hover:bg-white/20 border border-transparent dark:border-white/10 text-slate-900 dark:text-white font-bold text-sm sm:text-base rounded-xl shadow-none dark:shadow-[0_0_20px_rgba(255,255,255,0.05)] transform hover:-translate-y-1 transition-all duration-300 flex items-center justify-center gap-2 group">
                     <span class="material-symbols-outlined group-hover:-translate-x-1 transition-transform">close</span>
-                    <span>{{ 'createEvent.actions.cancel' | t }}</span>
+                    <span>{{ 'createEvent.actions.cancel' | transloco }}</span>
                 </button>
 
                 <!-- 3. Submit Button -->
@@ -297,9 +297,9 @@
                     class="w-full sm:w-auto max-w-[280px] mx-auto px-6 py-3 bg-primary hover:bg-primary-hover text-white font-black text-sm sm:text-base rounded-xl shadow-[0_0_20px_rgba(43,238,124,0.3)] hover:shadow-[0_0_30px_rgba(43,238,124,0.5)] transform hover:-translate-y-1 transition-all duration-300 flex items-center justify-center gap-2 group disabled:opacity-50 disabled:transform-none">
                     <span>
                         @if (isSubmitting()) {
-                        {{ isEditMode ? ('createEvent.actions.saving' | t) : ('createEvent.actions.creating' | t) }}
+                        {{ isEditMode ? ('createEvent.actions.saving' | transloco) : ('createEvent.actions.creating' | transloco) }}
                         } @else {
-                        {{ isEditMode ? ('createEvent.actions.save' | t) : ('createEvent.actions.create' | t) }}
+                        {{ isEditMode ? ('createEvent.actions.save' | transloco) : ('createEvent.actions.create' | transloco) }}
                         }
                     </span>
                     <span
@@ -320,13 +320,13 @@
                 <div class="flex items-center gap-3">
                     <span class="material-symbols-outlined text-primary">location_on</span>
                     <div>
-                        <h3 class="text-lg font-bold text-slate-900 dark:text-white">{{ 'createEvent.modal.locationTitle' | t }}</h3>
+                        <h3 class="text-lg font-bold text-slate-900 dark:text-white">{{ 'createEvent.modal.locationTitle' | transloco }}</h3>
                         <p class="text-sm text-slate-600 dark:text-gray-400">{{ eventData.location }}</p>
                     </div>
                 </div>
                 <button type="button" (click)="isMapExpanded = false"
                     class="p-2 rounded-lg bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-white/10 transition-all"
-                    [title]="'createEvent.modal.close' | t">
+                    [title]="'createEvent.modal.close' | transloco">
                     <span class="material-symbols-outlined">close</span>
                 </button>
             </div>
@@ -340,7 +340,7 @@
                 <div
                     class="w-full h-full bg-slate-50 dark:bg-white/5 flex flex-col items-center justify-center text-slate-500 dark:text-gray-500">
                     <span class="material-symbols-outlined text-4xl mb-2">map</span>
-                    <p class="text-sm">{{ 'createEvent.map.unsupportedFormat' | t }}</p>
+                    <p class="text-sm">{{ 'createEvent.map.unsupportedFormat' | transloco }}</p>
                 </div>
                 }
             </div>
@@ -348,3 +348,4 @@
     </div>
     }
 </main>
+

@@ -1,400 +1,721 @@
-﻿<div class="font-lexend min-h-[calc(100vh-4rem)] text-white relative overflow-hidden">
+<div class="font-lexend min-h-[calc(100vh-4rem)] text-white relative overflow-hidden">
   <div class="fixed inset-0 z-0">
-    <img alt="Abstract arena glow" class="h-full w-full object-cover opacity-20"
-      src="https://lh3.googleusercontent.com/aida-public/AB6AXuA7zaqn7BxzQiE2m0VgjRh7mZwiOVp3oM1q1c-3Z_p0FjM0WpA1Y3a1xQwS3pCS6jZ5xZcV5x4Dox7o6d5pC2Vcbzq-N5VbJ7q1E2dXBGc5W4mS5mQ1zLxg2oKfT2tLkG0k7thRrI3Z8hL4Idco9iue0dZyd3_2dMIbC2lqQxHBBXQkct1p3c4q6e2c-Q8X1oW0Arcsq1bqW5oXx5n3l5gT1Qd2dR8xQ" />
-    <div class="absolute inset-0 bg-gradient-to-b from-background-dark/95 via-background-dark/80 to-background-dark/95">
-    </div>
+    <img
+      alt="Abstract arena glow"
+      class="h-full w-full object-cover opacity-20"
+      src="https://lh3.googleusercontent.com/aida-public/AB6AXuA7zaqn7BxzQiE2m0VgjRh7mZwiOVp3oM1q1c-3Z_p0FjM0WpA1Y3a1xQwS3pCS6jZ5xZcV5x4Dox7o6d5pC2Vcbzq-N5VbJ7q1E2dXBGc5W4mS5mQ1zLxg2oKfT2tLkG0k7thRrI3Z8hL4Idco9iue0dZyd3_2dMIbC2lqQxHBBXQkct1p3c4q6e2c-Q8X1oW0Arcsq1bqW5oXx5n3l5gT1Qd2dR8xQ"
+    />
+    <div class="absolute inset-0 bg-gradient-to-b from-background-dark/95 via-background-dark/80 to-background-dark/95"></div>
     <div class="absolute -top-24 -left-24 h-[420px] w-[420px] rounded-full bg-primary/12 blur-[120px]"></div>
     <div class="absolute -bottom-16 -right-20 h-[360px] w-[360px] rounded-full bg-emerald-400/10 blur-[120px]"></div>
   </div>
 
   <section class="relative z-10 mx-auto w-full max-w-5xl px-4 sm:px-6 lg:px-8 py-12">
-    <div class="privacy-shell" style="text-align: justify;">
-      <header class="privacy-header">
-        <h1>Adatkezelési Tájékoztató</h1>
-        <div class="privacy-divider" role="presentation"></div>
-      </header>
+    @if (isEnglish()) {
+      <div class="privacy-shell" style="text-align: justify;">
+        <header class="privacy-header">
+          <h1>Privacy Policy</h1>
+          <div class="privacy-divider" role="presentation"></div>
+        </header>
 
-      <div class="privacy-content">
-        <section class="privacy-section">
-          <div class="privacy-section-title">
-            <span class="privacy-section-number">1.</span>
-            <h2>Az adatkezelő adatai</h2>
-          </div>
-          <p>Az adatkezelő (a továbbiakban: Adatkezelő):</p>
-          <ul>
-            <li><strong>Név: </strong> Be My Team Mate</li>
-            <li>
-              <strong>E-mail: </strong>
-              <a class="privacy-link select-none" [href]="'mailto:' + contactEmail" oncontextmenu="return false"
-                (dragstart)="false">{{ contactEmail }}</a>
-            </li>
-            <li>
-              <strong>Weboldal: </strong>
-              <a class="privacy-link" href="https://bemyteammate.eu" target="_blank" rel="noreferrer">
-                https://bemyteammate.eu
-              </a>
-            </li>
-          </ul>
-          <p>
-            Az Adatkezelő a jelen tájékoztatóban ismertetett feltételek szerint kezeli a weboldal látogatóinak és
-            regisztrált felhasználóinak személyes adatait.
-          </p>
-        </section>
-
-        <section class="privacy-section">
-          <div class="privacy-section-title">
-            <span class="privacy-section-number">2.</span>
-            <h2>Jogszabályi háttér</h2>
-          </div>
-          <p>
-            Az Adatkezelő az Európai Parlament és Tanács (EU) 2016/679 számú rendelete (GDPR), valamint a 2011. évi
-            CXII. törvény (Infotv.) előírásainak megfelelően kezeli a személyes adatokat.
-          </p>
-          <p>
-            Elkötelezettek vagyunk a látogatók információs önrendelkezési jogainak tiszteletben tartása mellett, az
-            adatokat bizalmasan kezeljük, és minden szükséges technikai, szervezési intézkedést megteszünk a biztonság
-            érdekében.
-          </p>
-        </section>
-
-        <section class="privacy-section">
-          <div class="privacy-section-title">
-            <span class="privacy-section-number">3.</span>
-            <h2>Az adatkezelés alapelvei</h2>
-          </div>
-          <p>Az Adatkezelő a személyes adatokat:</p>
-          <ul>
-            <li>jogszerűen, tisztességesen és átlátható módon kezeli,</li>
-            <li>meghatározott, egyértelmű és jogszerű célból gyűjti,</li>
-            <li>a célokkal össze nem egyeztethető módon nem kezeli tovább,</li>
-            <li>a szükségesre korlátozottan, az adatkezelés céljához igazodóan kezeli (adattakarékosság),</li>
-            <li>a szükséges ideig tárolja (korlátozott tárolhatóság),</li>
-            <li>megfelelő technikai és szervezési intézkedések mellett védi.</li>
-          </ul>
-        </section>
-
-        <section class="privacy-section">
-          <div class="privacy-section-title">
-            <span class="privacy-section-number">4.</span>
-            <h2>Kezelt személyes adatok köre, célja és jogalapja</h2>
-          </div>
-          <p>
-            A weboldal regisztráció nélkül nem gyűjt olyan személyes adatot, amely alapján a látogató közvetlenül
-            beazonosítható lenne, a technikai naplók és sütik kivételével (lásd: 4.2. és 4.3.).
-          </p>
-
-          <div class="privacy-subsection">
-            <h3>4.1. Regisztráció és felhasználói fiók adatai</h3>
-            <p><strong>Kezelt adatok köre:</strong></p>
+        <div class="privacy-content">
+          <section class="privacy-section">
+            <div class="privacy-section-title">
+              <span class="privacy-section-number">1.</span>
+              <h2>Controller details</h2>
+            </div>
+            <p>Data controller (hereinafter: Controller):</p>
             <ul>
-              <li>E-mail cím: a felhasználó által megadott e-mail cím a regisztráció és bejelentkezés során,</li>
-              <li>Felhasználónév: a felhasználó által választott név, amely a rendszerben
-                megjelenik,</li>
-              <li>Firebase azonosító: a Firebase Authentication által automatikusan generált egyedi felhasználói
-                azonosító,</li>
-              <li>Szerepkör: a felhasználó jogosultsági szintje,</li>
-              <li>Utolsó belépés időpontja: a felhasználó legutóbbi sikeres bejelentkezésének időbélyege.
-              </li>
-            </ul>
-            <p><br /><strong>Az adatkezelés célja:</strong></p>
-            <ul>
-              <li>felhasználói fiók létrehozása és működtetése,</li>
-              <li>bejelentkezés és autentikáció biztosítása,</li>
-              <li>jogosultságkezelés (pl. admin funkciók hozzáférésének szabályozása),</li>
-              <li>a rendszer technikai működésének nyomon követése,</li>
-              <li>biztonság, visszaélések és jogosulatlan hozzáférések észlelése, megelőzése,</li>
-              <li>inaktív felhasználói fiókok azonosítása és kezelése,</li>
-              <li>a felhasználói fiók aktivitásának adminisztratív követése.</li>
-            </ul>
-            <p><br /><strong>Az adatkezelés jogalapja:</strong></p>
-            <ul>
-              <li>GDPR 6. cikk (1) b) pont – a szerződés teljesítése: a regisztráció a szolgáltatás igénybevételéhez
-                szükséges, az adatkezelés a felhasználói fiók működtetéséhez elengedhetetlen,</li>
-              <li>GDPR 6. cikk (1) f) pont – jogos érdek: az Adatkezelő jogos érdeke a szolgáltatás biztonságos és
-                átlátható üzemeltetése, valamint a visszaélések megelőzése.</li>
-            </ul>
-            <p><br /><strong>Adatkezelés időtartama:</strong></p>
-            <ul>
-              <li>a felhasználói fiók fennállásáig, illetve annak törléséig,</li>
-              <li>a felhasználó bármikor kérheti fiókja és az ahhoz kapcsolódó személyes adatok törlését a felhasználói
-                profil beállításaiban vagy az Adatkezelő elérhetőségein keresztül.</li>
-            </ul>
-          </div>
-
-          <div class="privacy-subsection">
-            <h3>4.2. Firebase szolgáltatás technikai adatai</h3>
-            <p>
-              A weboldal a Firebase (Google Cloud Platform) szolgáltatását használja adattárolásra, autentikációra és a
-              backend funkcionalitás biztosítására. A Firebase automatikusan rögzíthet bizonyos technikai adatokat a
-              szolgáltatás működése és biztonsága érdekében.
-            </p>
-            <p><br /><strong>Az adatkezelés célja:</strong></p>
-            <ul>
-              <li>a weboldal technikai működésének biztosítása,</li>
-              <li>felhasználói autentikáció és fiókkezelés,</li>
-              <li>adattárolás és adatbázis szolgáltatások,</li>
-              <li>az informatikai rendszer biztonságának fenntartása.</li>
-            </ul>
-            <p><br /><strong>Adatfeldolgozó:</strong></p>
-            <ul>
-              <li><strong>Név:</strong> Google LLC (Firebase / Google Cloud Platform)</li>
-              <li><strong>Székhely:</strong> 1600 Amphitheatre Parkway, Mountain View, CA 94043, USA</li>
+              <li><strong>Name: </strong> Be My Team Mate</li>
               <li>
-                <strong>További információ:</strong>
-                <a class="privacy-link" href="https://firebase.google.com/support/privacy" target="_blank"
-                  rel="noreferrer">
-                  https://firebase.google.com/support/privacy
+                <strong>Email: </strong>
+                <a class="privacy-link select-none" [href]="'mailto:' + contactEmail" oncontextmenu="return false" (dragstart)="false">{{ contactEmail }}</a>
+              </li>
+              <li>
+                <strong>Website: </strong>
+                <a class="privacy-link" href="https://bemyteammate.eu" target="_blank" rel="noreferrer">
+                  https://bemyteammate.eu
                 </a>
               </li>
             </ul>
-            <p><br /><strong>Adatfeldolgozói szerződés (DPA) és adattovábbítás:</strong></p>
             <p>
-              A Google LLC hivatalosan adatfeldolgozóként jár el a Firebase/Google Cloud Platform szolgáltatások
-              használata során. Az Adatkezelő és a Google között létrejött adatfeldolgozói szerződés (Data Processing
-              Agreement - DPA) a Google Workspace / Cloud / Firebase feltételek részét képezi.
+              The Controller processes the personal data of website visitors and registered users under the conditions
+              set out in this notice.
             </p>
-            <p><br /><strong>Adattovábbítás helye:</strong> Az adatok az Egyesült Államokba (USA) kerülnek továbbításra.
-            </p>
-            <p><br /><strong>Jogalap és garanciák:</strong></p>
-            <ul>
-              <li>
-                EU–US Data Privacy Framework: A Google LLC részt vesz az EU-US adatvédelmi keretrendszerben, amely
-                megfelelőségi mechanizmust biztosít az adattovábbításhoz.
-              </li>
-              <li>
-                Standard Contractual Clauses (SCC): A Google alkalmazza az Európai Bizottság által jóváhagyott standard
-                szerződéses záradékokat, amelyek kiegészítő garanciákkal együtt biztosítják az adatok védelmét.
-              </li>
-              <li>
-                Kiegészítő technikai és szervezési intézkedések: A Google további biztonsági intézkedéseket alkalmaz
-                (pl. titkosítás, hozzáférés-korlátozás) az adatok védelme érdekében.
-              </li>
-            </ul>
-            <br>
-            <p>
-              Az adatfeldolgozói szerződésről és a Google adatvédelmi gyakorlatáról további információ:
-              <a class="privacy-link" href="https://cloud.google.com/terms/data-processing-addendum" target="_blank"
-                rel="noreferrer">
-                Google Cloud Data Processing Addendum
-              </a>
-            </p>
-          </div>
+          </section>
 
-          <div class="privacy-subsection">
-            <h3>4.3. Sütik (cookies) és Google Analytics</h3>
+          <section class="privacy-section">
+            <div class="privacy-section-title">
+              <span class="privacy-section-number">2.</span>
+              <h2>Legal background</h2>
+            </div>
             <p>
-              A weboldal látogatottságának és forgalmának mérése céljából Google Analytics szolgáltatást használunk. A
-              szolgáltatás sütiket helyez el a felhasználók eszközén, amelyek anonim statisztikai adatokat gyűjtenek.
-            </p>
-            <p><br /><strong>Kezelt adatok köre:</strong></p>
-            <ul>
-              <li>böngésző, eszköz típusa,</li>
-              <li>IP-cím (IP-anonimizálással),</li>
-              <li>földrajzi hely (város szintű),</li>
-              <li>munkamenet-azonosító,</li>
-              <li>a látogatás időpontja, időtartama,</li>
-              <li>meglátogatott oldalak, kattintások.</li>
-            </ul>
-            <br>
-            <p>
-              A Google Analytics gyűjtött adatai nem azonosítják közvetlenül a látogatót, ugyanakkor a GDPR értelmében
-              ezek az adatok – különösen az IP-cím és egyedi azonosítók – személyes adatnak minősülhetnek.
-            </p>
-            <p><br /><strong>Az adatkezelés célja:</strong></p>
-            <ul>
-              <li>a weboldal használatának elemzése,</li>
-              <li>látogatottsági statisztikák készítése,</li>
-              <li>a szolgáltatás fejlesztése.</li>
-            </ul>
-            <p><br /><strong>Jogalap:</strong> hozzájárulás</p>
-            <p>
-              A Google Analytics sütik használatának jogalapja a GDPR 6. cikk (1) bekezdés a) pontja szerinti
-              hozzájárulás.
+              The Controller processes personal data in accordance with Regulation (EU) 2016/679 of the European
+              Parliament and of the Council (GDPR), as well as Act CXII of 2011 of Hungary (Infotv.).
             </p>
             <p>
-              A sütik elhelyezéséhez és a Google Analytics futtatásához a felhasználó a weboldalon megjelenő cookie
-              bannerben járul hozzá. A hozzájárulás bármikor visszavonható a böngésző sütibeállításainak módosításával
-              vagy a cookie banner beállításainak újbóli megnyitásával.
+              We are committed to respecting visitors' informational self-determination rights, we treat data
+              confidentially, and we take all necessary technical and organizational measures to ensure security.
             </p>
-            <p><br /><strong>IP-cím anonimizálása és beállítások:</strong></p>
-            <ul>
-              <li>Az IP-címek anonimizálása engedélyezve van.</li>
-              <li>A Google Analytics gyűjtött adatai nem azonosítják közvetlenül a látogatót.</li>
-              <li>Az adatkezelési időtartamra a sütik érvényessége irányadó (maximum 2 év).</li>
-              <li>
-                Amennyiben nem kíván adatokat megosztani, a Google Analytics adatgyűjtése böngésző bővítménnyel
-                letiltható, vagy a sütik a böngészőben törölhetők.
-              </li>
-            </ul>
-            <p><br /><strong>Adattovábbítás az Egyesült Államokba</strong></p>
-            <p>
-              A Google Analytics szolgáltatást a Google LLC (1600 Amphitheatre Parkway, Mountain View, CA 94043, USA)
-              nyújtja. A sütik segítségével gyűjtött információk elsősorban az Egyesült Államokban található szerverekre
-              kerülhetnek továbbításra.
-            </p>
-            <br>
-            <p>
-              Felhívjuk a figyelmet, hogy a Google Analytics jelenlegi gyakorlatát több európai adatvédelmi hatóság
-              aggályosnak találta, mivel a harmadik országba történő adattovábbítás megfelelősége csak fokozott
-              technikai és szervezési intézkedésekkel biztosítható. Az Adatkezelő törekszik arra, hogy az elérhető
-              beállítások és jogi megoldások (pl. IP anonimizálása, szerződéses garanciák) alkalmazásával a lehető
-              legnagyobb védelmet nyújtsa.
-            </p>
-          </div>
+          </section>
 
-          <div class="privacy-subsection">
-            <h3>4.4. Cloudflare szolgáltatások (Weboldal hosting és biztonság)</h3>
+          <section class="privacy-section">
+            <div class="privacy-section-title">
+              <span class="privacy-section-number">3.</span>
+              <h2>Principles of data processing</h2>
+            </div>
+            <p>The Controller processes personal data:</p>
+            <ul>
+              <li>lawfully, fairly and transparently,</li>
+              <li>for specified, explicit and legitimate purposes,</li>
+              <li>without further processing in a way incompatible with those purposes,</li>
+              <li>limited to what is necessary and proportionate to the purpose of processing (data minimization),</li>
+              <li>only for as long as necessary (storage limitation),</li>
+              <li>with appropriate technical and organizational safeguards.</li>
+            </ul>
+          </section>
+
+          <section class="privacy-section">
+            <div class="privacy-section-title">
+              <span class="privacy-section-number">4.</span>
+              <h2>Scope, purpose and legal basis of processed personal data</h2>
+            </div>
             <p>
-              A weboldal a Cloudflare szolgáltatásait használja a tartalom kiszolgálására (hosting), a biztonság
-              fokozására és a visszaélések elleni védelemre (pl. botok elleni védelem). A Cloudflare sütiket és
-              technikai adatokat gyűjthet a webhely biztonságos és gyors működése érdekében.
+              Without registration, the website does not collect personal data that would directly identify the
+              visitor, except for technical logs and cookies (see sections 4.2 and 4.3).
             </p>
-            <p><br /><strong>Kezelt adatok köre:</strong></p>
-            <ul>
-              <li>IP-cím,</li>
-              <li>böngésző és eszköz adatai,</li>
-              <li>a weboldal látogatásával kapcsolatos technikai naplófájlok,</li>
-              <li>Turnstile CAPTCHA adatok: a botok elleni védelem során a felhasználói interakciók elemzése.</li>
-            </ul>
-            <p><br /><strong>Az adatkezelés célja:</strong></p>
-            <ul>
-              <li>a weboldal kiszolgálása (Cloudflare Pages),</li>
-              <li>biztonsági fenyegetések (pl. DDOS támadások, botok) észlelése és megelőzése,</li>
-              <li>gyors és zavartalan tartalmi elérés biztosítása (CDN szolgáltatás).</li>
-            </ul>
-            <p><br /><strong>Adatfeldolgozó:</strong></p>
-            <ul>
-              <li><strong>Név:</strong> Cloudflare, Inc.</li>
-              <li><strong>Székhely:</strong> 101 Townsend St, San Francisco, CA 94107, USA</li>
-              <li>
-                <strong>További információ:</strong>
-                <a class="privacy-link" href="https://www.cloudflare.com/trust-hub/privacy-and-data-protection/"
-                  target="_blank" rel="noreferrer">
-                  https://www.cloudflare.com/trust-hub/privacy-and-data-protection/
+
+            <div class="privacy-subsection">
+              <h3>4.1. Registration and user account data</h3>
+              <p><strong>Scope of processed data:</strong></p>
+              <ul>
+                <li>Email address: the email address provided by the user during registration and login,</li>
+                <li>Username: the name chosen by the user, displayed in the system,</li>
+                <li>Firebase identifier: the unique user identifier automatically generated by Firebase Authentication,</li>
+                <li>Role: the user's permission level,</li>
+                <li>Time of last login: the timestamp of the user's most recent successful login.</li>
+              </ul>
+              <p><br /><strong>Purpose of processing:</strong></p>
+              <ul>
+                <li>creation and operation of user accounts,</li>
+                <li>providing login and authentication,</li>
+                <li>permission management, for example controlling access to admin functions,</li>
+                <li>tracking the technical operation of the system,</li>
+                <li>detecting and preventing security issues, abuse and unauthorized access,</li>
+                <li>identifying and managing inactive user accounts,</li>
+                <li>administrative tracking of user account activity.</li>
+              </ul>
+              <p><br /><strong>Legal basis of processing:</strong></p>
+              <ul>
+                <li>
+                  GDPR Article 6(1)(b) - performance of a contract: registration is necessary to use the service, and
+                  processing is essential for operating the user account,
+                </li>
+                <li>
+                  GDPR Article 6(1)(f) - legitimate interest: the Controller has a legitimate interest in operating the
+                  service securely and transparently and in preventing abuse.
+                </li>
+              </ul>
+              <p><br /><strong>Duration of processing:</strong></p>
+              <ul>
+                <li>until the user account exists, or until it is deleted,</li>
+                <li>
+                  the user may request deletion of their account and related personal data at any time in profile
+                  settings or through the Controller's contact details.
+                </li>
+              </ul>
+            </div>
+
+            <div class="privacy-subsection">
+              <h3>4.2. Technical data of the Firebase service</h3>
+              <p>
+                The website uses Firebase (Google Cloud Platform) for data storage, authentication and backend
+                functionality. Firebase may automatically record certain technical data to ensure service operation and
+                security.
+              </p>
+              <p><br /><strong>Purpose of processing:</strong></p>
+              <ul>
+                <li>ensuring the technical operation of the website,</li>
+                <li>user authentication and account management,</li>
+                <li>data storage and database services,</li>
+                <li>maintaining the security of the IT system.</li>
+              </ul>
+              <p><br /><strong>Processor:</strong></p>
+              <ul>
+                <li><strong>Name:</strong> Google LLC (Firebase / Google Cloud Platform)</li>
+                <li><strong>Registered office:</strong> 1600 Amphitheatre Parkway, Mountain View, CA 94043, USA</li>
+                <li>
+                  <strong>Further information:</strong>
+                  <a class="privacy-link" href="https://firebase.google.com/support/privacy" target="_blank" rel="noreferrer">
+                    https://firebase.google.com/support/privacy
+                  </a>
+                </li>
+              </ul>
+              <p><br /><strong>Data processing agreement (DPA) and data transfer:</strong></p>
+              <p>
+                Google LLC officially acts as a data processor in relation to the use of Firebase/Google Cloud
+                Platform services. The Data Processing Agreement (DPA) concluded between the Controller and Google forms
+                part of the Google Workspace / Cloud / Firebase terms.
+              </p>
+              <p><br /><strong>Destination of transfer:</strong> Data is transferred to the United States of America (USA).</p>
+              <p><br /><strong>Legal basis and safeguards:</strong></p>
+              <ul>
+                <li>
+                  EU-US Data Privacy Framework: Google LLC participates in the EU-US data privacy framework, which
+                  provides a compliance mechanism for data transfers.
+                </li>
+                <li>
+                  Standard Contractual Clauses (SCC): Google applies the European Commission approved standard
+                  contractual clauses together with supplementary safeguards to protect the data.
+                </li>
+                <li>
+                  Supplementary technical and organizational measures: Google uses additional security measures, for
+                  example encryption and access restrictions, to protect the data.
+                </li>
+              </ul>
+              <br />
+              <p>
+                More information about the DPA and Google's privacy practices:
+                <a class="privacy-link" href="https://cloud.google.com/terms/data-processing-addendum" target="_blank" rel="noreferrer">
+                  Google Cloud Data Processing Addendum
                 </a>
-              </li>
-            </ul>
-            <p><br /><strong>Jogalap és adattovábbítás:</strong></p>
+              </p>
+            </div>
+
+            <div class="privacy-subsection">
+              <h3>4.3. Cookies and Google Analytics</h3>
+              <p>
+                We use Google Analytics to measure website traffic and usage. The service places cookies on users'
+                devices and collects anonymous statistical data.
+              </p>
+              <p><br /><strong>Scope of processed data:</strong></p>
+              <ul>
+                <li>browser and device type,</li>
+                <li>IP address (with IP anonymization),</li>
+                <li>geographical location (city level),</li>
+                <li>session identifier,</li>
+                <li>time and duration of the visit,</li>
+                <li>visited pages and clicks.</li>
+              </ul>
+              <br />
+              <p>
+                The data collected by Google Analytics does not directly identify the visitor; however, under the GDPR
+                these data, especially the IP address and unique identifiers, may qualify as personal data.
+              </p>
+              <p><br /><strong>Purpose of processing:</strong></p>
+              <ul>
+                <li>analyzing website usage,</li>
+                <li>creating visitor statistics,</li>
+                <li>improving the service.</li>
+              </ul>
+              <p><br /><strong>Legal basis:</strong> consent</p>
+              <p>
+                The legal basis for using Google Analytics cookies is consent under GDPR Article 6(1)(a).
+              </p>
+              <p>
+                The user gives consent to the placement of cookies and the operation of Google Analytics via the cookie
+                banner displayed on the website. Consent may be withdrawn at any time by changing browser cookie
+                settings or reopening the cookie banner settings.
+              </p>
+              <p><br /><strong>IP anonymization and settings:</strong></p>
+              <ul>
+                <li>IP anonymization is enabled.</li>
+                <li>The data collected by Google Analytics does not directly identify the visitor.</li>
+                <li>The duration of processing is determined by the validity of the cookies, maximum 2 years.</li>
+                <li>If you do not want to share data, Google Analytics data collection can be disabled with a browser extension, or cookies can be deleted in the browser.</li>
+              </ul>
+              <p><br /><strong>Transfer to the United States</strong></p>
+              <p>
+                Google Analytics is provided by Google LLC (1600 Amphitheatre Parkway, Mountain View, CA 94043, USA).
+                The information collected through cookies may primarily be transferred to servers located in the United
+                States.
+              </p>
+              <br />
+              <p>
+                Please note that the current practice of Google Analytics has been considered problematic by several
+                European data protection authorities, as adequate protection for transfers to a third country can only
+                be ensured through enhanced technical and organizational measures. The Controller strives to provide the
+                highest possible level of protection using available settings and legal mechanisms, for example IP
+                anonymization and contractual safeguards.
+              </p>
+            </div>
+
+            <div class="privacy-subsection">
+              <h3>4.4. Cloudflare services (website hosting and security)</h3>
+              <p>
+                The website uses Cloudflare services for content delivery (hosting), enhancing security and preventing
+                abuse, for example protection against bots. Cloudflare may collect cookies and technical data to ensure
+                secure and fast operation of the website.
+              </p>
+              <p><br /><strong>Scope of processed data:</strong></p>
+              <ul>
+                <li>IP address,</li>
+                <li>browser and device data,</li>
+                <li>technical log files related to website visits,</li>
+                <li>Turnstile CAPTCHA data: analysis of user interactions during bot protection.</li>
+              </ul>
+              <p><br /><strong>Purpose of processing:</strong></p>
+              <ul>
+                <li>serving the website (Cloudflare Pages),</li>
+                <li>detecting and preventing security threats, for example DDoS attacks and bots,</li>
+                <li>ensuring fast and uninterrupted content delivery (CDN service).</li>
+              </ul>
+              <p><br /><strong>Processor:</strong></p>
+              <ul>
+                <li><strong>Name:</strong> Cloudflare, Inc.</li>
+                <li><strong>Registered office:</strong> 101 Townsend St, San Francisco, CA 94107, USA</li>
+                <li>
+                  <strong>Further information:</strong>
+                  <a class="privacy-link" href="https://www.cloudflare.com/trust-hub/privacy-and-data-protection/" target="_blank" rel="noreferrer">
+                    https://www.cloudflare.com/trust-hub/privacy-and-data-protection/
+                  </a>
+                </li>
+              </ul>
+              <p><br /><strong>Legal basis and data transfer:</strong></p>
+              <ul>
+                <li>Legitimate interest (GDPR Article 6(1)(f)): secure operation of the website and protection against attacks.</li>
+                <li>Data transfer: Cloudflare operates a global network, so data may be transferred to the USA or other countries based on compliance mechanisms, for example SCCs.</li>
+              </ul>
+            </div>
+          </section>
+
+          <section class="privacy-section">
+            <div class="privacy-section-title">
+              <span class="privacy-section-number">5.</span>
+              <h2>Processors</h2>
+            </div>
+            <p>The Controller may use the following processors during data processing:</p>
             <ul>
-              <li>Jogos érdek (GDPR 6. cikk (1) f) pont): a weboldal biztonságos üzemeltetése és a támadások elleni
-                védelem.</li>
-              <li>Adattovábbítás: a Cloudflare globális hálózatot üzemeltet, így az adatok az USA-ba vagy más országokba
-                is továbbításra kerülhetnek a megfelelőségi mechanizmusok (pl. SCC) alapján.</li>
+              <li><strong>Website hosting provider:</strong> Cloudflare, Inc. (San Francisco, USA) - serving the website and storing static content.</li>
+              <li><strong>Data storage and authentication:</strong> Google LLC (Firebase / Google Cloud Platform) - user data is stored in Firebase, which ensures protection of the data with appropriate technical and organizational measures.</li>
+              <li><strong>Analytics provider:</strong> Google LLC - Google Analytics (see above).</li>
+              <li><strong>Security provider (CAPTCHA):</strong> Cloudflare, Inc. - Cloudflare Turnstile bot protection.</li>
             </ul>
-          </div>
-        </section>
-
-        <section class="privacy-section">
-          <div class="privacy-section-title">
-            <span class="privacy-section-number">5.</span>
-            <h2>Adatfeldolgozók</h2>
-          </div>
-          <p>Az Adatkezelő az adatkezelés során az alábbi adatfeldolgozókat veheti igénybe:</p>
-          <ul>
-            <li>
-              <strong>Weboldal tárhelyszolgáltató (Hosting):</strong> Cloudflare, Inc. (San Francisco, USA) – a weboldal
-              kiszolgálása és statikus tartalmak tárolása.
-            </li>
-            <li>
-              <strong>Adattárolás és Autentikáció:</strong> Google LLC (Firebase / Google Cloud Platform) – A
-              felhasználói adatokat a Firebase szolgáltatásban tároljuk, amely megfelelő technikai és szervezési
-              intézkedésekkel biztosítja az adatok védelmét.
-            </li>
-            <li><strong>Analitikai szolgáltató:</strong> Google LLC – Google Analytics (lásd fent).</li>
-            <li><strong>Biztonsági szolgáltató (CAPTCHA):</strong> Cloudflare, Inc. – Cloudflare Turnstile bot-védelem.
-            </li>
-          </ul>
-          <p>
-            Az Adatkezelő személyes adatot kizárólag a jelen tájékoztatóban meghatározott célból, az érintett megfelelő
-            tájékoztatása mellett továbbít harmadik fél részére.
-          </p>
-        </section>
-
-        <section class="privacy-section">
-          <div class="privacy-section-title">
-            <span class="privacy-section-number">6.</span>
-            <h2>Adatmegőrzési idők</h2>
-          </div>
-          <ul>
-            <li>Utolsó belépés időpontja: a felhasználói fiók fennállásáig / törléséig,</li>
-            <li>Google Analytics sütik: a sütik lejártáig (legfeljebb 2 év), illetve a böngésző által történő törlésig.
-            </li>
-          </ul>
-          <p>Az adatmegőrzési idő leteltét követően a személyes adatok törlésre vagy anonimizálásra kerülnek.</p>
-        </section>
-
-        <section class="privacy-section">
-          <div class="privacy-section-title">
-            <span class="privacy-section-number">7.</span>
-            <h2>Az érintettek jogai</h2>
-          </div>
-          <p>Az érintett (a weboldal látogatója, felhasználója) a GDPR alapján az alábbi jogokkal rendelkezik:</p>
-          <ul>
-            <li>Hozzáféréshez való jog – tájékoztatást kérhet arról, hogy az Adatkezelő kezeli-e a rá vonatkozó
-              személyes adatokat, és ha igen, melyeket, milyen célból, jogalapon és mennyi ideig.</li>
-            <li>Helyesbítéshez való jog – kérheti a pontatlan vagy hiányos adatok módosítását, kiegészítését.</li>
-            <li>Törléshez való jog („elfeledtetés joga") – bizonyos esetekben kérheti személyes adataik törlését.</li>
-            <li>Az adatkezelés korlátozásához való jog – kérheti az adatkezelés korlátozását (pl. vitatott adat
-              pontossága esetén).</li>
-            <li>Adathordozhatósághoz való jog – meghatározott esetekben kérheti, hogy az Adatkezelő a rá vonatkozó
-              adatokat géppel olvasható formátumban kiadja számára vagy más adatkezelőnek továbbítsa.</li>
-            <li>Tiltakozáshoz való jog – jogosult tiltakozni a jogos érdeken alapuló adatkezelés ellen.</li>
-          </ul>
-          <p>Az érintett jogainak gyakorlására irányuló kérelmét az alábbi elérhetőségen nyújthatja be:</p>
-          <p>
-            <strong>E-mail: </strong>
-            <a class="privacy-link select-none" [href]="'mailto:' + contactEmail">{{ contactEmail }}</a>
-          </p>
-          <p>
-            Az Adatkezelő a kérelem beérkezésétől számított legfeljebb 1 hónapon belül tájékoztatja az érintettet a
-            megtett intézkedésekről.
-          </p>
-        </section>
-
-        <section class="privacy-section">
-          <div class="privacy-section-title">
-            <span class="privacy-section-number">8.</span>
-            <h2>Jogorvoslati lehetőségek</h2>
-          </div>
-          <p>
-            Amennyiben az érintett úgy véli, hogy személyes adatainak kezelése sérti a GDPR rendelkezéseit, az alábbi
-            lehetőségekkel élhet:
-          </p>
-          <div class="privacy-subsection">
-            <h3>1. Panasz benyújtása a felügyeleti hatósághoz:</h3>
-            <p><strong>Nemzeti Adatvédelmi és Információszabadság Hatóság (NAIH)</strong></p>
-            <p>Székhely: 1055 Budapest, Falk Miksa utca 9–11.</p>
-            <p>Levelezési cím: 1363 Budapest, Pf. 9.</p>
             <p>
-              Weboldal:
-              <a class="privacy-link" href="https://www.naih.hu" target="_blank" rel="noreferrer">www.naih.hu</a>
+              The Controller transfers personal data to third parties only for the purposes specified in this notice
+              and while properly informing the data subject.
             </p>
-          </div>
-          <div class="privacy-subsection">
-            <h3>2. Bírósághoz fordulás</h3>
-            <p>
-              Az érintett a lakóhelye vagy tartózkodási helye szerint illetékes törvényszék előtt jogosult keresetet
-              indítani.
-            </p>
-          </div>
-        </section>
+          </section>
 
-        <section class="privacy-section">
-          <div class="privacy-section-title">
-            <span class="privacy-section-number">9.</span>
-            <h2>A tájékoztató módosítása</h2>
-          </div>
-          <p>
-            Fenntartjuk a jogot jelen Adatkezelési Tájékoztató módosítására jogszabályi vagy technológiai változás
-            esetén. A mindenkor hatályos verzió mindig megtalálható a weboldalon.
-          </p>
-          <p><br /><strong>Hatályos:</strong> 2026. március 2. napjától visszavonásig.</p>
-          <div class="privacy-footer text-center">
-            <p><br /><strong>Utolsó frissítés:</strong> 2026. március 2.</p>
-          </div>
-        </section>
+          <section class="privacy-section">
+            <div class="privacy-section-title">
+              <span class="privacy-section-number">6.</span>
+              <h2>Data retention periods</h2>
+            </div>
+            <ul>
+              <li>Time of last login: until the user account exists or until deletion,</li>
+              <li>Google Analytics cookies: until cookies expire, maximum 2 years, or until deleted by the browser.</li>
+            </ul>
+            <p>Once the retention period has expired, personal data is deleted or anonymized.</p>
+          </section>
+
+          <section class="privacy-section">
+            <div class="privacy-section-title">
+              <span class="privacy-section-number">7.</span>
+              <h2>Rights of data subjects</h2>
+            </div>
+            <p>The data subject, the website visitor or user, has the following rights under the GDPR:</p>
+            <ul>
+              <li>Right of access - may request information about whether the Controller processes their personal data and, if so, which data, for what purpose, on what legal basis and for how long.</li>
+              <li>Right to rectification - may request correction or completion of inaccurate or incomplete data.</li>
+              <li>Right to erasure ("right to be forgotten") - may in certain cases request deletion of personal data.</li>
+              <li>Right to restriction of processing - may request restriction of processing, for example where data accuracy is disputed.</li>
+              <li>Right to data portability - may in certain cases request that the Controller provide the data concerning them in a machine-readable format or transfer it to another controller.</li>
+              <li>Right to object - entitled to object to processing based on legitimate interest.</li>
+            </ul>
+            <p>The request to exercise the data subject's rights may be submitted via the following contact details:</p>
+            <p>
+              <strong>Email: </strong>
+              <a class="privacy-link select-none" [href]="'mailto:' + contactEmail">{{ contactEmail }}</a>
+            </p>
+            <p>
+              The Controller informs the data subject about the measures taken within no more than 1 month from receipt
+              of the request.
+            </p>
+          </section>
+
+          <section class="privacy-section">
+            <div class="privacy-section-title">
+              <span class="privacy-section-number">8.</span>
+              <h2>Remedies</h2>
+            </div>
+            <p>
+              If the data subject believes that processing of their personal data violates the GDPR, they may use the
+              following remedies:
+            </p>
+            <div class="privacy-subsection">
+              <h3>1. Filing a complaint with the supervisory authority:</h3>
+              <p><strong>National Authority for Data Protection and Freedom of Information (NAIH)</strong></p>
+              <p>Registered office: 1055 Budapest, Falk Miksa utca 9-11.</p>
+              <p>Postal address: 1363 Budapest, Pf. 9.</p>
+              <p>
+                Website:
+                <a class="privacy-link" href="https://www.naih.hu" target="_blank" rel="noreferrer">www.naih.hu</a>
+              </p>
+            </div>
+            <div class="privacy-subsection">
+              <h3>2. Bringing the matter before a court</h3>
+              <p>
+                The data subject may bring an action before the competent court according to their place of residence
+                or stay.
+              </p>
+            </div>
+          </section>
+
+          <section class="privacy-section">
+            <div class="privacy-section-title">
+              <span class="privacy-section-number">9.</span>
+              <h2>Modification of this notice</h2>
+            </div>
+            <p>
+              We reserve the right to amend this Privacy Policy in the event of legal or technological changes. The
+              version currently in force is always available on the website.
+            </p>
+            <p><br /><strong>Effective:</strong> from 2 March 2026 until revoked.</p>
+            <div class="privacy-footer text-center">
+              <p><br /><strong>Last updated:</strong> 2 March 2026.</p>
+            </div>
+          </section>
+        </div>
       </div>
-    </div>
+    } @else {
+      <div class="privacy-shell" style="text-align: justify;">
+        <header class="privacy-header">
+          <h1>Adatkezelési Tájékoztató</h1>
+          <div class="privacy-divider" role="presentation"></div>
+        </header>
+
+        <div class="privacy-content">
+          <section class="privacy-section">
+            <div class="privacy-section-title">
+              <span class="privacy-section-number">1.</span>
+              <h2>Az adatkezelő adatai</h2>
+            </div>
+            <p>Az adatkezelő (a továbbiakban: Adatkezelő):</p>
+            <ul>
+              <li><strong>Név: </strong> Be My Team Mate</li>
+              <li>
+                <strong>E-mail: </strong>
+                <a class="privacy-link select-none" [href]="'mailto:' + contactEmail" oncontextmenu="return false" (dragstart)="false">{{ contactEmail }}</a>
+              </li>
+              <li>
+                <strong>Weboldal: </strong>
+                <a class="privacy-link" href="https://bemyteammate.eu" target="_blank" rel="noreferrer">
+                  https://bemyteammate.eu
+                </a>
+              </li>
+            </ul>
+            <p>
+              Az Adatkezelő a jelen tájékoztatóban ismertetett feltételek szerint kezeli a weboldal látogatóinak és
+              regisztrált felhasználóinak személyes adatait.
+            </p>
+          </section>
+
+          <section class="privacy-section">
+            <div class="privacy-section-title">
+              <span class="privacy-section-number">2.</span>
+              <h2>Jogszabályi háttér</h2>
+            </div>
+            <p>
+              Az Adatkezelő az Európai Parlament és Tanács (EU) 2016/679 számú rendelete (GDPR), valamint a 2011. évi
+              CXII. törvény (Infotv.) előírásainak megfelelően kezeli a személyes adatokat.
+            </p>
+            <p>
+              Elkötelezettek vagyunk a látogatók információs önrendelkezési jogainak tiszteletben tartása mellett, az
+              adatokat bizalmasan kezeljük, és minden szükséges technikai, szervezési intézkedést megteszünk a
+              biztonság érdekében.
+            </p>
+          </section>
+
+          <section class="privacy-section">
+            <div class="privacy-section-title">
+              <span class="privacy-section-number">3.</span>
+              <h2>Az adatkezelés alapelvei</h2>
+            </div>
+            <p>Az Adatkezelő a személyes adatokat:</p>
+            <ul>
+              <li>jogszerűen, tisztességesen és átlátható módon kezeli,</li>
+              <li>meghatározott, egyértelmű és jogszerű célból gyűjti,</li>
+              <li>a célokkal össze nem egyeztethető módon nem kezeli tovább,</li>
+              <li>a szükségesre korlátozottan, az adatkezelés céljához igazodóan kezeli (adattakarékosság),</li>
+              <li>a szükséges ideig tárolja (korlátozott tárolhatóság),</li>
+              <li>megfelelő technikai és szervezési intézkedések mellett védi.</li>
+            </ul>
+          </section>
+
+          <section class="privacy-section">
+            <div class="privacy-section-title">
+              <span class="privacy-section-number">4.</span>
+              <h2>Kezelt személyes adatok köre, célja és jogalapja</h2>
+            </div>
+            <p>
+              A weboldal regisztráció nélkül nem gyűjt olyan személyes adatot, amely alapján a látogató közvetlenül
+              beazonosítható lenne, a technikai naplók és sütik kivételével (lásd: 4.2. és 4.3.).
+            </p>
+
+            <div class="privacy-subsection">
+              <h3>4.1. Regisztráció és felhasználói fiók adatai</h3>
+              <p><strong>Kezelt adatok köre:</strong></p>
+              <ul>
+                <li>E-mail cím: a felhasználó által megadott e-mail cím a regisztráció és bejelentkezés során,</li>
+                <li>Felhasználónév: a felhasználó által választott név, amely a rendszerben megjelenik,</li>
+                <li>Firebase azonosító: a Firebase Authentication által automatikusan generált egyedi felhasználói azonosító,</li>
+                <li>Szerepkör: a felhasználó jogosultsági szintje,</li>
+                <li>Utolsó belépés időpontja: a felhasználó legutóbbi sikeres bejelentkezésének időbélyege.</li>
+              </ul>
+              <p><br /><strong>Az adatkezelés célja:</strong></p>
+              <ul>
+                <li>felhasználói fiók létrehozása és működtetése,</li>
+                <li>bejelentkezés és autentikáció biztosítása,</li>
+                <li>jogosultságkezelés (pl. admin funkciók hozzáférésének szabályozása),</li>
+                <li>a rendszer technikai működésének nyomon követése,</li>
+                <li>biztonság, visszaélések és jogosulatlan hozzáférések észlelése, megelőzése,</li>
+                <li>inaktív felhasználói fiókok azonosítása és kezelése,</li>
+                <li>a felhasználói fiók aktivitásának adminisztratív követése.</li>
+              </ul>
+              <p><br /><strong>Az adatkezelés jogalapja:</strong></p>
+              <ul>
+                <li>
+                  GDPR 6. cikk (1) b) pont – a szerződés teljesítése: a regisztráció a szolgáltatás igénybevételéhez
+                  szükséges, az adatkezelés a felhasználói fiók működtetéséhez elengedhetetlen,
+                </li>
+                <li>
+                  GDPR 6. cikk (1) f) pont – jogos érdek: az Adatkezelő jogos érdeke a szolgáltatás biztonságos és
+                  átlátható üzemeltetése, valamint a visszaélések megelőzése.
+                </li>
+              </ul>
+              <p><br /><strong>Adatkezelés időtartama:</strong></p>
+              <ul>
+                <li>a felhasználói fiók fennállásáig, illetve annak törléséig,</li>
+                <li>a felhasználó bármikor kérheti fiókja és az ahhoz kapcsolódó személyes adatok törlését a felhasználói profil beállításaiban vagy az Adatkezelő elérhetőségein keresztül.</li>
+              </ul>
+            </div>
+
+            <div class="privacy-subsection">
+              <h3>4.2. Firebase szolgáltatás technikai adatai</h3>
+              <p>
+                A weboldal a Firebase (Google Cloud Platform) szolgáltatását használja adattárolásra, autentikációra és a
+                backend funkcionalitás biztosítására. A Firebase automatikusan rögzíthet bizonyos technikai adatokat a
+                szolgáltatás működése és biztonsága érdekében.
+              </p>
+              <p><br /><strong>Az adatkezelés célja:</strong></p>
+              <ul>
+                <li>a weboldal technikai működésének biztosítása,</li>
+                <li>felhasználói autentikáció és fiókkezelés,</li>
+                <li>adattárolás és adatbázis szolgáltatások,</li>
+                <li>az informatikai rendszer biztonságának fenntartása.</li>
+              </ul>
+              <p><br /><strong>Adatfeldolgozó:</strong></p>
+              <ul>
+                <li><strong>Név:</strong> Google LLC (Firebase / Google Cloud Platform)</li>
+                <li><strong>Székhely:</strong> 1600 Amphitheatre Parkway, Mountain View, CA 94043, USA</li>
+                <li>
+                  <strong>További információ:</strong>
+                  <a class="privacy-link" href="https://firebase.google.com/support/privacy" target="_blank" rel="noreferrer">
+                    https://firebase.google.com/support/privacy
+                  </a>
+                </li>
+              </ul>
+              <p><br /><strong>Adatfeldolgozói szerződés (DPA) és adattovábbítás:</strong></p>
+              <p>
+                A Google LLC hivatalosan adatfeldolgozóként jár el a Firebase/Google Cloud Platform szolgáltatások
+                használata során. Az Adatkezelő és a Google között létrejött adatfeldolgozói szerződés (Data Processing Agreement - DPA) a Google Workspace / Cloud / Firebase feltételek részét képezi.
+              </p>
+              <p><br /><strong>Adattovábbítás helye:</strong> Az adatok az Egyesült Államokba (USA) kerülnek továbbításra.</p>
+              <p><br /><strong>Jogalap és garanciák:</strong></p>
+              <ul>
+                <li>EU–US Data Privacy Framework: A Google LLC részt vesz az EU-US adatvédelmi keretrendszerben, amely megfelelőségi mechanizmust biztosít az adattovábbításhoz.</li>
+                <li>Standard Contractual Clauses (SCC): A Google alkalmazza az Európai Bizottság által jóváhagyott standard szerződéses záradékokat, amelyek kiegészítő garanciákkal együtt biztosítják az adatok védelmét.</li>
+                <li>Kiegészítő technikai és szervezési intézkedések: A Google további biztonsági intézkedéseket alkalmaz (pl. titkosítás, hozzáférés-korlátozás) az adatok védelme érdekében.</li>
+              </ul>
+              <br />
+              <p>
+                Az adatfeldolgozói szerződésről és a Google adatvédelmi gyakorlatáról további információ:
+                <a class="privacy-link" href="https://cloud.google.com/terms/data-processing-addendum" target="_blank" rel="noreferrer">
+                  Google Cloud Data Processing Addendum
+                </a>
+              </p>
+            </div>
+
+            <div class="privacy-subsection">
+              <h3>4.3. Sütik (cookies) és Google Analytics</h3>
+              <p>
+                A weboldal látogatottságának és forgalmának mérése céljából Google Analytics szolgáltatást használunk. A szolgáltatás sütiket helyez el a felhasználók eszközén, amelyek anonim statisztikai adatokat gyűjtenek.
+              </p>
+              <p><br /><strong>Kezelt adatok köre:</strong></p>
+              <ul>
+                <li>böngésző, eszköz típusa,</li>
+                <li>IP-cím (IP-anonimizálással),</li>
+                <li>földrajzi hely (város szintű),</li>
+                <li>munkamenet-azonosító,</li>
+                <li>a látogatás időpontja, időtartama,</li>
+                <li>meglátogatott oldalak, kattintások.</li>
+              </ul>
+              <br />
+              <p>
+                A Google Analytics gyűjtött adatai nem azonosítják közvetlenül a látogatót, ugyanakkor a GDPR értelmében ezek az adatok – különösen az IP-cím és egyedi azonosítók – személyes adatnak minősülhetnek.
+              </p>
+              <p><br /><strong>Az adatkezelés célja:</strong></p>
+              <ul>
+                <li>a weboldal használatának elemzése,</li>
+                <li>látogatottsági statisztikák készítése,</li>
+                <li>a szolgáltatás fejlesztése.</li>
+              </ul>
+              <p><br /><strong>Jogalap:</strong> hozzájárulás</p>
+              <p>
+                A Google Analytics sütik használatának jogalapja a GDPR 6. cikk (1) bekezdés a) pontja szerinti hozzájárulás.
+              </p>
+              <p>
+                A sütik elhelyezéséhez és a Google Analytics futtatásához a felhasználó a weboldalon megjelenő cookie bannerben járul hozzá. A hozzájárulás bármikor visszavonható a böngésző sütibeállításainak módosításával vagy a cookie banner beállításainak újbóli megnyitásával.
+              </p>
+              <p><br /><strong>IP-cím anonimizálása és beállítások:</strong></p>
+              <ul>
+                <li>Az IP-címek anonimizálása engedélyezve van.</li>
+                <li>A Google Analytics gyűjtött adatai nem azonosítják közvetlenül a látogatót.</li>
+                <li>Az adatkezelési időtartamra a sütik érvényessége irányadó (maximum 2 év).</li>
+                <li>Amennyiben nem kíván adatokat megosztani, a Google Analytics adatgyűjtése böngésző bővítménnyel letiltható, vagy a sütik a böngészőben törölhetők.</li>
+              </ul>
+              <p><br /><strong>Adattovábbítás az Egyesült Államokba</strong></p>
+              <p>
+                A Google Analytics szolgáltatást a Google LLC (1600 Amphitheatre Parkway, Mountain View, CA 94043, USA) nyújtja. A sütik segítségével gyűjtött információk elsősorban az Egyesült Államokban található szerverekre kerülhetnek továbbításra.
+              </p>
+              <br />
+              <p>
+                Felhívjuk a figyelmet, hogy a Google Analytics jelenlegi gyakorlatát több európai adatvédelmi hatóság aggályosnak találta, mivel a harmadik országba történő adattovábbítás megfelelősége csak fokozott technikai és szervezési intézkedésekkel biztosítható. Az Adatkezelő törekszik arra, hogy az elérhető beállítások és jogi megoldások (pl. IP anonimizálása, szerződéses garanciák) alkalmazásával a lehető legnagyobb védelmet nyújtsa.
+              </p>
+            </div>
+
+            <div class="privacy-subsection">
+              <h3>4.4. Cloudflare szolgáltatások (Weboldal hosting és biztonság)</h3>
+              <p>
+                A weboldal a Cloudflare szolgáltatásait használja a tartalom kiszolgálására (hosting), a biztonság fokozására és a visszaélések elleni védelemre (pl. botok elleni védelem). A Cloudflare sütiket és technikai adatokat gyűjthet a webhely biztonságos és gyors működése érdekében.
+              </p>
+              <p><br /><strong>Kezelt adatok köre:</strong></p>
+              <ul>
+                <li>IP-cím,</li>
+                <li>böngésző és eszköz adatai,</li>
+                <li>a weboldal látogatásával kapcsolatos technikai naplófájlok,</li>
+                <li>Turnstile CAPTCHA adatok: a botok elleni védelem során a felhasználói interakciók elemzése.</li>
+              </ul>
+              <p><br /><strong>Az adatkezelés célja:</strong></p>
+              <ul>
+                <li>a weboldal kiszolgálása (Cloudflare Pages),</li>
+                <li>biztonsági fenyegetések (pl. DDOS támadások, botok) észlelése és megelőzése,</li>
+                <li>gyors és zavartalan tartalmi elérés biztosítása (CDN szolgáltatás).</li>
+              </ul>
+              <p><br /><strong>Adatfeldolgozó:</strong></p>
+              <ul>
+                <li><strong>Név:</strong> Cloudflare, Inc.</li>
+                <li><strong>Székhely:</strong> 101 Townsend St, San Francisco, CA 94107, USA</li>
+                <li>
+                  <strong>További információ:</strong>
+                  <a class="privacy-link" href="https://www.cloudflare.com/trust-hub/privacy-and-data-protection/" target="_blank" rel="noreferrer">
+                    https://www.cloudflare.com/trust-hub/privacy-and-data-protection/
+                  </a>
+                </li>
+              </ul>
+              <p><br /><strong>Jogalap és adattovábbítás:</strong></p>
+              <ul>
+                <li>Jogos érdek (GDPR 6. cikk (1) f) pont): a weboldal biztonságos üzemeltetése és a támadások elleni védelem.</li>
+                <li>Adattovábbítás: a Cloudflare globális hálózatot üzemeltet, így az adatok az USA-ba vagy más országokba is továbbításra kerülhetnek a megfelelőségi mechanizmusok (pl. SCC) alapján.</li>
+              </ul>
+            </div>
+          </section>
+
+          <section class="privacy-section">
+            <div class="privacy-section-title">
+              <span class="privacy-section-number">5.</span>
+              <h2>Adatfeldolgozók</h2>
+            </div>
+            <p>Az Adatkezelő az adatkezelés során az alábbi adatfeldolgozókat veheti igénybe:</p>
+            <ul>
+              <li><strong>Weboldal tárhelyszolgáltató (Hosting):</strong> Cloudflare, Inc. (San Francisco, USA) – a weboldal kiszolgálása és statikus tartalmak tárolása.</li>
+              <li><strong>Adattárolás és Autentikáció:</strong> Google LLC (Firebase / Google Cloud Platform) – A felhasználói adatokat a Firebase szolgáltatásban tároljuk, amely megfelelő technikai és szervezési intézkedésekkel biztosítja az adatok védelmét.</li>
+              <li><strong>Analitikai szolgáltató:</strong> Google LLC – Google Analytics (lásd fent).</li>
+              <li><strong>Biztonsági szolgáltató (CAPTCHA):</strong> Cloudflare, Inc. – Cloudflare Turnstile bot-védelem.</li>
+            </ul>
+            <p>
+              Az Adatkezelő személyes adatot kizárólag a jelen tájékoztatóban meghatározott célból, az érintett megfelelő tájékoztatása mellett továbbít harmadik fél részére.
+            </p>
+          </section>
+
+          <section class="privacy-section">
+            <div class="privacy-section-title">
+              <span class="privacy-section-number">6.</span>
+              <h2>Adatmegőrzési idők</h2>
+            </div>
+            <ul>
+              <li>Utolsó belépés időpontja: a felhasználói fiók fennállásáig / törléséig,</li>
+              <li>Google Analytics sütik: a sütik lejártáig (legfeljebb 2 év), illetve a böngésző által történő törlésig.</li>
+            </ul>
+            <p>Az adatmegőrzési idő leteltét követően a személyes adatok törlésre vagy anonimizálásra kerülnek.</p>
+          </section>
+
+          <section class="privacy-section">
+            <div class="privacy-section-title">
+              <span class="privacy-section-number">7.</span>
+              <h2>Az érintettek jogai</h2>
+            </div>
+            <p>Az érintett (a weboldal látogatója, felhasználója) a GDPR alapján az alábbi jogokkal rendelkezik:</p>
+            <ul>
+              <li>Hozzáféréshez való jog – tájékoztatást kérhet arról, hogy az Adatkezelő kezeli-e a rá vonatkozó személyes adatokat, és ha igen, melyeket, milyen célból, jogalapon és mennyi ideig.</li>
+              <li>Helyesbítéshez való jog – kérheti a pontatlan vagy hiányos adatok módosítását, kiegészítését.</li>
+              <li>Törléshez való jog („elfeledtetés joga") – bizonyos esetekben kérheti személyes adataik törlését.</li>
+              <li>Az adatkezelés korlátozásához való jog – kérheti az adatkezelés korlátozását (pl. vitatott adat pontossága esetén).</li>
+              <li>Adathordozhatósághoz való jog – meghatározott esetekben kérheti, hogy az Adatkezelő a rá vonatkozó adatokat géppel olvasható formátumban kiadja számára vagy más adatkezelőnek továbbítsa.</li>
+              <li>Tiltakozáshoz való jog – jogosult tiltakozni a jogos érdeken alapuló adatkezelés ellen.</li>
+            </ul>
+            <p>Az érintett jogainak gyakorlására irányuló kérelmét az alábbi elérhetőségen nyújthatja be:</p>
+            <p>
+              <strong>E-mail: </strong>
+              <a class="privacy-link select-none" [href]="'mailto:' + contactEmail">{{ contactEmail }}</a>
+            </p>
+            <p>
+              Az Adatkezelő a kérelem beérkezésétől számított legfeljebb 1 hónapon belül tájékoztatja az érintettet a megtett intézkedésekről.
+            </p>
+          </section>
+
+          <section class="privacy-section">
+            <div class="privacy-section-title">
+              <span class="privacy-section-number">8.</span>
+              <h2>Jogorvoslati lehetőségek</h2>
+            </div>
+            <p>
+              Amennyiben az érintett úgy véli, hogy személyes adatainak kezelése sérti a GDPR rendelkezéseit, az alábbi lehetőségekkel élhet:
+            </p>
+            <div class="privacy-subsection">
+              <h3>1. Panasz benyújtása a felügyeleti hatósághoz:</h3>
+              <p><strong>Nemzeti Adatvédelmi és Információszabadság Hatóság (NAIH)</strong></p>
+              <p>Székhely: 1055 Budapest, Falk Miksa utca 9–11.</p>
+              <p>Levelezési cím: 1363 Budapest, Pf. 9.</p>
+              <p>
+                Weboldal:
+                <a class="privacy-link" href="https://www.naih.hu" target="_blank" rel="noreferrer">www.naih.hu</a>
+              </p>
+            </div>
+            <div class="privacy-subsection">
+              <h3>2. Bírósághoz fordulás</h3>
+              <p>
+                Az érintett a lakóhelye vagy tartózkodási helye szerint illetékes törvényszék előtt jogosult keresetet indítani.
+              </p>
+            </div>
+          </section>
+
+          <section class="privacy-section">
+            <div class="privacy-section-title">
+              <span class="privacy-section-number">9.</span>
+              <h2>A tájékoztató módosítása</h2>
+            </div>
+            <p>
+              Fenntartjuk a jogot jelen Adatkezelési Tájékoztató módosítására jogszabályi vagy technológiai változás esetén. A mindenkor hatályos verzió mindig megtalálható a weboldalon.
+            </p>
+            <p><br /><strong>Hatályos:</strong> 2026. március 2. napjától visszavonásig.</p>
+            <div class="privacy-footer text-center">
+              <p><br /><strong>Utolsó frissítés:</strong> 2026. március 2.</p>
+            </div>
+          </section>
+        </div>
+      </div>
+    }
   </section>
 </div>

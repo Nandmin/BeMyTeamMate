@@ -1,336 +1,641 @@
-﻿<div class="font-lexend min-h-[calc(100vh-4rem)] text-white relative overflow-hidden">
+<div class="font-lexend min-h-[calc(100vh-4rem)] text-white relative overflow-hidden">
   <div class="fixed inset-0 z-0">
-    <img alt="Abstract arena glow" class="h-full w-full object-cover opacity-20"
-      src="https://lh3.googleusercontent.com/aida-public/AB6AXuA7zaqn7BxzQiE2m0VgjRh7mZwiOVp3oM1q1c-3Z_p0FjM0WpA1Y3a1xQwS3pCS6jZ5xZcV5x4Dox7o6d5pC2Vcbzq-N5VbJ7q1E2dXBGc5W4mS5mQ1zLxg2oKfT2tLkG0k7thRrI3Z8hL4Idco9iue0dZyd3_2dMIbC2lqQxHBBXQkct1p3c4q6e2c-Q8X1oW0Arcsq1bqW5oXx5n3l5gT1Qd2dR8xQ" />
-    <div class="absolute inset-0 bg-gradient-to-b from-background-dark/95 via-background-dark/80 to-background-dark/95">
-    </div>
+    <img
+      alt="Abstract arena glow"
+      class="h-full w-full object-cover opacity-20"
+      src="https://lh3.googleusercontent.com/aida-public/AB6AXuA7zaqn7BxzQiE2m0VgjRh7mZwiOVp3oM1q1c-3Z_p0FjM0WpA1Y3a1xQwS3pCS6jZ5xZcV5x4Dox7o6d5pC2Vcbzq-N5VbJ7q1E2dXBGc5W4mS5mQ1zLxg2oKfT2tLkG0k7thRrI3Z8hL4Idco9iue0dZyd3_2dMIbC2lqQxHBBXQkct1p3c4q6e2c-Q8X1oW0Arcsq1bqW5oXx5n3l5gT1Qd2dR8xQ"
+    />
+    <div class="absolute inset-0 bg-gradient-to-b from-background-dark/95 via-background-dark/80 to-background-dark/95"></div>
     <div class="absolute -top-24 -left-24 h-[420px] w-[420px] rounded-full bg-primary/12 blur-[120px]"></div>
     <div class="absolute -bottom-16 -right-20 h-[360px] w-[360px] rounded-full bg-emerald-400/10 blur-[120px]"></div>
   </div>
 
   <section class="relative z-10 mx-auto w-full max-w-5xl px-4 sm:px-6 lg:px-8 py-12">
-    <div class="terms-shell" style="text-align: justify;">
-      <header class="terms-header">
-        <h1 style="line-height: normal; margin-bottom: 0;">Felhasználási feltételek</h1>
-        <br>
-        <h1>(Általános Szerződési Feltételek)</h1>
-        <div class="terms-divider" role="presentation"></div>
-        <p class="mt-4">
-          <strong>Szolgáltatás neve:</strong> BeMyTeamMate (Web- és Mobilalkalmazás)<br />
-          <strong>Hatályos:</strong> [2026-03-02] (v1.2)
-        </p>
-      </header>
+    @if (isEnglish()) {
+      <div class="terms-shell" style="text-align: justify;">
+        <header class="terms-header">
+          <h1 style="line-height: normal; margin-bottom: 0;">Terms of Use</h1>
+          <br>
+          <h1>(General Terms and Conditions)</h1>
+          <div class="terms-divider" role="presentation"></div>
+          <p class="mt-4">
+            <strong>Service name:</strong> BeMyTeamMate (Web and Mobile Application)<br />
+            <strong>Effective:</strong> [2026-03-02] (v1.2)
+          </p>
+        </header>
 
-      <div class="terms-content">
-        <section class="terms-section">
-          <div class="terms-section-title">
-            <!-- <span class="terms-section-number">Ö</span> -->
-            <h2>Összefoglalás</h2>
-          </div>
-          <ul>
-            <li>A BeMyTeamMate egy ingyenes, hobbiprojekt jellegű szolgáltatás sportcsoportok szervezéséhez.</li>
-            <li>A szolgáltatás „ahogy van” alapon működik: lehetnek hibák, kiesések, és a funkciók változhatnak.</li>
-            <li>Csoporthoz csatlakozva bizonyos adataid (pl. megjelenített név, részvételi jelzések) a csoport tagjai
-              számára láthatóvá válnak.</li>
-            <li>A részletes adatkezelési szabályokat az Adatkezelési tájékoztató tartalmazza.</li>
-          </ul>
-        </section>
+        <div class="terms-content">
+          <section class="terms-section">
+            <div class="terms-section-title">
+              <h2>Summary</h2>
+            </div>
+            <ul>
+              <li>BeMyTeamMate is a free, hobby-project-style service for organizing sports groups.</li>
+              <li>The service is provided on an "as is" basis: there may be errors, outages, and changing features.</li>
+              <li>By joining a group, some of your data, for example your displayed name and attendance responses, may become visible to group members.</li>
+              <li>The detailed data processing rules are set out in the Privacy Policy.</li>
+            </ul>
+          </section>
 
-        <section class="terms-section">
-          <div class="terms-section-title">
-            <span class="terms-section-number">1.</span>
-            <h2>Általános rendelkezések</h2>
-          </div>
-          <p>
-            Jelen dokumentum a BeMyTeamMate webalkalmazás (a továbbiakban: Webapp) és mobilalkalmazás (a továbbiakban:
-            Mobilapp) használatának feltételeit rögzíti. A Weboldal, Webapp és Mobilapp a továbbiakban együttesen:
-            Szolgáltatás.
-          </p>
-          <p>
-            A Szolgáltatás használatával a látogató vagy regisztrált felhasználó (a továbbiakban: Felhasználó) elfogadja
-            a jelen Felhasználási feltételeket (a továbbiakban: Feltételek).
-          </p>
-        </section>
-
-        <section class="terms-section">
-          <div class="terms-section-title">
-            <span class="terms-section-number">2.</span>
-            <h2>Üzemeltető adatai</h2>
-          </div>
-          <p>A Szolgáltatást egyéni fejlesztőként üzemeltetem.</p>
-          <ul>
-            <li><strong>Üzemeltető/Fejlesztő:</strong> Németh András</li>
-            <li>
-              <strong>Kapcsolat: </strong>
-              <a class="terms-link select-none" [href]="'mailto:' + contactEmail" oncontextmenu="return false"
-                (dragstart)="false">{{ contactEmail }}</a>
-            </li>
-            <li>
-              <strong>Webcím: </strong>
-              <a class="terms-link" href="https://bemyteammate.eu" target="_blank" rel="noreferrer">
-                https://bemyteammate.eu
-              </a>
-            </li>
-          </ul>
-        </section>
-
-        <section class="terms-section">
-          <div class="terms-section-title">
-            <span class="terms-section-number">3.</span>
-            <h2>A Szolgáltatás célja és fő funkciói</h2>
-          </div>
-          <p>
-            A Szolgáltatás célja a hobbisport közösségek szervezésének támogatása, különösen az alábbi funkciókkal (a
-            felsorolás példálózó):
-          </p>
-          <ul>
-            <li>Csoportok kezelése: csoport létrehozása, tagság kezelése, szerepkörök (pl. admin)</li>
-            <li>Események/meccsek: időpont, helyszín, létszám, részvételi visszajelzések (pl. jövök / nem jövök)</li>
-            <li>Csapatbeosztás támogatása: csapatgenerálás / kiegyensúlyozás (ahol elérhető)</li>
-            <li>Statisztikák/értékelések: megjelenített mutatók (amennyiben elérhető)</li>
-            <li>Értesítések: alkalmazáson belüli és/vagy push értesítések (ha a Felhasználó engedélyezi)</li>
-          </ul>
-          <p>
-            A Szolgáltatás ingyenesen, hobbiprojektként, folyamatos fejlesztés alatt működik. Ennek megfelelően a
-            funkcionalitás és elérhetőség időről időre változhat, a Szolgáltatás átmenetileg szünetelhet.
-          </p>
-        </section>
-
-        <section class="terms-section">
-          <div class="terms-section-title">
-            <span class="terms-section-number">4.</span>
-            <h2>Regisztráció, fiók és hozzáférés</h2>
-          </div>
-          <p>A Szolgáltatás egyes részei regisztrációhoz kötöttek. A Felhasználó köteles:</p>
-          <ul>
-            <li>a fiókhoz tartozó hozzáférési adatokat bizalmasan kezelni,</li>
-            <li>haladéktalanul jelezni, ha jogosulatlan hozzáférést észlel,</li>
-            <li>tartózkodni más személy fiókjának használatától.</li>
-          </ul>
-          <p>
-            A Felhasználó a fiókjával végzett tevékenységekért felelősséget vállal, kivéve, ha bizonyíthatóan a
-            Szolgáltatás hibájából történt jogosulatlan hozzáférés.
-          </p>
-          <p>
-            Kiskorúak: kiskorú Felhasználó a Szolgáltatást kizárólag törvényes képviselő hozzájárulásával használhatja.
-          </p>
-        </section>
-
-        <section class="terms-section">
-          <div class="terms-section-title">
-            <span class="terms-section-number">5.</span>
-            <h2>Felhasználói magatartás, tiltott használat</h2>
-          </div>
-          <p>
-            A Felhasználó köteles a Szolgáltatást jogszerűen, a hatályos magyar és uniós jogszabályoknak megfelelően
-            használni, és nem sértheti mások jogait.
-          </p>
-          <p>Különösen tilos:</p>
-          <ul>
-            <li>jogosulatlan hozzáférés, biztonsági rések keresése/kihasználása,</li>
-            <li>a Szolgáltatás túlterhelése, automatizált visszaélésszerű használat,</li>
-            <li>adatok manipulálása, más Felhasználók zavarása vagy megtévesztése,</li>
-            <li>jogsértő, fenyegető, sértő, gyűlöletkeltő, zaklató vagy személyiségi jogot sértő tartalom közzététele,
-            </li>
-            <li>harmadik személyek személyes adatainak jogellenes megadása (pl. telefonszám, cím, e-mail, képmás
-              engedély nélkül).</li>
-          </ul>
-        </section>
-
-        <section class="terms-section">
-          <div class="terms-section-title">
-            <span class="terms-section-number">6.</span>
-            <h2>Felhasználói tartalom, közösségi elemek</h2>
-          </div>
-          <p>
-            Amennyiben a Szolgáltatás lehetővé teszi tartalom feltöltését vagy megadását (pl. csoportnév, leírás,
-            eseményadatok, megjegyzések, borítókép), a Felhasználó kijelenti, hogy a tartalom jogszerű, és rendelkezik
-            a közzétételhez szükséges jogosultságokkal.
-          </p>
-          <p>
-            Az Üzemeltető jogosult a jogsértő vagy a Szolgáltatás céljával össze nem egyeztethető tartalmat
-            eltávolítani,
-            illetve a hozzáférést korlátozni.
-          </p>
-          <p>
-            A Felhasználó tudomásul veszi, hogy a csoporthoz feltöltött vagy a csoportban megadott tartalmakat a csoport
-            tagjai a Szolgáltatás rendeltetésszerű működéséhez kapcsolódóan megismerhetik.
-          </p>
-        </section>
-
-        <section class="terms-section">
-          <div class="terms-section-title">
-            <span class="terms-section-number">7.</span>
-            <h2>Csoportspecifikus adatláthatóság és jogosultságok</h2>
-          </div>
-          <p>
-            A Szolgáltatás közösségi (csoport) funkciói úgy működnek, hogy bizonyos adatok és tartalmak csak az adott
-            csoport tagjai számára érhetők el, míg más adatok a Szolgáltatás működéséhez szükséges mértékben a
-            Szolgáltatáson belül kezelhetők.
-          </p>
-
-          <div class="terms-subsection">
-            <h3>7.1. Csoporton belül látható adatok</h3>
+          <section class="terms-section">
+            <div class="terms-section-title">
+              <span class="terms-section-number">1.</span>
+              <h2>General provisions</h2>
+            </div>
             <p>
-              A Felhasználó tudomásul veszi, hogy amennyiben csatlakozik egy csoporthoz, úgy a csoport többi tagja a
-              csoporton belül jogosult lehet megismerni különösen az alábbiakat (példálózó felsorolás):
+              This document sets out the conditions of use for the BeMyTeamMate web application (hereinafter: Web App)
+              and mobile application (hereinafter: Mobile App). The Website, Web App and Mobile App are hereinafter
+              collectively referred to as the Service.
+            </p>
+            <p>
+              By using the Service, the visitor or registered user (hereinafter: User) accepts these Terms of Use
+              (hereinafter: Terms).
+            </p>
+          </section>
+
+          <section class="terms-section">
+            <div class="terms-section-title">
+              <span class="terms-section-number">2.</span>
+              <h2>Operator details</h2>
+            </div>
+            <p>The Service is operated by me as an individual developer.</p>
+            <ul>
+              <li><strong>Operator/Developer:</strong> András Németh</li>
+              <li>
+                <strong>Contact: </strong>
+                <a class="terms-link select-none" [href]="'mailto:' + contactEmail" oncontextmenu="return false" (dragstart)="false">{{ contactEmail }}</a>
+              </li>
+              <li>
+                <strong>Website: </strong>
+                <a class="terms-link" href="https://bemyteammate.eu" target="_blank" rel="noreferrer">
+                  https://bemyteammate.eu
+                </a>
+              </li>
+            </ul>
+          </section>
+
+          <section class="terms-section">
+            <div class="terms-section-title">
+              <span class="terms-section-number">3.</span>
+              <h2>Purpose of the Service and its main features</h2>
+            </div>
+            <p>
+              The purpose of the Service is to support the organization of amateur sports communities, particularly by
+              the following features (illustrative list):
             </p>
             <ul>
-              <li>a Felhasználó megjelenített neve/profiladatai (amelyeket a Szolgáltatás megjelenít),</li>
-              <li>a Felhasználó csoporttagsága,</li>
-              <li>a csoporthoz tartozó események/meccsek adatai (pl. időpont, helyszín, létszám),</li>
-              <li>a Felhasználó részvételi visszajelzései (pl. „jövök / nem jövök / bizonytalan”),</li>
-              <li>csoporton belüli aktivitáshoz kapcsolódó adatok (pl. eseményhez fűzött megjegyzés, amennyiben ilyen
-                funkció elérhető),</li>
-              <li>a csoporthoz kötődő, a Szolgáltatás által megjelenített statisztikák/összesítések (amennyiben
-                elérhető).</li>
+              <li>Group management: creating groups, managing membership, roles (for example admin)</li>
+              <li>Events and matches: date and time, location, headcount, attendance responses (for example coming / not coming)</li>
+              <li>Team allocation support: team generation / balancing (where available)</li>
+              <li>Statistics and ratings: displayed indicators (where available)</li>
+              <li>Notifications: in-app and/or push notifications (if enabled by the User)</li>
             </ul>
-          </div>
-
-          <div class="terms-subsection">
-            <h3>7.2. Csoporton kívül nem nyilvános adatok</h3>
             <p>
-              A Szolgáltatás alapelve, hogy a csoporthoz kapcsolódó tartalmak és részletek nem nyilvánosak a csoporton
-              kívüli Felhasználók számára, kivéve, ha a Szolgáltatás valamely funkciója kifejezetten másként rendelkezik
-              (pl. nyilvános bemutató oldal vagy publikus csoportmegjelenítés, ha később bevezetésre kerül).
+              The Service is provided free of charge, as a hobby project, and is under continuous development.
+              Accordingly, functionality and availability may change from time to time, and the Service may be
+              temporarily suspended.
             </p>
-          </div>
+          </section>
 
-          <div class="terms-subsection">
-            <h3>7.3. Csoportadminisztrátori (admin) jogosultságok</h3>
-            <p>
-              Egyes csoportokban kijelölt adminisztrátor(ok) a csoport működtetéséhez szükséges mértékben jogosultak
-              lehetnek:
-            </p>
+          <section class="terms-section">
+            <div class="terms-section-title">
+              <span class="terms-section-number">4.</span>
+              <h2>Registration, account and access</h2>
+            </div>
+            <p>Some parts of the Service require registration. The User must:</p>
             <ul>
-              <li>a csoport alapadatainak és beállításainak kezelésére,</li>
-              <li>tagsági kérelmek elfogadására/elutasítására,</li>
-              <li>csoporttagok eltávolítására,</li>
-              <li>csoportesemények létrehozására, szerkesztésére, törlésére,</li>
-              <li>csoporton belüli, jogsértő vagy a közösségi normákat sértő tartalmak eltávolítására (amennyiben ilyen
-                funkció elérhető).</li>
+              <li>keep the credentials belonging to the account confidential,</li>
+              <li>report unauthorized access without delay,</li>
+              <li>refrain from using another person's account.</li>
             </ul>
             <p>
-              A Felhasználó tudomásul veszi, hogy az adminisztrátori jogosultságok gyakorlása a Szolgáltatáson belüli
-              csoportkezelési logika része.
+              The User is responsible for activities performed through the account, except where unauthorized access
+              demonstrably resulted from a fault of the Service.
             </p>
-          </div>
+            <p>Minors: a minor User may use the Service only with the consent of their legal representative.</p>
+          </section>
 
-          <div class="terms-subsection">
-            <h3>7.4. Meghívások, csatlakozás, kilépés hatása a láthatóságra</h3>
+          <section class="terms-section">
+            <div class="terms-section-title">
+              <span class="terms-section-number">5.</span>
+              <h2>User conduct, prohibited use</h2>
+            </div>
             <p>
-              Csoporthoz való csatlakozást követően a Felhasználó a csoporton belüli tartalmakhoz hozzáférhet, és a
-              csoporttagok számára a fentiek szerinti adatai láthatóvá válhatnak.
+              The User must use the Service lawfully, in compliance with applicable Hungarian and EU law, and may not
+              infringe the rights of others.
             </p>
-            <br>
-            <p>Kilépés vagy eltávolítás esetén a Felhasználó csoporton belüli hozzáférése megszűnik.</p>
-            <br>
+            <p>In particular, the following are prohibited:</p>
+            <ul>
+              <li>unauthorized access, searching for or exploiting security vulnerabilities,</li>
+              <li>overloading the Service, abusive automated use,</li>
+              <li>manipulating data, disturbing or misleading other Users,</li>
+              <li>publishing unlawful, threatening, offensive, hateful, harassing or personality-rights-infringing content,</li>
+              <li>unlawfully providing third-party personal data, for example phone number, address, email or likeness without permission.</li>
+            </ul>
+          </section>
+
+          <section class="terms-section">
+            <div class="terms-section-title">
+              <span class="terms-section-number">6.</span>
+              <h2>User content, community elements</h2>
+            </div>
             <p>
-              Bizonyos, már létrejött csoporteseményekhez kapcsolódó adatok (pl. korábbi részvételi jelzés) a csoport
-              működésének integritása érdekében összesített formában vagy naplózottan megőrzésre kerülhetnek, az
-              Adatkezelési tájékoztatóval összhangban.
+              If the Service allows uploading or entering content, for example group name, description, event data,
+              notes or cover image, the User declares that the content is lawful and that they have the necessary
+              rights for publication.
             </p>
-          </div>
-
-          <div class="terms-subsection">
-            <h3>7.5. Technikai korlátok, biztonság</h3>
             <p>
-              Az Üzemeltető törekszik arra, hogy a csoporton belüli adatokhoz csak jogosult Felhasználók férjenek hozzá,
-              ugyanakkor a Felhasználó tudomásul veszi, hogy internetes szolgáltatás esetén a teljes, 100%-os
-              hibamentesség és behatolásmentesség nem garantálható.
+              The Operator is entitled to remove content that is unlawful or incompatible with the purpose of the
+              Service, and to restrict access accordingly.
             </p>
-          </div>
-        </section>
+            <p>
+              The User acknowledges that content uploaded to a group or provided within a group may be accessed by
+              group members in connection with the intended functioning of the Service.
+            </p>
+          </section>
 
-        <section class="terms-section">
-          <div class="terms-section-title">
-            <span class="terms-section-number">8.</span>
-            <h2>Felelősségkizárás és garancia hiánya</h2>
-          </div>
-          <p>
-            A Szolgáltatás használata a Felhasználó saját felelősségére történik. A Szolgáltatás „ahogy van” (as is)
-            alapon kerül biztosításra, külön garancia vagy szavatosság vállalása nélkül.
-          </p>
-          <p>Az Üzemeltető – a jogszabály által megengedett mértékben – nem felel:</p>
-          <ul>
-            <li>kiesésért, hibás működésért, elérhetetlenségért vagy megszűnésért,</li>
-            <li>adatvesztésért, elmaradt haszonért, közvetett károkért,</li>
-            <li>harmadik fél szolgáltatásából eredő hibákért/kiesésekért (pl. tárhely, hitelesítés, értesítési
-              infrastruktúra).</li>
-          </ul>
-          <p>
-            A Felhasználó tudomásul veszi, hogy a hobbiprojekt jelleg miatt az Üzemeltető nem vállal rendelkezésre
-            állási
-            kötelezettséget.
-          </p>
-        </section>
+          <section class="terms-section">
+            <div class="terms-section-title">
+              <span class="terms-section-number">7.</span>
+              <h2>Group-specific data visibility and permissions</h2>
+            </div>
+            <p>
+              The community (group) functions of the Service operate in such a way that certain data and content are
+              available only to members of the relevant group, while other data may be processed within the Service to
+              the extent necessary for its operation.
+            </p>
 
-        <section class="terms-section">
-          <div class="terms-section-title">
-            <span class="terms-section-number">9.</span>
-            <h2>Szolgáltatás módosítása, korlátozása, megszüntetése</h2>
-          </div>
-          <p>
-            Az Üzemeltető bármikor jogosult a Szolgáltatást módosítani, fejleszteni, szüneteltetni, korlátozni vagy
-            megszüntetni, előzetes értesítés nélkül is. E döntések – a jogszabály által megengedett körben – nem
-            alapoznak meg kártérítési igényt.
-          </p>
-        </section>
+            <div class="terms-subsection">
+              <h3>7.1. Data visible within the group</h3>
+              <p>
+                The User acknowledges that by joining a group, the other members of that group may be entitled to know,
+                in particular, the following (illustrative list):
+              </p>
+              <ul>
+                <li>the User's displayed name / profile data, as shown by the Service,</li>
+                <li>the User's group membership,</li>
+                <li>data relating to group events / matches, for example date, place and headcount,</li>
+                <li>the User's attendance responses, for example "coming / not coming / unsure",</li>
+                <li>activity-related data within the group, for example notes attached to an event, where such functionality is available,</li>
+                <li>statistics and summaries related to the group displayed by the Service, where available.</li>
+              </ul>
+            </div>
 
-        <section class="terms-section">
-          <div class="terms-section-title">
-            <span class="terms-section-number">10.</span>
-            <h2>Szellemi tulajdon</h2>
-          </div>
-          <p>
-            A Szolgáltatás forráskódja, felhasználói felülete (UI), design elemei, grafikai és szöveges tartalmai –
-            eltérő jelzés hiányában – az Üzemeltető szellemi tulajdonát képezik és szerzői jogi védelem alatt állnak.
-            A Szolgáltatás bármely részének másolása, terjesztése vagy kereskedelmi célú felhasználása kizárólag az
-            Üzemeltető előzetes írásos engedélyével lehetséges.
-          </p>
-        </section>
+            <div class="terms-subsection">
+              <h3>7.2. Data not public outside the group</h3>
+              <p>
+                A basic principle of the Service is that content and details relating to a group are not public to
+                Users outside the group, unless a feature of the Service expressly provides otherwise, for example a
+                public presentation page or public group display if introduced later.
+              </p>
+            </div>
 
-        <section class="terms-section">
-          <div class="terms-section-title">
-            <span class="terms-section-number">11.</span>
-            <h2>Adatkezelés</h2>
-          </div>
-          <p>
-            A személyes adatok kezelésének szabályait az Adatkezelési tájékoztató tartalmazza, amely a Szolgáltatás
-            felületén elérhető. A Felhasználó tudomásul veszi, hogy a Szolgáltatás működtetéséhez szükséges mértékben
-            adatkezelés történik.
-          </p>
-          <p>
-            A csoportfunkciók használata során a Felhasználó bizonyos adatai (pl. megjelenített név, csoporttagság,
-            részvételi jelzések) a csoport tagjai számára láthatóvá válhatnak; ennek részleteit az Adatkezelési
-            tájékoztató tartalmazza.
-          </p>
-        </section>
+            <div class="terms-subsection">
+              <h3>7.3. Group administrator permissions</h3>
+              <p>
+                In some groups, designated administrator(s) may, to the extent necessary for operating the group, be
+                entitled to:
+              </p>
+              <ul>
+                <li>manage the group's basic data and settings,</li>
+                <li>approve or reject membership requests,</li>
+                <li>remove group members,</li>
+                <li>create, edit and delete group events,</li>
+                <li>remove unlawful content or content violating community norms within the group, where such functionality is available.</li>
+              </ul>
+              <p>
+                The User acknowledges that the exercise of administrator permissions is part of the group management
+                logic within the Service.
+              </p>
+            </div>
 
-        <section class="terms-section">
-          <div class="terms-section-title">
-            <span class="terms-section-number">12.</span>
-            <h2>A Feltételek módosítása</h2>
-          </div>
-          <p>
-            Az Üzemeltető jogosult a Feltételeket egyoldalúan módosítani. A módosítás a Szolgáltatás felületén történő
-            közzététellel lép hatályba a fenti Hatályos dátumtól. A Szolgáltatás további használata a módosítások
-            elfogadásának minősül.
-          </p>
-        </section>
+            <div class="terms-subsection">
+              <h3>7.4. Effect of invitations, joining and leaving on visibility</h3>
+              <p>
+                After joining a group, the User may access content within the group, and their data described above may
+                become visible to group members.
+              </p>
+              <br>
+              <p>If the User leaves or is removed, their access within the group ceases.</p>
+              <br>
+              <p>
+                Certain data related to already created group events, for example earlier attendance responses, may be
+                retained in aggregated or logged form in order to preserve the integrity of group operation, in
+                accordance with the Privacy Policy.
+              </p>
+            </div>
 
-        <section class="terms-section">
-          <div class="terms-section-title">
-            <span class="terms-section-number">13.</span>
-            <h2>Irányadó jog és jogviták</h2>
-          </div>
-          <p>
-            Jelen Feltételekre a magyar jog az irányadó. A felek a vitákat elsődlegesen békés úton rendezik. Ennek
-            eredménytelensége esetén – a jogszabályok által megengedett keretek között – a jogvita elbírálására az
-            Üzemeltető lakóhelye szerint illetékes magyar bíróság jogosult.
-          </p>
-        </section>
+            <div class="terms-subsection">
+              <h3>7.5. Technical limitations, security</h3>
+              <p>
+                The Operator strives to ensure that only authorized Users can access data within the group; however,
+                the User acknowledges that in the case of internet services, complete faultlessness and full protection
+                against intrusion cannot be guaranteed.
+              </p>
+            </div>
+          </section>
+
+          <section class="terms-section">
+            <div class="terms-section-title">
+              <span class="terms-section-number">8.</span>
+              <h2>Disclaimer of liability and absence of warranty</h2>
+            </div>
+            <p>
+              Use of the Service is at the User's own risk. The Service is provided on an "as is" basis, without any
+              separate guarantee or warranty.
+            </p>
+            <p>To the extent permitted by law, the Operator is not liable for:</p>
+            <ul>
+              <li>downtime, malfunction, unavailability or termination,</li>
+              <li>data loss, loss of profit, indirect damage,</li>
+              <li>errors or outages resulting from third-party services, for example hosting, authentication or notification infrastructure.</li>
+            </ul>
+            <p>
+              The User acknowledges that because of the hobby-project nature, the Operator does not undertake any
+              availability obligation.
+            </p>
+          </section>
+
+          <section class="terms-section">
+            <div class="terms-section-title">
+              <span class="terms-section-number">9.</span>
+              <h2>Modification, restriction, termination of the Service</h2>
+            </div>
+            <p>
+              The Operator may modify, develop, suspend, restrict or terminate the Service at any time, even without
+              prior notice. Such decisions do not create a claim for damages to the extent permitted by law.
+            </p>
+          </section>
+
+          <section class="terms-section">
+            <div class="terms-section-title">
+              <span class="terms-section-number">10.</span>
+              <h2>Intellectual property</h2>
+            </div>
+            <p>
+              The source code, user interface (UI), design elements, graphic and textual content of the Service, in
+              the absence of any different indication, constitute the intellectual property of the Operator and are
+              protected by copyright. Copying, distributing or commercial use of any part of the Service is only
+              possible with the Operator's prior written consent.
+            </p>
+          </section>
+
+          <section class="terms-section">
+            <div class="terms-section-title">
+              <span class="terms-section-number">11.</span>
+              <h2>Data processing</h2>
+            </div>
+            <p>
+              The rules governing the processing of personal data are set out in the Privacy Policy, which is available
+              on the interface of the Service. The User acknowledges that data processing takes place to the extent
+              necessary for operating the Service.
+            </p>
+            <p>
+              When using group functions, certain data of the User, for example displayed name, group membership and
+              attendance responses, may become visible to group members; the details are contained in the Privacy
+              Policy.
+            </p>
+          </section>
+
+          <section class="terms-section">
+            <div class="terms-section-title">
+              <span class="terms-section-number">12.</span>
+              <h2>Modification of the Terms</h2>
+            </div>
+            <p>
+              The Operator is entitled to modify the Terms unilaterally. The modification enters into force upon
+              publication on the Service interface from the Effective date indicated above. Continued use of the
+              Service constitutes acceptance of the modifications.
+            </p>
+          </section>
+
+          <section class="terms-section">
+            <div class="terms-section-title">
+              <span class="terms-section-number">13.</span>
+              <h2>Applicable law and disputes</h2>
+            </div>
+            <p>
+              These Terms are governed by Hungarian law. The parties shall primarily settle disputes amicably. If this
+              fails, within the framework permitted by law, the competent Hungarian court according to the Operator's
+              place of residence shall have jurisdiction over the dispute.
+            </p>
+          </section>
+        </div>
       </div>
-    </div>
+    } @else {
+      <div class="terms-shell" style="text-align: justify;">
+        <header class="terms-header">
+          <h1 style="line-height: normal; margin-bottom: 0;">Felhasználási feltételek</h1>
+          <br>
+          <h1>(Általános Szerződési Feltételek)</h1>
+          <div class="terms-divider" role="presentation"></div>
+          <p class="mt-4">
+            <strong>Szolgáltatás neve:</strong> BeMyTeamMate (Web- és Mobilalkalmazás)<br />
+            <strong>Hatályos:</strong> [2026-03-02] (v1.2)
+          </p>
+        </header>
+
+        <div class="terms-content">
+          <section class="terms-section">
+            <div class="terms-section-title">
+              <h2>Összefoglalás</h2>
+            </div>
+            <ul>
+              <li>A BeMyTeamMate egy ingyenes, hobbiprojekt jellegű szolgáltatás sportcsoportok szervezéséhez.</li>
+              <li>A szolgáltatás „ahogy van” alapon működik: lehetnek hibák, kiesések, és a funkciók változhatnak.</li>
+              <li>Csoporthoz csatlakozva bizonyos adataid (pl. megjelenített név, részvételi jelzések) a csoport tagjai számára láthatóvá válnak.</li>
+              <li>A részletes adatkezelési szabályokat az Adatkezelési tájékoztató tartalmazza.</li>
+            </ul>
+          </section>
+
+          <section class="terms-section">
+            <div class="terms-section-title">
+              <span class="terms-section-number">1.</span>
+              <h2>Általános rendelkezések</h2>
+            </div>
+            <p>
+              Jelen dokumentum a BeMyTeamMate webalkalmazás (a továbbiakban: Webapp) és mobilalkalmazás (a továbbiakban:
+              Mobilapp) használatának feltételeit rögzíti. A Weboldal, Webapp és Mobilapp a továbbiakban együttesen:
+              Szolgáltatás.
+            </p>
+            <p>
+              A Szolgáltatás használatával a látogató vagy regisztrált felhasználó (a továbbiakban: Felhasználó)
+              elfogadja a jelen Felhasználási feltételeket (a továbbiakban: Feltételek).
+            </p>
+          </section>
+
+          <section class="terms-section">
+            <div class="terms-section-title">
+              <span class="terms-section-number">2.</span>
+              <h2>Üzemeltető adatai</h2>
+            </div>
+            <p>A Szolgáltatást egyéni fejlesztőként üzemeltetem.</p>
+            <ul>
+              <li><strong>Üzemeltető/Fejlesztő:</strong> Németh András</li>
+              <li>
+                <strong>Kapcsolat: </strong>
+                <a class="terms-link select-none" [href]="'mailto:' + contactEmail" oncontextmenu="return false" (dragstart)="false">{{ contactEmail }}</a>
+              </li>
+              <li>
+                <strong>Webcím: </strong>
+                <a class="terms-link" href="https://bemyteammate.eu" target="_blank" rel="noreferrer">
+                  https://bemyteammate.eu
+                </a>
+              </li>
+            </ul>
+          </section>
+
+          <section class="terms-section">
+            <div class="terms-section-title">
+              <span class="terms-section-number">3.</span>
+              <h2>A Szolgáltatás célja és fő funkciói</h2>
+            </div>
+            <p>
+              A Szolgáltatás célja a hobbisport közösségek szervezésének támogatása, különösen az alábbi funkciókkal
+              (a felsorolás példálózó):
+            </p>
+            <ul>
+              <li>Csoportok kezelése: csoport létrehozása, tagság kezelése, szerepkörök (pl. admin)</li>
+              <li>Események/meccsek: időpont, helyszín, létszám, részvételi visszajelzések (pl. jövök / nem jövök)</li>
+              <li>Csapatbeosztás támogatása: csapatgenerálás / kiegyensúlyozás (ahol elérhető)</li>
+              <li>Statisztikák/értékelések: megjelenített mutatók (amennyiben elérhető)</li>
+              <li>Értesítések: alkalmazáson belüli és/vagy push értesítések (ha a Felhasználó engedélyezi)</li>
+            </ul>
+            <p>
+              A Szolgáltatás ingyenesen, hobbiprojektként, folyamatos fejlesztés alatt működik. Ennek megfelelően a
+              funkcionalitás és elérhetőség időről időre változhat, a Szolgáltatás átmenetileg szünetelhet.
+            </p>
+          </section>
+
+          <section class="terms-section">
+            <div class="terms-section-title">
+              <span class="terms-section-number">4.</span>
+              <h2>Regisztráció, fiók és hozzáférés</h2>
+            </div>
+            <p>A Szolgáltatás egyes részei regisztrációhoz kötöttek. A Felhasználó köteles:</p>
+            <ul>
+              <li>a fiókhoz tartozó hozzáférési adatokat bizalmasan kezelni,</li>
+              <li>haladéktalanul jelezni, ha jogosulatlan hozzáférést észlel,</li>
+              <li>tartózkodni más személy fiókjának használatától.</li>
+            </ul>
+            <p>
+              A Felhasználó a fiókjával végzett tevékenységekért felelősséget vállal, kivéve, ha bizonyíthatóan a
+              Szolgáltatás hibájából történt jogosulatlan hozzáférés.
+            </p>
+            <p>
+              Kiskorúak: kiskorú Felhasználó a Szolgáltatást kizárólag törvényes képviselő hozzájárulásával használhatja.
+            </p>
+          </section>
+
+          <section class="terms-section">
+            <div class="terms-section-title">
+              <span class="terms-section-number">5.</span>
+              <h2>Felhasználói magatartás, tiltott használat</h2>
+            </div>
+            <p>
+              A Felhasználó köteles a Szolgáltatást jogszerűen, a hatályos magyar és uniós jogszabályoknak megfelelően
+              használni, és nem sértheti mások jogait.
+            </p>
+            <p>Különösen tilos:</p>
+            <ul>
+              <li>jogosulatlan hozzáférés, biztonsági rések keresése/kihasználása,</li>
+              <li>a Szolgáltatás túlterhelése, automatizált visszaélésszerű használat,</li>
+              <li>adatok manipulálása, más Felhasználók zavarása vagy megtévesztése,</li>
+              <li>jogsértő, fenyegető, sértő, gyűlöletkeltő, zaklató vagy személyiségi jogot sértő tartalom közzététele,</li>
+              <li>harmadik személyek személyes adatainak jogellenes megadása (pl. telefonszám, cím, e-mail, képmás engedély nélkül).</li>
+            </ul>
+          </section>
+
+          <section class="terms-section">
+            <div class="terms-section-title">
+              <span class="terms-section-number">6.</span>
+              <h2>Felhasználói tartalom, közösségi elemek</h2>
+            </div>
+            <p>
+              Amennyiben a Szolgáltatás lehetővé teszi tartalom feltöltését vagy megadását (pl. csoportnév, leírás,
+              eseményadatok, megjegyzések, borítókép), a Felhasználó kijelenti, hogy a tartalom jogszerű, és
+              rendelkezik a közzétételhez szükséges jogosultságokkal.
+            </p>
+            <p>
+              Az Üzemeltető jogosult a jogsértő vagy a Szolgáltatás céljával össze nem egyeztethető tartalmat
+              eltávolítani, illetve a hozzáférést korlátozni.
+            </p>
+            <p>
+              A Felhasználó tudomásul veszi, hogy a csoporthoz feltöltött vagy a csoportban megadott tartalmakat a
+              csoport tagjai a Szolgáltatás rendeltetésszerű működéséhez kapcsolódóan megismerhetik.
+            </p>
+          </section>
+
+          <section class="terms-section">
+            <div class="terms-section-title">
+              <span class="terms-section-number">7.</span>
+              <h2>Csoportspecifikus adatláthatóság és jogosultságok</h2>
+            </div>
+            <p>
+              A Szolgáltatás közösségi (csoport) funkciói úgy működnek, hogy bizonyos adatok és tartalmak csak az adott
+              csoport tagjai számára érhetők el, míg más adatok a Szolgáltatás működéséhez szükséges mértékben a
+              Szolgáltatáson belül kezelhetők.
+            </p>
+
+            <div class="terms-subsection">
+              <h3>7.1. Csoporton belül látható adatok</h3>
+              <p>
+                A Felhasználó tudomásul veszi, hogy amennyiben csatlakozik egy csoporthoz, úgy a csoport többi tagja a
+                csoporton belül jogosult lehet megismerni különösen az alábbiakat (példálózó felsorolás):
+              </p>
+              <ul>
+                <li>a Felhasználó megjelenített neve/profiladatai (amelyeket a Szolgáltatás megjelenít),</li>
+                <li>a Felhasználó csoporttagsága,</li>
+                <li>a csoporthoz tartozó események/meccsek adatai (pl. időpont, helyszín, létszám),</li>
+                <li>a Felhasználó részvételi visszajelzései (pl. „jövök / nem jövök / bizonytalan”),</li>
+                <li>csoporton belüli aktivitáshoz kapcsolódó adatok (pl. eseményhez fűzött megjegyzés, amennyiben ilyen funkció elérhető),</li>
+                <li>a csoporthoz kötődő, a Szolgáltatás által megjelenített statisztikák/összesítések (amennyiben elérhető).</li>
+              </ul>
+            </div>
+
+            <div class="terms-subsection">
+              <h3>7.2. Csoporton kívül nem nyilvános adatok</h3>
+              <p>
+                A Szolgáltatás alapelve, hogy a csoporthoz kapcsolódó tartalmak és részletek nem nyilvánosak a
+                csoporton kívüli Felhasználók számára, kivéve, ha a Szolgáltatás valamely funkciója kifejezetten
+                másként rendelkezik (pl. nyilvános bemutató oldal vagy publikus csoportmegjelenítés, ha később
+                bevezetésre kerül).
+              </p>
+            </div>
+
+            <div class="terms-subsection">
+              <h3>7.3. Csoportadminisztrátori (admin) jogosultságok</h3>
+              <p>
+                Egyes csoportokban kijelölt adminisztrátor(ok) a csoport működtetéséhez szükséges mértékben jogosultak
+                lehetnek:
+              </p>
+              <ul>
+                <li>a csoport alapadatainak és beállításainak kezelésére,</li>
+                <li>tagsági kérelmek elfogadására/elutasítására,</li>
+                <li>csoporttagok eltávolítására,</li>
+                <li>csoportesemények létrehozására, szerkesztésére, törlésére,</li>
+                <li>csoporton belüli, jogsértő vagy a közösségi normákat sértő tartalmak eltávolítására (amennyiben ilyen funkció elérhető).</li>
+              </ul>
+              <p>
+                A Felhasználó tudomásul veszi, hogy az adminisztrátori jogosultságok gyakorlása a Szolgáltatáson belüli
+                csoportkezelési logika része.
+              </p>
+            </div>
+
+            <div class="terms-subsection">
+              <h3>7.4. Meghívások, csatlakozás, kilépés hatása a láthatóságra</h3>
+              <p>
+                Csoporthoz való csatlakozást követően a Felhasználó a csoporton belüli tartalmakhoz hozzáférhet, és a
+                csoporttagok számára a fentiek szerinti adatai láthatóvá válhatnak.
+              </p>
+              <br>
+              <p>Kilépés vagy eltávolítás esetén a Felhasználó csoporton belüli hozzáférése megszűnik.</p>
+              <br>
+              <p>
+                Bizonyos, már létrejött csoporteseményekhez kapcsolódó adatok (pl. korábbi részvételi jelzés) a csoport
+                működésének integritása érdekében összesített formában vagy naplózottan megőrzésre kerülhetnek, az
+                Adatkezelési tájékoztatóval összhangban.
+              </p>
+            </div>
+
+            <div class="terms-subsection">
+              <h3>7.5. Technikai korlátok, biztonság</h3>
+              <p>
+                Az Üzemeltető törekszik arra, hogy a csoporton belüli adatokhoz csak jogosult Felhasználók férjenek
+                hozzá, ugyanakkor a Felhasználó tudomásul veszi, hogy internetes szolgáltatás esetén a teljes,
+                100%-os hibamentesség és behatolásmentesség nem garantálható.
+              </p>
+            </div>
+          </section>
+
+          <section class="terms-section">
+            <div class="terms-section-title">
+              <span class="terms-section-number">8.</span>
+              <h2>Felelősségkizárás és garancia hiánya</h2>
+            </div>
+            <p>
+              A Szolgáltatás használata a Felhasználó saját felelősségére történik. A Szolgáltatás „ahogy van” (as is)
+              alapon kerül biztosításra, külön garancia vagy szavatosság vállalása nélkül.
+            </p>
+            <p>Az Üzemeltető – a jogszabály által megengedett mértékben – nem felel:</p>
+            <ul>
+              <li>kiesésért, hibás működésért, elérhetetlenségért vagy megszűnésért,</li>
+              <li>adatvesztésért, elmaradt haszonért, közvetett károkért,</li>
+              <li>harmadik fél szolgáltatásából eredő hibákért/kiesésekért (pl. tárhely, hitelesítés, értesítési infrastruktúra).</li>
+            </ul>
+            <p>
+              A Felhasználó tudomásul veszi, hogy a hobbiprojekt jelleg miatt az Üzemeltető nem vállal rendelkezésre
+              állási kötelezettséget.
+            </p>
+          </section>
+
+          <section class="terms-section">
+            <div class="terms-section-title">
+              <span class="terms-section-number">9.</span>
+              <h2>Szolgáltatás módosítása, korlátozása, megszüntetése</h2>
+            </div>
+            <p>
+              Az Üzemeltető bármikor jogosult a Szolgáltatást módosítani, fejleszteni, szüneteltetni, korlátozni vagy
+              megszüntetni, előzetes értesítés nélkül is. E döntések – a jogszabály által megengedett körben – nem
+              alapoznak meg kártérítési igényt.
+            </p>
+          </section>
+
+          <section class="terms-section">
+            <div class="terms-section-title">
+              <span class="terms-section-number">10.</span>
+              <h2>Szellemi tulajdon</h2>
+            </div>
+            <p>
+              A Szolgáltatás forráskódja, felhasználói felülete (UI), design elemei, grafikai és szöveges tartalmai –
+              eltérő jelzés hiányában – az Üzemeltető szellemi tulajdonát képezik és szerzői jogi védelem alatt
+              állnak. A Szolgáltatás bármely részének másolása, terjesztése vagy kereskedelmi célú felhasználása
+              kizárólag az Üzemeltető előzetes írásos engedélyével lehetséges.
+            </p>
+          </section>
+
+          <section class="terms-section">
+            <div class="terms-section-title">
+              <span class="terms-section-number">11.</span>
+              <h2>Adatkezelés</h2>
+            </div>
+            <p>
+              A személyes adatok kezelésének szabályait az Adatkezelési tájékoztató tartalmazza, amely a Szolgáltatás
+              felületén elérhető. A Felhasználó tudomásul veszi, hogy a Szolgáltatás működtetéséhez szükséges
+              mértékben adatkezelés történik.
+            </p>
+            <p>
+              A csoportfunkciók használata során a Felhasználó bizonyos adatai (pl. megjelenített név, csoporttagság,
+              részvételi jelzések) a csoport tagjai számára láthatóvá válhatnak; ennek részleteit az Adatkezelési
+              tájékoztató tartalmazza.
+            </p>
+          </section>
+
+          <section class="terms-section">
+            <div class="terms-section-title">
+              <span class="terms-section-number">12.</span>
+              <h2>A Feltételek módosítása</h2>
+            </div>
+            <p>
+              Az Üzemeltető jogosult a Feltételeket egyoldalúan módosítani. A módosítás a Szolgáltatás felületén
+              történő közzététellel lép hatályba a fenti Hatályos dátumtól. A Szolgáltatás további használata a
+              módosítások elfogadásának minősül.
+            </p>
+          </section>
+
+          <section class="terms-section">
+            <div class="terms-section-title">
+              <span class="terms-section-number">13.</span>
+              <h2>Irányadó jog és jogviták</h2>
+            </div>
+            <p>
+              Jelen Feltételekre a magyar jog az irányadó. A felek a vitákat elsődlegesen békés úton rendezik. Ennek
+              eredménytelensége esetén – a jogszabályok által megengedett keretek között – a jogvita elbírálására az
+              Üzemeltető lakóhelye szerint illetékes magyar bíróság jogosult.
+            </p>
+          </section>
+        </div>
+      </div>
+    }
   </section>
 </div>

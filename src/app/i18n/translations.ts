@@ -2079,6 +2079,86 @@ export const TRANSLATIONS = {
     en: 'Failed to load the captcha.',
   },
 
+  'faq.meta.title': { hu: 'GYIK - BeMyTeamMate', en: 'FAQ - BeMyTeamMate' },
+  'faq.meta.description': {
+    hu: 'Gyakran ismételt kérdések a BeMyTeamMate használatáról, eseményekről, csoportokról és ELO pontszámról.',
+    en: 'Frequently asked questions about using BeMyTeamMate, events, groups, and ELO rating.',
+  },
+  'faq.badge': { hu: 'GYIK', en: 'FAQ' },
+  'faq.hero.title': { hu: 'Gyakran ismételt kérdések', en: 'Frequently asked questions' },
+  'faq.hero.description': {
+    hu: 'Itt találod a leggyakoribb kérdésekre adott válaszokat a BeMyTeamMate használatáról.',
+    en: 'Here you can find answers to the most common questions about using BeMyTeamMate.',
+  },
+  'faq.item.createEvent.question': {
+    hu: 'Hogyan hozhatok létre új eseményt?',
+    en: 'How can I create a new event?',
+  },
+  'faq.item.createEvent.answer': {
+    hu: 'Lépj be a csoportodba, majd válaszd az "Új esemény" opciót. Add meg a sportágat, időpontot és a részleteket, és máris kiküldjük a meghívókat.',
+    en: 'Open your group, then choose the "New event" option. Enter the sport, date and time, and details, and we will send out the invitations right away.',
+  },
+  'faq.item.joinGroup.question': {
+    hu: 'Hogyan csatlakozhatok egy társasághoz?',
+    en: 'How can I join a group?',
+  },
+  'faq.item.joinGroup.answer': {
+    hu: 'Egy csoporthoz kétféle módon csatlakozhatsz:\n\n1. A "Tagságaim" menüponton belül kattints a "Csatlakozás" gombra, add meg a csoport nevét, ahová csatlakozni szeretnél. A kapitány jóváhagyása után azonnal látni fogod a közelgő eseményeket.\n\n2. A csoport kapitánya meghívhat téged e-mailben vagy felhasználónév alapján. A meghívó elfogadásával automatikusan csatlakozol a csoporthoz.',
+    en: 'There are two ways to join a group:\n\n1. In the "My groups" section, click the "Join" button and enter the name of the group you want to join. After the captain approves your request, you will immediately see the upcoming events.\n\n2. The group captain can invite you by email or username. When you accept the invitation, you join the group automatically.',
+  },
+  'faq.item.notifications.question': {
+    hu: 'Kapok értesítést az új eseményekről?',
+    en: 'Will I get notified about new events?',
+  },
+  'faq.item.notifications.answer': {
+    hu: 'Igen, push értesítéseket küldünk a beállításaid szerint. Ezeket a profilodban bármikor testreszabhatod.',
+    en: 'Yes, we send push notifications based on your settings. You can customize them in your profile at any time.',
+  },
+  'faq.item.rsvp.question': {
+    hu: 'Mit jelent az RSVP és hogyan működik?',
+    en: 'What does RSVP mean and how does it work?',
+  },
+  'faq.item.rsvp.answer': {
+    hu: 'Az RSVP jelzi, hogy részt veszel-e az eseményen. A meghívó felületen egy gombnyomással visszajelezhetsz, így a szervezők pontos létszámot látnak.',
+    en: 'RSVP indicates whether you are attending the event. On the invitation screen you can respond with one click, so organizers can see the exact headcount.',
+  },
+  'faq.item.reschedule.question': {
+    hu: 'Hogyan tudom módosítani az esemény időpontját?',
+    en: 'How can I change the event time?',
+  },
+  'faq.item.reschedule.answer': {
+    hu: 'Az esemény részletei oldalon a szervezők szerkeszthetik az időpontot. A változásról minden résztvevő automatikus értesítést kap.',
+    en: 'On the event details page, organizers can edit the date and time. Every participant receives an automatic notification about the change.',
+  },
+  'faq.item.elo.question': {
+    hu: 'Mi az ELO pont és hogyan frissül?',
+    en: 'What is the ELO rating and how is it updated?',
+  },
+  'faq.item.elo.answer': {
+    hu: 'Az ELO pont a játék után automatikusan frissül a megadott eredmények alapján. Az algoritmus az előző teljesítményedet és az ellenfelek erősségét is figyelembe veszi.',
+    en: 'The ELO rating is updated automatically after the match based on the recorded result. The algorithm also considers your previous performance and the strength of your opponents.',
+  },
+  'faq.item.eloCalculation.question': {
+    hu: 'Pontosan hogyan számolódik az ELO a meccs után?',
+    en: 'How exactly is ELO calculated after a match?',
+  },
+  'faq.item.eloCalculation.answer': {
+    hu: 'Először a két csapat átlag ELO-jából számoljuk ki a várható eredményt. A végeredmény alapján győzelemért, döntetlenért vagy vereségért jár egy csapaton belül azonos ELO-változás, majd ezt kiegészítheti egyéni bónusz: gól +3, gólpassz +2 ELO. Az MVP nyertesnek +5 ELO jár. Ha valakinek még nincs ELO-ja, a rendszer 1200-ról indul.',
+    en: 'First, we calculate the expected result from the average ELO of the two teams. Based on the final result, every player on the same team receives the same ELO change for a win, draw, or loss, then individual bonuses may apply: goal +3, assist +2 ELO. The MVP winner gets +5 ELO. If someone does not have an ELO yet, the system starts them at 1200.',
+  },
+  'faq.item.moreHelp.question': {
+    hu: 'Hol kérhetek további segítséget?',
+    en: 'Where can I get more help?',
+  },
+  'faq.item.moreHelp.answer': {
+    hu: 'Ha nem találtad a választ, írj nekünk a kapcsolat oldalon.',
+    en: 'If you did not find the answer, contact us on the contact page.',
+  },
+  'faq.item.moreHelp.link': {
+    hu: 'Ugrás a kapcsolatfelvételhez.',
+    en: 'Go to contact.',
+  },
+
   'landing.hero.badge': { hu: 'Új generációs csapatépítő', en: 'Next-gen team builder' },
   'landing.hero.title1': { hu: 'A legjobb meccsek', en: 'The best matches' },
   'landing.hero.title2': { hu: 'fair csapatokkal', en: 'with fair teams' },

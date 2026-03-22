@@ -2,41 +2,32 @@
   <section class="mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8 py-12">
     <div class="grid gap-8 lg:grid-cols-[1.05fr,0.95fr] items-start min-w-0">
       <div class="space-y-6 min-w-0">
-        <div class="inline-flex items-center gap-3 rounded-full border border-white/10 bg-white/5 px-4 py-1.5 text-xs uppercase tracking-[0.2em] text-white/70">
-          Kapcsolat
-        </div>
+        <!-- <div class="inline-flex items-center gap-3 rounded-full border border-white/10 bg-white/5 px-4 py-1.5 text-xs uppercase tracking-[0.2em] text-white/70">
+          {{ 'contact.badge' | transloco }}
+        </div> -->
         <h1 class="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight text-white">
-          Üzenj a csapatnak, mi itt vagyunk.
+          {{ 'contact.hero.title' | transloco }}
         </h1>
         <p class="text-base sm:text-lg text-white/70 max-w-xl">
-          Írj röviden, miben segíthetünk. Legyen szó kérdésről, javaslatról vagy visszajelzésről, örömmel hallunk felőled!
+          {{ 'contact.hero.description' | transloco }}
         </p>
 
         <div class="grid gap-4 sm:grid-cols-1 min-w-0">
           <div class="w-full min-w-0 rounded-2xl border border-white/10 bg-white/5 p-4">
             <div class="flex items-center gap-3 text-sm font-semibold text-white">
               <span class="material-symbols-outlined text-primary">support_agent</span>
-              Gyors visszajelzés
+              {{ 'contact.feature.fastResponse.title' | transloco }}
             </div>
             <p class="mt-2 text-sm text-white/70">
-              Átlátható üzenetkezelés, hamarosan jelentkezünk.
+              {{ 'contact.feature.fastResponse.description' | transloco }}
             </p>
           </div>
-          <!-- <div class="rounded-2xl border border-white/10 bg-white/5 p-4">
-            <div class="flex items-center gap-3 text-sm font-semibold text-white">
-              <span class="material-symbols-outlined text-primary">security</span>
-              Vedett uzenetkuldes
-            </div>
-            <p class="mt-2 text-sm text-white/70">
-              Turnstile captcha, honeypot es rate limit vedelmet hasznalunk.
-            </p>
-          </div> -->
         </div>
       </div>
 
       <div class="w-full min-w-0 rounded-2xl border border-white/10 bg-white/5 p-6 shadow-2xl backdrop-blur">
-        <h2 class="text-xl font-bold text-white">Üzenet küldése</h2>
-        <p class="mt-1 text-sm text-white/60">A *-gal jelölt mezők kitöltése kötelező.</p>
+        <h2 class="text-xl font-bold text-white">{{ 'contact.form.title' | transloco }}</h2>
+        <p class="mt-1 text-sm text-white/60">{{ 'contact.form.requiredHint' | transloco }}</p>
 
         @if (errorMessage()) {
           <div class="mt-4 rounded-xl border border-red-500/40 bg-red-500 text-white px-4 py-3 text-sm">
@@ -53,14 +44,14 @@
         <form class="mt-6 space-y-5" [formGroup]="contactForm" (ngSubmit)="onSubmit()">
           <div>
             <label for="contact-email" class="block text-xs font-semibold uppercase tracking-wide text-white/60">
-              E-mail *
+              {{ 'contact.field.email' | transloco }}
             </label>
             <div class="mt-2">
               <input
                 id="contact-email"
                 type="email"
                 formControlName="email"
-                placeholder="pelda@email.hu"
+                [placeholder]="'contact.field.emailPlaceholder' | transloco"
                 class="h-11 w-full rounded-md border border-white/10 bg-dark-accent/50 px-4 text-sm text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-primary"
               />
             </div>
@@ -68,19 +59,19 @@
 
           <div>
             <label for="contact-message" class="block text-xs font-semibold uppercase tracking-wide text-white/60">
-              Üzenet *
+              {{ 'contact.field.message' | transloco }}
             </label>
             <div class="mt-2">
               <textarea
                 id="contact-message"
                 formControlName="message"
                 rows="6"
-                placeholder="Írd ide a kérdésed vagy javaslatod..."
+                [placeholder]="'contact.field.messagePlaceholder' | transloco"
                 class="w-full rounded-md border border-white/10 bg-dark-accent/50 px-4 py-3 text-sm text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-primary"
               ></textarea>
             </div>
             <div class="mt-2 flex items-center justify-between text-xs text-white/50">
-              <span>Minimum 10 karakter.</span>
+              <span>{{ 'contact.field.messageMinimum' | transloco: { count: 10 } }}</span>
               <span>{{ messageCount }}/2000</span>
             </div>
           </div>
@@ -107,9 +98,9 @@
             <span class="relative z-10 flex items-center gap-2">
               @if (isLoading()) {
                 <span class="material-symbols-outlined animate-spin">progress_activity</span>
-                Küldés folyamatban...
+                {{ 'contact.submit.loading' | transloco }}
               } @else {
-                Küldés
+                {{ 'contact.submit.idle' | transloco }}
                 <span class="material-symbols-outlined text-[18px] transition-transform group-hover:translate-x-1">send</span>
               }
             </span>

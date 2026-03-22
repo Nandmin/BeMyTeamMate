@@ -1843,6 +1843,242 @@ export const TRANSLATIONS = {
     en: 'The service is currently unavailable.',
   },
 
+  'profile.meta.title': { hu: 'Profil - BeMyTeamMate', en: 'Profile - BeMyTeamMate' },
+  'profile.meta.description': {
+    hu: 'Felhasználói profil, statisztikák és csoportok áttekintése.',
+    en: 'User profile with statistics and group overview.',
+  },
+  'profile.defaults.userName': { hu: 'Felhasználó', en: 'User' },
+  'profile.defaults.activeMember': { hu: 'Aktív tag', en: 'Active member' },
+  'profile.defaults.noMembership': { hu: 'Nincs tagsága', en: 'No memberships' },
+  'profile.defaults.active': { hu: 'Aktív', en: 'Active' },
+  'profile.defaults.inactive': { hu: 'Inaktív', en: 'Inactive' },
+  'profile.defaults.noBio': {
+    hu: 'Ez a felhasználó még nem írt bemutatkozást.',
+    en: 'This user has not added a bio yet.',
+  },
+  'profile.defaults.noChanges': { hu: 'Nincs változtatás.', en: 'No changes.' },
+  'profile.sidebar.personal': { hu: 'Személyes adatok', en: 'Personal details' },
+  'profile.sidebar.groups': { hu: 'Tagságaim', en: 'My groups' },
+  'profile.sidebar.notifications': { hu: 'Értesítések', en: 'Notifications' },
+  'profile.sidebar.privacy': { hu: 'Adatvédelem', en: 'Privacy' },
+  'profile.section.editTitle': { hu: 'Profil szerkesztése', en: 'Edit profile' },
+  'profile.section.viewTitle': { hu: 'Felhasználói profil', en: 'User profile' },
+  'profile.section.updatedAt': { hu: 'Utoljára frissítve', en: 'Last updated' },
+  'profile.field.displayName': { hu: 'Felhasználónév', en: 'Display name' },
+  'profile.field.photo': { hu: 'Profilkép', en: 'Profile photo' },
+  'profile.field.bio': { hu: 'Bemutatkozás', en: 'Bio' },
+  'profile.field.elo': { hu: 'ELO pontszám', en: 'ELO rating' },
+  'profile.field.email': { hu: 'E-mail cím', en: 'Email address' },
+  'profile.form.displayName': { hu: 'Megjelenített név', en: 'Display name' },
+  'profile.form.email': { hu: 'E-mail cím', en: 'Email address' },
+  'profile.form.bio': { hu: 'Bemutatkozás', en: 'Bio' },
+  'profile.form.bioPlaceholder': { hu: 'Mesélj magadról...', en: 'Tell us about yourself...' },
+  'profile.password.title': { hu: 'Jelszó megváltoztatása', en: 'Change password' },
+  'profile.password.current': { hu: 'Jelenlegi jelszó', en: 'Current password' },
+  'profile.password.new': { hu: 'Új jelszó', en: 'New password' },
+  'profile.password.confirm': { hu: 'Új jelszó ismét', en: 'Confirm new password' },
+  'profile.password.currentRequired': {
+    hu: 'Add meg a jelenlegi jelszavadat.',
+    en: 'Enter your current password.',
+  },
+  'profile.password.newMinLength': {
+    hu: 'Az új jelszónak legalább 6 karakter hosszúnak kell lennie.',
+    en: 'The new password must be at least 6 characters long.',
+  },
+  'profile.password.mismatch': {
+    hu: 'Az új jelszavak nem egyeznek.',
+    en: 'The new passwords do not match.',
+  },
+  'profile.password.changed': { hu: 'Jelszó megváltoztatva', en: 'Password changed' },
+  'profile.actions.save': { hu: 'Mentés', en: 'Save' },
+  'profile.actions.viewGroup': { hu: 'Megtekintés', en: 'View' },
+  'profile.groups.title': { hu: 'Tagságaim', en: 'My groups' },
+  'profile.groups.descriptionOwn': { hu: 'Tekintsd át a csapataidat.', en: 'Review your teams.' },
+  'profile.groups.descriptionOther': {
+    hu: '{{name}} csapatai.',
+    en: "{{name}}'s teams.",
+  },
+  'profile.groups.memberCount': { hu: '{{count}} tag', en: '{{count}} members' },
+  'profile.groups.nextEvent': { hu: 'Következő esemény', en: 'Next event' },
+  'profile.groups.viewRestricted': {
+    hu: 'Csak olyan csoport nyitható meg, amiben te is tag vagy, vagy site admin vagy.',
+    en: 'You can only open groups you belong to unless you are a site admin.',
+  },
+  'profile.groups.emptyOwn': {
+    hu: 'Még nem tartozol egyetlen társasághoz sem.',
+    en: 'You do not belong to any groups yet.',
+  },
+  'profile.groups.emptyOther': {
+    hu: 'Ez a felhasználó még nem tartozik egyetlen társasághoz sem.',
+    en: 'This user does not belong to any groups yet.',
+  },
+  'profile.notifications.push.title': { hu: 'Push értesítések', en: 'Push notifications' },
+  'profile.notifications.push.description': {
+    hu: 'Csoport eseményekről küldött értesítések.',
+    en: 'Notifications sent about group events.',
+  },
+  'profile.notifications.pushEnabled': {
+    hu: 'Push értesítések bekapcsolva.',
+    en: 'Push notifications enabled.',
+  },
+  'profile.notifications.pushDisabled': {
+    hu: 'Push értesítések kikapcsolva.',
+    en: 'Push notifications disabled.',
+  },
+  'profile.notifications.pushFallbackError': {
+    hu: 'Nem sikerült a push értesítések kezelése.',
+    en: 'Failed to manage push notifications.',
+  },
+  'profile.notifications.invites.title': { hu: 'Meghívások', en: 'Invitations' },
+  'profile.notifications.invites.description': {
+    hu: 'Értesítés új társaság meghívásról.',
+    en: 'Notifications about new group invitations.',
+  },
+  'profile.privacy.title': { hu: 'Adatvédelem', en: 'Privacy' },
+  'profile.privacy.description': {
+    hu: 'Kezeld a személyes adataidat és a fiókodat.',
+    en: 'Manage your personal data and account.',
+  },
+  'profile.privacy.analytics.title': { hu: 'Analitikai sütik', en: 'Analytics cookies' },
+  'profile.privacy.analytics.description': {
+    hu: 'Google Analytics alapú látogatottsági mérés engedélyezése',
+    en: 'Allow Google Analytics based traffic measurement',
+  },
+  'profile.privacy.analyticsEnabled': {
+    hu: 'Az analitikai sütik engedélyezése sikeres.',
+    en: 'Analytics cookies enabled successfully.',
+  },
+  'profile.privacy.analyticsDisabled': {
+    hu: 'Az analitikai sütik tiltása sikeres. A következő oldalbetöltéstől érvényes.',
+    en: 'Analytics cookies disabled successfully. It takes effect from the next page load.',
+  },
+  'profile.privacy.deleteRegistration.title': { hu: 'Regisztráció törlése', en: 'Delete registration' },
+  'profile.privacy.deleteRegistration.description': {
+    hu: 'A fiók törlésének kérelmezése',
+    en: 'Request account deletion',
+  },
+  'profile.privacy.deleteRegistration.action': { hu: 'Fiók törlése', en: 'Delete account' },
+  'profile.privacy.captchaLoading': { hu: 'Captcha betöltése...', en: 'Loading captcha...' },
+  'profile.modal.successTitle': { hu: 'Siker', en: 'Success' },
+  'profile.modal.errorTitle': { hu: 'Hiba', en: 'Error' },
+  'profile.modal.privacyTitle': { hu: 'Adatvédelem', en: 'Privacy' },
+  'profile.modal.deleteRegistrationTitle': {
+    hu: 'Regisztráció törlése',
+    en: 'Delete registration',
+  },
+  'profile.photo.fileTooLarge': {
+    hu: 'A fájl mérete nem lehet nagyobb, mint 1MB.',
+    en: 'The file size cannot be larger than 1 MB.',
+  },
+  'profile.photo.updated': { hu: 'Profilkép frissítve.', en: 'Profile photo updated.' },
+  'profile.photo.updateError': {
+    hu: 'Hiba történt a kép frissítésekor.',
+    en: 'An error occurred while updating the photo.',
+  },
+  'profile.photo.deleteConfirm': {
+    hu: 'Biztosan törlöd a profilképedet?',
+    en: 'Are you sure you want to delete your profile photo?',
+  },
+  'profile.save.profileSaved': { hu: 'Profil mentve', en: 'Profile saved' },
+  'profile.save.completed': { hu: '{{items}} sikeresen.', en: '{{items}} completed successfully.' },
+  'profile.delete.confirmMessage': {
+    hu: 'Biztosan törölni szeretnéd a regisztrációdat? A művelet nem vonható vissza és minden adatod véglegesen törlésre kerül.',
+    en: 'Are you sure you want to delete your registration? This action cannot be undone and all your data will be deleted permanently.',
+  },
+  'profile.delete.confirmAction': { hu: 'Végleges törlés', en: 'Delete permanently' },
+  'profile.delete.robotCheck': {
+    hu: 'Kérlek igazold, hogy nem vagy robot! Töltsd ki a Captchát a gomb közelében.',
+    en: 'Please verify that you are not a robot. Complete the captcha near the button.',
+  },
+  'profile.delete.requestFailed': {
+    hu: 'Sikertelen kérelem: {{detail}}',
+    en: 'Request failed: {{detail}}',
+  },
+  'profile.delete.requestAccepted': {
+    hu: 'A törlési kérelmedet fogadtuk. A fiókod hamarosan törlésre kerül.',
+    en: 'We received your deletion request. Your account will be deleted soon.',
+  },
+  'profile.delete.requestSendFailed': {
+    hu: 'Nem sikerült elküldeni a kérelmet: {{message}}',
+    en: 'Failed to send the request: {{message}}',
+  },
+
+  'contact.meta.title': { hu: 'Kapcsolat - BeMyTeamMate', en: 'Contact - BeMyTeamMate' },
+  'contact.meta.description': {
+    hu: 'Vedd fel velünk a kapcsolatot, és írj üzenetet a csapatnak.',
+    en: 'Get in touch with us and send a message to the team.',
+  },
+  'contact.badge': { hu: 'Kapcsolat', en: 'Contact' },
+  'contact.hero.title': {
+    hu: 'Üzenj a csapatnak, mi itt vagyunk.',
+    en: 'Send a message to the team, we are here.',
+  },
+  'contact.hero.description': {
+    hu: 'Írj röviden, miben segíthetünk. Legyen szó kérdésről, javaslatról vagy visszajelzésről, örömmel hallunk felőled.',
+    en: 'Tell us briefly how we can help. Whether it is a question, suggestion, or feedback, we would be glad to hear from you.',
+  },
+  'contact.feature.fastResponse.title': { hu: 'Gyors visszajelzés', en: 'Quick response' },
+  'contact.feature.fastResponse.description': {
+    hu: 'Átlátható üzenetkezelés, hamarosan jelentkezünk.',
+    en: 'Clear message handling, we will get back to you soon.',
+  },
+  'contact.form.title': { hu: 'Üzenet küldése', en: 'Send a message' },
+  'contact.form.requiredHint': {
+    hu: 'A *-gal jelölt mezők kitöltése kötelező.',
+    en: 'Fields marked with * are required.',
+  },
+  'contact.field.email': { hu: 'E-mail *', en: 'Email *' },
+  'contact.field.emailPlaceholder': { hu: 'pelda@email.hu', en: 'name@example.com' },
+  'contact.field.message': { hu: 'Üzenet *', en: 'Message *' },
+  'contact.field.messagePlaceholder': {
+    hu: 'Írd ide a kérdésed vagy javaslatod...',
+    en: 'Write your question or suggestion here...',
+  },
+  'contact.field.messageMinimum': { hu: 'Minimum {{count}} karakter.', en: 'Minimum {{count}} characters.' },
+  'contact.submit.loading': { hu: 'Küldés folyamatban...', en: 'Sending...' },
+  'contact.submit.idle': { hu: 'Küldés', en: 'Send' },
+  'contact.error.captchaMissing': {
+    hu: 'A captcha nincs beállítva. Kérlek, próbáld meg később.',
+    en: 'Captcha is not configured. Please try again later.',
+  },
+  'contact.error.rateLimited': {
+    hu: 'Túllépted az adott időszak alatt küldhető üzenetek számát.',
+    en: 'You have exceeded the number of messages allowed in this time period.',
+  },
+  'contact.success.recorded': {
+    hu: 'Köszönjük, az üzenetet rögzítettük.',
+    en: 'Thank you, your message has been recorded.',
+  },
+  'contact.success.recordedWithBang': {
+    hu: 'Köszönjük, az üzenetet rögzítettük!',
+    en: 'Thank you, your message has been recorded!',
+  },
+  'contact.error.robotCheck': {
+    hu: 'Kérlek igazold, hogy nem vagy robot!',
+    en: 'Please verify that you are not a robot.',
+  },
+  'contact.error.endpointMissing': {
+    hu: 'A kapcsolat endpoint nincs beállítva.',
+    en: 'The contact endpoint is not configured.',
+  },
+  'contact.error.sendFailedDetail': {
+    hu: 'Az üzenet küldése sikertelen!',
+    en: 'Sending the message failed.',
+  },
+  'contact.error.sendFailed': {
+    hu: 'Sikertelen üzenetküldés! Kérlek, próbáld újra!',
+    en: 'Failed to send the message. Please try again.',
+  },
+  'contact.error.turnstileSiteKeyMissing': {
+    hu: 'Turnstile site key nincs beállítva.',
+    en: 'Turnstile site key is not configured.',
+  },
+  'contact.error.turnstileLoadFailed': {
+    hu: 'Nem sikerült betölteni a captchát.',
+    en: 'Failed to load the captcha.',
+  },
+
   'landing.hero.badge': { hu: 'Új generációs csapatépítő', en: 'Next-gen team builder' },
   'landing.hero.title1': { hu: 'A legjobb meccsek', en: 'The best matches' },
   'landing.hero.title2': { hu: 'fair csapatokkal', en: 'with fair teams' },

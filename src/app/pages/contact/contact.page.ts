@@ -1,16 +1,27 @@
-import { AfterViewInit, Component, ElementRef, OnDestroy, ViewChild, inject, signal } from '@angular/core';
+import {
+  AfterViewInit,
+  Component,
+  ElementRef,
+  OnDestroy,
+  ViewChild,
+  effect,
+  inject,
+  signal,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { AppCheck } from '@angular/fire/app-check';
+import { TranslocoPipe } from '@jsverse/transloco';
 import { AuthService } from '../../services/auth.service';
 import { environment } from '../../../environments/environment';
 import { SeoService } from '../../services/seo.service';
+import { LanguageService } from '../../services/language.service';
 import { getAppCheckTokenOrNull } from '../../utils/app-check.util';
 
 @Component({
   selector: 'app-contact-page',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, TranslocoPipe],
   templateUrl: './contact.page.html',
   styleUrl: './contact.page.scss',
 })
@@ -19,6 +30,7 @@ export class ContactPage implements AfterViewInit, OnDestroy {
   private appCheck = inject(AppCheck, { optional: true });
   private fb = inject(FormBuilder);
   private seo = inject(SeoService);
+  protected readonly languageService = inject(LanguageService);
 
   @ViewChild('turnstileContainer', { static: false })
   turnstileContainer?: ElementRef<HTMLDivElement>;
@@ -46,11 +58,14 @@ export class ContactPage implements AfterViewInit, OnDestroy {
   private readonly cooldownKey = 'contact:lastSentAt';
 
   constructor() {
-    this.seo.setPageMeta({
-      title: 'Kapcsolat – BeMyTeamMate',
-      description: 'Vedd fel velünk a kapcsolatot, és írj üzenetet a csapatnak.',
-      path: '/contact',
-      noindex: true,
+    effect(() => {
+      this.languageService.currentLanguage();
+      this.seo.setPageMeta({
+        title: this.languageService.t('contact.meta.title'),
+        description: this.languageService.t('contact.meta.description'),
+        path: '/contact',
+        noindex: true,
+      });
     });
   }
 
@@ -73,12 +88,12 @@ export class ContactPage implements AfterViewInit, OnDestroy {
     this.successMessage.set('');
 
     if (!this.isTurnstileConfigured()) {
-      this.errorMessage.set('A captcha nincs beállítva. Kérlek, próbáld meg később.');
+      this.errorMessage.set(this.languageService.t('contact.error.captchaMissing'));
       return;
     }
 
     if (this.isRateLimited()) {
-      this.errorMessage.set('Túlléptél az adott időszak alatt küldhető üzenetek számán.');
+      this.errorMessage.set(this.languageService.t('contact.error.rateLimited'));
       return;
     }
 
@@ -89,14 +104,14 @@ export class ContactPage implements AfterViewInit, OnDestroy {
 
     const honeypot = this.contactForm.get('honeypot')?.value || '';
     if (typeof honeypot === 'string' && honeypot.trim().length > 0) {
-      this.successMessage.set('Köszönjük, az üzenetet rögzítettük.');
+      this.successMessage.set(this.languageService.t('contact.success.recorded'));
       this.contactForm.reset();
       return;
     }
 
     const token = this.turnstileToken();
     if (!token) {
-      this.errorMessage.set('Kérlek igazold, hogy nem vagy robot!');
+      this.errorMessage.set(this.languageService.t('contact.error.robotCheck'));
       return;
     }
 
@@ -104,7 +119,7 @@ export class ContactPage implements AfterViewInit, OnDestroy {
     const contactEmail = String(this.contactForm.get('email')?.value || '').trim();
 
     if (!this.isWorkerConfigured()) {
-      this.errorMessage.set('A kapcsolat endpoint nincs beállítva.');
+      this.errorMessage.set(this.languageService.t('contact.error.endpointMissing'));
       return;
     }
 
@@ -141,17 +156,17 @@ export class ContactPage implements AfterViewInit, OnDestroy {
 
       if (!response.ok) {
         const detail = await response.text();
-        throw new Error(detail || 'Az üzenet küldése sikertelen!');
+        throw new Error(detail || this.languageService.t('contact.error.sendFailedDetail'));
       }
 
-      this.successMessage.set('Köszönjük, az üzenetet rögzítettük!');
+      this.successMessage.set(this.languageService.t('contact.success.recordedWithBang'));
       this.contactForm.reset();
       this.turnstileToken.set('');
       this.storeCooldown();
       this.resetTurnstile();
     } catch (error: any) {
       console.error('Contact submit failed:', error);
-      this.errorMessage.set('Sikertelen üzenetküldés! Kérlek, próbáld újra!');
+      this.errorMessage.set(this.languageService.t('contact.error.sendFailed'));
     } finally {
       this.isLoading.set(false);
     }
@@ -189,7 +204,7 @@ export class ContactPage implements AfterViewInit, OnDestroy {
 
   private loadTurnstile() {
     if (!this.isTurnstileConfigured()) {
-      this.turnstileError.set('Turnstile site key nincs beállítva.');
+      this.turnstileError.set(this.languageService.t('contact.error.turnstileSiteKeyMissing'));
       return;
     }
 
@@ -221,7 +236,7 @@ export class ContactPage implements AfterViewInit, OnDestroy {
     script.defer = true;
     script.onload = renderWidget;
     script.onerror = () => {
-      this.turnstileError.set('Nem sikerült betölteni a captchat.');
+      this.turnstileError.set(this.languageService.t('contact.error.turnstileLoadFailed'));
     };
     document.head.appendChild(script);
   }

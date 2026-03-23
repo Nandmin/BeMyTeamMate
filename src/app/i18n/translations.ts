@@ -1557,6 +1557,26 @@ export const TRANSLATIONS = {
   'cookie.accept': { hu: 'Elfogadom', en: 'Accept' },
   'cookie.decline': { hu: 'Elutasítom', en: 'Decline' },
 
+  'coverImageSelector.title': { hu: 'Borítókép kiválasztása', en: 'Select a cover image' },
+  'coverImageSelector.description': {
+    hu: 'Válassz egy képet a galériából',
+    en: 'Choose an image from the gallery',
+  },
+  'coverImageSelector.filter.label': { hu: 'Sportág', en: 'Sport' },
+  'coverImageSelector.filter.hint': {
+    hu: 'Itt választhatod ki, milyen témára szeretnéd szűkíteni a megjelenő képeket.',
+    en: 'Here you can narrow down the displayed images by theme.',
+  },
+  'coverImageSelector.filter.all': { hu: 'Összes', en: 'All' },
+  'coverImageSelector.tags.mixed': { hu: 'Vegyes', en: 'Mixed' },
+  'coverImageSelector.tags.americanFootball': {
+    hu: 'Amerikai foci',
+    en: 'American football',
+  },
+  'coverImageSelector.tags.badminton': { hu: 'Tollaslabda', en: 'Badminton' },
+  'coverImageSelector.tags.tableTennis': { hu: 'Pingpong', en: 'Table tennis' },
+  'coverImageSelector.actions.cancel': { hu: 'Mégse', en: 'Cancel' },
+
   'login.meta.title': { hu: 'Bejelentkezés – BeMyTeamMate', en: 'Sign in - BeMyTeamMate' },
   'login.meta.description': {
     hu: 'Lépj be, szervezd a következő meccset és kezeld a csapatodat egy helyen.',

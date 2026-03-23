@@ -1,15 +1,29 @@
-import { Component, EventEmitter, Input, Output, OnChanges, SimpleChanges, HostListener } from '@angular/core';
+import {
+  Component,
+  EventEmitter,
+  inject,
+  HostListener,
+  Input,
+  OnChanges,
+  Output,
+  SimpleChanges,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { TranslationKey } from '../../i18n/translations';
 import { CoverImageEntry } from '../../services/cover-images.service';
+import { LanguageService } from '../../services/language.service';
+import { TranslatePipe } from '../../pipes/translate.pipe';
 
 @Component({
   selector: 'app-cover-image-selector',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, TranslatePipe],
   templateUrl: './cover-image-selector.component.html',
   styleUrl: './cover-image-selector.component.scss',
 })
 export class CoverImageSelectorComponent implements OnChanges {
+  private readonly languageService = inject(LanguageService);
+
   @Input() show = false;
   @Input() images: CoverImageEntry[] = [];
   @Input() selectedImage: number | string | null = null;
@@ -71,6 +85,11 @@ export class CoverImageSelectorComponent implements OnChanges {
     return this.currentPage < this.totalPages - 1;
   }
 
+  getTagLabel(tag: string): string {
+    const key = this.getTagTranslationKey(tag);
+    return key ? this.languageService.t(key) : tag;
+  }
+
   onTagChange(event: Event) {
     const value = (event.target as HTMLSelectElement | null)?.value ?? '';
     this.selectedTag = value;
@@ -117,6 +136,43 @@ export class CoverImageSelectorComponent implements OnChanges {
     const maxPageIndex = Math.max(0, this.totalPages - 1);
     if (this.currentPage > maxPageIndex) {
       this.currentPage = maxPageIndex;
+    }
+  }
+
+  private getTagTranslationKey(tag: string): TranslationKey | null {
+    const normalized = tag
+      .trim()
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '');
+
+    switch (normalized) {
+      case 'vegyes':
+        return 'coverImageSelector.tags.mixed';
+      case 'foci':
+      case 'soccer':
+      case 'football':
+        return 'createEvent.sport.soccer';
+      case 'kosarlabda':
+      case 'basketball':
+        return 'createEvent.sport.basketball';
+      case 'jegkorong':
+      case 'hockey':
+        return 'createEvent.sport.hockey';
+      case 'tenisz':
+      case 'tennis':
+        return 'createEvent.sport.tennis';
+      case 'amerikai foci':
+      case 'american football':
+        return 'coverImageSelector.tags.americanFootball';
+      case 'tollaslabda':
+      case 'badminton':
+        return 'coverImageSelector.tags.badminton';
+      case 'pingpong':
+      case 'table tennis':
+        return 'coverImageSelector.tags.tableTennis';
+      default:
+        return null;
     }
   }
 }

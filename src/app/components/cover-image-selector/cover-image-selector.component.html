@@ -1,88 +1,111 @@
 @if (show) {
-<div class="cover-selector-backdrop fixed inset-0 z-[100] flex justify-center p-4 bg-background-dark/90 backdrop-blur-sm animate-fade-in"
-    [class.items-center]="!offsetTopClass" [class.items-start]="!!offsetTopClass" [ngClass]="offsetTopClass"
-    (click)="onBackdropClick()">
-    <div class="cover-selector-dialog w-full max-w-4xl bg-card-dark border border-white/10 rounded-2xl p-6 shadow-2xl animate-slide-up flex flex-col max-h-[85vh] overflow-hidden"
-        (click)="$event.stopPropagation()">
-
-        <div class="flex items-center justify-between mb-6">
-            <div>
-                <h3 class="text-xl font-bold text-white">Borítókép kiválasztása</h3>
-                <p class="text-sm text-gray-400">Válassz egy képet a galériából</p>
-            </div>
-            <button (click)="close.emit()"
-                class="cover-selector-close p-2 rounded-lg hover:bg-white/5 text-gray-400 hover:text-white transition-colors">
-                <span class="material-symbols-outlined">close</span>
-            </button>
-        </div>
-
-        <div class="flex items-center gap-3 mb-4">
-            <label class="text-sm text-gray-300">Sportág</label>
-            <span
-                class="material-symbols-outlined text-gray-400 text-base cursor-help"
-                title="Itt választhatod ki, milyen témára szeretnéd szűkíteni a megjelenő képeket.">info</span>
-            <select [value]="selectedTag" (change)="onTagChange($event)" [disabled]="disabled"
-                class="cover-selector-select bg-black/40 border border-white/10 text-white rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/60">
-                <option value="">Összes</option>
-                @for (tag of availableTags; track tag) {
-                <option [value]="tag">{{ tag }}</option>
-                }
-            </select>
-        </div>
-
-        <div class="flex-1 min-h-0 flex flex-col">
-            <div class="cover-image-grid grid gap-4 pr-1 pb-4 flex-1 min-h-0">
-                @for (img of pagedImages; track img.id) {
-                <button (click)="onSelect(img.id)" [disabled]="disabled"
-                    class="cover-selector-tile relative w-full aspect-video rounded-xl overflow-hidden group border-2 transition-all hover:scale-[1.02]"
-                    [class.border-primary]="selectedImage === img.id"
-                    [class.border-transparent]="selectedImage !== img.id">
-                    <img [src]="img.src" class="w-full h-full object-cover" loading="lazy">
-                    <div
-                        class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                        <span class="material-symbols-outlined text-white text-3xl">check_circle</span>
-                    </div>
-                    @if (selectedImage === img.id) {
-                    <div class="absolute inset-0 bg-primary/20 flex items-center justify-center">
-                        <span class="material-symbols-outlined text-white text-3xl drop-shadow-md">check_circle</span>
-                    </div>
-                    }
-                </button>
-                }
-            </div>
-
-            @if (totalPages > 1) {
-            <div class="mt-1 h-8"></div>
-            }
-        </div>
-
-        <div class="cover-selector-footer mt-6 pt-4 border-t border-white/10">
-            <div class="flex items-center gap-4">
-                @if (totalPages > 1) {
-                <div class="flex-1 min-w-0 flex justify-center pr-2 sm:pr-4">
-                    <div class="flex items-center gap-4">
-                        <button (click)="goPrevPage()" [disabled]="disabled || !canGoPrev"
-                            class="cover-selector-page-btn px-2 py-0 rounded-lg border border-white/10 text-sm text-white hover:bg-white/5 transition-all disabled:opacity-50 disabled:hover:bg-transparent">
-                            <span class="material-symbols-outlined">chevron_left</span>
-                        </button>
-                        <div class="text-sm text-gray-300">
-                            {{ currentPage + 1 }} / {{ totalPages }}
-                        </div>
-                        <button (click)="goNextPage()" [disabled]="disabled || !canGoNext"
-                            class="cover-selector-page-btn px-2 py-0 rounded-lg border border-white/10 text-sm text-white hover:bg-white/5 transition-all disabled:opacity-50 disabled:hover:bg-transparent">
-                            <span class="material-symbols-outlined">chevron_right</span>
-                        </button>
-                    </div>
-                </div>
-                } @else {
-                <div class="flex-1"></div>
-                }
-                <button (click)="close.emit()"
-                    class="cover-selector-cancel shrink-0 px-6 py-2.5 border border-white/10 rounded-xl text-white font-bold hover:bg-white/5 transition-all">
-                    Mégse
-                </button>
-            </div>
-        </div>
+<div
+  class="cover-selector-backdrop fixed inset-0 z-[100] flex justify-center p-4 bg-background-dark/90 backdrop-blur-sm animate-fade-in"
+  [class.items-center]="!offsetTopClass"
+  [class.items-start]="!!offsetTopClass"
+  [ngClass]="offsetTopClass"
+  (click)="onBackdropClick()"
+>
+  <div
+    class="cover-selector-dialog w-full max-w-4xl bg-card-dark border border-white/10 rounded-2xl p-6 shadow-2xl animate-slide-up flex flex-col max-h-[85vh] overflow-hidden"
+    (click)="$event.stopPropagation()"
+  >
+    <div class="flex items-center justify-between mb-6">
+      <div>
+        <h3 class="text-xl font-bold text-white">{{ 'coverImageSelector.title' | t }}</h3>
+        <p class="text-sm text-gray-400">{{ 'coverImageSelector.description' | t }}</p>
+      </div>
+      <button
+        (click)="close.emit()"
+        class="cover-selector-close p-2 rounded-lg hover:bg-white/5 text-gray-400 hover:text-white transition-colors"
+      >
+        <span class="material-symbols-outlined">close</span>
+      </button>
     </div>
+
+    <div class="flex items-center gap-3 mb-4">
+      <label class="text-sm text-gray-300">{{ 'coverImageSelector.filter.label' | t }}</label>
+      <span
+        class="material-symbols-outlined text-gray-400 text-base cursor-help"
+        [title]="'coverImageSelector.filter.hint' | t"
+        >info</span
+      >
+      <select
+        [value]="selectedTag"
+        (change)="onTagChange($event)"
+        [disabled]="disabled"
+        class="cover-selector-select bg-black/40 border border-white/10 text-white rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/60"
+      >
+        <option value="">{{ 'coverImageSelector.filter.all' | t }}</option>
+        @for (tag of availableTags; track tag) {
+        <option [value]="tag">{{ getTagLabel(tag) }}</option>
+        }
+      </select>
+    </div>
+
+    <div class="flex-1 min-h-0 flex flex-col">
+      <div class="cover-image-grid grid gap-4 pr-1 pb-4 flex-1 min-h-0">
+        @for (img of pagedImages; track img.id) {
+        <button
+          (click)="onSelect(img.id)"
+          [disabled]="disabled"
+          class="cover-selector-tile relative w-full aspect-video rounded-xl overflow-hidden group border-2 transition-all hover:scale-[1.02]"
+          [class.border-primary]="selectedImage === img.id"
+          [class.border-transparent]="selectedImage !== img.id"
+        >
+          <img [src]="img.src" class="w-full h-full object-cover" loading="lazy" />
+          <div
+            class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"
+          >
+            <span class="material-symbols-outlined text-white text-3xl">check_circle</span>
+          </div>
+          @if (selectedImage === img.id) {
+          <div class="absolute inset-0 bg-primary/20 flex items-center justify-center">
+            <span class="material-symbols-outlined text-white text-3xl drop-shadow-md">check_circle</span>
+          </div>
+          }
+        </button>
+        }
+      </div>
+
+      @if (totalPages > 1) {
+      <div class="mt-1 h-8"></div>
+      }
+    </div>
+
+    <div class="cover-selector-footer mt-6 pt-4 border-t border-white/10">
+      <div class="flex items-center gap-4">
+        @if (totalPages > 1) {
+        <div class="flex-1 min-w-0 flex justify-center pr-2 sm:pr-4">
+          <div class="flex items-center gap-4">
+            <button
+              (click)="goPrevPage()"
+              [disabled]="disabled || !canGoPrev"
+              class="cover-selector-page-btn px-2 py-0 rounded-lg border border-white/10 text-sm text-white hover:bg-white/5 transition-all disabled:opacity-50 disabled:hover:bg-transparent"
+            >
+              <span class="material-symbols-outlined">chevron_left</span>
+            </button>
+            <div class="text-sm text-gray-300">{{ currentPage + 1 }} / {{ totalPages }}</div>
+            <button
+              (click)="goNextPage()"
+              [disabled]="disabled || !canGoNext"
+              class="cover-selector-page-btn px-2 py-0 rounded-lg border border-white/10 text-sm text-white hover:bg-white/5 transition-all disabled:opacity-50 disabled:hover:bg-transparent"
+            >
+              <span class="material-symbols-outlined">chevron_right</span>
+            </button>
+          </div>
+        </div>
+        } @else {
+        <div class="flex-1"></div>
+        }
+        <button
+          (click)="close.emit()"
+          class="cover-selector-cancel shrink-0 px-6 py-2.5 border border-white/10 rounded-xl text-white font-bold hover:bg-white/5 transition-all"
+        >
+          {{ 'coverImageSelector.actions.cancel' | t }}
+        </button>
+      </div>
+    </div>
+  </div>
 </div>
 }

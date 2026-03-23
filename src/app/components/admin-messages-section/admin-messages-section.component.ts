@@ -17,18 +17,10 @@ import { ModalService } from '../../services/modal.service';
 import { AuthService } from '../../services/auth.service';
 import { TranslatePipe } from '../../pipes/translate.pipe';
 import { LanguageService } from '../../services/language.service';
-
-interface AdminMessageRow {
-  id: string;
-  senderLabel: string;
-  senderEmail?: string;
-  createdAtMs: number | null;
-  createdAtLabel: string;
-  message: string;
-  preview: string;
-  isRead: boolean;
-  readAtLabel: string;
-}
+import {
+  AdminMessageRow,
+  AdminMessagesCacheService,
+} from '../../services/admin-messages-cache.service';
 
 @Component({
   selector: 'app-admin-messages-section',
@@ -44,8 +36,7 @@ export class AdminMessagesSectionComponent {
   private modalService = inject(ModalService);
   private authService = inject(AuthService);
   private languageService = inject(LanguageService);
-  private adminMessagesCacheKey = 'admin:messages:list';
-  private cacheTtlMs = 5 * 60 * 1000;
+  private adminMessagesCache = inject(AdminMessagesCacheService);
 
   isQuerying = false;
   hasQueried = false;
@@ -55,11 +46,11 @@ export class AdminMessagesSectionComponent {
   messages: AdminMessageRow[] = [];
 
   constructor() {
-    const loaded = this.loadCachedMessages();
-    if (loaded) {
-      this.hasQueried = true;
-      this.currentPage = 1;
-    }
+    const cached = this.adminMessagesCache.get();
+    if (!cached) return;
+    this.messages = cached;
+    this.hasQueried = true;
+    this.currentPage = 1;
   }
 
   async runQuery(): Promise<void> {
@@ -67,15 +58,14 @@ export class AdminMessagesSectionComponent {
     this.isQuerying = true;
 
     try {
-      const cached = this.loadCachedMessages();
+      const cached = this.adminMessagesCache.get();
       if (cached) {
-        this.hasQueried = true;
-        return;
+        this.messages = cached;
+      } else {
+        const rows = await this.fetchMessages();
+        this.messages = rows;
+        this.adminMessagesCache.set(rows);
       }
-
-      const rows = await this.fetchMessages();
-      this.messages = rows;
-      this.saveCachedMessages(rows);
       this.currentPage = 1;
       this.hasQueried = true;
     } catch (error) {
@@ -89,7 +79,7 @@ export class AdminMessagesSectionComponent {
     if (!message.isRead) {
       message.isRead = true;
       message.readAtLabel = this.formatDateTime(new Date());
-      this.saveCachedMessages(this.messages);
+      this.adminMessagesCache.markAsRead(message.id, message.readAtLabel);
       void this.markAsRead(message, undefined, true);
     }
 
@@ -133,7 +123,7 @@ export class AdminMessagesSectionComponent {
       const now = Date.now();
       message.isRead = true;
       message.readAtLabel = this.formatDateTime(new Date(now));
-      this.saveCachedMessages(this.messages);
+      this.adminMessagesCache.markAsRead(message.id, message.readAtLabel);
     } catch (error) {
       console.error('Failed to mark message as read:', error);
     }
@@ -223,43 +213,9 @@ export class AdminMessagesSectionComponent {
 
   private removeFromList(messageId: string) {
     this.messages = this.messages.filter((item) => item.id !== messageId);
+    this.adminMessagesCache.remove(messageId);
     if (this.currentPage > this.totalPages) {
       this.currentPage = this.totalPages;
-    }
-    this.saveCachedMessages(this.messages);
-  }
-
-  private loadCachedMessages(): boolean {
-    try {
-      if (typeof window === 'undefined' || !window.localStorage) return false;
-      const raw = window.localStorage.getItem(this.adminMessagesCacheKey);
-      if (!raw) return false;
-      const parsed = JSON.parse(raw) as { data: AdminMessageRow[]; ts: number };
-      if (!parsed?.data || !parsed?.ts) return false;
-      if (Date.now() - parsed.ts > this.cacheTtlMs) {
-        window.localStorage.removeItem(this.adminMessagesCacheKey);
-        return false;
-      }
-      this.messages = parsed.data
-        .map((item) => ({
-          ...item,
-          createdAtLabel: item.createdAtMs ? this.formatDateTime(new Date(item.createdAtMs)) : '--',
-          readAtLabel: item.readAtLabel || '--',
-        }))
-        .sort((a, b) => (b.createdAtMs ?? 0) - (a.createdAtMs ?? 0));
-      return true;
-    } catch {
-      return false;
-    }
-  }
-
-  private saveCachedMessages(messages: AdminMessageRow[]): void {
-    try {
-      if (typeof window === 'undefined' || !window.localStorage) return;
-      const entry = { data: messages, ts: Date.now() };
-      window.localStorage.setItem(this.adminMessagesCacheKey, JSON.stringify(entry));
-    } catch {
-      // ignore cache errors
     }
   }
 

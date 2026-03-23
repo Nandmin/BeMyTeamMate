@@ -24,7 +24,7 @@ export class AdminGroupsSectionComponent {
   private languageService = inject(LanguageService);
   private modalService = inject(ModalService);
   private router = inject(Router);
-  private adminGroupsCacheKey = 'admin:groups:list';
+  private adminGroupsCacheKey = 'admin:groups:list:v2';
   private cacheTtlMs = 5 * 60 * 1000;
 
   isQuerying = false;
@@ -40,6 +40,7 @@ export class AdminGroupsSectionComponent {
     createdAt: string;
     createdAtMs: number;
     memberCount: number;
+    waitingCount: number;
     eventCount: number;
     lastEventAt: string;
   }> = [];
@@ -171,8 +172,11 @@ export class AdminGroupsSectionComponent {
         .filter((group) => !!group.id)
         .map(async (group) => {
           const groupId = group.id as string;
-          const events = await this.fetchGroupEvents(groupId, forceRefresh);
-          const lastEventDate = this.getLastEventDate(events);
+          const [eventStats, waitingCount] = await Promise.all([
+            this.fetchGroupEventStats(groupId, forceRefresh),
+            this.groupService.getPendingMembershipUserCount(groupId),
+          ]);
+          const lastEventDate = this.getLastEventDate(eventStats.past);
           return {
             id: groupId,
             name: group.name,
@@ -180,7 +184,8 @@ export class AdminGroupsSectionComponent {
             createdAt: this.formatDate(group.createdAt),
             createdAtMs: this.toDate(group.createdAt)?.getTime() ?? 0,
             memberCount: group.memberCount ?? 0,
-            eventCount: events.length,
+            waitingCount,
+            eventCount: eventStats.totalCount,
             lastEventAt: lastEventDate ? this.formatDateTime(lastEventDate) : '--',
           };
         })
@@ -189,7 +194,10 @@ export class AdminGroupsSectionComponent {
     return rows.sort((a, b) => b.createdAtMs - a.createdAtMs);
   }
 
-  private async fetchGroupEvents(groupId: string, forceRefresh: boolean): Promise<SportEvent[]> {
+  private async fetchGroupEventStats(
+    groupId: string,
+    forceRefresh: boolean
+  ): Promise<{ past: SportEvent[]; totalCount: number }> {
     if (forceRefresh) {
       this.eventService.refreshGroupEvents(groupId);
     }
@@ -199,7 +207,10 @@ export class AdminGroupsSectionComponent {
       firstValueFrom(this.eventService.getPastEvents(groupId).pipe(take(1))),
     ]);
 
-    return [...past, ...upcoming];
+    return {
+      past,
+      totalCount: past.length + upcoming.length,
+    };
   }
 
   private getLastEventDate(events: SportEvent[]): Date | null {

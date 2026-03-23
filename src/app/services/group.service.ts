@@ -491,6 +491,52 @@ export class GroupService {
     return collectionData(q, { idField: 'id' }) as Observable<GroupInvite[]>;
   }
 
+  async getPendingMembershipUserCount(groupId: string): Promise<number> {
+    if (!groupId) return 0;
+
+    const [membersSnap, joinRequestsSnap, invitesSnap] = await Promise.all([
+      getDocs(collection(this.firestore, `groups/${groupId}/members`)),
+      getDocs(
+        query(
+          collection(this.firestore, `groups/${groupId}/joinRequests`),
+          where('status', '==', 'pending'),
+        ),
+      ),
+      getDocs(
+        query(
+          collection(this.firestore, `groups/${groupId}/invites`),
+          where('status', '==', 'pending'),
+        ),
+      ),
+    ]);
+
+    const memberIds = new Set(
+      membersSnap.docs.map((docSnap) => {
+        const member = docSnap.data() as Partial<GroupMember>;
+        return member.userId || docSnap.id;
+      }),
+    );
+    const pendingUserIds = new Set<string>();
+
+    for (const docSnap of joinRequestsSnap.docs) {
+      const request = docSnap.data() as Partial<JoinRequest>;
+      const userId = request.userId || docSnap.id;
+      if (userId && !memberIds.has(userId)) {
+        pendingUserIds.add(userId);
+      }
+    }
+
+    for (const docSnap of invitesSnap.docs) {
+      const invite = docSnap.data() as Partial<GroupInvite>;
+      const userId = invite.targetUserId || docSnap.id;
+      if (userId && !memberIds.has(userId)) {
+        pendingUserIds.add(userId);
+      }
+    }
+
+    return pendingUserIds.size;
+  }
+
   async getGroupInviteOnce(groupId: string, targetUserId: string): Promise<GroupInvite | null> {
     if (!groupId || !targetUserId) return null;
     const inviteRef = this.fsDoc(`groups/${groupId}/invites/${targetUserId}`);

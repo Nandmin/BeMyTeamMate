@@ -73,6 +73,7 @@
             <th class="px-4 py-2">{{ 'admin.groups.table.creator' | t }}</th>
             <th class="px-4 py-2 text-center">{{ 'admin.groups.table.createdAt' | t }}</th>
             <th class="px-4 py-2 text-center">{{ 'admin.groups.table.members' | t }}</th>
+            <th class="px-4 py-2 text-center">{{ 'admin.groups.table.waiting' | t }}</th>
             <th class="px-4 py-2 text-center">{{ 'admin.groups.table.events' | t }}</th>
             <th class="px-4 py-2 text-center">{{ 'admin.groups.table.lastEvent' | t }}</th>
             <th class="px-4 py-2 text-center">{{ 'admin.groups.table.actions' | t }}</th>
@@ -84,6 +85,7 @@
             <td class="px-4 py-3">{{ group.creator }}</td>
             <td class="px-4 py-3 text-center">{{ group.createdAt }}</td>
             <td class="px-4 py-3 text-center">{{ group.memberCount }}</td>
+            <td class="px-4 py-3 text-center">{{ group.waitingCount }}</td>
             <td class="px-4 py-3 text-center">{{ group.eventCount }}</td>
             <td class="px-4 py-3 text-center">{{ group.lastEventAt }}</td>
             <td class="px-4 py-3 text-right">
@@ -121,6 +123,7 @@
           </div>
           <div class="text-right text-xs text-gray-400">
             <p>{{ 'admin.groups.card.members' | t }} <span class="text-white">{{ group.memberCount }}</span></p>
+            <p>{{ 'admin.groups.card.waiting' | t }} <span class="text-white">{{ group.waitingCount }}</span></p>
             <p>{{ 'admin.groups.card.events' | t }} <span class="text-white">{{ group.eventCount }}</span></p>
             <p>{{ 'admin.groups.card.last' | t }} <span class="text-white">{{ group.lastEventAt }}</span></p>
           </div>

@@ -12,7 +12,7 @@ import {
 
 export type TranslationParams = Record<string, string | number>;
 
-const DEFAULT_LANGUAGE: AppLanguage = 'hu';
+const DEFAULT_LANGUAGE: AppLanguage = 'en';
 const LANGUAGE_STORAGE_KEY = 'app-language';
 const OG_LOCALES: Record<AppLanguage, string> = {
   hu: 'hu_HU',
@@ -100,7 +100,7 @@ export class LanguageService {
       ?.toLowerCase()
       .split('-')[0];
 
-    return normalizeAppLanguage(browserLanguage);
+    return browserLanguage === 'hu' ? 'hu' : 'en';
   }
 
   private safeGetStoredLanguage(): AppLanguage | null {

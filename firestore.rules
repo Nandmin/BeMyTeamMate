@@ -22,6 +22,11 @@ service cloud.firestore {
       );
     }
 
+    function isUserMemberOfGroup(uid, groupId) {
+      let memberPath = /databases/$(database)/documents/groups/$(groupId)/members/$(uid);
+      return exists(memberPath);
+    }
+
     function isGroupOwner(groupId) {
       let groupPath = /databases/$(database)/documents/groups/$(groupId);
       return isSignedIn() && exists(groupPath) && get(groupPath).data.ownerId == request.auth.uid;
@@ -232,8 +237,13 @@ service cloud.firestore {
         // Owner and site admin keep full update rights.
         resource.data.ownerId == request.auth.uid ||
         isSiteAdmin() ||
-        // System counters can be updated without owner/admin privileges.
-        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['memberCount']) ||
+        // Group members can adjust memberCount for membership changes inside their own group.
+        (
+          request.resource.data.diff(resource.data).affectedKeys().hasOnly(['memberCount']) &&
+          request.resource.data.get('memberCount', -1) is int &&
+          request.resource.data.get('memberCount', -1) >= 0 &&
+          isUserMemberOfGroup(request.auth.uid, groupId)
+        ) ||
         // Group admins can edit group settings, but cannot touch ownership/meta fields.
         (
           isGroupAdmin(groupId) &&

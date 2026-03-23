@@ -7,7 +7,6 @@ import {
   getFirestoreAuth,
   getFirestoreDocumentByUrl,
   getGroupMemberDocUrl,
-  getUserDocUrl,
 } from '../firestore.js';
 import {
   chunkArray,
@@ -271,9 +270,10 @@ async function finalizeGroupMatchResult(projectId, accessToken, groupId, eventId
 
   for (const userId of participantIds) {
     const newElo = Math.round(newRatings.get(userId) ?? getCurrentElo(userId));
+    const userDocName = `projects/${projectId}/databases/(default)/documents/users/${userId}`;
     writes.push({
       update: {
-        name: getUserDocUrl(projectId, userId),
+        name: userDocName,
         fields: {
           elo: { integerValue: String(newElo) },
           lastGroupId: { stringValue: groupId },
@@ -283,7 +283,7 @@ async function finalizeGroupMatchResult(projectId, accessToken, groupId, eventId
     });
     writes.push({
       transform: {
-        document: `projects/${projectId}/databases/(default)/documents/users/${userId}`,
+        document: userDocName,
         fieldTransforms: [
           { fieldPath: 'profileUpdatedAt', setToServerValue: 'REQUEST_TIME' },
           {

@@ -999,7 +999,14 @@ export class GroupService {
       );
     }
 
-    await deleteDoc(memberRef);
+    const groupRef = doc(this.firestore, `groups/${groupId}`);
+    const membershipBatch = writeBatch(this.firestore);
+    membershipBatch.update(groupRef, {
+      memberCount: increment(-1),
+    });
+    membershipBatch.delete(memberRef);
+    await membershipBatch.commit();
+
     if (memberData?.userId) {
       await this.writeGroupAuditLog(groupId, 'member_remove', {
         targetUserId: memberData.userId,
@@ -1007,11 +1014,6 @@ export class GroupService {
       });
     }
 
-    // Decrement member count
-    const groupRef = doc(this.firestore, `groups/${groupId}`);
-    await updateDoc(groupRef, {
-      memberCount: increment(-1),
-    });
     const cachedGroup = this.getCachedGroup(groupId);
     if (cachedGroup) {
       this.setCachedGroup(groupId, {

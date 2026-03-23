@@ -1,9 +1,23 @@
+import { verifyAuth } from '../auth.js';
 import { jsonResponse } from '../http.js';
 import { rateLimiter, RateLimitExceededError } from '../rate-limit.js';
 import { createFirestoreDocument } from '../firestore.js';
 import { getAccessToken, normalizePrivateKey } from '../google-auth.js';
 
 export async function handleContactMessage(request, env) {
+  const authResult = await verifyAuth(request, env);
+  if (!authResult.authorized) {
+    return jsonResponse(request, env, { error: 'Unauthorized', detail: authResult.error }, 401);
+  }
+  if (authResult.authType !== 'firebase' || !authResult.user) {
+    return jsonResponse(
+      request,
+      env,
+      { error: 'Firebase ID token required for this endpoint' },
+      401
+    );
+  }
+
   let body;
   try {
     body = await request.json();
@@ -81,22 +95,17 @@ export async function handleContactMessage(request, env) {
     return jsonResponse(request, env, { error: 'Failed to obtain Firestore access token' }, 500);
   }
 
-  const user = body.user && typeof body.user === 'object' ? body.user : null;
-  const userId = typeof user?.uid === 'string' ? user.uid : '';
-  const userEmail = typeof user?.email === 'string' ? user.email : '';
-  const userName = typeof user?.displayName === 'string' ? user.displayName : '';
-
   const nowIso = new Date().toISOString();
   const fields = {
     message: { stringValue: message },
     createdAt: { timestampValue: nowIso },
     source: { stringValue: 'contact-page' },
+    userId: { stringValue: authResult.user },
   };
 
   if (contactEmail) fields.contactEmail = { stringValue: contactEmail };
-  if (userId) fields.userId = { stringValue: userId };
-  if (userEmail) fields.userEmail = { stringValue: userEmail };
-  if (userName) fields.userName = { stringValue: userName };
+  if (authResult.email) fields.userEmail = { stringValue: authResult.email };
+  if (authResult.name) fields.userName = { stringValue: authResult.name };
 
   const userAgent = request.headers.get('User-Agent');
   if (userAgent) fields.userAgent = { stringValue: userAgent };

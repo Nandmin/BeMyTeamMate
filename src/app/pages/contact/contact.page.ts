@@ -123,27 +123,31 @@ export class ContactPage implements AfterViewInit, OnDestroy {
       return;
     }
 
-    const user = this.authService.currentUser();
-
     const payload = {
       message,
       contactEmail,
       honeypot,
       turnstileToken: token,
-      user: user
-        ? {
-            uid: user.uid,
-            email: user.email || '',
-            displayName: user.displayName || '',
-          }
-        : null,
     };
 
     this.isLoading.set(true);
 
     try {
+      const user = this.authService.currentUser();
+      if (!user) {
+        throw new Error(this.languageService.t('common.error.authRequired'));
+      }
+
+      let authToken = '';
+      try {
+        authToken = await user.getIdToken();
+      } catch {}
+
       const appCheckToken = await getAppCheckTokenOrNull(this.appCheck);
       const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+      if (authToken) {
+        headers['Authorization'] = `Bearer ${authToken}`;
+      }
       if (appCheckToken) {
         headers['X-Firebase-AppCheck'] = appCheckToken;
       }

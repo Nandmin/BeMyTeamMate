@@ -133,6 +133,7 @@ export async function verifyAuth(request, env) {
         authorized: true,
         user: payload.user_id || payload.sub,
         email: payload.email,
+        name: typeof payload.name === 'string' ? payload.name : '',
         authType: 'firebase',
         appId: appCheckVerified.appId,
       };

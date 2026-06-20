@@ -59,6 +59,7 @@ export interface SportEvent {
   mvpVotes?: { [voterId: string]: string };
   mvpWinnerId?: string | null;
   mvpEloAwarded?: boolean;
+  payment?: EventPaymentSettings;
   currentAttendees: number;
   attendees: string[];
   creatorId: string;
@@ -76,6 +77,15 @@ export interface SportEvent {
   endedAt?: any;
   matchEvents?: MatchEvent[];
   playerStats?: { [userId: string]: PlayerStats };
+}
+
+export type EventPaymentMode = 'perPerson' | 'total';
+
+export interface EventPaymentSettings {
+  enabled: boolean;
+  amount: number;
+  mode: EventPaymentMode;
+  dueDate?: Timestamp | null;
 }
 
 @Injectable({

@@ -393,6 +393,38 @@ service cloud.firestore {
         allow delete: if isGroupAdmin(groupId);
       }
 
+      match /payments/{paymentId} {
+        allow read: if isSignedIn() && (
+          isSiteAdmin() ||
+          isGroupAdmin(groupId) ||
+          exists(/databases/$(database)/documents/groups/$(groupId)/members/$(request.auth.uid))
+        );
+
+        allow create: if isGroupAdmin(groupId) &&
+          request.resource.data.get('groupId', '') == groupId &&
+          request.resource.data.get('createdBy', '') == request.auth.uid &&
+          request.resource.data.get('userId', '') is string &&
+          request.resource.data.get('amount', 0) is number &&
+          request.resource.data.get('amount', 0) > 0 &&
+          request.resource.data.get('method', '') in ['cash', 'bank_transfer', 'revolut', 'other'] &&
+          request.resource.data.get('paidAt', null) is timestamp;
+
+        allow update, delete: if false;
+      }
+
+      match /paymentAuditLogs/{logId} {
+        allow read: if isGroupAdmin(groupId) || isSiteAdmin();
+        allow create: if isGroupAdmin(groupId) &&
+          request.resource.data.get('groupId', '') == groupId &&
+          request.resource.data.get('actorId', '') == request.auth.uid &&
+          request.resource.data.get('action', '') == 'payment_create' &&
+          request.resource.data.get('amount', 0) is number &&
+          request.resource.data.get('amount', 0) > 0 &&
+          request.resource.data.get('createdAt', null) is timestamp;
+
+        allow update, delete: if false;
+      }
+
       // Lightweight audit logging (client-side) for free tier
       match /auditLogs/{logId} {
         allow read: if isGroupAdmin(groupId) || isSiteAdmin();

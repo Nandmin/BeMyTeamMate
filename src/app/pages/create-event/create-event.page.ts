@@ -65,13 +65,14 @@ export class CreateEventPage implements OnInit {
   }
 
   async ngOnInit() {
-    this.today = new Date().toISOString().split('T')[0];
+    this.today = this.toDateInputValue(new Date());
     this.eventData.date = this.today;
+    this.eventData.paymentDueDate = this.getDefaultPaymentDueDate(this.eventData.date);
 
     // Set default recurrence until date to 1 month from now
     const nextMonth = new Date();
     nextMonth.setMonth(nextMonth.getMonth() + 1);
-    this.eventData.recurringUntil = nextMonth.toISOString().split('T')[0];
+    this.eventData.recurringUntil = this.toDateInputValue(nextMonth);
 
     if (this.isEditMode) {
       await this.loadEventData();
@@ -113,12 +114,19 @@ export class CreateEventPage implements OnInit {
       this.eventData = {
         title: event.title,
         sport: event.sport,
-        date: eventDate.toISOString().split('T')[0],
+        date: this.toDateInputValue(eventDate),
         time: event.time,
         duration: event.duration,
         location: event.location,
         maxAttendees: event.maxAttendees,
         mvpVotingEnabled: event.mvpVotingEnabled ?? false,
+        paymentEnabled: event.payment?.enabled ?? false,
+        paymentMode: event.payment?.mode ?? 'perPerson',
+        paymentAmount: event.payment?.amount ?? 0,
+        paymentDueDate:
+          this.toDate(event.payment?.dueDate)
+            ? this.toDateInputValue(this.toDate(event.payment?.dueDate)!)
+            : this.getDefaultPaymentDueDate(this.toDateInputValue(eventDate)),
         isRecurring: false, // We don't support converting existing to recurring here yet
         frequency: 'weekly',
         recurringUntil: '',
@@ -143,6 +151,10 @@ export class CreateEventPage implements OnInit {
     location: '',
     maxAttendees: 10,
     mvpVotingEnabled: false,
+    paymentEnabled: false,
+    paymentMode: 'perPerson' as 'perPerson' | 'total',
+    paymentAmount: 0 as number | '',
+    paymentDueDate: '',
     isRecurring: false,
     frequency: 'weekly' as 'daily' | 'weekly' | 'monthly',
     recurringUntil: '',
@@ -168,6 +180,7 @@ export class CreateEventPage implements OnInit {
         location: this.eventData.location,
         maxAttendees: this.eventData.maxAttendees,
         mvpVotingEnabled: this.eventData.mvpVotingEnabled,
+        payment: this.normalizePaymentSettings(),
       };
 
       if (this.eventData.mvpVotingEnabled) {
@@ -235,6 +248,26 @@ export class CreateEventPage implements OnInit {
 
   setSport(sport: string) {
     this.eventData.sport = sport;
+  }
+
+  onEventDateChange() {
+    this.eventData.paymentDueDate = this.getDefaultPaymentDueDate(this.eventData.date);
+  }
+
+  onPaymentAmountFocus() {
+    if (Number(this.eventData.paymentAmount) === 0) {
+      this.eventData.paymentAmount = '';
+    }
+  }
+
+  onPaymentAmountBlur() {
+    if (this.eventData.paymentAmount === '' || this.eventData.paymentAmount === null) {
+      this.eventData.paymentAmount = 0;
+      return;
+    }
+
+    const amount = Number(this.eventData.paymentAmount);
+    this.eventData.paymentAmount = Number.isFinite(amount) ? Math.max(0, amount) : 0;
   }
 
   scrollCarousel(container: HTMLElement, direction: 'left' | 'right') {
@@ -307,6 +340,52 @@ export class CreateEventPage implements OnInit {
     const end = new Date(date);
     end.setHours(23, 59, 59, 999);
     return Timestamp.fromDate(end);
+  }
+
+  private normalizePaymentSettings() {
+    if (!this.eventData.paymentEnabled) {
+      return {
+        enabled: false,
+        amount: 0,
+        mode: this.eventData.paymentMode,
+        dueDate: null,
+      };
+    }
+
+    const amount = Number(this.eventData.paymentAmount);
+    const dueDate = this.eventData.paymentDueDate
+      ? this.dateStringToTimestamp(this.eventData.paymentDueDate)
+      : null;
+
+    return {
+      enabled: true,
+      amount: Number.isFinite(amount) ? Math.max(0, amount) : 0,
+      mode: this.eventData.paymentMode,
+      dueDate,
+    };
+  }
+
+  private dateStringToTimestamp(value: string): Timestamp | null {
+    const [year, month, day] = value.split('-').map(Number);
+    if (!year || !month || !day) return null;
+    const date = new Date(year, month - 1, day);
+    date.setHours(23, 59, 59, 999);
+    return Timestamp.fromDate(date);
+  }
+
+  private getDefaultPaymentDueDate(eventDateValue: string): string {
+    const [year, month, day] = eventDateValue.split('-').map(Number);
+    if (!year || !month || !day) return '';
+    const dueDate = new Date(year, month - 1, day);
+    dueDate.setDate(dueDate.getDate() + 3);
+    return this.toDateInputValue(dueDate);
+  }
+
+  private toDateInputValue(date: Date): string {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
   }
 
   private toDate(value: any): Date | null {

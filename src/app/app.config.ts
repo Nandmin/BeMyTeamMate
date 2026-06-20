@@ -87,6 +87,27 @@ const getLocalAppCheckDebugToken = (): string | true | undefined => {
   return undefined;
 };
 
+const clearDevServiceWorkers = (): void => {
+  if (environment.production) {
+    return;
+  }
+
+  try {
+    if (!('serviceWorker' in navigator)) {
+      return;
+    }
+
+    navigator.serviceWorker
+      .getRegistrations()
+      .then((registrations) => Promise.all(registrations.map((registration) => registration.unregister())))
+      .catch(() => {
+        // ignore service worker cleanup failures in development
+      });
+  } catch {
+    // ignore navigator access issues
+  }
+};
+
 const isFirestoreAlreadyInitializedError = (error: unknown): boolean => {
   if (!(error instanceof Error) || typeof error.message !== 'string') return false;
   return /already been initialized|already started|already exists/i.test(error.message);
@@ -113,7 +134,10 @@ export const appConfig: ApplicationConfig = {
         anchorScrolling: 'enabled',
       })
     ),
-    provideFirebaseApp(() => initializeApp(environment.firebase)),
+    provideFirebaseApp(() => {
+      clearDevServiceWorkers();
+      return initializeApp(environment.firebase);
+    }),
     ...(environment.firebase.appCheckSiteKey
       ? [
           provideAppCheck(() => {
@@ -157,7 +181,7 @@ export const appConfig: ApplicationConfig = {
       }
     }),
     provideServiceWorker('firebase-messaging-sw.js', {
-      enabled: true, // Bekapcsolva fejlesztés alatt is a teszteléshez
+      enabled: environment.production,
       registrationStrategy: 'registerWhenStable:30000',
     }),
   ],

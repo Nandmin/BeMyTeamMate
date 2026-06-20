@@ -1,0 +1,78 @@
+:host {
+  display: block;
+}
+
+.my-balance {
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.18);
+}
+
+.my-balance-kpi {
+  border: 1px solid var(--border-dark);
+  border-radius: 0.9rem;
+  background: rgba(255, 255, 255, 0.05);
+  padding: 1rem;
+
+  span {
+    display: block;
+    color: #92c9a9;
+    font-size: 0.75rem;
+    font-weight: 800;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+  }
+
+  strong {
+    display: block;
+    margin-top: 0.35rem;
+    color: #fff;
+    font-size: 1.25rem;
+  }
+}
+
+.my-balance-status {
+  display: inline-flex;
+  min-width: 7.25rem;
+  justify-content: center;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  padding: 0.25rem 0.65rem;
+  font-size: 0.7rem;
+  font-weight: 900;
+}
+
+.my-balance-status--paid {
+  border-color: rgba(34, 197, 94, 0.45);
+  background: rgba(34, 197, 94, 0.18);
+  color: #86efac;
+}
+
+.my-balance-status--partial {
+  border-color: rgba(245, 158, 11, 0.42);
+  background: rgba(245, 158, 11, 0.18);
+  color: #fcd34d;
+}
+
+.my-balance-status--unpaid {
+  border-color: rgba(239, 68, 68, 0.4);
+  background: rgba(239, 68, 68, 0.18);
+  color: #fca5a5;
+}
+
+:host-context(html.light) {
+  .my-balance {
+    background: linear-gradient(180deg, rgba(248, 250, 252, 0.98), rgba(241, 245, 249, 0.96)) !important;
+    border-color: rgba(71, 85, 105, 0.18) !important;
+  }
+
+  .my-balance-kpi {
+    background: rgba(226, 232, 240, 0.78);
+
+    span {
+      color: #1f3a2b;
+    }
+
+    strong {
+      color: #1e293b;
+    }
+  }
+}

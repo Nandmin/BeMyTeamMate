@@ -10,11 +10,12 @@ import { GroupMember, GroupService } from '../../services/group.service';
 import { TranslationKey } from '../../i18n/translations';
 import { LanguageService } from '../../services/language.service';
 import { SeoService } from '../../services/seo.service';
+import { MyBalanceComponent } from '../../components/my-balance/my-balance.component';
 
 @Component({
   selector: 'app-results',
   standalone: true,
-  imports: [CommonModule, TranslocoPipe],
+  imports: [CommonModule, TranslocoPipe, MyBalanceComponent],
   templateUrl: './results.html',
   styleUrl: './results.scss',
 })

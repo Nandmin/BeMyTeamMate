@@ -76,7 +76,8 @@
                                 <span
                                     class="material-symbols-outlined text-gray-400 text-lg group-focus-within:text-primary">calendar_today</span>
                             </div>
-                            <input type="date" name="date" [(ngModel)]="eventData.date" [min]="today"
+                            <input type="date" name="date" [(ngModel)]="eventData.date"
+                                (ngModelChange)="onEventDateChange()" [min]="today"
                                 class="bg-slate-50 dark:bg-white/5 border border-light-border dark:border-white/10 text-slate-900 dark:text-white text-sm rounded-lg focus:ring-primary focus:border-primary block w-full ps-10 p-2.5 placeholder-slate-400 dark:placeholder-gray-400 relative z-10 cursor-pointer"
                                 required #dateInput />
                         </div>
@@ -218,7 +219,57 @@
             </div>
             }
 
-            <!-- Section 4: MVP Voting -->
+            <!-- Section 4: Payment -->
+            <div class="bg-white dark:bg-white/5 rounded-2xl p-6 md:p-8 border border-light-border dark:border-white/10 animate-slide-up shadow-xl"
+                style="animation-delay: 0.27s">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="flex items-center gap-2">
+                        <span class="material-symbols-outlined text-primary">payments</span>
+                        <h3 class="text-xl font-bold text-slate-900 dark:text-white">Tagdíj / esemény díj</h3>
+                    </div>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" name="paymentEnabled" [(ngModel)]="eventData.paymentEnabled"
+                            class="sr-only peer">
+                        <div
+                            class="w-11 h-6 bg-slate-200 dark:bg-white/10 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary">
+                        </div>
+                    </label>
+                </div>
+
+                @if (eventData.paymentEnabled) {
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 animate-fade-in">
+                    <div>
+                        <label class="block mb-2 text-sm font-medium text-slate-600 dark:text-gray-400">Díjtípus</label>
+                        <select name="paymentMode" [(ngModel)]="eventData.paymentMode"
+                            class="bg-slate-50 dark:bg-background-dark border border-light-border dark:border-white/10 text-slate-900 dark:text-white text-sm rounded-lg focus:ring-primary focus:border-primary block w-full p-2.5 outline-none cursor-pointer">
+                            <option value="perPerson" class="bg-white dark:bg-background-dark text-slate-900 dark:text-white">/ fő díj</option>
+                            <option value="total" class="bg-white dark:bg-background-dark text-slate-900 dark:text-white">Összes díj</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block mb-2 text-sm font-medium text-slate-600 dark:text-gray-400">Összeg</label>
+                        <input type="number" name="paymentAmount" min="0" step="1"
+                            [(ngModel)]="eventData.paymentAmount"
+                            (focus)="onPaymentAmountFocus()"
+                            (blur)="onPaymentAmountBlur()"
+                            class="bg-slate-50 dark:bg-white/5 border border-light-border dark:border-white/10 text-slate-900 dark:text-white text-sm rounded-lg focus:ring-primary focus:border-primary block w-full p-2.5"
+                            required />
+                    </div>
+                    <div>
+                        <label class="block mb-2 text-sm font-medium text-slate-600 dark:text-gray-400">Fizetési határidő</label>
+                        <input type="date" name="paymentDueDate" [(ngModel)]="eventData.paymentDueDate" [min]="today"
+                            class="bg-slate-50 dark:bg-white/5 border border-light-border dark:border-white/10 text-slate-900 dark:text-white text-sm rounded-lg focus:ring-primary focus:border-primary block w-full p-2.5" />
+                    </div>
+                </div>
+                <p class="mt-4 text-sm text-slate-600 dark:text-gray-400">
+                    Összes díjnál a rendszer a résztvevők aktuális száma alapján automatikusan számolja a /fő összeget. Csak az „ott leszek” státuszú tagoknál keletkezik tartozás.
+                </p>
+                } @else {
+                <p class="text-sm text-slate-600 dark:text-gray-400">Az eseményhez nem tartozik befizetési kötelezettség.</p>
+                }
+            </div>
+
+            <!-- Section 5: MVP Voting -->
             <div class="bg-white dark:bg-white/5 rounded-2xl p-6 md:p-8 border border-light-border dark:border-white/10 animate-slide-up shadow-xl"
                 style="animation-delay: 0.28s">
                 <div class="flex items-center justify-between mb-4">

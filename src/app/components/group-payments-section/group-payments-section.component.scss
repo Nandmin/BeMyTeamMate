@@ -1,0 +1,557 @@
+:host {
+  display: block;
+}
+
+.payment-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+
+  span {
+    color: rgb(209 213 219);
+    font-size: 0.8125rem;
+    font-weight: 600;
+  }
+
+  input,
+  select {
+    width: 100%;
+    border-radius: 0.75rem;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.05);
+    color: #fff;
+    padding: 0.75rem 0.9rem;
+    outline: none;
+
+    &:focus {
+      border-color: rgba(43, 238, 124, 0.85);
+      box-shadow: 0 0 0 1px rgba(43, 238, 124, 0.3);
+    }
+  }
+
+  option {
+    background: #07110c;
+    color: #fff;
+  }
+}
+
+.payment-action,
+.payment-submit,
+.payment-query {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  border-radius: 0.75rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #fff;
+  font-weight: 800;
+  transition:
+    border-color 0.2s ease,
+    background-color 0.2s ease,
+    opacity 0.2s ease;
+}
+
+.payment-action {
+  background: rgba(255, 255, 255, 0.06);
+  padding: 0.6rem 0.85rem;
+  font-size: 0.8125rem;
+
+  &:hover {
+    border-color: rgba(43, 238, 124, 0.5);
+    background: rgba(43, 238, 124, 0.1);
+  }
+}
+
+.payment-submit {
+  width: 100%;
+  background: #2bee7c;
+  color: #fff;
+  min-height: 2.85rem;
+  padding: 0.75rem 1rem;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.18),
+    0 8px 18px rgba(34, 197, 94, 0.22);
+
+  &:hover:not(:disabled) {
+    background: #22d86d;
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.55;
+  }
+}
+
+.payment-submit--table {
+  width: 100%;
+  min-width: 8.5rem;
+  white-space: nowrap;
+}
+
+.bookkeeping-list {
+  display: grid;
+  gap: 0.9rem;
+}
+
+.bookkeeping-row {
+  display: grid;
+  gap: 0.9rem;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 1.1rem;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.055), rgba(255, 255, 255, 0.03)),
+    rgba(4, 12, 8, 0.44);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.04),
+    0 18px 28px rgba(0, 0, 0, 0.12);
+  padding: 1.05rem;
+}
+
+.bookkeeping-header {
+  min-width: 0;
+  padding-bottom: 0.15rem;
+
+  p:first-child {
+    letter-spacing: 0.01em;
+  }
+}
+
+.bookkeeping-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 0.9rem;
+  align-items: start;
+}
+
+.bookkeeping-info-table,
+.bookkeeping-input-table {
+  display: grid;
+  grid-template-columns: 9rem minmax(0, 1fr);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 0.9rem;
+  overflow: hidden;
+}
+
+.bookkeeping-cell {
+  min-height: 2.5rem;
+  display: flex;
+  align-items: center;
+  padding: 0.35rem 0.6rem;
+  color: #fff;
+  border-right: 1px solid rgba(255, 255, 255, 0.12);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.025);
+}
+
+.bookkeeping-info-table > :nth-last-child(-n + 2),
+.bookkeeping-input-table > :nth-last-child(-n + 2) {
+  border-bottom: 0;
+}
+
+.bookkeeping-info-table > :nth-child(2n),
+.bookkeeping-input-table > :nth-child(2n) {
+  border-right: 0;
+}
+
+.bookkeeping-cell--label,
+.bookkeeping-note-label {
+  color: rgb(226 232 240);
+  font-size: 0.82rem;
+  font-weight: 700;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.bookkeeping-cell--input {
+  padding: 0;
+  background:
+    linear-gradient(180deg, rgba(43, 238, 124, 0.1), rgba(43, 238, 124, 0.04)),
+    rgba(255, 255, 255, 0.035);
+}
+
+.bookkeeping-inline-input {
+  width: 100%;
+  min-height: 2.5rem;
+  border: 0;
+  background: transparent;
+  color: #fff;
+  padding: 0.45rem 0.6rem;
+  outline: none;
+  font-weight: 600;
+
+  &::placeholder {
+    color: rgba(226, 232, 240, 0.46);
+  }
+
+  &:focus {
+    background: rgba(43, 238, 124, 0.08);
+    box-shadow: inset 0 0 0 1px rgba(43, 238, 124, 0.42);
+  }
+}
+
+.bookkeeping-note-row {
+  display: grid;
+  grid-template-columns: 9rem minmax(0, 1fr);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 0.9rem;
+  overflow: hidden;
+}
+
+.bookkeeping-note-label,
+.bookkeeping-note-input {
+  min-height: 2.5rem;
+  display: flex;
+  align-items: center;
+  border-right: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.bookkeeping-note-label {
+  padding: 0.35rem 0.6rem;
+}
+
+.bookkeeping-note-input {
+  border-right: 0;
+  background:
+    linear-gradient(180deg, rgba(43, 238, 124, 0.1), rgba(43, 238, 124, 0.04)),
+    rgba(255, 255, 255, 0.035);
+}
+
+.bookkeeping-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.payment-summary-card,
+.payment-ledger,
+.payment-audit-log {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.055), rgba(255, 255, 255, 0.03)),
+    rgba(4, 12, 8, 0.36);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.04),
+    0 14px 24px rgba(0, 0, 0, 0.08);
+}
+
+.payment-ledger {
+  overflow: hidden;
+
+  thead {
+    background: rgba(255, 255, 255, 0.07);
+  }
+
+  tbody {
+    background: rgba(255, 255, 255, 0.02);
+  }
+}
+
+.payment-audit-log {
+  overflow: hidden;
+}
+
+@media (max-width: 1024px) {
+  .bookkeeping-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .bookkeeping-actions {
+    justify-content: stretch;
+  }
+
+  .payment-submit--table {
+    width: 100%;
+  }
+}
+
+@media (max-width: 640px) {
+  .bookkeeping-info-table,
+  .bookkeeping-input-table,
+  .bookkeeping-note-row {
+    grid-template-columns: 1fr;
+  }
+
+  .bookkeeping-cell,
+  .bookkeeping-note-label,
+  .bookkeeping-note-input {
+    border-right: 0;
+  }
+
+  .bookkeeping-info-table > :not(:last-child),
+  .bookkeeping-input-table > :not(:last-child),
+  .bookkeeping-note-row > :not(:last-child) {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.16);
+  }
+}
+
+.payment-query {
+  min-height: 2.85rem;
+  white-space: nowrap;
+  background: rgba(43, 238, 124, 0.14);
+  border-color: rgba(43, 238, 124, 0.45);
+  color: #2bee7c;
+  padding: 0.75rem 1rem;
+
+  &:hover {
+    background: rgba(43, 238, 124, 0.22);
+    border-color: rgba(43, 238, 124, 0.75);
+  }
+}
+
+.payment-status {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  min-width: 7.5rem;
+  padding: 0.25rem 0.7rem;
+  font-size: 0.72rem;
+  font-weight: 900;
+  color: #fff;
+}
+
+.payment-status--paid {
+  background: #2bee7c;
+  border-color: #2bee7c;
+  color: #fff;
+}
+
+.payment-status--partial {
+  background: rgba(245, 158, 11, 0.2);
+  border-color: rgba(245, 158, 11, 0.42);
+  color: #fcd34d;
+}
+
+.payment-status--unpaid {
+  background: #dc2626;
+  border-color: #dc2626;
+  color: #fff;
+}
+
+:host-context(html.light) {
+  background:
+    radial-gradient(circle at 10% 0%, rgba(148, 163, 184, 0.18) 0%, transparent 42%),
+    linear-gradient(180deg, #f5f7fb 0%, #eef2f7 100%);
+
+  .text-primary {
+    color: #334155 !important;
+  }
+
+  .settings-surface-card {
+    position: relative;
+    isolation: isolate;
+    background: linear-gradient(180deg, rgba(248, 250, 252, 0.98) 0%, rgba(241, 245, 249, 0.96) 100%) !important;
+    border-color: rgba(148, 163, 184, 0.26) !important;
+    box-shadow: 0 16px 32px rgba(15, 23, 42, 0.12);
+
+    &::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      pointer-events: none;
+      border: 1px solid rgba(255, 255, 255, 0.72);
+      box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.88),
+        0 0 0 1px rgba(31, 58, 43, 0.08);
+    }
+  }
+
+  .payment-bookkeeping-panel,
+  .payment-filter-panel {
+    position: relative;
+    isolation: isolate;
+    background: linear-gradient(180deg, rgba(248, 250, 252, 0.98) 0%, rgba(241, 245, 249, 0.96) 100%) !important;
+    border-color: rgba(71, 85, 105, 0.18) !important;
+    box-shadow: 0 16px 32px rgba(15, 23, 42, 0.12);
+
+    &::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      pointer-events: none;
+      border: 1px solid rgba(255, 255, 255, 0.72);
+      box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.88),
+        0 0 0 1px rgba(31, 58, 43, 0.08);
+    }
+  }
+
+  .payment-field {
+    span {
+      color: #475569;
+    }
+
+    input,
+    select {
+      background: #fff;
+      border-color: rgba(15, 23, 42, 0.14);
+      color: #1e293b;
+    }
+
+    option {
+      background: #fff;
+      color: #1e293b;
+    }
+  }
+
+  .bookkeeping-row {
+    position: relative;
+    isolation: isolate;
+    background: linear-gradient(180deg, rgba(248, 250, 252, 0.98) 0%, rgba(241, 245, 249, 0.96) 100%) !important;
+    border-color: rgba(100, 116, 139, 0.2) !important;
+    box-shadow: 0 16px 32px rgba(15, 23, 42, 0.12);
+
+    &::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      pointer-events: none;
+      border: 1px solid rgba(255, 255, 255, 0.72);
+      box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.88),
+        0 0 0 1px rgba(31, 58, 43, 0.08);
+    }
+  }
+
+  .bookkeeping-header .text-gray-400 {
+    color: #64748b !important;
+  }
+
+  .bookkeeping-info-table,
+  .bookkeeping-input-table,
+  .bookkeeping-note-row {
+    border-color: rgba(71, 85, 105, 0.16);
+    background: rgba(248, 250, 252, 0.9);
+  }
+
+  .bookkeeping-inline-input {
+    background: transparent;
+    color: #1e293b;
+
+    &::placeholder {
+      color: rgba(71, 85, 105, 0.7);
+    }
+
+    &:focus {
+      background: rgba(43, 238, 124, 0.08);
+      box-shadow: inset 0 0 0 1px rgba(43, 238, 124, 0.38);
+    }
+  }
+
+  .bookkeeping-cell {
+    color: #1e293b;
+    border-right-color: rgba(71, 85, 105, 0.14);
+    border-bottom-color: rgba(71, 85, 105, 0.14);
+    background: rgba(255, 255, 255, 0.88);
+  }
+
+  .bookkeeping-cell--label,
+  .bookkeeping-note-label {
+    background: linear-gradient(180deg, rgba(248, 250, 252, 0.98), rgba(241, 245, 249, 0.92));
+    color: #334155;
+  }
+
+  .bookkeeping-cell--input,
+  .bookkeeping-note-input {
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(248, 250, 252, 0.94));
+  }
+
+  .payment-action {
+    background: rgba(255, 255, 255, 0.92);
+    border-color: rgba(148, 163, 184, 0.34);
+    color: #475569;
+
+    &:hover {
+      border-color: rgba(43, 238, 124, 0.42);
+      background: rgba(240, 253, 244, 0.96);
+      color: #166534;
+    }
+  }
+
+  .payment-submit {
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.28),
+      0 8px 18px rgba(34, 197, 94, 0.18);
+  }
+
+  .payment-summary-card,
+  .payment-ledger,
+  .payment-audit-log {
+    position: relative;
+    isolation: isolate;
+    background: linear-gradient(180deg, rgba(248, 250, 252, 0.98) 0%, rgba(241, 245, 249, 0.96) 100%) !important;
+    border-color: rgba(71, 85, 105, 0.16) !important;
+    box-shadow: 0 16px 32px rgba(15, 23, 42, 0.12);
+
+    &::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      pointer-events: none;
+      border: 1px solid rgba(255, 255, 255, 0.72);
+      box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.88),
+        0 0 0 1px rgba(31, 58, 43, 0.08);
+    }
+  }
+
+  .payment-summary-card .text-white,
+  .payment-ledger .text-white,
+  .payment-audit-log .text-white {
+    color: #0f172a !important;
+  }
+
+  .settings-surface-card > .mb-6 .text-white {
+    color: #0f172a !important;
+  }
+
+  .payment-summary-card .text-gray-400,
+  .payment-ledger .text-gray-400,
+  .payment-audit-log .text-gray-400 {
+    color: #64748b !important;
+  }
+
+  .payment-ledger thead {
+    background: linear-gradient(180deg, rgba(248, 250, 252, 0.98), rgba(241, 245, 249, 0.95));
+  }
+
+  .payment-ledger tbody {
+    background: rgba(255, 255, 255, 0.84);
+  }
+
+  .payment-ledger tbody.divide-y {
+    --tw-divide-opacity: 1;
+    border-color: rgba(71, 85, 105, 0.12);
+  }
+
+  .payment-ledger tr:hover {
+    background: rgba(43, 238, 124, 0.06) !important;
+  }
+
+  .payment-action {
+    background: linear-gradient(180deg, rgba(248, 250, 252, 0.98) 0%, rgba(241, 245, 249, 0.95) 100%);
+    border-color: rgba(71, 85, 105, 0.18);
+    color: #1f2937;
+    box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
+  }
+
+  .payment-audit-log.divide-y {
+    --tw-divide-opacity: 1;
+    border-color: rgba(71, 85, 105, 0.12);
+  }
+
+  .text-gray-400 {
+    color: #64748b !important;
+  }
+
+  .text-gray-300 {
+    color: #475569 !important;
+  }
+
+  .payment-status {
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4);
+  }
+}

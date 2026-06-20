@@ -78,6 +78,13 @@
                     <span class="material-symbols-outlined text-lg">tune</span>
                     {{ 'groupSettings.tabs.settings' | transloco }}
                 </button>
+                <button (click)="activeTab.set('payments')"
+                    class="px-6 py-2.5 rounded-lg text-sm font-medium transition-all flex items-center gap-2"
+                    [class.bg-white/10]="activeTab() === 'payments'" [class.text-white]="activeTab() === 'payments'"
+                    [class.shadow-sm]="activeTab() === 'payments'" [class.text-gray-400]="activeTab() !== 'payments'">
+                    <span class="material-symbols-outlined text-lg">payments</span>
+                    Befizetések
+                </button>
             </div>
 
             <!-- Members Tab -->
@@ -267,6 +274,10 @@
             }
             }
 
+            }
+
+            @if (canManageMembers() && activeTab() === 'payments') {
+            <app-group-payments-section [groupId]="groupId"></app-group-payments-section>
             }
 
             <!-- Settings Tab -->

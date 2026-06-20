@@ -9,6 +9,7 @@ import { switchMap, catchError } from 'rxjs/operators';
 import { of } from 'rxjs';
 import { TranslocoPipe } from '@jsverse/transloco';
 import { CoverImageSelectorComponent } from '../../components/cover-image-selector/cover-image-selector.component';
+import { GroupPaymentsSectionComponent } from '../../components/group-payments-section/group-payments-section.component';
 import { RoleLabelPipe } from '../../pipes/role-label.pipe';
 import { LanguageService } from '../../services/language.service';
 import { SeoService } from '../../services/seo.service';
@@ -29,6 +30,7 @@ export type MemberRole = 'owner' | 'admin' | 'member';
     RouterModule,
     FormsModule,
     CoverImageSelectorComponent,
+    GroupPaymentsSectionComponent,
     TranslocoPipe,
     RoleLabelPipe,
   ],
@@ -153,7 +155,7 @@ export class GroupSettingsPage {
 
   // Form states
   isSubmitting = signal(false);
-  activeTab = signal<'members' | 'settings'>('members');
+  activeTab = signal<'members' | 'settings' | 'payments'>('members');
 
   // Edit group form
   editGroupForm = signal({
@@ -198,7 +200,7 @@ export class GroupSettingsPage {
     // Initialize edit form when group loads
     effect(() => {
       const tab = this.settingsQueryParams()['tab'];
-      if (tab === 'settings' || tab === 'members') {
+      if (tab === 'settings' || tab === 'members' || tab === 'payments') {
         this.activeTab.set(tab);
       }
     });

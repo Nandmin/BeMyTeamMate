@@ -95,12 +95,14 @@ export class PaymentService {
   private groupService = inject(GroupService);
   private languageService = inject(LanguageService);
 
-  paymentMethods: Array<{ id: PaymentMethod; label: string }> = [
-    { id: 'cash', label: 'Készpénz' },
-    { id: 'bank_transfer', label: 'Banki átutalás' },
-    { id: 'revolut', label: 'Revolut' },
-    { id: 'other', label: 'Egyéb' },
-  ];
+  get paymentMethods(): Array<{ id: PaymentMethod; label: string }> {
+    return [
+      { id: 'cash', label: this.languageService.t('payments.methods.cash') },
+      { id: 'bank_transfer', label: this.languageService.t('payments.methods.bankTransfer') },
+      { id: 'revolut', label: this.languageService.t('payments.methods.revolut') },
+      { id: 'other', label: this.languageService.t('payments.methods.other') },
+    ];
+  }
 
   getGroupPaymentOverview(groupId: string, includeAuditLogs = true): Observable<GroupPaymentOverview> {
     if (!groupId) {
@@ -194,7 +196,7 @@ export class PaymentService {
 
     const amount = Number(input.amount);
     if (!Number.isFinite(amount) || amount <= 0) {
-      throw new Error('A befizetés összege legyen pozitív szám.');
+      throw new Error(this.languageService.t('payments.record.errors.positiveAmount'));
     }
 
     const paymentData: Omit<PaymentRecord, 'id'> = {
@@ -244,11 +246,11 @@ export class PaymentService {
   statusLabel(status: PaymentStatus): string {
     switch (status) {
       case 'paid':
-        return 'Rendezve';
+        return this.languageService.t('payments.status.paid');
       case 'partial':
-        return 'Részben rendezve';
+        return this.languageService.t('payments.status.partial');
       default:
-        return 'Hátralék';
+        return this.languageService.t('payments.status.unpaid');
     }
   }
 
@@ -257,7 +259,8 @@ export class PaymentService {
   }
 
   formatMoney(value: number): string {
-    return new Intl.NumberFormat('hu-HU', {
+    const locale = this.languageService.currentLanguage() === 'en' ? 'en-US' : 'hu-HU';
+    return new Intl.NumberFormat(locale, {
       maximumFractionDigits: 0,
       style: 'currency',
       currency: 'HUF',
@@ -275,9 +278,7 @@ export class PaymentService {
       where('payment.enabled', '==', true)
     );
     return collectionData(q, { idField: 'id' }).pipe(
-      map((events) =>
-        this.sortPaymentEvents(events as SportEvent[])
-      ),
+      map((events) => this.sortPaymentEvents(events as SportEvent[])),
       catchError((error) => {
         console.error('Payment-enabled events query failed, falling back to event list queries:', error);
         return combineLatest([
@@ -362,14 +363,18 @@ export class PaymentService {
           .reduce((sum, payment) => sum + this.toAmount(payment.amount), 0);
         return {
           userId,
-          userName: member?.name || userRows[0]?.userName || payments.find((p) => p.userId === userId)?.userName || userId,
+          userName:
+            member?.name ||
+            userRows[0]?.userName ||
+            payments.find((p) => p.userId === userId)?.userName ||
+            userId,
           requiredAmount,
           paidAmount,
           balance: paidAmount - requiredAmount,
           status: this.paymentStatus(requiredAmount, paidAmount),
         };
       })
-      .sort((a, b) => a.userName.localeCompare(b.userName, 'hu-HU'));
+      .sort((a, b) => a.userName.localeCompare(b.userName, this.sortLocale()));
   }
 
   private eventPerPersonAmount(event: SportEvent, attendeeCount: number): number {
@@ -425,5 +430,9 @@ export class PaymentService {
     if (typeof value?.toDate === 'function') return value.toDate();
     if (typeof value?.seconds === 'number') return new Date(value.seconds * 1000);
     return new Date(value);
+  }
+
+  private sortLocale(): string {
+    return this.languageService.currentLanguage() === 'en' ? 'en-US' : 'hu-HU';
   }
 }

@@ -20,7 +20,10 @@
     border: 1px solid rgba(255, 255, 255, 0.1);
     background: rgba(255, 255, 255, 0.05);
     color: #fff;
-    padding: 0.75rem 0.9rem;
+    min-height: 2.3rem;
+    padding: 0.45rem 0.72rem;
+    font-size: 0.8125rem;
+    line-height: 1.1rem;
     outline: none;
 
     &:focus {
@@ -46,6 +49,7 @@
   border: 1px solid rgba(255, 255, 255, 0.1);
   color: #fff;
   font-weight: 800;
+  line-height: 1.1;
   transition:
     border-color 0.2s ease,
     background-color 0.2s ease,
@@ -54,8 +58,9 @@
 
 .payment-action {
   background: rgba(255, 255, 255, 0.06);
-  padding: 0.6rem 0.85rem;
-  font-size: 0.8125rem;
+  min-height: 2.3rem;
+  padding: 0.42rem 0.72rem;
+  font-size: 0.76rem;
 
   &:hover {
     border-color: rgba(43, 238, 124, 0.5);
@@ -67,8 +72,9 @@
   width: 100%;
   background: #2bee7c;
   color: #fff;
-  min-height: 2.85rem;
-  padding: 0.75rem 1rem;
+  min-height: 2.3rem;
+  padding: 0.48rem 0.82rem;
+  font-size: 0.8125rem;
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.18),
     0 8px 18px rgba(34, 197, 94, 0.22);
@@ -284,16 +290,22 @@
 }
 
 .payment-query {
-  min-height: 2.85rem;
+  height: 2.3rem;
+  min-height: 2.3rem;
   white-space: nowrap;
-  background: rgba(43, 238, 124, 0.14);
-  border-color: rgba(43, 238, 124, 0.45);
-  color: #2bee7c;
-  padding: 0.75rem 1rem;
+  background: #2bee7c;
+  border-color: transparent;
+  color: #fff;
+  padding: 0 0.9rem;
+  font-size: 0.8rem;
+  align-self: end;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.18),
+    0 8px 18px rgba(34, 197, 94, 0.22);
 
   &:hover {
-    background: rgba(43, 238, 124, 0.22);
-    border-color: rgba(43, 238, 124, 0.75);
+    background: #22d86d;
+    border-color: transparent;
   }
 }
 

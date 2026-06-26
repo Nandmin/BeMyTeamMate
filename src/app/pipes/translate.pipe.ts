@@ -1,7 +1,6 @@
 import { ChangeDetectorRef, OnDestroy, Pipe, PipeTransform, inject } from '@angular/core';
 import { TranslocoService } from '@jsverse/transloco';
 import { Subscription } from 'rxjs';
-import { TranslationKey } from '../i18n/translations';
 import { LanguageService, TranslationParams } from '../services/language.service';
 
 @Pipe({
@@ -21,7 +20,7 @@ export class TranslatePipe implements PipeTransform, OnDestroy {
     });
   }
 
-  transform(key: TranslationKey, params?: TranslationParams): string {
+  transform(key: string, params?: TranslationParams): string {
     return this.languageService.t(key, params);
   }
 

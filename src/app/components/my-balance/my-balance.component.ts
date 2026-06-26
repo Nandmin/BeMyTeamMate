@@ -1,19 +1,22 @@
 import { CommonModule } from '@angular/common';
 import { Component, computed, inject } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
+import { TranslatePipe } from '../../pipes/translate.pipe';
 import { AuthService } from '../../services/auth.service';
+import { LanguageService } from '../../services/language.service';
 import { PaymentService } from '../../services/payment.service';
 
 @Component({
   selector: 'app-my-balance',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, TranslatePipe],
   templateUrl: './my-balance.component.html',
   styleUrl: './my-balance.component.scss',
 })
 export class MyBalanceComponent {
   private paymentService = inject(PaymentService);
   private authService = inject(AuthService);
+  protected readonly languageService = inject(LanguageService);
 
   user = this.authService.currentUser;
   overviews = toSignal(this.paymentService.getCurrentUserOverview(), { initialValue: [] });
@@ -42,9 +45,9 @@ export class MyBalanceComponent {
   balance = computed(() => this.totalPaid() - this.totalRequired());
 
   statusText = computed(() => {
-    if (this.balance() >= 0) return 'Nincs tartozásod';
-    if (this.totalPaid() > 0) return 'Részben rendezve';
-    return 'Fizetésre vár';
+    if (this.balance() >= 0) return this.languageService.t('myBalance.status.noDebt');
+    if (this.totalPaid() > 0) return this.languageService.t('myBalance.status.partial');
+    return this.languageService.t('myBalance.status.outstanding');
   });
 
   formatMoney(value: number): string {
@@ -62,7 +65,7 @@ export class MyBalanceComponent {
   formatDate(value: any): string {
     const date = this.toDate(value);
     if (Number.isNaN(date.getTime())) return '-';
-    return date.toLocaleDateString('hu-HU', {
+    return date.toLocaleDateString(this.languageService.currentLanguage() === 'en' ? 'en-US' : 'hu-HU', {
       year: 'numeric',
       month: '2-digit',
       day: '2-digit',

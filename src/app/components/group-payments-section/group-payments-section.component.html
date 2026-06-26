@@ -3,10 +3,10 @@
     <div>
       <h2 class="flex items-center gap-2 text-lg font-bold text-white">
         <span class="material-symbols-outlined text-primary">payments</span>
-        Befizetések
+        {{ 'payments.section.title' | t }}
       </h2>
       <p class="mt-1 text-sm text-gray-400">
-        Eseménydíjak, tagonkénti tartozások, befizetések és audit napló.
+        {{ 'payments.section.description' | t }}
       </p>
     </div>
   </div>
@@ -23,17 +23,17 @@
   }
 
   <div class="payment-bookkeeping-panel mb-8 rounded-2xl border border-white/10 bg-black/10 p-4">
-    <h3 class="mb-4 text-sm font-bold uppercase tracking-wide text-primary">Könyvelés</h3>
+    <h3 class="mb-4 text-sm font-bold uppercase tracking-wide text-primary">{{ 'payments.bookkeeping.title' | t }}</h3>
 
     <div class="mb-4 grid grid-cols-1 gap-4 lg:grid-cols-2">
       <label class="payment-field">
-        <span>Tag</span>
+        <span>{{ 'payments.filters.user' | t }}</span>
         <select
           [value]="selectedBookkeepingUserId()"
           [disabled]="!bookkeepingUsers().length"
           (change)="selectBookkeepingUser($any($event.target).value)"
         >
-          <option value="">Válassz tagot</option>
+          <option value="">{{ 'payments.bookkeeping.selectUser' | t }}</option>
           @for (member of bookkeepingUsers(); track member.userId) {
             <option [value]="member.userId">{{ member.userName }}</option>
           }
@@ -41,9 +41,9 @@
       </label>
 
       <label class="payment-field">
-        <span>Esemény</span>
+        <span>{{ 'payments.filters.event' | t }}</span>
         <select [value]="selectedBookkeepingEventId()" (change)="selectBookkeepingEvent($any($event.target).value)">
-          <option value="">Válassz eseményt</option>
+          <option value="">{{ 'payments.bookkeeping.selectEvent' | t }}</option>
           @for (event of bookkeepingEvents(); track event.id) {
             <option [value]="event.id">{{ event.title }} - {{ formatDate(toDate(event.date)) }}</option>
           }
@@ -53,27 +53,27 @@
 
     @if (!selectedBookkeepingUserId() && !selectedBookkeepingEventId()) {
       <div class="rounded-xl border border-white/10 bg-white/5 p-5 text-sm text-gray-400">
-        A könyveléshez válassz tagot vagy eseményt.
+        {{ 'payments.bookkeeping.empty.chooseUserOrEvent' | t }}
       </div>
     } @else if (selectedBookkeepingUserId() && !bookkeepingEvents().length) {
       <div class="rounded-xl border border-white/10 bg-white/5 p-5 text-sm text-gray-400">
-        A kiválasztott tagnak jelenleg nincs nyitott fizetési kötelezettsége.
+        {{ 'payments.bookkeeping.empty.noOpenObligationForUser' | t }}
       </div>
     } @else if (selectedBookkeepingUserId() && !selectedBookkeepingEventId()) {
       <div class="rounded-xl border border-white/10 bg-white/5 p-5 text-sm text-gray-400">
-        Válassz eseményt a kiválasztott taghoz.
+        {{ 'payments.bookkeeping.empty.chooseEventForUser' | t }}
       </div>
     } @else if (selectedBookkeepingEventId() && !selectedBookkeepingUserId()) {
       <div class="rounded-xl border border-white/10 bg-white/5 p-5 text-sm text-gray-400">
-        Válassz tagot a kiválasztott eseményhez.
+        {{ 'payments.bookkeeping.empty.chooseUserForEvent' | t }}
       </div>
     } @else if (!bookkeepingUsers().length) {
       <div class="rounded-xl border border-white/10 bg-white/5 p-5 text-center text-sm text-gray-400">
-        Ennél az eseménynél még nincs visszajelzett résztvevő.
+        {{ 'payments.bookkeeping.empty.noRespondedAttendees' | t }}
       </div>
     } @else if (!selectedBookkeepingRow()) {
       <div class="rounded-xl border border-white/10 bg-white/5 p-5 text-sm text-gray-400">
-        Válassz tagot a könyveléshez.
+        {{ 'payments.bookkeeping.empty.chooseUser' | t }}
       </div>
     } @else {
       <article class="bookkeeping-row">
@@ -86,15 +86,15 @@
 
         <div class="bookkeeping-grid">
           <div class="bookkeeping-info-table">
-            <div class="bookkeeping-cell bookkeeping-cell--label">Státusz:</div>
+            <div class="bookkeeping-cell bookkeeping-cell--label">{{ 'payments.bookkeeping.labels.status' | t }}</div>
             <div class="bookkeeping-cell">
               <span [ngClass]="statusClass(selectedBookkeepingRow()!.status)">{{ statusLabel(selectedBookkeepingRow()!.status) }}</span>
             </div>
-            <div class="bookkeeping-cell bookkeeping-cell--label">Eddig fizetett:</div>
+            <div class="bookkeeping-cell bookkeeping-cell--label">{{ 'payments.bookkeeping.labels.paidSoFar' | t }}</div>
             <div class="bookkeeping-cell">{{ formatMoney(selectedBookkeepingRow()!.paidAmount) }}</div>
-            <div class="bookkeeping-cell bookkeeping-cell--label">Fizetendő:</div>
+            <div class="bookkeeping-cell bookkeeping-cell--label">{{ 'payments.bookkeeping.labels.amountDue' | t }}</div>
             <div class="bookkeeping-cell">{{ formatMoney(selectedBookkeepingRow()!.requiredAmount) }}</div>
-            <div class="bookkeeping-cell bookkeeping-cell--label">Egyenleg:</div>
+            <div class="bookkeeping-cell bookkeeping-cell--label">{{ 'payments.bookkeeping.labels.balance' | t }}</div>
             <div
               class="bookkeeping-cell"
               [class.text-primary]="selectedBookkeepingRow()!.balance >= 0"
@@ -105,7 +105,7 @@
           </div>
 
           <div class="bookkeeping-input-table">
-            <div class="bookkeeping-cell bookkeeping-cell--label">Dátum:</div>
+            <div class="bookkeeping-cell bookkeeping-cell--label">{{ 'payments.bookkeeping.labels.date' | t }}</div>
             <div class="bookkeeping-cell bookkeeping-cell--input">
               <input
                 class="bookkeeping-inline-input"
@@ -116,7 +116,7 @@
                 (input)="updateRowPaymentForm(selectedBookkeepingRow()!, 'paidAt', $any($event.target).value)"
               />
             </div>
-            <div class="bookkeeping-cell bookkeeping-cell--label">Összeg:</div>
+            <div class="bookkeeping-cell bookkeeping-cell--label">{{ 'payments.bookkeeping.labels.amount' | t }}</div>
             <div class="bookkeeping-cell bookkeeping-cell--input">
               <input
                 class="bookkeeping-inline-input"
@@ -127,7 +127,7 @@
                 (input)="updateRowPaymentForm(selectedBookkeepingRow()!, 'amount', $any($event.target).value)"
               />
             </div>
-            <div class="bookkeeping-cell bookkeeping-cell--label">Fizetési mód:</div>
+            <div class="bookkeeping-cell bookkeeping-cell--label">{{ 'payments.bookkeeping.labels.method' | t }}</div>
             <div class="bookkeeping-cell bookkeeping-cell--input">
               <select
                 class="bookkeeping-inline-input"
@@ -143,14 +143,14 @@
         </div>
 
         <div class="bookkeeping-note-row">
-          <div class="bookkeeping-note-label">Megjegyzés:</div>
+          <div class="bookkeeping-note-label">{{ 'payments.bookkeeping.labels.note' | t }}</div>
           <div class="bookkeeping-note-input">
             <input
               class="bookkeeping-inline-input"
               type="text"
               [value]="rowPaymentForm(selectedBookkeepingRow()!.userId, selectedBookkeepingRow()!.eventId).note"
               (input)="updateRowPaymentForm(selectedBookkeepingRow()!, 'note', $any($event.target).value)"
-              placeholder="Opcionális"
+              [placeholder]="'payments.bookkeeping.labels.notePlaceholder' | t"
             />
           </div>
         </div>
@@ -163,7 +163,7 @@
             (click)="recordPaymentForRow(selectedBookkeepingRow()!)"
           >
             <span class="material-symbols-outlined text-base">add_card</span>
-            Rögzítés
+            {{ 'payments.bookkeeping.submit' | t }}
           </button>
         </div>
       </article>
@@ -173,18 +173,18 @@
   <div class="mb-8">
     <h3 class="mb-3 flex items-center gap-2 text-sm font-bold uppercase tracking-wide text-primary">
       <span class="material-symbols-outlined text-base">account_balance_wallet</span>
-      Egyenleg
+      {{ 'payments.summary.title' | t }}
     </h3>
     <div class="payment-summary-table overflow-hidden rounded-2xl border border-white/10">
       @if (filteredSummary().length) {
         <table class="w-full text-left text-sm">
           <thead class="bg-white/5 text-xs uppercase tracking-wide text-primary">
             <tr>
-              <th class="px-4 py-3">Tag</th>
-              <th class="px-4 py-3 text-right">Fizetendő</th>
-              <th class="px-4 py-3 text-right">Fizetett</th>
-              <th class="px-4 py-3 text-right">Egyenleg</th>
-              <th class="px-4 py-3 text-center">Státusz</th>
+              <th class="px-4 py-3">{{ 'payments.summary.headers.user' | t }}</th>
+              <th class="px-4 py-3 text-right">{{ 'payments.summary.headers.amountDue' | t }}</th>
+              <th class="px-4 py-3 text-right">{{ 'payments.summary.headers.amountPaid' | t }}</th>
+              <th class="px-4 py-3 text-right">{{ 'payments.summary.headers.balance' | t }}</th>
+              <th class="px-4 py-3 text-center">{{ 'payments.summary.headers.status' | t }}</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-white/5">
@@ -209,7 +209,7 @@
         </table>
       } @else {
         <div class="rounded-xl bg-white/5 p-5 text-sm text-gray-400">
-          Nincs fizetési kötelezettség a kiválasztott szűrőkkel.
+          {{ 'payments.summary.empty' | t }}
         </div>
       }
     </div>
@@ -219,7 +219,7 @@
     <div class="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
       <div class="flex items-center gap-2">
         <span class="material-symbols-outlined text-primary">filter_alt</span>
-        <h3 class="text-sm font-bold uppercase tracking-wide text-primary">Szűrés</h3>
+        <h3 class="text-sm font-bold uppercase tracking-wide text-primary">{{ 'payments.filters.title' | t }}</h3>
       </div>
       <div class="flex flex-wrap gap-2">
         <button type="button" class="payment-action" (click)="exportCsv()">
@@ -234,34 +234,34 @@
     </div>
     <div class="grid grid-cols-1 gap-4 lg:grid-cols-[1fr_2fr_2fr_auto] lg:items-end">
       <label class="payment-field">
-        <span>Időszak</span>
+        <span>{{ 'payments.filters.period.label' | t }}</span>
         <select [value]="filters().period" (change)="setFilter('period', $any($event.target).value)">
           @for (period of periodOptions; track period.id) {
-            <option [value]="period.id">{{ period.label }}</option>
+            <option [value]="period.id">{{ period.labelKey | t }}</option>
           }
         </select>
       </label>
       <label class="payment-field">
-        <span>Esemény</span>
+        <span>{{ 'payments.filters.event' | t }}</span>
         <select [value]="filters().eventId" (change)="setFilter('eventId', $any($event.target).value)">
-          <option value="all">Összes esemény</option>
+          <option value="all">{{ 'payments.filters.allEvents' | t }}</option>
           @for (event of paidEvents(); track event.id) {
             <option [value]="event.id">{{ event.title }} {{ "( " + formatDate(toDate(event.date)) + " )" }}</option>
           }
         </select>
       </label>
       <label class="payment-field">
-        <span>Tag</span>
+        <span>{{ 'payments.filters.user' | t }}</span>
         <select [value]="filters().userId" (change)="setFilter('userId', $any($event.target).value)">
-          <option value="all">Összes tag</option>
+          <option value="all">{{ 'payments.filters.allUsers' | t }}</option>
           @for (member of overview().members; track member.userId) {
             <option [value]="member.userId">{{ member.name }}</option>
           }
         </select>
       </label>
-      <button type="button" class="payment-submit" (click)="applyCurrentFilters()">
+      <button type="button" class="payment-submit payment-query" (click)="applyCurrentFilters()">
         <span class="material-symbols-outlined text-base">search</span>
-        Lekérdezés
+        {{ 'payments.filters.query' | t }}
       </button>
     </div>
   </div>
@@ -270,14 +270,14 @@
     <table class="w-full min-w-[900px] text-left text-sm">
       <thead class="bg-white/5 text-xs uppercase tracking-wide text-primary">
         <tr>
-          <th class="px-4 py-3">Esemény</th>
-          <th class="px-4 py-3 text-center">Dátum</th>
-          <th class="px-4 py-3 text-center">Határidő</th>
-          <th class="px-4 py-3 text-center">Név</th>
-          <th class="px-4 py-3 text-right">Fizetendő</th>
-          <th class="px-4 py-3 text-right">Befizetve</th>
-          <th class="px-4 py-3 text-right">Egyenleg</th>
-          <th class="px-4 py-3 text-center">Státusz</th>
+          <th class="px-4 py-3">{{ 'payments.ledger.headers.event' | t }}</th>
+          <th class="px-4 py-3 text-center">{{ 'payments.ledger.headers.date' | t }}</th>
+          <th class="px-4 py-3 text-center">{{ 'payments.ledger.headers.dueDate' | t }}</th>
+          <th class="px-4 py-3 text-center">{{ 'payments.ledger.headers.name' | t }}</th>
+          <th class="px-4 py-3 text-right">{{ 'payments.ledger.headers.amountDue' | t }}</th>
+          <th class="px-4 py-3 text-right">{{ 'payments.ledger.headers.amountPaid' | t }}</th>
+          <th class="px-4 py-3 text-right">{{ 'payments.ledger.headers.balance' | t }}</th>
+          <th class="px-4 py-3 text-center">{{ 'payments.ledger.headers.status' | t }}</th>
         </tr>
       </thead>
       <tbody class="divide-y divide-white/5">
@@ -296,7 +296,7 @@
           </tr>
         } @empty {
           <tr>
-            <td colspan="8" class="px-4 py-8 text-center text-gray-400">Nincs megjeleníthető sor.</td>
+            <td colspan="8" class="px-4 py-8 text-center text-gray-400">{{ 'payments.ledger.empty' | t }}</td>
           </tr>
         }
       </tbody>
@@ -306,20 +306,16 @@
   <div class="mt-8">
     <h3 class="mb-3 flex items-center gap-2 text-sm font-bold uppercase tracking-wide text-primary">
       <span class="material-symbols-outlined text-base">manage_history</span>
-      Módosítási napló
+      {{ 'payments.audit.title' | t }}
     </h3>
     <div class="payment-audit-log divide-y divide-white/5 rounded-2xl border border-white/10 bg-white/5">
       @for (audit of overview().auditLogs; track audit.id) {
         <div class="grid gap-1 p-4 text-sm sm:grid-cols-[1fr_auto]">
-          <p class="text-white">
-            <strong>{{ audit.actorName }}</strong> rögzített
-            <strong>{{ formatMoney(audit.amount) }}</strong> befizetést:
-            {{ audit.targetUserName }} / {{ methodLabel(audit.method) }}.
-          </p>
+          <p class="text-white">{{ auditLogMessage(audit) }}</p>
           <p class="text-xs text-gray-400">{{ audit.createdAt?.toDate ? (audit.createdAt.toDate() | date:'yyyy.MM.dd HH:mm') : '-' }}</p>
         </div>
       } @empty {
-        <div class="p-4 text-sm text-gray-400">Még nincs könyvelési napló.</div>
+        <div class="p-4 text-sm text-gray-400">{{ 'payments.audit.empty' | t }}</div>
       }
     </div>
   </div>

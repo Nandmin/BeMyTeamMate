@@ -7,7 +7,6 @@ import {
   AppLanguage,
   normalizeAppLanguage,
   SUPPORTED_LANGUAGES,
-  TranslationKey,
 } from '../i18n/translations';
 
 export type TranslationParams = Record<string, string | number>;
@@ -62,7 +61,7 @@ export class LanguageService {
     return this.currentLanguage() === language;
   }
 
-  t(key: TranslationKey, params?: TranslationParams): string {
+  t(key: string, params?: TranslationParams): string {
     return this.translocoService.translate(key, params, this.currentLanguage());
   }
 

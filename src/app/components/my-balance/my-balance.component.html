@@ -3,14 +3,14 @@
     <div>
       <h2 class="flex items-center gap-2 text-lg font-bold text-white">
         <span class="material-symbols-outlined text-primary">account_balance_wallet</span>
-        Saját egyenlegem
+        {{ 'myBalance.title' | t }}
       </h2>
       <p class="mt-1 text-sm text-[#1F3A2B] dark:text-[#92c9a9]">
-        Saját tartozásaid és korábbi befizetéseid csoportonként.
+        {{ 'myBalance.description' | t }}
       </p>
     </div>
     <div class="rounded-xl border border-border-dark bg-white/5 px-4 py-3 text-right">
-      <p class="text-xs font-semibold uppercase tracking-wide text-[#1F3A2B] dark:text-[#92c9a9]">Aktuális egyenleg</p>
+      <p class="text-xs font-semibold uppercase tracking-wide text-[#1F3A2B] dark:text-[#92c9a9]">{{ 'myBalance.currentBalance' | t }}</p>
       <p class="text-2xl font-black" [class.text-primary]="balance() >= 0" [class.text-red-400]="balance() < 0">
         {{ formatMoney(balance()) }}
       </p>
@@ -20,15 +20,15 @@
 
   <div class="mb-5 grid grid-cols-1 gap-3 sm:grid-cols-3">
     <div class="my-balance-kpi">
-      <span>Fizetendő</span>
+      <span>{{ 'myBalance.kpis.amountDue' | t }}</span>
       <strong>{{ formatMoney(totalRequired()) }}</strong>
     </div>
     <div class="my-balance-kpi">
-      <span>Befizetve</span>
+      <span>{{ 'myBalance.kpis.amountPaid' | t }}</span>
       <strong>{{ formatMoney(totalPaid()) }}</strong>
     </div>
     <div class="my-balance-kpi">
-      <span>Kredit / tartozás</span>
+      <span>{{ 'myBalance.kpis.creditOrDebt' | t }}</span>
       <strong [class.text-primary]="balance() >= 0" [class.text-red-400]="balance() < 0">{{ formatMoney(balance()) }}</strong>
     </div>
   </div>
@@ -38,11 +38,11 @@
       <table class="w-full min-w-[640px] text-left text-sm">
         <thead class="bg-white/5 text-xs uppercase tracking-wide text-primary">
           <tr>
-            <th class="px-4 py-3">Csoport</th>
-            <th class="px-4 py-3">Esemény</th>
-            <th class="px-4 py-3">Határidő</th>
-            <th class="px-4 py-3 text-right">Fizetendő</th>
-            <th class="px-4 py-3">Státusz</th>
+            <th class="px-4 py-3">{{ 'myBalance.ledger.group' | t }}</th>
+            <th class="px-4 py-3">{{ 'myBalance.ledger.event' | t }}</th>
+            <th class="px-4 py-3">{{ 'myBalance.ledger.dueDate' | t }}</th>
+            <th class="px-4 py-3 text-right">{{ 'myBalance.ledger.amountDue' | t }}</th>
+            <th class="px-4 py-3">{{ 'myBalance.ledger.status' | t }}</th>
           </tr>
         </thead>
         <tbody class="divide-y divide-border-dark/70">
@@ -56,7 +56,7 @@
             </tr>
           } @empty {
             <tr>
-              <td colspan="5" class="px-4 py-8 text-center text-[#1F3A2B] dark:text-[#92c9a9]">Nincs nyitott befizetési kötelezettséged.</td>
+              <td colspan="5" class="px-4 py-8 text-center text-[#1F3A2B] dark:text-[#92c9a9]">{{ 'myBalance.ledger.empty' | t }}</td>
             </tr>
           }
         </tbody>
@@ -65,7 +65,7 @@
 
     <div class="rounded-xl border border-border-dark bg-white/5">
       <div class="border-b border-border-dark px-4 py-3">
-        <h3 class="text-sm font-bold uppercase tracking-wide text-primary">Korábbi befizetések</h3>
+        <h3 class="text-sm font-bold uppercase tracking-wide text-primary">{{ 'myBalance.payments.title' | t }}</h3>
       </div>
       <div class="max-h-[360px] divide-y divide-border-dark/70 overflow-y-auto">
         @for (payment of payments(); track payment.id) {
@@ -80,7 +80,7 @@
             }
           </div>
         } @empty {
-          <div class="p-4 text-sm text-[#1F3A2B] dark:text-[#92c9a9]">Még nincs rögzített befizetésed.</div>
+          <div class="p-4 text-sm text-[#1F3A2B] dark:text-[#92c9a9]">{{ 'myBalance.payments.empty' | t }}</div>
         }
       </div>
     </div>

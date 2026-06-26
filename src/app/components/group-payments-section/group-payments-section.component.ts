@@ -3,7 +3,10 @@ import { Component, computed, inject, input, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { switchMap } from 'rxjs';
+import { TranslatePipe } from '../../pipes/translate.pipe';
+import { LanguageService } from '../../services/language.service';
 import {
+  PaymentAuditLog,
   PaymentFilters,
   PaymentLedgerRow,
   PaymentMethod,
@@ -13,12 +16,13 @@ import {
 @Component({
   selector: 'app-group-payments-section',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, TranslatePipe],
   templateUrl: './group-payments-section.component.html',
   styleUrl: './group-payments-section.component.scss',
 })
 export class GroupPaymentsSectionComponent {
   private paymentService = inject(PaymentService);
+  protected readonly languageService = inject(LanguageService);
 
   groupId = input.required<string>();
 
@@ -87,7 +91,7 @@ export class GroupPaymentsSectionComponent {
         }
         return true;
       })
-      .sort((a, b) => a.userName.localeCompare(b.userName, 'hu-HU'))
+      .sort((a, b) => a.userName.localeCompare(b.userName, this.currentLocale()))
   );
 
   bookkeepingOpenRows = computed(() =>
@@ -115,9 +119,7 @@ export class GroupPaymentsSectionComponent {
     const seen = new Set<string>();
     return sourceRows
       .filter((row) => {
-        if (seen.has(row.userId)) {
-          return false;
-        }
+        if (seen.has(row.userId)) return false;
         seen.add(row.userId);
         return true;
       })
@@ -125,7 +127,7 @@ export class GroupPaymentsSectionComponent {
         userId: row.userId,
         userName: row.userName,
       }))
-      .sort((a, b) => a.userName.localeCompare(b.userName, 'hu-HU'));
+      .sort((a, b) => a.userName.localeCompare(b.userName, this.currentLocale()));
   });
 
   bookkeepingUsers = computed(() => this.bookkeepingSelectableUsers());
@@ -166,16 +168,16 @@ export class GroupPaymentsSectionComponent {
           status: this.statusFor(requiredAmount, paidAmount),
         };
       })
-      .sort((a, b) => a.userName.localeCompare(b.userName, 'hu-HU'));
+      .sort((a, b) => a.userName.localeCompare(b.userName, this.currentLocale()));
   });
 
   paymentMethods = this.paymentService.paymentMethods;
-  periodOptions = [
-    { id: 'all', label: 'Teljes időszak' },
-    { id: 'week', label: 'Elmúlt hét' },
-    { id: 'month', label: 'Elmúlt hónap' },
-    { id: 'year', label: 'Elmúlt év' },
-  ] as const;
+  periodOptions: Array<{ id: PaymentFilters['period']; labelKey: string }> = [
+    { id: 'all', labelKey: 'payments.filters.period.all' },
+    { id: 'week', labelKey: 'payments.filters.period.week' },
+    { id: 'month', labelKey: 'payments.filters.period.month' },
+    { id: 'year', labelKey: 'payments.filters.period.year' },
+  ];
 
   setFilter<K extends keyof PaymentFilters>(key: K, value: PaymentFilters[K]) {
     this.filters.update((filters) => ({ ...filters, [key]: value }));
@@ -268,17 +270,17 @@ export class GroupPaymentsSectionComponent {
     const hasDate = !!form.paidAt;
 
     if (!hasAmount && !hasDate) {
-      this.error.set('A rögzítéshez összeg és dátum is szükséges.');
+      this.error.set(this.languageService.t('payments.record.errors.amountAndDateRequired'));
       return;
     }
     if (hasAmount !== hasDate) {
-      this.error.set('Az összeg és a dátum csak együtt adható meg.');
+      this.error.set(this.languageService.t('payments.record.errors.amountAndDateTogether'));
       return;
     }
 
     const paidAt = this.parseDate(form.paidAt);
     if (!paidAt) {
-      this.error.set('Érvénytelen fizetési dátum.');
+      this.error.set(this.languageService.t('payments.record.errors.invalidDate'));
       return;
     }
 
@@ -286,9 +288,7 @@ export class GroupPaymentsSectionComponent {
     const eventDate = this.startOfDay(row.eventDate);
     const today = this.startOfDay(new Date());
     if (paymentDate < eventDate || paymentDate > today) {
-      this.error.set(
-        'A befizetés dátuma nem lehet kisebb, mint az esemény dátuma, és nem lehet nagyobb a mai napnál.'
-      );
+      this.error.set(this.languageService.t('payments.record.errors.dateRange'));
       return;
     }
 
@@ -305,14 +305,14 @@ export class GroupPaymentsSectionComponent {
         paidAt,
         note: form.note,
       });
-      this.message.set('Befizetés rögzítve.');
+      this.message.set(this.languageService.t('payments.record.success.saved'));
       this.paymentForms.update((forms) => {
         const next = { ...forms };
         delete next[this.formKey(row.userId, row.eventId)];
         return next;
       });
     } catch (error: any) {
-      this.error.set(error?.message || 'Nem sikerült rögzíteni a befizetést.');
+      this.error.set(error?.message || this.languageService.t('payments.record.errors.saveFailed'));
     } finally {
       this.isSubmitting.set(false);
     }
@@ -322,14 +322,14 @@ export class GroupPaymentsSectionComponent {
     const rows = this.filteredRows();
     if (!rows.length) return;
     const header = [
-      'Esemény',
-      'Dátum',
-      'Határidő',
-      'Tag',
-      'Fizetendő',
-      'Befizetve',
-      'Egyenleg',
-      'Státusz',
+      this.languageService.t('payments.ledger.headers.event'),
+      this.languageService.t('payments.ledger.headers.date'),
+      this.languageService.t('payments.ledger.headers.dueDate'),
+      this.languageService.t('payments.ledger.headers.name'),
+      this.languageService.t('payments.ledger.headers.amountDue'),
+      this.languageService.t('payments.ledger.headers.amountPaid'),
+      this.languageService.t('payments.ledger.headers.balance'),
+      this.languageService.t('payments.ledger.headers.status'),
     ];
     const body = rows.map((row) => [
       row.eventTitle,
@@ -344,7 +344,10 @@ export class GroupPaymentsSectionComponent {
     const csv = [header, ...body]
       .map((line) => line.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(';'))
       .join('\n');
-    this.downloadBlob(new Blob([`\ufeff${csv}`], { type: 'text/csv;charset=utf-8' }), 'befizetesek.csv');
+    this.downloadBlob(
+      new Blob([`\ufeff${csv}`], { type: 'text/csv;charset=utf-8' }),
+      this.languageService.t('payments.export.csvFile')
+    );
   }
 
   async exportExcel() {
@@ -352,16 +355,18 @@ export class GroupPaymentsSectionComponent {
     if (!rows.length) return;
     const ExcelJS = (await import('exceljs/dist/exceljs.min.js')) as any;
     const workbook = new ExcelJS.Workbook();
-    const sheet = workbook.addWorksheet('Befizetések', { views: [{ state: 'frozen', ySplit: 1 }] });
+    const sheet = workbook.addWorksheet(this.languageService.t('payments.export.sheet'), {
+      views: [{ state: 'frozen', ySplit: 1 }],
+    });
     sheet.columns = [
-      { header: 'Esemény', key: 'eventTitle', width: 28 },
-      { header: 'Dátum', key: 'eventDate', width: 12 },
-      { header: 'Határidő', key: 'dueDate', width: 12 },
-      { header: 'Tag', key: 'userName', width: 24 },
-      { header: 'Fizetendő', key: 'requiredAmount', width: 14 },
-      { header: 'Befizetve', key: 'paidAmount', width: 14 },
-      { header: 'Egyenleg', key: 'balance', width: 14 },
-      { header: 'Státusz', key: 'status', width: 18 },
+      { header: this.languageService.t('payments.ledger.headers.event'), key: 'eventTitle', width: 28 },
+      { header: this.languageService.t('payments.ledger.headers.date'), key: 'eventDate', width: 12 },
+      { header: this.languageService.t('payments.ledger.headers.dueDate'), key: 'dueDate', width: 12 },
+      { header: this.languageService.t('payments.ledger.headers.name'), key: 'userName', width: 24 },
+      { header: this.languageService.t('payments.ledger.headers.amountDue'), key: 'requiredAmount', width: 14 },
+      { header: this.languageService.t('payments.ledger.headers.amountPaid'), key: 'paidAmount', width: 14 },
+      { header: this.languageService.t('payments.ledger.headers.balance'), key: 'balance', width: 14 },
+      { header: this.languageService.t('payments.ledger.headers.status'), key: 'status', width: 18 },
     ];
     sheet.addRows(
       rows.map((row) => ({
@@ -384,7 +389,7 @@ export class GroupPaymentsSectionComponent {
       new Blob([buffer], {
         type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
       }),
-      'befizetesek.xlsx'
+      this.languageService.t('payments.export.xlsxFile')
     );
   }
 
@@ -402,7 +407,7 @@ export class GroupPaymentsSectionComponent {
 
   formatDate(value: Date | null): string {
     if (!value || Number.isNaN(value.getTime())) return '-';
-    return value.toLocaleDateString('hu-HU', {
+    return value.toLocaleDateString(this.currentLocale(), {
       year: 'numeric',
       month: '2-digit',
       day: '2-digit',
@@ -421,6 +426,15 @@ export class GroupPaymentsSectionComponent {
     if (status === 'paid') return 'payment-status payment-status--paid';
     if (status === 'partial') return 'payment-status payment-status--partial';
     return 'payment-status payment-status--unpaid';
+  }
+
+  auditLogMessage(audit: PaymentAuditLog): string {
+    return this.languageService.t('payments.audit.entryCreate', {
+      actorName: audit.actorName,
+      amount: this.formatMoney(audit.amount),
+      targetUserName: audit.targetUserName,
+      method: this.methodLabel(audit.method),
+    });
   }
 
   private statusFor(requiredAmount: number, paidAmount: number) {
@@ -458,5 +472,9 @@ export class GroupPaymentsSectionComponent {
     anchor.download = filename;
     anchor.click();
     URL.revokeObjectURL(url);
+  }
+
+  private currentLocale(): string {
+    return this.languageService.currentLanguage() === 'en' ? 'en-US' : 'hu-HU';
   }
 }

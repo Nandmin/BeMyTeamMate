@@ -225,7 +225,7 @@
                 <div class="flex items-center justify-between mb-4">
                     <div class="flex items-center gap-2">
                         <span class="material-symbols-outlined text-primary">payments</span>
-                        <h3 class="text-xl font-bold text-slate-900 dark:text-white">Tagdíj / esemény díj</h3>
+                        <h3 class="text-xl font-bold text-slate-900 dark:text-white">{{ 'createEvent.payment.sectionTitle' | transloco }}</h3>
                     </div>
                     <label class="relative inline-flex items-center cursor-pointer">
                         <input type="checkbox" name="paymentEnabled" [(ngModel)]="eventData.paymentEnabled"
@@ -239,15 +239,15 @@
                 @if (eventData.paymentEnabled) {
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4 animate-fade-in">
                     <div>
-                        <label class="block mb-2 text-sm font-medium text-slate-600 dark:text-gray-400">Díjtípus</label>
+                        <label class="block mb-2 text-sm font-medium text-slate-600 dark:text-gray-400">{{ 'createEvent.payment.typeLabel' | transloco }}</label>
                         <select name="paymentMode" [(ngModel)]="eventData.paymentMode"
                             class="bg-slate-50 dark:bg-background-dark border border-light-border dark:border-white/10 text-slate-900 dark:text-white text-sm rounded-lg focus:ring-primary focus:border-primary block w-full p-2.5 outline-none cursor-pointer">
-                            <option value="perPerson" class="bg-white dark:bg-background-dark text-slate-900 dark:text-white">/ fő díj</option>
-                            <option value="total" class="bg-white dark:bg-background-dark text-slate-900 dark:text-white">Összes díj</option>
+                            <option value="perPerson" class="bg-white dark:bg-background-dark text-slate-900 dark:text-white">{{ 'createEvent.payment.type.perPerson' | transloco }}</option>
+                            <option value="total" class="bg-white dark:bg-background-dark text-slate-900 dark:text-white">{{ 'createEvent.payment.type.total' | transloco }}</option>
                         </select>
                     </div>
                     <div>
-                        <label class="block mb-2 text-sm font-medium text-slate-600 dark:text-gray-400">Összeg</label>
+                        <label class="block mb-2 text-sm font-medium text-slate-600 dark:text-gray-400">{{ 'createEvent.payment.amountLabel' | transloco }}</label>
                         <input type="number" name="paymentAmount" min="0" step="1"
                             [(ngModel)]="eventData.paymentAmount"
                             (focus)="onPaymentAmountFocus()"
@@ -256,16 +256,16 @@
                             required />
                     </div>
                     <div>
-                        <label class="block mb-2 text-sm font-medium text-slate-600 dark:text-gray-400">Fizetési határidő</label>
+                        <label class="block mb-2 text-sm font-medium text-slate-600 dark:text-gray-400">{{ 'createEvent.payment.dueDateLabel' | transloco }}</label>
                         <input type="date" name="paymentDueDate" [(ngModel)]="eventData.paymentDueDate" [min]="today"
                             class="bg-slate-50 dark:bg-white/5 border border-light-border dark:border-white/10 text-slate-900 dark:text-white text-sm rounded-lg focus:ring-primary focus:border-primary block w-full p-2.5" />
                     </div>
                 </div>
                 <p class="mt-4 text-sm text-slate-600 dark:text-gray-400">
-                    Összes díjnál a rendszer a résztvevők aktuális száma alapján automatikusan számolja a /fő összeget. Csak az „ott leszek” státuszú tagoknál keletkezik tartozás.
+                    {{ 'createEvent.payment.help' | transloco }}
                 </p>
                 } @else {
-                <p class="text-sm text-slate-600 dark:text-gray-400">Az eseményhez nem tartozik befizetési kötelezettség.</p>
+                <p class="text-sm text-slate-600 dark:text-gray-400">{{ 'createEvent.payment.disabled' | transloco }}</p>
                 }
             </div>
 

@@ -222,6 +222,7 @@
 }
 
 .payment-summary-card,
+.payment-summary-table,
 .payment-ledger,
 .payment-audit-log {
   background:
@@ -477,6 +478,7 @@
   }
 
   .payment-summary-card,
+  .payment-summary-table,
   .payment-ledger,
   .payment-audit-log {
     position: relative;
@@ -498,6 +500,7 @@
     }
   }
 
+  .payment-summary-table .text-white,
   .payment-summary-card .text-white,
   .payment-ledger .text-white,
   .payment-audit-log .text-white {
@@ -508,6 +511,7 @@
     color: #0f172a !important;
   }
 
+  .payment-summary-table .text-gray-400,
   .payment-summary-card .text-gray-400,
   .payment-ledger .text-gray-400,
   .payment-audit-log .text-gray-400 {

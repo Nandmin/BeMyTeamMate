@@ -240,7 +240,7 @@
 }
 
 .payment-ledger {
-  overflow: hidden;
+  overflow-x: auto;
 
   thead {
     background: rgba(255, 255, 255, 0.07);
@@ -270,6 +270,113 @@
 }
 
 @media (max-width: 640px) {
+  .payment-summary-table,
+  .payment-ledger {
+    overflow: visible;
+    border: 0;
+    background: transparent;
+    box-shadow: none;
+  }
+
+  .payment-summary-table table,
+  .payment-summary-table thead,
+  .payment-summary-table tbody,
+  .payment-summary-table tr,
+  .payment-summary-table td,
+  .payment-ledger table,
+  .payment-ledger thead,
+  .payment-ledger tbody,
+  .payment-ledger tr,
+  .payment-ledger td {
+    display: block;
+    width: 100%;
+    min-width: 0;
+  }
+
+  .payment-summary-table thead,
+  .payment-ledger thead {
+    display: none;
+  }
+
+  .payment-summary-table tbody,
+  .payment-ledger tbody {
+    display: grid;
+    gap: 0.75rem;
+    background: transparent;
+  }
+
+  .payment-summary-table tr,
+  .payment-ledger tr {
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 0.9rem;
+    background:
+      linear-gradient(180deg, rgba(255, 255, 255, 0.055), rgba(255, 255, 255, 0.03)),
+      rgba(4, 12, 8, 0.44);
+  }
+
+  .payment-summary-table td,
+  .payment-ledger td {
+    display: grid;
+    grid-template-columns: minmax(7rem, 42%) minmax(0, 1fr);
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.7rem 0.85rem;
+    text-align: right;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    white-space: normal;
+  }
+
+  .payment-summary-table td:last-child,
+  .payment-ledger td:last-child {
+    border-bottom: 0;
+  }
+
+  .payment-summary-table td[colspan],
+  .payment-ledger td[colspan] {
+    display: block;
+    text-align: center;
+  }
+
+  .payment-summary-table td[colspan]::before,
+  .payment-ledger td[colspan]::before {
+    content: none;
+  }
+
+  .payment-summary-table td::before,
+  .payment-ledger td::before {
+    content: attr(data-label);
+    min-width: 0;
+    color: rgb(148 163 184);
+    font-size: 0.7rem;
+    font-weight: 800;
+    line-height: 1.1;
+    text-align: left;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  .payment-summary-table td:first-child,
+  .payment-ledger td:first-child {
+    align-items: start;
+    font-size: 0.95rem;
+    text-align: right;
+  }
+
+  .payment-summary-table td:first-child::before,
+  .payment-ledger td:first-child::before {
+    padding-top: 0.15rem;
+  }
+
+  .payment-summary-table .payment-status,
+  .payment-ledger .payment-status {
+    justify-self: end;
+    min-width: 0;
+    max-width: 100%;
+    white-space: normal;
+    text-align: center;
+  }
+
   .bookkeeping-info-table,
   .bookkeeping-input-table,
   .bookkeeping-note-row {

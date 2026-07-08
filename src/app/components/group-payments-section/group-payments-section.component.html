@@ -190,17 +190,18 @@
           <tbody class="divide-y divide-white/5">
             @for (summary of filteredSummary(); track summary.userId) {
               <tr class="hover:bg-white/5">
-                <td class="px-4 py-3 font-semibold text-white">{{ summary.userName }}</td>
-                <td class="px-4 py-3 text-right text-white">{{ formatMoney(summary.requiredAmount) }}</td>
-                <td class="px-4 py-3 text-right text-white">{{ formatMoney(summary.paidAmount) }}</td>
+                <td class="px-4 py-3 font-semibold text-white" [attr.data-label]="'payments.summary.headers.user' | t">{{ summary.userName }}</td>
+                <td class="px-4 py-3 text-right text-white" [attr.data-label]="'payments.summary.headers.amountDue' | t">{{ formatMoney(summary.requiredAmount) }}</td>
+                <td class="px-4 py-3 text-right text-white" [attr.data-label]="'payments.summary.headers.amountPaid' | t">{{ formatMoney(summary.paidAmount) }}</td>
                 <td
                   class="px-4 py-3 text-right font-semibold"
+                  [attr.data-label]="'payments.summary.headers.balance' | t"
                   [class.text-primary]="summary.balance >= 0"
                   [class.text-red-400]="summary.balance < 0"
                 >
                   {{ formatMoney(summary.balance) }}
                 </td>
-                <td class="px-4 py-3 text-center">
+                <td class="px-4 py-3 text-center" [attr.data-label]="'payments.summary.headers.status' | t">
                   <span [ngClass]="statusClass(summary.status)">{{ statusLabel(summary.status) }}</span>
                 </td>
               </tr>
@@ -283,16 +284,16 @@
       <tbody class="divide-y divide-white/5">
         @for (row of filteredRows(); track row.eventId + row.userId) {
           <tr class="hover:bg-white/5">
-            <td class="px-4 py-3 font-semibold text-white">{{ row.eventTitle }}</td>
-            <td class="px-4 py-3 text-gray-300">{{ formatDate(row.eventDate) }}</td>
-            <td class="px-4 py-3 text-gray-300">{{ row.dueDate ? formatDate(row.dueDate) : '-' }}</td>
-            <td class="px-4 py-3 text-white">{{ row.userName }}</td>
-            <td class="px-4 py-3 text-right text-white">{{ formatMoney(row.requiredAmount) }}</td>
-            <td class="px-4 py-3 text-right text-white">{{ formatMoney(row.paidAmount) }}</td>
-            <td class="px-4 py-3 text-right font-semibold" [class.text-primary]="row.balance >= 0" [class.text-red-400]="row.balance < 0">
+            <td class="px-4 py-3 font-semibold text-white" [attr.data-label]="'payments.ledger.headers.event' | t">{{ row.eventTitle }}</td>
+            <td class="px-4 py-3 text-gray-300" [attr.data-label]="'payments.ledger.headers.date' | t">{{ formatDate(row.eventDate) }}</td>
+            <td class="px-4 py-3 text-gray-300" [attr.data-label]="'payments.ledger.headers.dueDate' | t">{{ row.dueDate ? formatDate(row.dueDate) : '-' }}</td>
+            <td class="px-4 py-3 text-white" [attr.data-label]="'payments.ledger.headers.name' | t">{{ row.userName }}</td>
+            <td class="px-4 py-3 text-right text-white" [attr.data-label]="'payments.ledger.headers.amountDue' | t">{{ formatMoney(row.requiredAmount) }}</td>
+            <td class="px-4 py-3 text-right text-white" [attr.data-label]="'payments.ledger.headers.amountPaid' | t">{{ formatMoney(row.paidAmount) }}</td>
+            <td class="px-4 py-3 text-right font-semibold" [attr.data-label]="'payments.ledger.headers.balance' | t" [class.text-primary]="row.balance >= 0" [class.text-red-400]="row.balance < 0">
               {{ formatMoney(row.balance) }}
             </td>
-            <td class="px-4 py-3"><span [ngClass]="statusClass(row.status)">{{ statusLabel(row.status) }}</span></td>
+            <td class="px-4 py-3" [attr.data-label]="'payments.ledger.headers.status' | t"><span [ngClass]="statusClass(row.status)">{{ statusLabel(row.status) }}</span></td>
           </tr>
         } @empty {
           <tr>

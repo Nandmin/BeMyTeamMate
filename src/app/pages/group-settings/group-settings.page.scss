@@ -74,6 +74,39 @@
   color: #ffffff !important;
 }
 
+.settings-tabs {
+  max-width: 100%;
+}
+
+.settings-tab {
+  min-width: 0;
+  white-space: normal;
+}
+
+@media (max-width: 640px) {
+  .settings-tabs {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    width: 100%;
+    border-radius: 1rem;
+  }
+
+  .settings-tab {
+    justify-content: center;
+    flex-direction: column;
+    gap: 0.25rem;
+    padding: 0.75rem 0.35rem;
+    text-align: center;
+    font-size: 0.75rem;
+    line-height: 1.15;
+  }
+
+  .settings-tab .material-symbols-outlined {
+    font-size: 1.25rem;
+    line-height: 1;
+  }
+}
+
 // Light mode overrides
 :host-context(html.light) {
   background:

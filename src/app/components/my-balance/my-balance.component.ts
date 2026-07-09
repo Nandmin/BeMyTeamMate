@@ -4,7 +4,12 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { TranslatePipe } from '../../pipes/translate.pipe';
 import { AuthService } from '../../services/auth.service';
 import { LanguageService } from '../../services/language.service';
-import { PaymentService } from '../../services/payment.service';
+import { PaymentRecord, PaymentService } from '../../services/payment.service';
+
+type MyBalancePayment = PaymentRecord & {
+  groupName: string;
+  eventTitle: string | null | undefined;
+};
 
 @Component({
   selector: 'app-my-balance',
@@ -30,14 +35,22 @@ export class MyBalanceComponent {
       )
       .sort((a, b) => b.eventDate.getTime() - a.eventDate.getTime())
   );
-  payments = computed(() =>
+  payments = computed<MyBalancePayment[]>(() =>
     this.overviews()
-      .flatMap((overview) =>
-        overview.payments.map((payment) => ({
+      .flatMap((overview) => {
+        const eventTitleById = new Map(
+          overview.events.map((event) => [
+            event.id,
+            event.title || this.languageService.t('common.event.defaultName'),
+          ])
+        );
+
+        return overview.payments.map((payment) => ({
           ...payment,
           groupName: overview.groupName,
-        }))
-      )
+          eventTitle: payment.eventId ? eventTitleById.get(payment.eventId) : null,
+        }));
+      })
       .sort((a, b) => this.toDate(b.paidAt).getTime() - this.toDate(a.paidAt).getTime())
   );
   totalRequired = computed(() => this.rows().reduce((sum, row) => sum + row.requiredAmount, 0));

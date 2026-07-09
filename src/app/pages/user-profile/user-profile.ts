@@ -29,11 +29,12 @@ import { getAppCheckTokenOrNull } from '../../utils/app-check.util';
 import { AnalyticsService } from '../../services/analytics.service';
 import { LanguageService } from '../../services/language.service';
 import { TranslationKey } from '../../i18n/translations';
+import { MyBalanceComponent } from '../../components/my-balance/my-balance.component';
 
 @Component({
   selector: 'app-user-profile',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, TranslocoPipe],
+  imports: [CommonModule, FormsModule, RouterModule, TranslocoPipe, MyBalanceComponent],
   templateUrl: './user-profile.html',
   styleUrl: './user-profile.scss',
 })

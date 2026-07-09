@@ -33,8 +33,8 @@
     </div>
   </div>
 
-  <div class="grid grid-cols-1 gap-5 xl:grid-cols-2">
-    <div class="overflow-x-auto rounded-xl border border-border-dark">
+  <div class="grid grid-cols-1 gap-5">
+    <div class="overflow-x-auto rounded-2xl border border-border-dark">
       <table class="w-full min-w-[640px] text-left text-sm">
         <thead class="bg-white/5 text-xs uppercase tracking-wide text-primary">
           <tr>
@@ -42,7 +42,7 @@
             <th class="px-4 py-3">{{ 'myBalance.ledger.event' | t }}</th>
             <th class="px-4 py-3">{{ 'myBalance.ledger.dueDate' | t }}</th>
             <th class="px-4 py-3 text-right">{{ 'myBalance.ledger.amountDue' | t }}</th>
-            <th class="px-4 py-3">{{ 'myBalance.ledger.status' | t }}</th>
+            <th class="px-4 py-3 text-center">{{ 'myBalance.ledger.status' | t }}</th>
           </tr>
         </thead>
         <tbody class="divide-y divide-border-dark/70">
@@ -52,7 +52,7 @@
               <td class="px-4 py-3 text-white">{{ row.eventTitle }}</td>
               <td class="px-4 py-3 text-[#1F3A2B] dark:text-[#92c9a9]">{{ row.dueDate ? formatDate(row.dueDate) : '-' }}</td>
               <td class="px-4 py-3 text-right text-white">{{ formatMoney(row.requiredAmount) }}</td>
-              <td class="px-4 py-3"><span [ngClass]="statusClass(row.status)">{{ statusLabel(row.status) }}</span></td>
+              <td class="px-4 py-3 text-center"><span [ngClass]="statusClass(row.status)">{{ statusLabel(row.status) }}</span></td>
             </tr>
           } @empty {
             <tr>
@@ -63,25 +63,37 @@
       </table>
     </div>
 
-    <div class="rounded-xl border border-border-dark bg-white/5">
+    <div class="rounded-2xl border border-border-dark bg-white/5">
       <div class="border-b border-border-dark px-4 py-3">
         <h3 class="text-sm font-bold uppercase tracking-wide text-primary">{{ 'myBalance.payments.title' | t }}</h3>
       </div>
-      <div class="max-h-[360px] divide-y divide-border-dark/70 overflow-y-auto">
-        @for (payment of payments(); track payment.id) {
-          <div class="grid gap-1 p-4 text-sm">
-            <div class="flex items-center justify-between gap-3">
-              <p class="font-bold text-white">{{ formatMoney(payment.amount) }}</p>
-              <p class="text-xs text-[#1F3A2B] dark:text-[#92c9a9]">{{ formatDate(payment.paidAt) }}</p>
-            </div>
-            <p class="text-[#1F3A2B] dark:text-[#92c9a9]">{{ payment.groupName }} / {{ methodLabel(payment.method) }}</p>
-            @if (payment.note) {
-              <p class="text-xs text-gray-400">{{ payment.note }}</p>
+      <div class="max-h-[360px] overflow-auto">
+        <table class="w-full min-w-[760px] text-left text-sm">
+          <thead class="bg-white/5 text-xs uppercase tracking-wide text-primary">
+            <tr>
+              <th class="px-4 py-3">{{ 'myBalance.payments.date' | t }}</th>
+              <th class="px-4 py-3">{{ 'myBalance.payments.group' | t }}</th>
+              <th class="px-4 py-3">{{ 'myBalance.payments.event' | t }}</th>
+              <th class="px-4 py-3 text-right">{{ 'myBalance.payments.amount' | t }}</th>
+              <th class="px-4 py-3 text-center">{{ 'myBalance.payments.method' | t }}</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-border-dark/70">
+            @for (payment of payments(); track payment.id) {
+              <tr class="hover:bg-white/5">
+                <td class="px-4 py-3 text-[#1F3A2B] dark:text-[#92c9a9]">{{ formatDate(payment.paidAt) }}</td>
+                <td class="px-4 py-3 font-semibold text-white">{{ payment.groupName }}</td>
+                <td class="px-4 py-3 text-white">{{ payment.eventTitle || '-' }}</td>
+                <td class="px-4 py-3 text-right font-bold text-white">{{ formatMoney(payment.amount) }}</td>
+                <td class="px-4 py-3 text-center text-[#1F3A2B] dark:text-[#92c9a9]">{{ methodLabel(payment.method) }}</td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="5" class="px-4 py-8 text-center text-[#1F3A2B] dark:text-[#92c9a9]">{{ 'myBalance.payments.empty' | t }}</td>
+              </tr>
             }
-          </div>
-        } @empty {
-          <div class="p-4 text-sm text-[#1F3A2B] dark:text-[#92c9a9]">{{ 'myBalance.payments.empty' | t }}</div>
-        }
+          </tbody>
+        </table>
       </div>
     </div>
   </div>

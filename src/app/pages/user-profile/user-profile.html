@@ -68,6 +68,25 @@
           @if (isOwnProfile()) {
             <a
               class="group flex items-center gap-3 px-4 py-3 rounded-xl border-l-4 transition-all duration-200"
+              href="#balance"
+              (click)="scrollTo('balance', $event)"
+              [ngClass]="activeSection() === 'balance' ? 'bg-primary/10 border-primary' : 'hover:bg-[#234833]/50 border-transparent hover:border-text-secondary'"
+            >
+              <span
+                class="material-symbols-outlined transition-colors"
+                [ngClass]="activeSection() === 'balance' ? 'text-primary' : 'text-text-secondary group-hover:text-white'"
+                >account_balance_wallet</span
+              >
+              <p
+                class="text-sm font-medium leading-normal"
+                [ngClass]="activeSection() === 'balance' ? 'text-white' : 'profile-nav-inactive group-hover:text-white'"
+              >
+                {{ 'profile.sidebar.balance' | transloco }}
+              </p>
+            </a>
+
+            <a
+              class="group flex items-center gap-3 px-4 py-3 rounded-xl border-l-4 transition-all duration-200"
               href="#notifications"
               (click)="scrollTo('notifications', $event)"
               [ngClass]="activeSection() === 'notifications' ? 'bg-primary/10 border-primary' : 'hover:bg-[#234833]/50 border-transparent hover:border-text-secondary'"
@@ -347,6 +366,10 @@
       </section>
 
       @if (isOwnProfile()) {
+        <section id="balance" class="profile-balance-section">
+          <app-my-balance></app-my-balance>
+        </section>
+
         <section
           class="bg-gradient-to-b from-dark-accent to-background-dark rounded-2xl border border-[#234833] p-6 md:p-8 mb-8"
           id="notifications"

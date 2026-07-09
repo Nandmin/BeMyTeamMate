@@ -18,7 +18,7 @@ import { CoverImageEntry, CoverImagesService } from '../../services/cover-images
 import { AppUser } from '../../models/user.model';
 import { isElevatedGroupMemberRole } from '../../utils/group-member-role';
 
-type GroupDetailMobileTab = 'overview' | 'events' | 'members' | 'settings';
+type GroupDetailMobileTab = 'overview' | 'events' | 'members';
 
 @Component({
   selector: 'app-group-detail',
@@ -54,7 +54,6 @@ export class GroupDetailPage {
     'overview',
     'events',
     'members',
-    'settings',
   ];
   selectedView = signal<'upcoming' | 'previous'>('upcoming');
   mobileTab = signal<GroupDetailMobileTab>('overview');
@@ -146,11 +145,6 @@ export class GroupDetailPage {
     effect(() => {
       if (this.mobileTab() !== 'overview' && this.showMobileActionSheet()) {
         this.showMobileActionSheet.set(false);
-      }
-    });
-    effect(() => {
-      if (this.mobileTab() !== 'settings' && this.showMobileLeaveConfirm()) {
-        this.showMobileLeaveConfirm.set(false);
       }
     });
   }

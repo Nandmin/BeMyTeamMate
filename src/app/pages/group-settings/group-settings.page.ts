@@ -155,7 +155,7 @@ export class GroupSettingsPage {
 
   // Form states
   isSubmitting = signal(false);
-  activeTab = signal<'members' | 'settings' | 'payments'>('members');
+  activeTab = signal<'members' | 'settings' | 'payments'>('settings');
 
   // Edit group form
   editGroupForm = signal({

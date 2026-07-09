@@ -64,19 +64,19 @@
             } @else if (group()) {
             <!-- Tabs -->
             <div class="settings-tabs flex bg-white/5 p-1 rounded-2xl border border-white/10 mb-8 w-fit settings-surface-card">
-                <button (click)="activeTab.set('members')"
-                    class="settings-tab px-6 py-2.5 rounded-lg text-sm font-medium transition-all flex items-center gap-2"
-                    [class.bg-white/10]="activeTab() === 'members'" [class.text-white]="activeTab() === 'members'"
-                    [class.shadow-sm]="activeTab() === 'members'" [class.text-gray-400]="activeTab() !== 'members'">
-                    <span class="material-symbols-outlined text-lg">groups</span>
-                    {{ 'groupSettings.tabs.members' | transloco }}
-                </button>
-                <button (click)="activeTab.set('settings')"
+                    <button (click)="activeTab.set('settings')"
                     class="settings-tab px-6 py-2.5 rounded-lg text-sm font-medium transition-all flex items-center gap-2"
                     [class.bg-white/10]="activeTab() === 'settings'" [class.text-white]="activeTab() === 'settings'"
                     [class.shadow-sm]="activeTab() === 'settings'" [class.text-gray-400]="activeTab() !== 'settings'">
-                    <span class="material-symbols-outlined text-lg">tune</span>
+                    <span class="material-symbols-outlined text-lg">groups</span>
                     {{ 'groupSettings.tabs.settings' | transloco }}
+                </button>
+                <button (click)="activeTab.set('members')"
+                    class="settings-tab px-6 py-2.5 rounded-lg text-sm font-medium transition-all flex items-center gap-2"
+                [class.bg-white/10]="activeTab() === 'members'" [class.text-white]="activeTab() === 'members'"
+                [class.shadow-sm]="activeTab() === 'members'" [class.text-gray-400]="activeTab() !== 'members'">
+                    <span class="material-symbols-outlined text-lg">tune</span>
+                    {{ 'groupSettings.tabs.members' | transloco }}
                 </button>
                 <button (click)="activeTab.set('payments')"
                     class="settings-tab px-6 py-2.5 rounded-lg text-sm font-medium transition-all flex items-center gap-2"

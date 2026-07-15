@@ -82,6 +82,16 @@ export class HeaderComponent {
     this.themeService.toggleTheme();
   }
 
+  toggleThemeFromMobile() {
+    this.toggleTheme();
+    this.closeMobileMenu();
+  }
+
+  toggleLanguageFromMobile() {
+    this.languageService.toggleLanguage();
+    this.closeMobileMenu();
+  }
+
   async toggleNotifications() {
     this.isNotificationsOpen.update((open) => !open);
     if (!this.isNotificationsOpen()) return;
@@ -89,6 +99,16 @@ export class HeaderComponent {
     if (uid && this.unreadCount() > 0) {
       await this.notificationService.markAllAsRead(uid);
     }
+  }
+
+  async toggleNotificationsFromMobile() {
+    await this.toggleNotifications();
+    this.closeMobileMenu();
+  }
+
+  async onLogoutFromMobile() {
+    await this.onLogout();
+    this.closeMobileMenu();
   }
 
   toggleFilter() {

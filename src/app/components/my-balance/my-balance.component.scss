@@ -7,10 +7,14 @@
 }
 
 .my-balance-kpi {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
   border: 1px solid var(--border-dark);
   border-radius: 0.9rem;
   background: rgba(255, 255, 255, 0.05);
-  padding: 1rem;
+  min-width: 0;
+  padding: 0.85rem;
 
   span {
     display: block;
@@ -25,8 +29,23 @@
     display: block;
     margin-top: 0.35rem;
     color: #fff;
-    font-size: 1.25rem;
+    font-size: 1.12rem;
+    line-height: 1.2;
+    word-break: break-word;
   }
+
+  small {
+    display: block;
+    margin-top: 0.3rem;
+    color: #fff;
+    font-size: 0.68rem;
+    font-weight: 700;
+    line-height: 1.15;
+  }
+}
+
+.my-balance-kpi--current {
+  border-color: rgba(43, 238, 124, 0.45);
 }
 
 .my-balance-status {
@@ -41,9 +60,9 @@
 }
 
 .my-balance-status--paid {
-  border-color: rgba(34, 197, 94, 0.45);
-  background: rgba(34, 197, 94, 0.18);
-  color: #86efac;
+  border-color: #2bee7c;
+  background: #2bee7c;
+  color: #fff;
 }
 
 .my-balance-status--partial {
@@ -56,6 +75,158 @@
   border-color: rgba(239, 68, 68, 0.4);
   background: rgba(239, 68, 68, 0.18);
   color: #fca5a5;
+}
+
+@media (max-width: 640px) {
+  .my-balance-summary-grid {
+    gap: 0.65rem;
+  }
+
+  .my-balance-kpi {
+    min-height: 5.1rem;
+    padding: 0.75rem;
+  }
+
+  .my-balance-kpi span {
+    font-size: 0.66rem;
+    line-height: 1.15;
+  }
+
+  .my-balance-kpi strong {
+    font-size: 1rem;
+  }
+
+  .my-balance-kpi small {
+    font-size: 0.62rem;
+  }
+
+  .my-balance-ledger-table,
+  .my-balance-payments-table {
+    overflow: visible;
+    border: 0;
+    background: transparent;
+    box-shadow: none;
+  }
+
+  .my-balance-payments-table {
+    max-height: none;
+  }
+
+  .my-balance-ledger-table table,
+  .my-balance-ledger-table thead,
+  .my-balance-ledger-table tbody,
+  .my-balance-ledger-table tr,
+  .my-balance-ledger-table td,
+  .my-balance-payments-table table,
+  .my-balance-payments-table thead,
+  .my-balance-payments-table tbody,
+  .my-balance-payments-table tr,
+  .my-balance-payments-table td {
+    display: block;
+    width: 100%;
+    min-width: 0;
+  }
+
+  .my-balance-ledger-table thead,
+  .my-balance-payments-table thead {
+    display: none;
+  }
+
+  .my-balance-ledger-table tbody,
+  .my-balance-payments-table tbody {
+    display: grid;
+    gap: 0.75rem;
+    background: transparent;
+  }
+
+  .my-balance-ledger-table tr,
+  .my-balance-payments-table tr {
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 0.9rem;
+    background:
+      linear-gradient(180deg, rgba(255, 255, 255, 0.055), rgba(255, 255, 255, 0.03)),
+      rgba(4, 12, 8, 0.44);
+  }
+
+  .my-balance-ledger-table td,
+  .my-balance-payments-table td {
+    display: grid;
+    grid-template-columns: minmax(7rem, 42%) minmax(0, 1fr);
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.7rem 0.85rem;
+    text-align: right;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    white-space: normal;
+  }
+
+  .my-balance-ledger-table td:last-child,
+  .my-balance-payments-table td:last-child {
+    border-bottom: 0;
+  }
+
+  .my-balance-ledger-table td[colspan],
+  .my-balance-payments-table td[colspan] {
+    display: block;
+    text-align: center;
+  }
+
+  .my-balance-ledger-table td[colspan]::before,
+  .my-balance-payments-table td[colspan]::before {
+    content: none;
+  }
+
+  .my-balance-ledger-table td::before,
+  .my-balance-payments-table td::before {
+    content: attr(data-label);
+    min-width: 0;
+    color: rgb(148 163 184);
+    font-size: 0.7rem;
+    font-weight: 800;
+    line-height: 1.1;
+    text-align: left;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  .my-balance-ledger-table td:first-child,
+  .my-balance-payments-table td:first-child {
+    align-items: start;
+    font-size: 0.95rem;
+    text-align: right;
+  }
+
+  .my-balance-ledger-table td:first-child::before,
+  .my-balance-payments-table td:first-child::before {
+    padding-top: 0.15rem;
+  }
+
+  .my-balance-ledger-table td[colspan]:first-child,
+  .my-balance-payments-table td[colspan]:first-child {
+    text-align: center;
+  }
+
+  .my-balance-ledger-table .my-balance-status,
+  .my-balance-payments-table .my-balance-status {
+    justify-self: end;
+    min-width: 0;
+    max-width: 100%;
+    white-space: normal;
+    text-align: center;
+  }
+
+  .my-balance-payments-card {
+    border: 0;
+    background: transparent;
+  }
+
+  .my-balance-payments-card > div:first-child {
+    border: 1px solid var(--border-dark);
+    border-radius: 0.9rem;
+    background: rgba(255, 255, 255, 0.05);
+    margin-bottom: 0.75rem;
+  }
 }
 
 :host-context(html.light) {
@@ -73,6 +244,34 @@
 
     strong {
       color: #1e293b;
+    }
+
+    small {
+      color: #475569;
+    }
+  }
+
+  @media (max-width: 640px) {
+    .my-balance-ledger-table tr,
+    .my-balance-payments-table tr {
+      border-color: rgba(71, 85, 105, 0.16);
+      background: linear-gradient(180deg, rgba(248, 250, 252, 0.98), rgba(241, 245, 249, 0.96));
+      box-shadow: 0 16px 32px rgba(15, 23, 42, 0.1);
+    }
+
+    .my-balance-ledger-table td,
+    .my-balance-payments-table td {
+      border-bottom-color: rgba(71, 85, 105, 0.12);
+    }
+
+    .my-balance-ledger-table td::before,
+    .my-balance-payments-table td::before {
+      color: #64748b;
+    }
+
+    .my-balance-payments-card > div:first-child {
+      background: rgba(226, 232, 240, 0.78);
+      border-color: rgba(71, 85, 105, 0.18);
     }
   }
 }
